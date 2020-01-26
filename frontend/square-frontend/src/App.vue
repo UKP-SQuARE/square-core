@@ -1,15 +1,18 @@
 <template>
-  <div id="app" class="container">
-    <nav id="nav" class="navbar navbar-light navbar-expand-lg">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item"><router-link class="nav-link" to="/">Home</router-link></li>
-        <li class="nav-item"><router-link class="nav-link" to="/about">About</router-link></li>
-        <li class="nav-item"><router-link class="nav-link" to="/results">Results</router-link></li>
-      </ul>
-    </nav>
+  <div id="app" class="">
+    <NavBar> </NavBar>
     <router-view/>
   </div>
 </template>
+
+<script>
+import NavBar from '@/components/NavBar.vue'
+export default {
+  components: {
+    NavBar
+  }
+}
+</script>
 
 <style lang='scss'>
 @import '~bootstrap';
