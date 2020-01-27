@@ -1,23 +1,50 @@
 const results = [
     {
-        skillName: "CQA",
+        name: "CQA",
         results: ["Hello", "this is a test", "a third thing"]
     },
     {
-        skillName: "KQA",
+        name: "KQA",
         results: ["Yes", "no", "maybe"]
     }
 ]
 
-const skills = ["CQA", "KQA"]
+const skills = [{
+    id: "1",
+    owner_id: "1",
+    name: "CQA",
+    is_published: true,
+    scheme: "http",
+    host: "localhost",
+    base_path: "api"
+},
+{
+    id: "2",
+    owner_id: "2",
+    name: "KQA",
+    is_published: true,
+    scheme: "http",
+    host: "localhost",
+    base_path: "api"
+}]
+
+const my_skills = [{
+    id: "1",
+    owner_id: "1",
+    name: "CQA",
+    is_published: true,
+    scheme: "http",
+    host: "localhost",
+    base_path: "api"
+}]
 
 export function fetchResults(question, options) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         setTimeout(() => {
-            if (question.length > 0 && options) {
+            if (options && question.lastIndexOf("?")!=-1) {
                 resolve(results)
             } else {
-                resolve(results)
+                reject("That's not a question")
             }
         }, 200)
     })
@@ -47,10 +74,42 @@ export function loginUser(username, password) {
     })
 }
 
-export function fetchSkills() {
+export function fetchAvailableSkills() {
     return new Promise((resolve) => {
         setTimeout(() => {
                 resolve(skills)
+        }, 200)
+    })
+}
+
+export function fetchMySkills() {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+                resolve(my_skills)
+        }, 200)
+    })
+}
+
+export function deleteSkill(skillId) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+                if(skillId==="1"){
+                    resolve()
+                } else {
+                    reject("Deletion failed")
+                }
+        }, 200)
+    })
+}
+
+export function updateSkill(newSkill) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+                if(newSkill.name==="fail"){
+                    reject("Update failed")
+                } else {
+                    resolve()
+                }
         }, 200)
     })
 }

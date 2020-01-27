@@ -1,6 +1,39 @@
 <template>
   <b-container>
-    <h2>My skills</h2>
+    <h2 class="text-center">My skills</h2>
     <hr>
+    <p v-if="username">You need to login to access your skills.</p>
+    <b-card v-else v-for="skill in mySkills" v-bind:key="skill.name" v-bind:title="skill.name">
+      <b-button v-bind:to="{name: 'skill', params: {name: skill.name}}" variant="primary">Edit</b-button>
+      <b-button v-on:click="deleteSkill(skill.id)" variant="danger" class="float-right">Delete</b-button>
+    </b-card>
   </b-container>
 </template>
+
+
+<script>
+import { deleteSkill } from "@/api"
+export default {
+  name: 'skills',
+  data() {
+    return {
+    }
+  },
+  computed: {
+    mySkills() {
+      return this.$store.state.mySkills
+    },
+    user() {
+      return this.$store.state.username
+    }
+  },
+  methods: {
+    deleteSkill(skillId) {
+      deleteSkill(skillId)
+    }
+  },
+  beforeMount(){
+    this.$store.dispatch("updateMySkills")
+  }
+}
+</script>

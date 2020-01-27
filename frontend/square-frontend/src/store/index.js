@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { fetchResults, loginUser, fetchSkills } from '@/api'
+import { fetchResults, loginUser, fetchAvailableSkills, fetchMySkills } from '@/api'
 
 Vue.use(Vuex)
 
@@ -10,7 +10,9 @@ export default new Vuex.Store({
     username: "",
     currentResults: [],
     currentQuestion: "There are no bad questions.",
-    availableSkills: []
+    availableSkills: [],
+    mySkills: [],
+
   },
 
   mutations: {
@@ -23,6 +25,9 @@ export default new Vuex.Store({
     },
     setAvailableSkills(state, payload){
       state.availableSkills = payload.availableSkills
+    },
+    setMySkills(state, payload){
+      state.mySkills = payload.mySkills
     }
   },
 
@@ -41,8 +46,12 @@ export default new Vuex.Store({
       context.commit("setUsername", {username: ""})
     },
     updateAvailableSkills(context){
-      return fetchSkills()
+      return fetchAvailableSkills()
         .then((response) => context.commit("setAvailableSkills", {availableSkills: response}))
+    },
+    updateMySkills(context) {
+      return fetchMySkills()
+        .then((response) => context.commit("setMySkills", {mySkills: response}))
     }
   },
 

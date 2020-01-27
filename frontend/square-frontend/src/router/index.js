@@ -6,6 +6,7 @@ import About from '@/views/About.vue'
 import Register from '@/views/Register.vue'
 import Login from '@/views/Login.vue'
 import Skills from '@/views/Skills.vue'
+import Skill from '@/views/Skill.vue'
 
 Vue.use(VueRouter)
 
@@ -34,6 +35,11 @@ const routes = [
     path: '/skills',
     name: 'skills',
     component: Skills
+  },
+  {
+    path: '/skills/:name',
+    name: 'skill',
+    component: Skill
   },
   {
     path: '/about',
