@@ -7,12 +7,12 @@
       <b-button v-bind:to="{name: 'skill', params: {id: skill.id}}" variant="primary" class="mr-3">Edit</b-button>
       <b-button v-on:click="deleteSkill(skill.id)" variant="danger">Delete</b-button>
     </b-card>
+    <b-button to="/skills/new_skill" variant="success" class="float-right">New Skill</b-button>
   </b-container>
 </template>
 
 
 <script>
-import { deleteSkill } from "@/api"
 export default {
   name: 'skills',
   data() {
@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     deleteSkill(skillId) {
-      deleteSkill(skillId)
+      this.$store.dispatch("deleteSkill", {skillId: skillId})
     }
   },
   beforeMount(){

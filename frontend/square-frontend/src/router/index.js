@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import store from '@/store'
 import Query from '../views/Query.vue'
 import Results from '../views/Results.vue'
 import About from '@/views/About.vue'
@@ -34,12 +35,26 @@ const routes = [
   {
     path: '/skills',
     name: 'skills',
-    component: Skills
+    component: Skills,
+    beforeEnter (to, frm, next) {
+      if (!store.getters.isAuthenticated) {
+        next("/login")
+      } else {
+        next()
+      }
+    }
   },
   {
     path: '/skills/:id',
     name: 'skill',
-    component: Skill
+    component: Skill,
+    beforeEnter (_, __, next) {
+      if (!store.getters.isAuthenticated) {
+        next("/login")
+      } else {
+        next()
+      }
+    }
   },
   {
     path: '/about',

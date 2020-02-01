@@ -60,7 +60,7 @@ export default {
   },
   computed: {
     availableSkills() {
-      return this.$store.state.availableSkills
+      return this.$store.state.availableSkills.map(skill => skill.name)
     }
   },
   methods: {

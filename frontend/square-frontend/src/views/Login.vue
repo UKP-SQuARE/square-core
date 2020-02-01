@@ -2,10 +2,13 @@
   <b-container>
     <h2 class="text-center">Login with your account</h2>
     <hr>
+    <b-alert v-model="sessionExpired" variant="warning" >
+        Session expired. Please login again.
+    </b-alert>
     <b-alert v-model="failure" variant="danger" dismissible>
         There was a problem: {{failureMessage}}
     </b-alert>
-    <b-form-row v-if="!success">
+    <b-form-row>
         <b-form v-on:submit.prevent="onSubmit" class="offset-md-4 col-md-4">
             <b-form-group>
               <b-form-input
@@ -53,6 +56,11 @@ export default {
               this.failure = true
               this.failureMessage = failureMessage
               })
+      }
+  },
+  computed: {
+      sessionExpired() {
+        return (this.$store.state.username.length>0 && !this.$store.getters.isAuthenticated)
       }
   }
 }

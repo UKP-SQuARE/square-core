@@ -68,32 +68,41 @@ export function loginUser(username, password) {
             if(username != "gregor" && password != "pw") {
                 reject("Wrong username or password.")
             } else {
-                resolve()
+                resolve({data: "token"})
             }
         }, 200)
     })
 }
 
-export function fetchAvailableSkills() {
+export function fetchAvailableSkills(jwt) {
     return new Promise((resolve) => {
         setTimeout(() => {
+            if(jwt) {
                 resolve(skills)
+            } else {
+                resolve(skills)
+            }
         }, 200)
     })
 }
 
-export function fetchMySkills() {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-                resolve(my_skills)
-        }, 200)
-    })
-}
-
-export function deleteSkill(skillId) {
+export function fetchMySkills(jwt) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-                if(skillId==="1"){
+            if (jwt.length > 0){
+                resolve(my_skills)
+            } else {
+                reject("Not logged in")
+            }
+                
+        }, 200)
+    })
+}
+
+export function deleteSkill(skillId, jwt) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+                if(jwt && skillId==="1"){
                     resolve()
                 } else {
                     reject("Deletion failed")
@@ -102,10 +111,10 @@ export function deleteSkill(skillId) {
     })
 }
 
-export function updateSkill(newSkill) {
+export function updateSkill(newSkill, jwt) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-                if(newSkill.name==="fail"){
+                if(jwt && newSkill.name==="fail"){
                     reject("Update failed")
                 } else {
                     resolve()

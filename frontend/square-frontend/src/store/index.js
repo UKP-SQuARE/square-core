@@ -1,13 +1,15 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { fetchResults, loginUser, fetchAvailableSkills, fetchMySkills } from '@/api'
+import { fetchResults, loginUser, fetchAvailableSkills, fetchMySkills, updateSkill, deleteSkill } from '@/api'
+import { isValidJWT } from '@/utils'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     username: "",
+    jwt: "",
     currentResults: [],
     currentQuestion: "There are no bad questions.",
     availableSkills: [],
@@ -28,6 +30,9 @@ export default new Vuex.Store({
     },
     setMySkills(state, payload){
       state.mySkills = payload.mySkills
+    },
+    setJWT(state, payload) {
+      state.jwt = payload.jwt
     }
   },
 
@@ -40,22 +45,35 @@ export default new Vuex.Store({
     },
     login(context, {username, password}) {
       return loginUser(username, password)
-        .then(() => context.commit("setUsername", {username: username}))
+        .then((response) => {
+          context.commit("setUsername", {username: username})
+          context.commit("setJWT", {jwt: response.data})
+        })
     },
     signout(context) {
       context.commit("setUsername", {username: ""})
+      context.commit("setJWT", {jwt: ""})
     },
     updateAvailableSkills(context){
-      return fetchAvailableSkills()
+      return fetchAvailableSkills(context.state.jwt)
         .then((response) => context.commit("setAvailableSkills", {availableSkills: response}))
     },
     updateMySkills(context) {
-      return fetchMySkills()
+      return fetchMySkills(context.state.jwt)
         .then((response) => context.commit("setMySkills", {mySkills: response}))
+    },
+    updateSkill(context, {skill}) {
+      return updateSkill(skill, context.state.jwt)
+    },
+    deleteSkill(context, {skillId}) {
+      return deleteSkill(skillId, context.state.jwt)
+        .then(() => context.dispatch("updateMySkills"))
     }
   },
 
-  modules: {
-
+  getters: {
+    isAuthenticated(state) {
+      return isValidJWT(state.jwt)
+    }
   }
 })

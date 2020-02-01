@@ -32,7 +32,6 @@
 
 
 <script>
-import { updateSkill } from "@/api"
 export default {
   name: 'skill',
   data() {
@@ -43,17 +42,38 @@ export default {
   },
   methods: {
     updateSkill() {
-      updateSkill(this.skill)
-      .then(this.$store.dispatch("updateMySkills"))
+      this.$store.dispatch("updateSkill", {skill: this.skill})
+      
     },
     resetSkill() {
-      var skills = this.$store.state.mySkills
-      this.skill = JSON.parse(JSON.stringify(skills.find(sk => sk.id === this.$route.params.id)))
+      if (this.$route.params.id === "new_skill") {
+        this.skill = {
+          name: "",
+          is_published: false,
+          scheme: "",
+          host: "",
+          base_path: ""
+        }
+      } else {
+        var skills = this.$store.state.mySkills
+        this.skill = JSON.parse(JSON.stringify(skills.find(sk => sk.id === this.$route.params.id)))
+      }
     }
   },
   beforeMount(){
-    this.resetSkill()
-    this.originalName = this.skill.name
+    if (this.$route.params.id === "new_skill") {
+      this.originalName = "New Skill"
+      this.skill = {
+        name: "",
+        is_published: false,
+        scheme: "",
+        host: "",
+        base_path: ""
+      }
+    } else {
+      this.originalName = this.skill.name
+      this.resetSkill()
+    }
   }
 }
 </script>
