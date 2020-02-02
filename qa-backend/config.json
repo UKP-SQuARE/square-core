@@ -1,5 +1,7 @@
 {
   "DEBUG": true,
   "SQLALCHEMY_DATABASE_URI": "sqlite:///C:/Users/Gregor/Documents/Programming/square-core/qa-backend/app.db",
-  "SQLALCHEMY_TRACK_MODIFICATIONS": false
+  "SQLALCHEMY_TRACK_MODIFICATIONS": false,
+  "JWT_IDENTITY_CLAIM": "sub",
+  "JWT_SECRET_KEY": "change this key to something else"
 }

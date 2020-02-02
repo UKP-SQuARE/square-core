@@ -75,7 +75,7 @@ export default {
     }
   },
   beforeMount(){
-    this.$store.dispatch("updateAvailableSkills")
+    this.$store.dispatch("updateSkills")
     .then(() => this.options.selectedSkills = this.$store.state.availableSkills)
   }
 }

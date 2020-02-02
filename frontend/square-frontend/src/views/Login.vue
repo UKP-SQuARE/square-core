@@ -60,7 +60,7 @@ export default {
   },
   computed: {
       sessionExpired() {
-        return (this.$store.state.username.length>0 && !this.$store.getters.isAuthenticated)
+        return (this.$store.state.user && !this.$store.getters.isAuthenticated)
       }
   }
 }

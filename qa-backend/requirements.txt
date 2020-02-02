@@ -3,4 +3,5 @@ Flask-SQLAlchemy
 Flask-Migrate
 Flask-Script
 Flask-CORS
+flask-jwt-extended
 requests

@@ -2,7 +2,7 @@
   <b-container>
     <h2 class="text-center">{{originalName}}</h2>
     <hr>
-    <b-form @submit="updateSkill" class="offset-md-2 col-md-8">
+    <b-form class="offset-md-2 col-md-8" @submit="onSubmit">
       <b-form-group label="Name:" label-for="name" >
         <b-form-input id="name" v-model="skill.name" type="text" required v-bind:placeholder="skill.name" ></b-form-input>
       </b-form-group>
@@ -23,8 +23,8 @@
         </b-form-checkbox>
       </b-form-group>
       
-
-      <b-button type="submit" variant="primary" class="mr-2">Update Skill</b-button>
+      <b-button v-if="isCreateSkill" type="submit" variant="success" class="mr-2">Create</b-button>
+      <b-button v-else type="submit" variant="primary" class="mr-2">Update</b-button>
       <b-button @click="resetSkill" variant="danger">Reset</b-button>
     </b-form>
   </b-container>
@@ -40,10 +40,26 @@ export default {
       originalName: ""
     }
   },
+  computed: {
+    isCreateSkill() {
+      return (this.$route.params.id === "new_skill") 
+    }
+  },
   methods: {
+    onSubmit() {
+      if (this.isCreateSkill){
+        this.createSkill()
+      } else {
+        this.updateSkill()
+      }
+    },
     updateSkill() {
       this.$store.dispatch("updateSkill", {skill: this.skill})
-      
+      .then(() => this.originalName = this.skill.name)
+    },
+    createSkill() {
+      this.$store.dispatch("createSkill", {skill: this.skill})
+      .then(() => this.$router.push("/skills"))
     },
     resetSkill() {
       if (this.$route.params.id === "new_skill") {
@@ -71,8 +87,8 @@ export default {
         base_path: ""
       }
     } else {
-      this.originalName = this.skill.name
       this.resetSkill()
+      this.originalName = this.skill.name
     }
   }
 }
