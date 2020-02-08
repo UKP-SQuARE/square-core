@@ -8,19 +8,26 @@ import Register from '@/views/Register.vue'
 import Login from '@/views/Login.vue'
 import Skills from '@/views/Skills.vue'
 import Skill from '@/views/Skill.vue'
-
+import Home from '@/views/Home.vue'
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'query',
-    component: Query
-  },
-  {
-    path: '/results',
-    name: 'results',
-    component: Results
+    name: 'home',
+    component: Home,
+    children: [  
+      {
+        path: '/',
+        name: 'query',
+        component: Query
+      },
+      {
+        path: '/results',
+        name: 'results',
+        component: Results
+      }
+    ]
   },
   {
     path: '/register',

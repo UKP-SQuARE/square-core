@@ -5,6 +5,9 @@
         <b-alert v-model="showEmptyWarning" variant="danger" dismissible>
           You need to enter a question!
         </b-alert>
+        <b-alert v-model="failure" variant="danger" dismissible>
+          There was a problem: {{failureMessage}}
+        </b-alert>
         <b-input-group>
           <b-form-input v-model="inputQuestion" required placeholder="What is the air speed of an unladen swallow?"></b-form-input>
           <b-input-group-append>
@@ -51,7 +54,9 @@ export default {
         selectedSkills: []
       },
       showEmptyWarning: false,
-      inputQuestion: ""
+      inputQuestion: "",
+      failure: false,
+      failureMessage: ""
     }
   },
   computed: {
@@ -68,6 +73,10 @@ export default {
         this.showEmptyWarning = false
         this.$store.dispatch("answerQuestion", {question: this.inputQuestion, options: this.options})
         .then(() => this.$router.push("/results"))
+        .catch((failureMessage) => {
+              this.failure = true
+              this.failureMessage = failureMessage
+            })
       } else {
         this.showEmptyWarning = true
       }

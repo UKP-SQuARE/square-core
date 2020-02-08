@@ -57,7 +57,7 @@ export default {
           .catch((failureMessage) => {
               this.failure = true
               this.failureMessage = failureMessage
-              })
+            })
       }
   }
 }
