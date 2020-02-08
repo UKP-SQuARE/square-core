@@ -2,6 +2,13 @@
   <b-container>
     <h2 class="text-center">{{originalName}}</h2>
     <hr>
+    <b-alert v-model="success" variant="success" dismissible>
+        Skill was updated successfully.
+    </b-alert>
+    <b-alert v-model="failure" variant="danger" dismissible>
+        There was a problem: {{failureMessage}}
+    </b-alert>
+    <b-button to="/skills" variant="outline-secondary" class="float-left">◁ Back to My Skills</b-button>
     <b-form class="offset-md-2 col-md-8" @submit="onSubmit">
       <b-form-group label="Name:" label-for="name" >
         <b-form-input id="name" v-model="skill.name" type="text" required v-bind:placeholder="skill.name" ></b-form-input>
@@ -23,9 +30,9 @@
         </b-form-checkbox>
       </b-form-group>
       
-      <b-button v-if="isCreateSkill" type="submit" variant="success" class="mr-2">Create</b-button>
-      <b-button v-else type="submit" variant="primary" class="mr-2">Update</b-button>
-      <b-button @click="resetSkill" variant="danger">Reset</b-button>
+      <b-button v-if="isCreateSkill" type="submit" variant="outline-success" class="mr-2">Create</b-button>
+      <b-button v-else type="submit" variant="outline-primary" class="mr-2">Save Changes</b-button>
+      <b-button @click="resetSkill" variant="outline-danger" class="float-right">Reset Changes</b-button>
     </b-form>
   </b-container>
 </template>
@@ -37,7 +44,10 @@ export default {
   data() {
     return {
       skill: {},
-      originalName: ""
+      originalName: "",
+      success: false,
+      failure: false,
+      failureMessage: ""
     }
   },
   computed: {
@@ -54,12 +64,25 @@ export default {
       }
     },
     updateSkill() {
+      this.success = false
       this.$store.dispatch("updateSkill", {skill: this.skill})
-      .then(() => this.originalName = this.skill.name)
+      .then(() => {
+          this.originalName = this.skill.name
+          this.success = true
+          this.failure = false
+          })
+      .catch((failureMessage) => {
+          this.failure = true
+          this.failureMessage = failureMessage
+        })
     },
     createSkill() {
       this.$store.dispatch("createSkill", {skill: this.skill})
       .then(() => this.$router.push("/skills"))
+      .catch((failureMessage) => {
+          this.failure = true
+          this.failureMessage = failureMessage
+        })
     },
     resetSkill() {
       if (this.$route.params.id === "new_skill") {
