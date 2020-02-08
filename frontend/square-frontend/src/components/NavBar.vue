@@ -9,9 +9,7 @@
         <b-nav-item to="/">Home</b-nav-item>
         <b-nav-item to="/about">About</b-nav-item>
       </b-navbar-nav>
-
-      <!-- Right aligned nav items -->
-      <b-navbar-nav class="ml-auto" v-if="!user">
+      <b-navbar-nav class="ml-auto" v-if="!isAuthenticated">
           <b-nav-item to="/register" link-classes="text-dark">Sign up</b-nav-item>
           <b-button variant="outline-primary" to="/login">Login</b-button>
       </b-navbar-nav>
@@ -32,6 +30,9 @@ export default {
   computed: {
     user() {
       return this.$store.state.user
+    },
+    isAuthenticated() {
+      return this.$store.getters.isAuthenticated
     }
   },
   methods: {
