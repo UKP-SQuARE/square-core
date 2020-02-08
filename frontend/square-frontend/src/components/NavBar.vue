@@ -32,12 +32,13 @@ export default {
       return this.$store.state.user
     },
     isAuthenticated() {
-      return this.$store.getters.isAuthenticated
+      return this.$store.getters.isAuthenticated()
     }
   },
   methods: {
     signout() {
       this.$store.dispatch("signout")
+      .then(() => this.$router.push("/"))
     }
   }
 }

@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill } from '@/api'
-import { isValidJWT } from '@/utils'
+//import { isValidJWT } from '@/utils'
 
 Vue.use(Vuex)
 
@@ -94,8 +94,15 @@ export default new Vuex.Store({
   },
 
   getters: {
-    isAuthenticated(state) {
-      return isValidJWT(state.jwt)
+    isAuthenticated: (state) => () => {
+      let jwt = state.jwt
+      if (!jwt || jwt.split('.').length < 3) {
+        return false
+      }
+      let data = JSON.parse(atob(jwt.split('.')[1]))
+      let exp = new Date(data.exp * 1000)
+      let now = new Date()
+      return now < exp
     }
   }
 })
