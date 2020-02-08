@@ -13,7 +13,15 @@ export default new Vuex.Store({
     currentResults: [],
     currentQuestion: "There are no bad questions.",
     availableSkills: [],
-    mySkills: []
+    mySkills: [],
+    queryOptions:  {
+      selectedSkills: [],
+      maxQuerriedSkills: 3,
+      maxResultsPerSkill: 10
+    },
+    flags: {
+      initialisedSelectedSkills: false
+    }
   },
 
   mutations: {
@@ -21,10 +29,21 @@ export default new Vuex.Store({
       state.currentQuestion = payload.question
       state.currentResults = payload.results
     },
+    setSelectedSkillsToAvailableSkills(state) {
+      if (!state.flags.initialisedSelectedSkills) {
+        state.queryOptions.selectedSkills = state.availableSkills.map(skill => skill.name)
+        state.flags.initialisedSelectedSkills = true
+      }
+    },
     setSkills(state, payload){
+      const lenSkills = state.availableSkills.length
       state.availableSkills = payload.skills
       if (state.user){
         state.mySkills = payload.skills.filter(sk => sk.owner_id === state.user.id)
+      }
+      // Want to reset selected skills if more skills are available (due to login or something like that)
+      if (lenSkills < state.availableSkills.length) {
+        state.flags.initialisedSelectedSkills = false
       }
     },
     setJWT(state, payload) {
@@ -33,6 +52,9 @@ export default new Vuex.Store({
         const data = JSON.parse(atob(payload.jwt.split('.')[1]))
         state.user = data.sub
       }
+    },
+    setQueryOptions(state, payload) {
+      state.queryOptions = payload.queryOptions
     }
   },
 
@@ -41,6 +63,7 @@ export default new Vuex.Store({
       return fetchResults(question, options)
         .then((response) => {
           context.commit("setAnsweredQuestion", {results: response.data, question: question})
+          context.commit("setQueryOptions", {queryOptions: options})
         })
     },
     login(context, {username, password}) {

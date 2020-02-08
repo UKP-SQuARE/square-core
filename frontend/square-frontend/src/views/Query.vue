@@ -25,7 +25,6 @@
             v-model="options.maxQuerriedSkills"
             required
             type="number"
-            v-bind:placeholder="options.maxQuerriedSkills"
           ></b-form-input>
         </b-form-group>
         <b-form-group label="Maximum number of results per skill:" label-for="max-results-skill">
@@ -34,7 +33,6 @@
             v-model="options.maxResultsPerSkill"
             required
             type="number"
-            v-bind:placeholder="options.maxResultsPerSkill"
           ></b-form-input>
         </b-form-group>
     </div>
@@ -50,9 +48,7 @@ export default {
     return {
       showOptions: false,
       options: {
-        selectedSkills: [],
-        maxQuerriedSkills: 3,
-        maxResultsPerSkill: 10
+        selectedSkills: []
       },
       showEmptyWarning: false,
       inputQuestion: ""
@@ -61,6 +57,9 @@ export default {
   computed: {
     availableSkills() {
       return this.$store.state.availableSkills.map(skill => skill.name)
+    },
+    queryOptions() {
+      return this.$store.state.queryOptions
     }
   },
   methods: {
@@ -76,7 +75,13 @@ export default {
   },
   beforeMount(){
     this.$store.dispatch("updateSkills")
-    .then(() => this.options.selectedSkills = this.$store.state.availableSkills)
+    .then(() => {
+        this.$store.commit("setSelectedSkillsToAvailableSkills")
+    }) 
+    .then(() => { 
+      this.options = this.$store.state.queryOptions
+    })
+    
   }
 }
 </script>
