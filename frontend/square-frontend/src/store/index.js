@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill } from '@/api'
+import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
 //import { isValidJWT } from '@/utils'
 
 Vue.use(Vuex)
@@ -14,13 +14,16 @@ export default new Vuex.Store({
     currentQuestion: "There are no bad questions.",
     availableSkills: [],
     mySkills: [],
+    availableSkillSelectors: [],
     queryOptions:  {
+      selector: "",
       selectedSkills: [],
       maxQuerriedSkills: 3,
       maxResultsPerSkill: 10
     },
     flags: {
-      initialisedSelectedSkills: false
+      initialisedSelectedSkills: false,
+      initialisedSelector: false
     }
   },
 
@@ -29,10 +32,14 @@ export default new Vuex.Store({
       state.currentQuestion = payload.question
       state.currentResults = payload.results
     },
-    setSelectedSkillsToAvailableSkills(state) {
+    initQueryOptions(state) {
       if (!state.flags.initialisedSelectedSkills) {
-        state.queryOptions.selectedSkills = state.availableSkills.map(skill => skill.name)
+        state.queryOptions.selectedSkills = state.availableSkills
         state.flags.initialisedSelectedSkills = true
+      }
+      if (!state.flags.initialisedSelector) {
+        state.queryOptions.selector = state.availableSkillSelectors[0]
+        state.flags.initialisedSelector = true
       }
     },
     setSkills(state, payload){
@@ -55,6 +62,9 @@ export default new Vuex.Store({
     },
     setQueryOptions(state, payload) {
       state.queryOptions = payload.queryOptions
+    },
+    setSelectors(state, payload) {
+      state.availableSkillSelectors = payload.selectors
     }
   },
 
@@ -78,6 +88,10 @@ export default new Vuex.Store({
     updateSkills(context){
       return fetchSkills(context.state.jwt)
         .then((response) => context.commit("setSkills", {skills: response.data}))
+    },
+    updateSelectors(context){
+      return fetchSelectors()
+        .then((response) => context.commit("setSelectors", {selectors: response.data}))
     },
     updateSkill(context, {skill}) {
       return updateSkill(skill.id, skill, context.state.jwt)

@@ -11,14 +11,17 @@
         <b-input-group>
           <b-form-input v-model="inputQuestion" required placeholder="What is the air speed of an unladen swallow?"></b-form-input>
           <b-input-group-append>
-            <b-button type="submit" variant="primary">Ask your question</b-button>
+            <b-button type="submit" variant="primary">Ask your question <b-spinner v-show="waitingQuery" small label="Spinning"></b-spinner></b-button>
           </b-input-group-append>
         </b-input-group>
-        <b-form-checkbox v-model="showOptions" switch class="mt-3 ml-1">
+        <b-form-checkbox v-model="showOptions" switch class="mt-2 ml-1 mb-2">
           Show expert options
         </b-form-checkbox>
         
     <div v-show="showOptions">
+        <b-form-group label="Skill Selector:" label-for="skill-selector">
+          <b-form-select id="skill-selector" v-model="options.selector" :options="availableSkillSelectors"></b-form-select>
+        </b-form-group>
         <b-form-group label="Only use these skills:" label-for="skill-select">
           <b-form-select id="skill-select" v-model="options.selectedSkills" :options="availableSkills" multiple   :select-size="Math.min(4, availableSkills.length)"></b-form-select>
         </b-form-group>
@@ -50,6 +53,7 @@ export default {
   data() {
     return {
       showOptions: false,
+      waitingQuery: false,
       options: {
         selectedSkills: []
       },
@@ -61,7 +65,10 @@ export default {
   },
   computed: {
     availableSkills() {
-      return this.$store.state.availableSkills.map(skill => skill.name)
+      return this.$store.state.availableSkills.map(skill => {return {text: skill.name, value: skill}})
+    },
+    availableSkillSelectors() {
+      return this.$store.state.availableSkillSelectors
     },
     queryOptions() {
       return this.$store.state.queryOptions
@@ -71,12 +78,17 @@ export default {
     askQuestion() {
       if(this.inputQuestion.length > 0){
         this.showEmptyWarning = false
+        this.waitingQuery = true
         this.$store.dispatch("answerQuestion", {question: this.inputQuestion, options: this.options})
-        .then(() => this.$router.push("/results"))
+        .then(() => {
+          this.waitingQuery = false
+          this.$router.push("/results")
+          })
         .catch((failureMessage) => {
-              this.failure = true
-              this.failureMessage = failureMessage
-            })
+            this.waitingQuery = false
+            this.failure = true
+            this.failureMessage = failureMessage
+          })
       } else {
         this.showEmptyWarning = true
       }
@@ -84,8 +96,9 @@ export default {
   },
   beforeMount(){
     this.$store.dispatch("updateSkills")
+    .then(() => this.$store.dispatch("updateSelectors"))
     .then(() => {
-        this.$store.commit("setSelectedSkillsToAvailableSkills")
+        this.$store.commit("initQueryOptions")
     }) 
     .then(() => { 
       this.options = this.$store.state.queryOptions

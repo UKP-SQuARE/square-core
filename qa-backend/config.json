@@ -4,5 +4,14 @@
   "SQLALCHEMY_TRACK_MODIFICATIONS": false,
   "JWT_IDENTITY_CLAIM": "sub",
   "JWT_SECRET_KEY": "change this key to something else",
-  "JWT_ACCESS_TOKEN_EXPIRES": 10000
+  "JWT_ACCESS_TOKEN_EXPIRES": 10000,
+
+  "skillSelector": {
+    "selectors": [
+      {
+        "name": "base",
+        "config": {}
+      }
+    ]
+  }
 }

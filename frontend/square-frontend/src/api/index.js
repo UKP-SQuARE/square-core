@@ -14,6 +14,10 @@ export function loginUser(username, password) {
     return axios.post(`${API_URL}/login`, {username: username, password: password})
 }
 
+export function fetchSelectors() {
+    return axios.get(`${API_URL}/selectors`)
+}
+
 export function fetchSkills(jwt) {
     if (jwt) {
         return axios.get(`${API_URL}/skills`, {headers: {Authorization: `Bearer ${jwt}`}})
