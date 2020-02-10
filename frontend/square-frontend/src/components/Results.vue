@@ -7,7 +7,7 @@
           <b-card-text>Error: {{ skillResult.error }}</b-card-text>
         </b-card>
         <b-card v-for="(res, i) in skillResult.results" v-bind:key="skillResult.name+i" class="mt-2">
-          <b-card-text>{{ res }}</b-card-text>
+          <component :is="res.type" v-bind:result="res"></component>
         </b-card>
       </b-tab>
     </b-tabs>
@@ -16,8 +16,14 @@
 </template>
 
 <script>
+import PlainText from '@/components/result/PlainText.vue'
+import KeyValue from '@/components/result/KeyValue.vue'
 export default {
   name: 'results',
+  components: {
+    "plain_text": PlainText,
+    "key_value": KeyValue
+  },
   computed: {
     currentQuestion() {
       return this.$store.state.currentQuestion
