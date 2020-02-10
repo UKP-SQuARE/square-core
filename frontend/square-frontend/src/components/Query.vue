@@ -80,15 +80,14 @@ export default {
         this.showEmptyWarning = false
         this.waitingQuery = true
         this.$store.dispatch("answerQuestion", {question: this.inputQuestion, options: this.options})
-        .then(() => {
-          this.waitingQuery = false
-          this.$router.push("/results")
-          })
         .catch((failureMessage) => {
-            this.waitingQuery = false
             this.failure = true
             this.failureMessage = failureMessage
           })
+        .finally(() => {
+          this.waitingQuery = false
+          this.showOptions = false
+        })
       } else {
         this.showEmptyWarning = true
       }

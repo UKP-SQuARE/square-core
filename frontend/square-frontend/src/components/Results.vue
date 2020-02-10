@@ -1,6 +1,5 @@
 <template>
   <b-container>
-    <h2 class="text-center">{{currentQuestion}}</h2>
     <hr>
     <b-tabs>
       <b-tab v-for="skillResult in currentResults" v-bind:key="skillResult.name" v-bind:title="skillResult.name">
