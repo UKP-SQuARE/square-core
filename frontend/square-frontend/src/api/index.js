@@ -37,3 +37,7 @@ export function updateSkill(skillId, newSkill, jwt) {
 export function createSkill(newSkill, jwt) {
     return axios.post(`${API_URL}/skill`, {skill: newSkill}, {headers: {Authorization: `Bearer ${jwt}`}})
 }
+
+export function pingSkill(skillUrl){
+    return axios.get(`${skillUrl}/ping`)
+}

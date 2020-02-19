@@ -65,7 +65,9 @@ export default {
   },
   computed: {
     availableSkills() {
-      return this.$store.state.availableSkills.map(skill => {return {text: skill.name, value: skill}})
+      return this.$store.state.availableSkills.map(skill => {return {
+        text: `${skill.name}\t${skill.description ? ("- "+skill.description) : ""}`, value: skill
+        }})
     },
     availableSkillSelectors() {
       return this.$store.state.availableSkillSelectors

@@ -14,14 +14,19 @@
         <b-form-input id="name" v-model="skill.name" type="text" required v-bind:placeholder="skill.name" ></b-form-input>
       </b-form-group>
 
-      <b-form-group label="URL to the skill:" label-for="url" description="scheme :// host[:port] / base_path">
-        <b-input-group id="url">
-          <b-form-input v-model="skill.scheme" required v-bind:placeholder="skill.scheme"></b-form-input>
-          <b-input-group-prepend is-text>://</b-input-group-prepend>
-          <b-form-input v-model="skill.host" required v-bind:placeholder="skill.host"></b-form-input>
-          <b-input-group-prepend is-text>/</b-input-group-prepend>
-          <b-form-input v-model="skill.base_path" required v-bind:placeholder="skill.base_path"></b-form-input>
-        </b-input-group>
+      <b-form-group description="{scheme}://{host[:port]}/{base_path}">
+          <label for="url" class="w-100">URL: 
+            <b-button @click="testSkillUrl" size="sm" variant="outline-primary" class="float-right">Test URL</b-button>
+            <b-badge variant="secondary" v-if="availableStatus==='checking'" class="float-right  mr-2 mt-2">Checking... <b-spinner type="grow" small></b-spinner></b-badge> 
+            <b-badge variant="success" v-else-if="availableStatus==='available'" class="float-right  mr-2 mt-2">Available</b-badge> 
+            <b-badge variant="danger" v-else-if="availableStatus==='unavailable'" class="float-right  mr-2 mt-2">Unavailable</b-badge> 
+            <b-badge variant="secondary" v-else class="float-right mr-2 mt-2">Unknown</b-badge> 
+          </label>
+          <b-form-input v-model="skill.url" required v-bind:placeholder="skill.url"></b-form-input>
+      </b-form-group>
+
+      <b-form-group label="Description:" label-for="description" description="Short description of the skill">
+        <b-form-input id="description" v-model="skill.description" type="text" v-bind:placeholder="skill.description" ></b-form-input>
       </b-form-group>
 
       <b-form-group>
@@ -32,6 +37,8 @@
       
       <b-button v-if="isCreateSkill" type="submit" variant="outline-success" class="mr-2">Create</b-button>
       <b-button v-else type="submit" variant="outline-primary" class="mr-2">Save Changes</b-button>
+      
+      
       <b-button @click="resetSkill" variant="outline-danger" class="float-right">Reset Changes</b-button>
     </b-form>
   </b-container>
@@ -39,6 +46,7 @@
 
 
 <script>
+import { pingSkill } from '@/api'
 export default {
   name: 'skill',
   data() {
@@ -47,7 +55,8 @@ export default {
       originalName: "",
       success: false,
       failure: false,
-      failureMessage: ""
+      failureMessage: "",
+      availableStatus: ""
     }
   },
   computed: {
@@ -62,6 +71,16 @@ export default {
       } else {
         this.updateSkill()
       }
+    },
+    testSkillUrl() {
+      this.availableStatus = "checking"
+      pingSkill(this.skill.url)
+      .then(() => {
+        this.availableStatus = "available"
+      })
+      .catch(() => {
+        this.availableStatus = "unavailable"
+      })
     },
     updateSkill() {
       this.success = false
@@ -89,9 +108,8 @@ export default {
         this.skill = {
           name: "",
           is_published: false,
-          scheme: "",
-          host: "",
-          base_path: ""
+          url: "",
+          description: ""
         }
       } else {
         var skills = this.$store.state.mySkills
@@ -105,9 +123,8 @@ export default {
       this.skill = {
         name: "",
         is_published: false,
-        scheme: "",
-        host: "",
-        base_path: ""
+        url: "",
+        description: ""
       }
     } else {
       this.resetSkill()

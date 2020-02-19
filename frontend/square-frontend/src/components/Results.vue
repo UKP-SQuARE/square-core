@@ -3,6 +3,7 @@
     <hr>
     <b-tabs>
       <b-tab v-for="skillResult in currentResults" v-bind:key="skillResult.name" v-bind:title="skillResult.name">
+        <h6 class="text-muted my-1 ml-1">{{skillResult.skill_description}}</h6>
         <b-card class="mt-2" v-show="skillResult.error">
           <b-card-text>Error: {{ skillResult.error }}</b-card-text>
         </b-card>

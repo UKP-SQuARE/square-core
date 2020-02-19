@@ -36,25 +36,38 @@ class Skill(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     name = db.Column(db.String(50), nullable=False, unique=True)
     is_published = db.Column(db.Boolean, nullable=False)
-    scheme = db.Column(db.String(100), nullable=False)
-    host = db.Column(db.String(100), nullable=False)
-    base_path = db.Column(db.String(100), nullable=False)
+    #scheme = db.Column(db.String(100), nullable=False)
+    #host = db.Column(db.String(100), nullable=False)
+    #base_path = db.Column(db.String(100), nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(500), nullable=True)
 
     def __init__(self, user, skill):
         self.owner_id = user["id"]
         self.name = skill["name"]
         self.is_published = skill["is_published"]
-        self.scheme = skill["scheme"]
-        self.host = skill["host"]
-        self.base_path = skill["base_path"]
+        self.description = skill["description"]
+        url = skill["url"]
+        if url[-1] == "/":
+            url = url[:-1]
+        self.url = url
+        #self.scheme = skill["scheme"]
+        #self.host = skill["host"]
+        #self.base_path = skill["base_path"]
 
     def update(self, skill):
         self.name = skill["name"]
         self.is_published = skill["is_published"]
-        self.scheme = skill["scheme"]
-        self.host = skill["host"]
-        self.base_path = skill["base_path"]
+        self.description = skill["description"]
+        url = skill["url"]
+        if url[-1] == "/":
+            url = url[:-1]
+        self.url = url
+        #self.scheme = skill["scheme"]
+        #self.host = skill["host"]
+        #self.base_path = skill["base_path"]
 
     def to_dict(self):
         return dict(id=self.id, name=self.name, owner_id=self.owner_id, is_published=self.is_published,
-                    scheme=self.scheme, host=self.host, base_path=self.base_path)
+                    description=self.description, url=self.url)
+                    #scheme=self.scheme, host=self.host, base_path=self.base_path)
