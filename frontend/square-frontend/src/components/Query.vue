@@ -80,10 +80,10 @@ export default {
         this.showEmptyWarning = false
         this.waitingQuery = true
         this.$store.dispatch("answerQuestion", {question: this.inputQuestion, options: this.options})
-        .catch((failureMessage) => {
-            this.failure = true
-            this.failureMessage = failureMessage
-          })
+        .catch((error) => {
+              this.failure = true
+              this.failureMessage = error.data.msg
+              })
         .finally(() => {
           this.waitingQuery = false
           this.showOptions = false

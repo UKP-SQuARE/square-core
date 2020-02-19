@@ -79,10 +79,10 @@ export default {
     createSkill() {
       this.$store.dispatch("createSkill", {skill: this.skill})
       .then(() => this.$router.push("/skills"))
-      .catch((failureMessage) => {
-          this.failure = true
-          this.failureMessage = failureMessage
-        })
+      .catch((error) => {
+              this.failure = true
+              this.failureMessage = error.data.msg
+            })
     },
     resetSkill() {
       if (this.$route.params.id === "new_skill") {

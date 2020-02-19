@@ -52,9 +52,9 @@ export default {
               this.failure = false
               this.$router.push("/")
               })
-          .catch((failureMessage) => {
+          .catch((error) => {
               this.failure = true
-              this.failureMessage = failureMessage
+              this.failureMessage = error.data.msg
               })
       }
   },

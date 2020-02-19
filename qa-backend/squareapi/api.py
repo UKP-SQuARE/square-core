@@ -4,6 +4,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 from .models import db, User, Skill
 from .skill import SkillSelector
 
@@ -18,7 +19,11 @@ def register():
     password = request.json["password"]
     user = User(username, password)
     db.session.add(user)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        return jsonify({"msg": "Username already exists."}), 403
+
     return jsonify(user.to_dict()), 201
 
 
@@ -59,7 +64,10 @@ def create_skill():
     user = get_jwt_identity()
     skill = Skill(user=user, skill=skill_data)
     db.session.add(skill)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        return jsonify({"msg": "Skill name already exists."}), 403
     return jsonify(skill.to_dict()), 201
 
 
@@ -72,7 +80,10 @@ def update_skill(id):
     if not skill or skill.owner_id != user["id"]:
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     skill.update(skill_data)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        return jsonify({"msg": "Skill name already exists."}), 403
     return jsonify(skill.to_dict()), 200
 
 
