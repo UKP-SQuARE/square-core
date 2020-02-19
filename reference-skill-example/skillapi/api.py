@@ -13,7 +13,8 @@ def query():
     maxRes = options["maxResults"]
 
     result = [{"type": "key_value", "key_values": [("Title", "The title"), ("Question", question)]}]
-    result += [to_result("Result {}".format(i+1)) for i in range(maxRes-1)]
+    result += [{"type": "raw_html", "html": "<p class='text-muted'>Harmless html {{result}} <script>alert('Not harmless!')</script>"}]
+    result += [to_result("Result {}".format(i+1)) for i in range(maxRes-2)]
     return jsonify(result), 200
 
 @api.route("/ping", methods=["GET"])
