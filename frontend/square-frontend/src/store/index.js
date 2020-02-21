@@ -2,9 +2,10 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
-//import { isValidJWT } from '@/utils'
 
 Vue.use(Vuex)
+
+const LOCALSTORAGE_KEY_JWT = "jwt"
 
 export default new Vuex.Store({
   state: {
@@ -54,6 +55,7 @@ export default new Vuex.Store({
       }
     },
     setJWT(state, payload) {
+      localStorage.setItem(LOCALSTORAGE_KEY_JWT, payload.jwt)
       state.jwt = payload.jwt
       if (payload.jwt && payload.jwt.split('.').length == 3) {
         const data = JSON.parse(atob(payload.jwt.split('.')[1]))
@@ -84,6 +86,10 @@ export default new Vuex.Store({
     },
     signout(context) {
       context.commit("setJWT", {jwt: ""})
+    },
+    initJWTfromLocalStorage(context) {
+      var jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ""
+      context.commit("setJWT", {jwt: jwt})
     },
     updateSkills(context){
       return fetchSkills(context.state.jwt)
@@ -117,6 +123,16 @@ export default new Vuex.Store({
       let exp = new Date(data.exp * 1000)
       let now = new Date()
       return now < exp
+    },
+    isSessionExpired: (state) => () => {
+      let jwt = state.jwt
+      if (!jwt || jwt.split('.').length < 3) {
+        return false
+      }
+      let data = JSON.parse(atob(jwt.split('.')[1]))
+      let exp = new Date(data.exp * 1000)
+      let now = new Date()
+      return now >= exp
     }
   }
 })

@@ -10,6 +10,9 @@ import NavBar from '@/components/NavBar.vue'
 export default {
   components: {
     NavBar
+  },
+  beforeMount() {
+    this.$store.dispatch("initJWTfromLocalStorage")
   }
 }
 </script>
