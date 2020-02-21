@@ -1,3 +1,6 @@
+/**
+ * Vue Router. All routes are managed here.
+ */
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
@@ -29,8 +32,8 @@ const routes = [
     path: '/skills',
     name: 'skills',
     component: Skills,
-    beforeEnter (to, frm, next) {
-      if (!store.getters.isAuthenticated) {
+    beforeEnter(to, frm, next) {
+      if (!store.getters.isAuthenticated()) {
         next("/login")
       } else {
         next()
@@ -41,8 +44,8 @@ const routes = [
     path: '/skills/:id',
     name: 'skill',
     component: Skill,
-    beforeEnter (_, __, next) {
-      if (!store.getters.isAuthenticated) {
+    beforeEnter(to, frm, next) {
+      if (!store.getters.isAuthenticated()) {
         next("/login")
       } else {
         next()

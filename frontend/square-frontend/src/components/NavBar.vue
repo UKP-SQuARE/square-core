@@ -1,14 +1,15 @@
+<!-- The Navigation Bar at the top of the page. Most views should be reachable through this. -->
 <template>
   <b-navbar toggleable="lg" type="light">
     <b-navbar-brand to="/">UKP-SQuARE</b-navbar-brand>
-
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
         <b-nav-item to="/">Home</b-nav-item>
         <b-nav-item to="/about">About</b-nav-item>
       </b-navbar-nav>
+
+      <!-- Part of the navbar that depends on the login status -->
       <b-navbar-nav class="ml-auto" v-if="!isAuthenticated">
           <b-nav-item to="/register" link-classes="text-dark">Sign up</b-nav-item>
           <b-button variant="outline-primary" to="/login">Login</b-button>

@@ -1,3 +1,6 @@
+/**
+ * Vuex Store. Global state of the application is managed here.
+ */
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -8,20 +11,28 @@ Vue.use(Vuex)
 const LOCALSTORAGE_KEY_JWT = "jwt"
 
 export default new Vuex.Store({
+  /**
+   * State contains all variables that 
+   * 1) are accessed and changed in multiple components
+   * 2) should be restored when a view is changed and later returned to
+   */
   state: {
-    user: null,
+    user: "",
+    // JWT is also stored in LocalStorage 
     jwt: "",
     currentResults: [],
-    currentQuestion: "There are no bad questions.",
+    currentQuestion: "Ask a question to get an answer.",
     availableSkills: [],
+    // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
     availableSkillSelectors: [],
-    queryOptions:  {
+    queryOptions: {
       selector: "",
       selectedSkills: [],
       maxQuerriedSkills: 3,
       maxResultsPerSkill: 10
     },
+    // Control flags
     flags: {
       initialisedSelectedSkills: false,
       initialisedSelector: false
@@ -34,26 +45,31 @@ export default new Vuex.Store({
       state.currentResults = payload.results
     },
     initQueryOptions(state) {
+      // Default value for selected skills should be all available skills
       if (!state.flags.initialisedSelectedSkills) {
         state.queryOptions.selectedSkills = state.availableSkills
         state.flags.initialisedSelectedSkills = true
       }
+      // Value for selector should be set to a selector.
       if (!state.flags.initialisedSelector) {
         state.queryOptions.selector = state.availableSkillSelectors[0]
         state.flags.initialisedSelector = true
       }
     },
-    setSkills(state, payload){
+    setSkills(state, payload) {
       const lenSkills = state.availableSkills.length
       state.availableSkills = payload.skills
-      if (state.user){
+      if (state.user) {
         state.mySkills = payload.skills.filter(sk => sk.owner_id === state.user.id)
       }
-      // Want to reset selected skills if more skills are available (due to login or something like that)
+      // We want to reset selected skills if more skills are available (due to login mostly)
       if (lenSkills < state.availableSkills.length) {
         state.flags.initialisedSelectedSkills = false
       }
     },
+    /**
+     * Set the JWT and all derived values
+     */
     setJWT(state, payload) {
       localStorage.setItem(LOCALSTORAGE_KEY_JWT, payload.jwt)
       state.jwt = payload.jwt
@@ -70,50 +86,59 @@ export default new Vuex.Store({
     }
   },
 
+  /**
+   * Mostly wrappers around API calls that manage commiting the received results
+   */
   actions: {
-    answerQuestion(context, {question, options}) {
+    answerQuestion(context, { question, options }) {
       return fetchResults(question, options)
         .then((response) => {
-          context.commit("setAnsweredQuestion", {results: response.data, question: question})
-          context.commit("setQueryOptions", {queryOptions: options})
+          context.commit("setAnsweredQuestion", { results: response.data, question: question })
+          context.commit("setQueryOptions", { queryOptions: options })
         })
     },
-    login(context, {username, password}) {
+    login(context, { username, password }) {
       return loginUser(username, password)
         .then((response) => {
-          context.commit("setJWT", {jwt: response.data.token})
+          context.commit("setJWT", { jwt: response.data.token })
         })
     },
     signout(context) {
-      context.commit("setJWT", {jwt: ""})
+      context.commit("setJWT", { jwt: "" })
     },
     initJWTfromLocalStorage(context) {
       var jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ""
-      context.commit("setJWT", {jwt: jwt})
+      context.commit("setJWT", { jwt: jwt })
     },
-    updateSkills(context){
+    updateSkills(context) {
       return fetchSkills(context.state.jwt)
-        .then((response) => context.commit("setSkills", {skills: response.data}))
+        .then((response) => context.commit("setSkills", { skills: response.data }))
     },
-    updateSelectors(context){
+    updateSelectors(context) {
       return fetchSelectors()
-        .then((response) => context.commit("setSelectors", {selectors: response.data}))
+        .then((response) => context.commit("setSelectors", { selectors: response.data }))
     },
-    updateSkill(context, {skill}) {
+    updateSkill(context, { skill }) {
       return updateSkill(skill.id, skill, context.state.jwt)
-      .then(() => context.dispatch("updateSkills"))
+        .then(() => context.dispatch("updateSkills"))
     },
-    createSkill(context, {skill}) {
+    createSkill(context, { skill }) {
       return createSkill(skill, context.state.jwt)
-      .then(() => context.dispatch("updateSkills"))
+        .then(() => context.dispatch("updateSkills"))
     },
-    deleteSkill(context, {skillId}) {
+    deleteSkill(context, { skillId }) {
       return deleteSkill(skillId, context.state.jwt)
         .then(() => context.dispatch("updateSkills"))
     }
   },
 
+  /**
+   * Getters for information not stored as state variables
+   */
   getters: {
+    /**
+     * Check if the JWT is valid
+     */
     isAuthenticated: (state) => () => {
       let jwt = state.jwt
       if (!jwt || jwt.split('.').length < 3) {
@@ -124,6 +149,9 @@ export default new Vuex.Store({
       let now = new Date()
       return now < exp
     },
+    /**
+     * Check if the JWT is expired
+     */
     isSessionExpired: (state) => () => {
       let jwt = state.jwt
       if (!jwt || jwt.split('.').length < 3) {

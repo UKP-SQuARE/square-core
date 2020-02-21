@@ -1,23 +1,24 @@
+<!-- Component for a result with HTML. The result is sanitized before it is used. -->
 <template>
-    <div>
-        <b-card-text v-html="sanitizedHTML"></b-card-text>
-    </div>
+  <div>
+    <b-card-text v-html="sanitizedHTML"></b-card-text>
+  </div>
 </template>
 
 <script>
-import {sanitize} from 'dompurify'
+import { sanitize } from "dompurify";
 export default {
-  name: 'raw_html',
+  name: "raw_html",
   props: {
     result: Object
   },
   computed: {
-      sanitizedHTML() {
-          var html = this.result.html
-          var sanitized = sanitize(html)
-          console.log(sanitized)
-          return sanitized
-      }
+    sanitizedHTML() {
+      var html = this.result.html;
+      var sanitized = sanitize(html);
+      console.log(sanitized);
+      return sanitized;
+    }
   }
-}
+};
 </script>

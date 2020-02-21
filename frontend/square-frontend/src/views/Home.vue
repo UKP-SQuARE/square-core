@@ -1,3 +1,4 @@
+<!-- The Home Page. Questions are asked and the results are displayed here. -->
 <template>
     <b-container>
         <Query></Query>

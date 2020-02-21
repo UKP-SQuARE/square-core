@@ -1,3 +1,6 @@
+/**
+ * Code entry point. Initilize Vue and any other JS components that need it.
+ */
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -10,12 +13,14 @@ Vue.config.productionTip = false
 // Install BootstrapVue
 Vue.use(BootstrapVue)
 
+// Init Vue
 new Vue({
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
 
+// Configure Axios so that any 401 responses result in a redirect to the login page
 axios.interceptors.response.use((response) => {
     return response;
   }, (err) => {
