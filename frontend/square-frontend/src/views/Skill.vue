@@ -93,18 +93,23 @@ export default {
   name: "skill",
   data() {
     return {
-      skill: {},
+      skill: {
+        name: "",
+        is_published: false,
+        url: "",
+        description: ""
+      },
       /**
-       * The name for the title. 
+       * The name for the title.
        * We do not use skill.name for this so that the title is only changed wenn the user updates the skill.
-      */
+       */
       originalName: "",
       success: false,
       failure: false,
       failureMessage: "",
-      /** 
+      /**
        * Values: "", "checking", "available", "unavailable"
-      */
+       */
       availableStatus: ""
     };
   },
@@ -149,6 +154,7 @@ export default {
         });
     },
     createSkill() {
+      console.log(this.skill);
       this.$store
         .dispatch("createSkill", { skill: this.skill })
         .then(() => this.$router.push("/skills"))
@@ -162,13 +168,8 @@ export default {
      */
     resetSkill() {
       var oldURL = this.skill.url;
-      if (this.isCreateSkill()) {
-        this.skill = {
-          name: "",
-          is_published: false,
-          url: "",
-          description: ""
-        };
+      if (this.isCreateSkill) {
+        this.skill = {};
       } else {
         var skills = this.$store.state.mySkills;
         // Create a copy of the skill so we do not change the state
@@ -183,23 +184,14 @@ export default {
     }
   },
   /**
-   * Either:
-   * - init skill object for a new skill
-   * - set original name and check availability of skill server for existing skill
+   * Set original name and check availability of skill server for existing skill
    */
   beforeMount() {
-    if (this.isCreateSkill()) {
-      this.originalName = "New Skill";
-      this.skill = {
-        name: "",
-        is_published: false,
-        url: "",
-        description: ""
-      };
-    } else {
+    if (!this.isCreateSkill) {
       this.resetSkill();
       this.originalName = this.skill.name;
       this.testSkillUrl();
+      console.log(this.skill)
     }
   }
 };

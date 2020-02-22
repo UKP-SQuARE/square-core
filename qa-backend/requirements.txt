@@ -5,3 +5,4 @@ Flask-Script
 Flask-CORS
 flask-jwt-extended
 requests
+flasgger

@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from .api import api, jwt, skillSelector
+from .api import api, jwt, swagger, skillSelector
 from .models import db
 
 
@@ -15,6 +15,8 @@ def create_app(app_name="SQUARE_API", config_path="config.json"):
     db.init_app(app)
 
     jwt.init_app(app)
+
+    swagger.init_app(app)
 
     skillSelector.init_from_json(config_path)
 

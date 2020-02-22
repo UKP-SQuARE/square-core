@@ -74,7 +74,7 @@ export function deleteSkill(skillId, jwt) {
  * @param {String} jwt JWT for authentication of skill ownership
  */
 export function updateSkill(skillId, newSkill, jwt) {
-    return axios.post(`${API_URL}/skill/${skillId}`, { skill: newSkill }, { headers: { Authorization: `Bearer ${jwt}` } })
+    return axios.post(`${API_URL}/skill/${skillId}`, newSkill, { headers: { Authorization: `Bearer ${jwt}` } })
 }
 
 /**
@@ -83,7 +83,7 @@ export function updateSkill(skillId, newSkill, jwt) {
  * @param {String} jwt JWT for authentication
  */
 export function createSkill(newSkill, jwt) {
-    return axios.post(`${API_URL}/skill`, { skill: newSkill }, { headers: { Authorization: `Bearer ${jwt}` } })
+    return axios.post(`${API_URL}/skill`, newSkill, { headers: { Authorization: `Bearer ${jwt}` } })
 }
 
 /**

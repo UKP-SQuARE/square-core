@@ -3,6 +3,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 class User(db.Model):
+    """
+
+    """
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -23,11 +26,8 @@ class User(db.Model):
             return None
         return user
 
-    def identity(self):
-        return dict(id=self.id, name=self.name)
-
     def to_dict(self):
-        return dict(id=self.id, name=self.name, skills=self.skills)
+        return dict(id=self.id, name=self.name)
 
 class Skill(db.Model):
     __tablename__ = "skills"
@@ -51,9 +51,6 @@ class Skill(db.Model):
         if url[-1] == "/":
             url = url[:-1]
         self.url = url
-        #self.scheme = skill["scheme"]
-        #self.host = skill["host"]
-        #self.base_path = skill["base_path"]
 
     def update(self, skill):
         self.name = skill["name"]
@@ -63,11 +60,7 @@ class Skill(db.Model):
         if url[-1] == "/":
             url = url[:-1]
         self.url = url
-        #self.scheme = skill["scheme"]
-        #self.host = skill["host"]
-        #self.base_path = skill["base_path"]
 
     def to_dict(self):
         return dict(id=self.id, name=self.name, owner_id=self.owner_id, is_published=self.is_published,
                     description=self.description, url=self.url)
-                    #scheme=self.scheme, host=self.host, base_path=self.base_path)
