@@ -4,7 +4,9 @@ db = SQLAlchemy()
 
 class User(db.Model):
     """
-
+    A user with a unique name.
+    The password is only stored as hash (we do not salt currently).
+    A user can own multiple skills.
     """
     __tablename__ = "users"
 
@@ -30,15 +32,18 @@ class User(db.Model):
         return dict(id=self.id, name=self.name)
 
 class Skill(db.Model):
+    """
+    A skill with a unique name.
+    It belongs to one user.
+    It should be only visible to this user or to all if published.
+    The URL is not validated by us.
+    """
     __tablename__ = "skills"
 
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     name = db.Column(db.String(50), nullable=False, unique=True)
     is_published = db.Column(db.Boolean, nullable=False)
-    #scheme = db.Column(db.String(100), nullable=False)
-    #host = db.Column(db.String(100), nullable=False)
-    #base_path = db.Column(db.String(100), nullable=False)
     url = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(500), nullable=True)
 
