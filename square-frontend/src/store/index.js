@@ -91,6 +91,9 @@ export default new Vuex.Store({
    */
   actions: {
     answerQuestion(context, { question, options }) {
+      // we get these as strings; parse them back to int
+      options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
+      options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
       return fetchResults(question, options)
         .then((response) => {
           context.commit("setAnsweredQuestion", { results: response.data, question: question })

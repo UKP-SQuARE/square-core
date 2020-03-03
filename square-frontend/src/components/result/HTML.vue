@@ -16,7 +16,6 @@ export default {
     sanitizedHTML() {
       var html = this.result.result;
       var sanitized = sanitize(html);
-      console.log(sanitized);
       return sanitized;
     }
   }
