@@ -41,7 +41,15 @@ export default {
       return this.$store.state.currentQuestion;
     },
     currentResults() {
-      return this.$store.state.currentResults;
+      return this.$store.state.currentResults.slice(0).sort((a,b) => {
+        if (a["score"] < b["score"]) {
+          return 1
+        } else if(a["score"] === b["score"]) {
+          return 0
+        } else if(a["score"] > b["score"]) {
+          return -1
+        }
+      });
     }
   }
 };

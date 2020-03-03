@@ -396,6 +396,9 @@ def ask_question():
                 description:
                     type: string
                     description: a short description of the skill
+                score:
+                    type: number
+                    description: the relevance score for the skill in the range [0;1]
                 error:
                     type: string
                     description: error message caused by problems with querying of the skill
@@ -421,6 +424,6 @@ def ask_question():
                 items:
                     $ref: '#/definitions/SkillResult'
     """
-    #Bug in flasgger validation with nested $ref so we copy QueryOption and Skill in Query definition
+    # Bug in flasgger validation with nested $ref so we copy QueryOption and Skill in Query definition
     question_data = request.json
     return jsonify(skillSelector.query(question_data)), 200

@@ -111,7 +111,11 @@ export default new Vuex.Store({
       context.commit("setJWT", { jwt: jwt })
     },
     updateSkills(context) {
-      return fetchSkills(context.state.jwt)
+      var jwt = "";
+      if (context.getters.isAuthenticated()) {
+        jwt = context.state.jwt;
+      }
+      return fetchSkills(jwt)
         .then((response) => context.commit("setSkills", { skills: response.data }))
     },
     updateSelectors(context) {
