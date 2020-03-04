@@ -6,8 +6,10 @@
       <b-tab
         v-for="skillResult in currentResults"
         v-bind:key="skillResult.name"
-        v-bind:title="skillResult.name"
       >
+        <template v-slot:title>
+        {{skillResult.name}} <small>{{parseInt(skillResult.score*100)}}% relevant</small>
+        </template>
         <h6 class="text-muted mt-2 mb-1 ml-1">{{skillResult.skill_description}}</h6>
         <b-card class="mt-2" v-show="skillResult.error">
           <b-card-text>Error: {{ skillResult.error }}</b-card-text>

@@ -4,5 +4,7 @@ Flask-Migrate
 Flask-Script
 Flask-CORS
 flask-jwt-extended
+flask-socketio
 requests
 flasgger
+eventlet

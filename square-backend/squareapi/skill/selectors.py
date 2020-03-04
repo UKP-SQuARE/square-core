@@ -1,56 +1,90 @@
 import requests
+import concurrent.futures as cf
+
+
+def request_skill(question, options, skill, score):
+    """
+    Send a query request to a skill.
+    maxResultsPerSkill is enforced by this method.
+    :param question: the question for the query
+    :param options: the options for the query
+    :param skill: the skill to query
+    :param score: the relevance score for the skill valued [0;1]
+    :return: the answer of the query with additional informations about the skill
+    """
+    maxResults = int(options["maxResultsPerSkill"])
+    try:
+        r = requests.post("{}/query".format(skill["url"]), json={
+            "question": question,
+            "options": {
+                "maxResults": maxResults
+            }
+        })
+        return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r.json()[:maxResults]}
+    except requests.Timeout as e:
+        return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
+    except requests.ConnectionError as e:
+        return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
 
 
 class Selector:
     """
     Selector base class for all selector implementations
     """
-    def query(self, question, options):
+    def query(self, question, options, generator=False):
         """
         Answers a query with the skills chosen by the selector.
         :param question: the query question
         :param options: the options for the query
-        :return:
+        :param generator: flag to indicate that the results should be returned once they come in from a skill via generator
+        or that the result should contain all answers together once all skills have answered
+        :return: the responses from the skills or a generator for the responses
         """
         raise NotImplementedError
 
-    def requestSkill(self, question, options, skill, score):
+    def query_skills(self, question, options, skills, scores):
         """
-        Send a query request to a skill.
-        maxResultsPerSkill is enforced by this method.
-        :param question: the question for the query
-        :param options: the options for the query
-        :param skill: the skill to query
-        :param score: the relevance score for the skill valued [0;1]
-        :return: the answer of the query with additional informations about the skill
-        """
-        maxResults = int(options["maxResultsPerSkill"])
-        try:
-            r = requests.post("{}/query".format(skill["url"]), json={
-                "question": question,
-                "options": {
-                    "maxResults": maxResults
-                }
-            })
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r.json()[:maxResults]}
-        except requests.Timeout as e:
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
-        except requests.ConnectionError as e:
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
-
-    def querySkills(self, question, options, skills, scores):
-        """
-        Query all skills in a given list
+        Query all skills in a given list asynchronously.
+        The result is returned once all skills have answered.
         :param question: the question for the query
         :param options: the options for the query
         :param skills: the skills to query
         :return: a list of all query responses
         :param scores: the relevance scores for the skill valued [0;1]
         """
-        result = []
-        for skill, score in zip(skills, scores):
-            result.append(self.requestSkill(question, options, skill, score))
-        return result
+        results = []
+        with cf.ThreadPoolExecutor(max_workers=5) as executor:
+            skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
+                              for skill, score in zip(skills, scores)}
+            for skill_request in cf.as_completed(skill_requests):
+                try:
+                    res = skill_request.result()
+                except Exception as e:
+                    print("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+                else:
+                    results.append(res)
+        return results
+
+    def query_skills_generator(self, question, options, skills, scores):
+        """
+        Query all skills in a given list asynchronously.
+        The result are yielded as they come in.
+        :param question: the question for the query
+        :param options: the options for the query
+        :param skills: the skills to query
+        :return: a list of all query responses
+        :param scores: the relevance scores for the skill valued [0;1]
+        """
+        with cf.ThreadPoolExecutor(max_workers=5) as executor:
+            skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
+                              for skill, score in zip(skills, scores)}
+            for skill_request in cf.as_completed(skill_requests):
+                try:
+                    res = skill_request.result()
+                except Exception as e:
+                    print("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+                else:
+                    yield res
 
 
 class BaseSelector(Selector):
@@ -61,7 +95,11 @@ class BaseSelector(Selector):
     def __init__(self):
         super(BaseSelector, self).__init__()
 
-    def query(self, question, options):
+    def query(self, question, options, generator=False):
         skills = options["selectedSkills"][:int(options["maxQuerriedSkills"])]
         scores = [1]*len(skills)
-        return self.querySkills(question, options, skills, scores)
+        if generator:
+            return self.query_skills_generator(question, options, skills, scores)
+        else:
+            return self.query_skills(question, options, skills, scores)
+

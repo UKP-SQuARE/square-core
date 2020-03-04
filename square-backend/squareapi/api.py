@@ -31,6 +31,10 @@ template = {
 }
 swagger = Swagger(template=template)
 
+def validation_error_handler(error, data, main_def):
+    return jsonify({"msg": error}), 400
+
+
 skillSelector = SkillSelector()
 
 
@@ -82,7 +86,7 @@ def register():
 
 
 @api.route('/login', methods=['POST'])
-@swagger.validate("User")
+@swagger.validate("User", validation_error_handler=validation_error_handler)
 def login():
     """
     Endpoint for login with username and password to get a JWT token
@@ -188,7 +192,7 @@ def get_selectors():
 
 @api.route("/skill", methods=["POST"])
 @jwt_required
-@swagger.validate("Skill")
+@swagger.validate("Skill", validation_error_handler=validation_error_handler)
 def create_skill():
     """
     Endpoint to create a new skill belonging to the user. JWT required.
@@ -240,7 +244,7 @@ def create_skill():
 
 @api.route("/skill/<string:id>", methods=["POST"])
 @jwt_required
-@swagger.validate("Skill")
+@swagger.validate("Skill", validation_error_handler=validation_error_handler)
 def update_skill(id):
     """
     Endpoint to update a skill belonging to the user. JWT required.
@@ -307,7 +311,7 @@ def delete_skill(id):
 
 
 @api.route("/question", methods=["POST"])
-@swagger.validate("Query")
+@swagger.validate("Query", validation_error_handler=validation_error_handler)
 def ask_question():
     """
     Endpoint to ask a question and receive answers from skills.
