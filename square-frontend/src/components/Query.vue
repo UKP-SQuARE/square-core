@@ -3,7 +3,6 @@
   <b-container>
     <b-form-row class="mt-5">
       <b-form class="offset-md-1 col-md-10" v-on:submit.prevent="askQuestion">
-
         <b-alert
           v-model="showEmptyWarning"
           variant="danger"
@@ -16,11 +15,7 @@
         >There was a problem: {{failureMessage}}</b-alert>
 
         <b-input-group>
-          <b-form-input
-            v-model="inputQuestion"
-            required
-            placeholder="Enter your question"
-          ></b-form-input>
+          <b-form-input v-model="inputQuestion" required placeholder="Enter your question"></b-form-input>
           <b-input-group-append>
             <b-button type="submit" variant="primary">
               Ask your question
@@ -31,6 +26,14 @@
         <b-form-checkbox v-model="showOptions" switch class="mt-2 ml-1 mb-2">Show expert options</b-form-checkbox>
 
         <div v-show="showOptions">
+          <b-form-group label="Query Mode:">
+            <b-form-radio-group v-model="options.action" name="radio-sub-component">
+              <b-form-radio
+                value="SOCKET_query"
+              >WebSocket - receive results as soon as each is available</b-form-radio>
+              <b-form-radio value="query">AJAX - receive results once all are available</b-form-radio>
+            </b-form-radio-group>
+          </b-form-group>
           <b-form-group label="Skill Selector:" label-for="skill-selector">
             <b-form-select
               id="skill-selector"
@@ -111,20 +114,30 @@ export default {
       if (this.inputQuestion.length > 0) {
         this.showEmptyWarning = false;
         this.waitingQuery = true;
-        this.$store
-          .dispatch("answerQuestion", {
-            question: this.inputQuestion,
-            options: this.options
-          })
-          .catch(error => {
-            this.failure = true;
-            this.failureMessage = error.data.msg;
-          })
-          .finally(() => {
-            this.waitingQuery = false;
-            // Collapse the options once results are here to save space. This is due to query and results residing in one view.
-            this.showOptions = false;
-          });
+        var action = this.options.action;
+        if (action === "query") {
+          this.$store
+            .dispatch(action, {
+              question: this.inputQuestion,
+              options: this.options
+            })
+            .catch(error => {
+              this.failure = true;
+              this.failureMessage = error.data.msg;
+            })
+            .finally(() => {
+              this.waitingQuery = false;
+              // Collapse the options once results are here to save space. This is due to query and results residing in one view.
+              this.showOptions = false;
+            });
+        } else if (action === "SOCKET_query") {
+          this.$store
+            .dispatch(action, {
+              question: this.inputQuestion,
+              options: this.options
+            })
+        }
+        
       } else {
         this.showEmptyWarning = true;
       }
@@ -132,8 +145,24 @@ export default {
   },
   /**
    * Make the store update the skills and init the query options
+   * Subscribe to mutation changes for the websocket
    */
   beforeMount() {
+    var self = this
+    this.$store.subscribe(mutation => {
+      if (mutation.type === "SOCKET_SKILLRESULT") {
+        this.showOptions = false;
+        if (mutation.payload.error_msg) {
+          self.failure = true;
+          self.failureMessage = mutation.payload.error_msg;
+          self.waitingQuery = false;
+        }
+        if (mutation.payload.finished) {
+          self.waitingQuery = false;
+        }
+      }
+    })
+
     this.$store
       .dispatch("updateSkills")
       .then(() => this.$store.dispatch("updateSelectors"))

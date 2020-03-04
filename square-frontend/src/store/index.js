@@ -30,7 +30,8 @@ export default new Vuex.Store({
       selector: "",
       selectedSkills: [],
       maxQuerriedSkills: 3,
-      maxResultsPerSkill: 10
+      maxResultsPerSkill: 10,
+      action: "SOCKET_query"
     },
     // Control flags
     flags: {
@@ -83,6 +84,12 @@ export default new Vuex.Store({
     },
     setSelectors(state, payload) {
       state.availableSkillSelectors = payload.selectors
+    },
+    //WebSocket mutations
+    SOCKET_SKILLRESULT(state, payload) {
+      if (!payload.finished) {
+        state.currentResults.push(payload)
+      }
     }
   },
 
@@ -90,7 +97,7 @@ export default new Vuex.Store({
    * Mostly wrappers around API calls that manage commiting the received results
    */
   actions: {
-    answerQuestion(context, { question, options }) {
+    query(context, { question, options }) {
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
       options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
@@ -136,6 +143,15 @@ export default new Vuex.Store({
     deleteSkill(context, { skillId }) {
       return deleteSkill(skillId, context.state.jwt)
         .then(() => context.dispatch("updateSkills"))
+    },
+    //WebSocket actions
+    SOCKET_query(context, { question, options }) {
+      // we get these as strings; parse them back to int
+      options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
+      options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
+      context.commit("setAnsweredQuestion", { results: [], question: question })
+      context.commit("setQueryOptions", { queryOptions: options })
+      this._vm.$socket.client.emit("query", { question: question, options: options })
     }
   },
 

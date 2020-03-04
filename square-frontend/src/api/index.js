@@ -7,8 +7,7 @@ import axios from "axios"
 /**
  * URL to the SQuARE backend server
  */
-const API_URL = "http://127.0.0.1:5000/api"
-
+var API_URL = process.env.VUE_APP_BACKEND_URL
 /**
  * Sends a question to the backend and receives the resulting answers
  * @param {String} question the asked question

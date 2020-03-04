@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from .api import api, jwt, swagger, skillSelector
 from .models import db
-
+from .socket import socketio, init_socket
 
 def create_app(app_name="SQUARE_API", config_path="config.json"):
     app = Flask(app_name)
@@ -20,4 +20,8 @@ def create_app(app_name="SQUARE_API", config_path="config.json"):
 
     skillSelector.init_from_json(config_path)
 
-    return app
+    socketio.init_app(app)
+
+    init_socket(skillSelector, swagger)
+
+    return socketio, app

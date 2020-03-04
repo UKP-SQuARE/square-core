@@ -7,11 +7,17 @@ import router from './router'
 import store from './store'
 import BootstrapVue from 'bootstrap-vue'
 import axios from 'axios'
+import VueSocketIOExt from 'vue-socket.io-extended';
+import io from 'socket.io-client';
 
 Vue.config.productionTip = false
 
 // Install BootstrapVue
 Vue.use(BootstrapVue)
+
+const socket = io(process.env.VUE_APP_BACKEND_URL);
+ 
+Vue.use(VueSocketIOExt, socket, { store });
 
 // Init Vue
 new Vue({

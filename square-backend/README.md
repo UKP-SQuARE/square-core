@@ -2,6 +2,8 @@
 The backend Flask server for SQuARE.  
 The server manages accounts and skills including access rights to them and handles the selection of skills for questions.
 
+The server is run with [Flask-SocketIO](https://flask-socketio.readthedocs.io/en/latest/) using [eventlet](http://eventlet.net/).  
+Authentication is performed with JWTs.
 ## Project structure
 The project is a Flask webserver.
 * flask-manage.py: Managing the database with Flask Migration
@@ -10,7 +12,8 @@ The project is a Flask webserver.
 * squareapi: the Flask server  
     * skill: Skill selection and request handling
     * app.py: The Flask App
-    * api.py: The API
+    * api.py: The REST API
+    * socket.py: The WebSocket API
     * models.py: The models used in the database
 
 ## Creating a database

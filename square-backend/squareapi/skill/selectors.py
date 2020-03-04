@@ -2,7 +2,7 @@ import requests
 import concurrent.futures as cf
 
 
-def requestSkill(question, options, skill, score):
+def request_skill(question, options, skill, score):
     """
     Send a query request to a skill.
     maxResultsPerSkill is enforced by this method.
@@ -31,16 +31,18 @@ class Selector:
     """
     Selector base class for all selector implementations
     """
-    def query(self, question, options):
+    def query(self, question, options, generator=False):
         """
         Answers a query with the skills chosen by the selector.
         :param question: the query question
         :param options: the options for the query
-        :return:
+        :param generator: flag to indicate that the results should be returned once they come in from a skill via generator
+        or that the result should contain all answers together once all skills have answered
+        :return: the responses from the skills or a generator for the responses
         """
         raise NotImplementedError
 
-    def querySkills(self, question, options, skills, scores):
+    def query_skills(self, question, options, skills, scores):
         """
         Query all skills in a given list asynchronously.
         The result is returned once all skills have answered.
@@ -52,7 +54,7 @@ class Selector:
         """
         results = []
         with cf.ThreadPoolExecutor(max_workers=5) as executor:
-            skill_requests = {executor.submit(requestSkill, question, options, skill, score): skill["name"]
+            skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
                               for skill, score in zip(skills, scores)}
             for skill_request in cf.as_completed(skill_requests):
                 try:
@@ -63,6 +65,26 @@ class Selector:
                     results.append(res)
         return results
 
+    def query_skills_generator(self, question, options, skills, scores):
+        """
+        Query all skills in a given list asynchronously.
+        The result are yielded as they come in.
+        :param question: the question for the query
+        :param options: the options for the query
+        :param skills: the skills to query
+        :return: a list of all query responses
+        :param scores: the relevance scores for the skill valued [0;1]
+        """
+        with cf.ThreadPoolExecutor(max_workers=5) as executor:
+            skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
+                              for skill, score in zip(skills, scores)}
+            for skill_request in cf.as_completed(skill_requests):
+                try:
+                    res = skill_request.result()
+                except Exception as e:
+                    print("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+                else:
+                    yield res
 
 
 class BaseSelector(Selector):
@@ -73,7 +95,11 @@ class BaseSelector(Selector):
     def __init__(self):
         super(BaseSelector, self).__init__()
 
-    def query(self, question, options):
+    def query(self, question, options, generator=False):
         skills = options["selectedSkills"][:int(options["maxQuerriedSkills"])]
         scores = [1]*len(skills)
-        return self.querySkills(question, options, skills, scores)
+        if generator:
+            return self.query_skills_generator(question, options, skills, scores)
+        else:
+            return self.query_skills(question, options, skills, scores)
+
