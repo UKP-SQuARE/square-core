@@ -4,7 +4,7 @@ from flask_migrate import Migrate, MigrateCommand
 from squareapi.app import create_app
 from squareapi.models import db, User, Skill
 
-app = create_app()
+_, app = create_app()
 
 migrate = Migrate(app, db)
 manager = Manager(app)

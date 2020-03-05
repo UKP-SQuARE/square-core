@@ -10,13 +10,13 @@ or with Websockets (then results are returned one by one as the skills answer).
 ## Project structure
 The project is a Flask webserver.
 * flask-manage.py: Managing the database with Flask Migration
-* appserver.py: The entry point for the dev server
+* main.py: The entry point for the dev server
 * config.json: The config file with the configuration for Flask, the Flask modules and the server code
 * squareapi: the Flask server  
     * skill: Skill selection and request handling
     * app.py: The Flask App
     * api.py: The REST API
-    * socket.py: The WebSocket API
+    * websocket.py: The WebSocket API
     * models.py: The models used in the database
 
 ## Creating a database

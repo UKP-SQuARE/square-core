@@ -1,0 +1,16 @@
+FROM python:3.7.6
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
+# not in requirements because we use SQLite for dev server
+RUN pip install psycopg2
+
+COPY ./squareapi /app/squareapi
+COPY flask-manage.py /app/flask-manage.py
+COPY main.py /app/main.py
+COPY ./docker /app
+
+WORKDIR /app
+RUN python /app/flask-manage.py db init
+
+ENTRYPOINT ["./entry.sh"]

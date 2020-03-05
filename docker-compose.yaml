@@ -1,0 +1,38 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=dbpw
+      - POSTGRES_USER=square
+      - POSTGRES_DB=square
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  backend:
+    build: ./square-backend
+    restart: always
+    ports:
+      - 5000:5000
+    depends_on:
+      - db
+    volumes:
+      - migrations-data:/app/migrations
+  frontend:
+    build: ./square-frontend
+    restart: always
+    ports:
+      - 80:80
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+volumes:
+  db-data:
+    driver: local
+  migrations-data:
+    driver: local

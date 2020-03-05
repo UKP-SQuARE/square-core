@@ -4,7 +4,7 @@ It showcases all required endpoints with all possible returnable results.
 
 ## Project structure
 The project is a Flask webserver.
-* appserver.py: The entry point for the dev server
+* main.py: The entry point for the dev server
 * config.json: The config file with the configuration for Flask, the Flask modules and the server code
 * skillapi: the Flask server  
     * app.py: The Flask App
