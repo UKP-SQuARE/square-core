@@ -11,6 +11,7 @@ COPY main.py /app/main.py
 COPY ./docker /app
 
 WORKDIR /app
+RUN mkdir -p logs
 RUN python /app/flask-manage.py db init
 
 ENTRYPOINT ["./entry.sh"]

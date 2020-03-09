@@ -1,3 +1,4 @@
+import logging
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (
     JWTManager, jwt_required, jwt_optional, create_access_token,
@@ -11,6 +12,8 @@ from .skill import SkillSelector
 
 api = Blueprint("api", __name__)
 jwt = JWTManager()
+
+logger = logging.getLogger(__name__)
 
 template = {
     "swagger": "2.0",
@@ -31,7 +34,12 @@ template = {
 }
 swagger = Swagger(template=template)
 
-def validation_error_handler(error, data, main_def):
+
+def validation_error_handler(error, _, __):
+    """
+    Overwrite default flasgger error handler to return the error in a JSON instead of the body
+    """
+    logger.debug("JSON Validation Error: "+error)
     return jsonify({"msg": error}), 400
 
 
@@ -81,7 +89,7 @@ def register():
         db.session.commit()
     except IntegrityError:
         return jsonify({"msg": "Username already exists."}), 403
-
+    logger.info("Created new user '{}'".format(username))
     return jsonify(user.to_dict()), 201
 
 
@@ -122,9 +130,11 @@ def login():
     user = User.authenticate(username, password)
 
     if not user:
+        logger.debug("Failed login attempt".format(username))
         return jsonify({"msg": "Wrong username or password."}), 401
 
     access_token = create_access_token(identity=user.to_dict())
+    logger.info("{} logged in".format(username))
     return jsonify(token=access_token), 200
 
 
@@ -239,6 +249,9 @@ def create_skill():
         db.session.commit()
     except IntegrityError:
         return jsonify({"msg": "Skill name already exists."}), 403
+    except Exception as e:
+        return jsonify({"msg": "Failed to create the skill. {}".format(e)}), 403
+    logger.info("{} created new skill '{}'".format(user["name"], skill_data["name"]))
     return jsonify(skill.to_dict()), 201
 
 
@@ -275,12 +288,19 @@ def update_skill(id):
     user = get_jwt_identity()
     skill = Skill.query.filter_by(id=id).first()
     if not skill or skill.owner_id != user["id"]:
+        if skill:
+            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["name"], skill_data["name"]))
+        else:
+            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     skill.update(skill_data)
     try:
         db.session.commit()
     except IntegrityError:
         return jsonify({"msg": "Skill name already exists."}), 403
+    except Exception as e:
+        return jsonify({"msg": "Failed to update the skill. {}".format(e)}), 403
+    logger.info("{} updated skill '{}'".format(user["name"], skill_data["name"]))
     return jsonify(skill.to_dict()), 200
 
 
@@ -304,9 +324,14 @@ def delete_skill(id):
     user = get_jwt_identity()
     skill = Skill.query.filter_by(id=id).first()
     if not skill or skill.owner_id != user["id"]:
+        if skill:
+            logger.info("{} tried to delete skill '{}' which does not belong to them".format(user["name"], skill.name))
+        else:
+            logger.info("{} tried to delete skill with id '{}' which does not exist".format(user["name"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     db.session.delete(skill)
     db.session.commit()
+    logger.info("{} deleted skill with id '{}'".format(user["name"], id))
     return jsonify(skill.to_dict()), 200
 
 
@@ -430,4 +455,6 @@ def ask_question():
     """
     # Bug in flasgger validation with nested $ref so we copy QueryOption and Skill in Query definition
     question_data = request.json
+    logger.debug("Query request: {}".format(question_data))
+    logger.info("Query with question: '{}'".format(question_data["question"]))
     return jsonify(skillSelector.query(question_data)), 200

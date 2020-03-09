@@ -1,6 +1,8 @@
-import json
 from collections import OrderedDict
 from .selectors import BaseSelector
+import logging
+
+logger = logging.getLogger(__name__)
 
 """
 All implemented selectors and their names
@@ -19,15 +21,15 @@ class SkillSelector:
         self.skills = []
         self.config = None
 
-    def init_from_json(self, config):
+    def init_from_config(self, config):
         """
         Initialize all requested selectors given in the config
         :param config: dict containing a list of selectors in the given format: skillSelector: [{name, config}]
         """
-        with open(config) as f:
-            self.config = json.load(f)["skillSelector"]
+        self.config = config["skillSelector"]
         self.selectors = OrderedDict([(selector["name"], SELECTORS[selector["name"]](**selector["config"]))
                           for selector in self.config["selectors"]])
+        logger.debug("Initialized these selectors: {}".format(", ".join(self.selectors.keys())))
 
     def get_selectors(self):
         """
@@ -47,4 +49,5 @@ class SkillSelector:
         question = request["question"]
         options = request["options"]
         selector = self.selectors[options["selector"]]
+        logger.debug("Query with selector {}".format(options["selector"]))
         return selector.query(question, options, generator)

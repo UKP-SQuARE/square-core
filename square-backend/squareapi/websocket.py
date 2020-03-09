@@ -1,7 +1,9 @@
 from flask_socketio import SocketIO, emit
 from jsonschema import validate, ValidationError
 from flasgger.utils import get_schema_specs
+import logging
 
+logger = logging.getLogger(__name__)
 socketio = SocketIO(cors_allowed_origins="*")
 
 
@@ -31,8 +33,12 @@ def handle_query(json):
         scheme = get_schema_specs("Query", swagger)["definitions"]["Query"]
         validate(json, scheme)
     except ValidationError as e:
+        logger.debug("JSON Validation Error: "+e)
         emit("skillResult", {"error_msg": "Invalid query: {}".format(e)}) # error is already used by skillResult so error_msg it is
     else:
-        for result in skillSelector.query(json, generator=True):
+        logger.debug("Query request: {}".format(json))
+        logger.info("Query with question: '{}'".format(json["question"]))
+        skillResults = skillSelector.query(json, generator=True)
+        for result in skillResults:
             emit("skillResult", result)
         emit("skillResult", {"finished": True})

@@ -1,6 +1,8 @@
 import requests
 import concurrent.futures as cf
+import logging
 
+logger = logging.getLogger(__name__)
 
 def request_skill(question, options, skill, score):
     """
@@ -49,9 +51,11 @@ class Selector:
         :param question: the question for the query
         :param options: the options for the query
         :param skills: the skills to query
-        :return: a list of all query responses
         :param scores: the relevance scores for the skill valued [0;1]
+        :return: a list of all query responses
         """
+        logger.debug("Chose the following skill for the question '{}': {}".format(
+            question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
         results = []
         with cf.ThreadPoolExecutor(max_workers=5) as executor:
             skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
@@ -60,7 +64,7 @@ class Selector:
                 try:
                     res = skill_request.result()
                 except Exception as e:
-                    print("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+                    logger.info("Skill {} generated exception {}".format(skill_requests[skill_request], e))
                 else:
                     results.append(res)
         return results
@@ -72,9 +76,11 @@ class Selector:
         :param question: the question for the query
         :param options: the options for the query
         :param skills: the skills to query
-        :return: a list of all query responses
         :param scores: the relevance scores for the skill valued [0;1]
+        :return: a generator for a list of all query responses
         """
+        logger.debug("Chose the following skill for the question '{}': {}".format(
+            question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
         with cf.ThreadPoolExecutor(max_workers=5) as executor:
             skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
                               for skill, score in zip(skills, scores)}
@@ -82,7 +88,7 @@ class Selector:
                 try:
                     res = skill_request.result()
                 except Exception as e:
-                    print("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+                    logger.info("Skill {} generated exception {}".format(skill_requests[skill_request], e))
                 else:
                     yield res
 

@@ -7,4 +7,4 @@ python flask-manage.py db migrate
 python flask-manage.py db upgrade
 
 echo "Starting the server"
-python main.py
+python main.py --host "0.0.0.0"
