@@ -1,6 +1,8 @@
 import requests
-import concurrent.futures as cf
+import eventlet
+#import concurrent.futures as cf
 import logging
+from itertools import repeat
 
 logger = logging.getLogger(__name__)
 
@@ -57,17 +59,21 @@ class Selector:
         logger.debug("Chose the following skill for the question '{}': {}".format(
             question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
         results = []
-        with cf.ThreadPoolExecutor(max_workers=5) as executor:
-            skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
-                              for skill, score in zip(skills, scores)}
-            for skill_request in cf.as_completed(skill_requests):
-                try:
-                    res = skill_request.result()
-                except Exception as e:
-                    logger.info("Skill {} generated exception {}".format(skill_requests[skill_request], e))
-                else:
-                    results.append(res)
-        return results
+        pool = eventlet.GreenPool()
+        count = len(skills)
+        for skill_result in pool.imap(request_skill, repeat(question, count), repeat(options, count), skills, scores):
+            results.append(skill_result)
+        #with cf.ThreadPoolExecutor(max_workers=5) as executor:
+        #    skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
+        #                      for skill, score in zip(skills, scores)}
+        #    for skill_request in cf.as_completed(skill_requests):
+        #        try:
+        #            res = skill_request.result()
+        #        except Exception as e:
+        #            logger.info("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+        #        else:
+        #            results.append(res)
+        #return results
 
     def query_skills_generator(self, question, options, skills, scores):
         """
@@ -81,16 +87,20 @@ class Selector:
         """
         logger.debug("Chose the following skill for the question '{}': {}".format(
             question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
-        with cf.ThreadPoolExecutor(max_workers=5) as executor:
-            skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
-                              for skill, score in zip(skills, scores)}
-            for skill_request in cf.as_completed(skill_requests):
-                try:
-                    res = skill_request.result()
-                except Exception as e:
-                    logger.info("Skill {} generated exception {}".format(skill_requests[skill_request], e))
-                else:
-                    yield res
+        pool = eventlet.GreenPool()
+        count = len(skills)
+        for skill_result in pool.imap(request_skill, repeat(question, count), repeat(options, count), skills, scores):
+            yield skill_result
+        #with cf.ThreadPoolExecutor(max_workers=5) as executor:
+        #    skill_requests = {executor.submit(request_skill, question, options, skill, score): skill["name"]
+        #                      for skill, score in zip(skills, scores)}
+        #    for skill_request in cf.as_completed(skill_requests):
+        #        try:
+        #            res = skill_request.result()
+        #        except Exception as e:
+        #            logger.info("Skill {} generated exception {}".format(skill_requests[skill_request], e))
+        #        else:
+        #            yield res
 
 
 class BaseSelector(Selector):

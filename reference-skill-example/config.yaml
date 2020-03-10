@@ -1,3 +1,3 @@
 ---
 DEBUG: false
-SERVER_NAME: 192.168.178.46:5003
+SERVER_NAME: localhost:5003
