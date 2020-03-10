@@ -167,7 +167,7 @@ export default {
       .dispatch("updateSkills")
       .then(() => this.$store.dispatch("updateSelectors"))
       .then(() => {
-        this.$store.commit("initQueryOptions");
+        this.$store.commit("initQueryOptions", {});
       })
       .then(() => {
         // Copy the object so we do not change the state before a query is issued

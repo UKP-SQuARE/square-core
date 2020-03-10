@@ -45,9 +45,10 @@ export default new Vuex.Store({
       state.currentQuestion = payload.question
       state.currentResults = payload.results
     },
-    initQueryOptions(state) {
+    initQueryOptions(state, payload) {
+      var forceSkillInit = payload.forceSkillInit;
       // Default value for selected skills should be all available skills
-      if (!state.flags.initialisedSelectedSkills) {
+      if (!state.flags.initialisedSelectedSkills || forceSkillInit) {
         state.queryOptions.selectedSkills = state.availableSkills
         state.flags.initialisedSelectedSkills = true
       }
@@ -64,7 +65,7 @@ export default new Vuex.Store({
         state.mySkills = payload.skills.filter(sk => sk.owner_id === state.user.id)
       }
       // We want to reset selected skills if more skills are available (due to login mostly)
-      if (lenSkills < state.availableSkills.length) {
+      if (lenSkills != state.availableSkills.length) {
         state.flags.initialisedSelectedSkills = false
       }
     },
