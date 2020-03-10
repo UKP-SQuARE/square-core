@@ -8,3 +8,4 @@ flask-socketio
 requests
 flasgger
 eventlet
+pyyaml
