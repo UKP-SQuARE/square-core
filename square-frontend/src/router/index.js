@@ -10,6 +10,7 @@ import Login from '@/views/Login.vue'
 import Skills from '@/views/Skills.vue'
 import Skill from '@/views/Skill.vue'
 import Home from '@/views/Home.vue'
+import Train from '@/views/Train.vue'
 Vue.use(VueRouter)
 
 const routes = [
@@ -44,6 +45,18 @@ const routes = [
     path: '/skills/:id',
     name: 'skill',
     component: Skill,
+    beforeEnter(to, frm, next) {
+      if (!store.getters.isAuthenticated()) {
+        next("/login")
+      } else {
+        next()
+      }
+    }
+  },
+  {
+    path: '/train/:id',
+    name: 'train',
+    component: Train,
     beforeEnter(to, frm, next) {
       if (!store.getters.isAuthenticated()) {
         next("/login")

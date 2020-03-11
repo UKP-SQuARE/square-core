@@ -17,7 +17,7 @@
         <b-input-group>
           <b-form-input v-model="inputQuestion" required placeholder="Enter your question"></b-form-input>
           <b-input-group-append>
-            <b-button type="submit" variant="primary">
+            <b-button type="submit" variant="primary" :disabled="waitingQuery">
               Ask your question
               <b-spinner v-show="waitingQuery" small label="Spinning"></b-spinner>
             </b-button>

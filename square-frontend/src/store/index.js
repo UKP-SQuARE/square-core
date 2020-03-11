@@ -153,6 +153,12 @@ export default new Vuex.Store({
       context.commit("setAnsweredQuestion", { results: [], question: question })
       context.commit("setQueryOptions", { queryOptions: options })
       this._vm.$socket.client.emit("query", { question: question, options: options })
+    },
+    SOCKET_train(context, {skill, file}) {
+      this._vm.$socket.client.emit("train", { skill: skill, file: file });
+    },
+    SOCKET_unpublish(context, {skill}) {
+      this._vm.$socket.client.emit("unpublish", skill);
     }
   },
 

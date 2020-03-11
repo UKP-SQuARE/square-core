@@ -74,10 +74,6 @@
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group>
-        <b-form-checkbox v-model="skill.is_published" switch>Publish this skill</b-form-checkbox>
-      </b-form-group>
-
       <b-button v-if="isCreateSkill" type="submit" variant="outline-success" class="mr-2">Create</b-button>
       <b-button v-else type="submit" variant="outline-primary" class="mr-2">Save Changes</b-button>
 
@@ -95,7 +91,6 @@ export default {
     return {
       skill: {
         name: "",
-        is_published: false,
         url: "",
         description: ""
       },
@@ -157,7 +152,6 @@ export default {
         });
     },
     createSkill() {
-      console.log(this.skill);
       this.$store
         .dispatch("createSkill", { skill: this.skill })
         .then(() => this.$router.push("/skills"))

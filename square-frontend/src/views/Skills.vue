@@ -1,4 +1,4 @@
-<!-- The Skills Overview Page. The user can see their skills here. They can delete or edit existing skills or create a new skill. -->
+<!-- The Skills Overview Page. The user can see their skills here. They can delete, edit and train (publish) existing skills or create a new skill. -->
 <template>
   <b-container>
     <h2 class="text-center">My skills</h2>
@@ -10,9 +10,6 @@
       <b-card-title>
         {{skill.name}}
         <b-card-sub-title class="mt-1">
-          <b-badge variant="info" v-if="skill.is_published" class="mr-1 mb-1">Published</b-badge>
-          <b-badge variant="secondary" v-else class="mr-1 mb-1">Not Published</b-badge>
-
           <b-badge variant="secondary" v-if="skillStatuses[skill.name]==='checking'">
             Checking...
             <b-spinner type="grow" small></b-spinner>
@@ -22,6 +19,10 @@
             variant="danger"
             v-else-if="skillStatuses[skill.name]==='unavailable'"
           >Unavailable</b-badge>
+
+          <b-badge variant="info" v-if="skill.is_published" class="ml-1 mb-1">Published</b-badge>
+          <b-badge variant="secondary" v-else class="ml-1 mb-1">Not Published</b-badge>
+
           <br />
           {{skill.url}}
         </b-card-sub-title>
@@ -34,12 +35,25 @@
         v-bind:to="{name: 'skill', params: {id: skill.id}}"
         variant="outline-primary"
         class="float-left"
-      >Edit</b-button>
+      >Edit Skill</b-button>
       <b-button
-        v-on:click="deleteSkill(skill.id)"
+        v-bind:to="{name: 'train', params: {id: skill.id}}"
+        variant="outline-primary"
+        class="float-left ml-1"
+      >Manage Publication</b-button>
+      <b-button
+        v-b-modal="'modal-'+skill.id"
         variant="outline-danger"
         class="float-right"
       >Delete</b-button>
+
+      <b-modal v-bind:id="'modal-'+skill.id" title="Are you sure?">
+        <p>Please confirm that you want to delete {{skill.name}}.</p>
+        <template v-slot:modal-footer>
+          <b-button variant="outline-success"  @click="$bvModal.hide('modal-'+skill.id)">Cancel</b-button>
+          <b-button variant="outline-danger" @click="deleteSkill(skill.id)">Delete</b-button>
+        </template>
+      </b-modal>
     </b-card>
   </b-container>
 </template>

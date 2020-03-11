@@ -1,4 +1,5 @@
 from flask_socketio import SocketIO, emit
+from flask import current_app as app
 from jsonschema import validate, ValidationError
 from flasgger.utils import get_schema_specs
 import logging
@@ -42,3 +43,19 @@ def handle_query(json):
         for result in skillResults:
             emit("skillResult", result)
         emit("skillResult", {"finished": True})
+
+
+@socketio.on("train", namespace="/api")
+def handle_train(json):
+    file_size = len(json["file"])
+    if file_size > app.config["MAX_CONTENT_LENGTH"]:
+        max_len = app.config["MAX_CONTENT_LENGTH"]/(1024*1024)
+        emit("train", {"error": "File is too large. Maximum file size is {:.2f}MB".format(max_len)})
+    else:
+        sentences = json["file"].decode("utf-8").split("\n")
+        emit("train", {"finished": True})
+
+
+@socketio.on("unpublish", namespace="/api")
+def handle_unpublish(json):
+    emit("unpublish", {"finished": True})
