@@ -23,6 +23,7 @@
         <b-form-file
           v-model="file"
           :state="Boolean(file)"
+          name="file"
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
           required
@@ -94,13 +95,13 @@ export default {
       this.failure = false;
       this.success = false;
       this.waitingTraining = true;
-      this.$store.dispatch("SOCKET_train",  { skill: this.skill, file: this.file });
+      this.$store.dispatch("SOCKET_train",  { id: this.skill.id, file: this.file });
     },
     unpublishSkill() {
       this.failure = false;
       this.success = false;
       this.waitingUnpublishing = true;
-      this.$store.dispatch("SOCKET_unpublish", {skill: this.skill});
+      this.$store.dispatch("SOCKET_unpublish", {id: this.skill.id});
     }
   },
   sockets: {

@@ -50,7 +50,7 @@ class Skill(db.Model):
     def __init__(self, user, skill):
         self.owner_id = user["id"]
         self.name = skill["name"]
-        self.is_published = skill["is_published"]
+        self.is_published = False  # skill["is_published"]
         self.description = skill["description"]
         url = skill["url"]
         if url[-1] == "/":
@@ -59,12 +59,15 @@ class Skill(db.Model):
 
     def update(self, skill):
         self.name = skill["name"]
-        self.is_published = skill["is_published"]
+        # self.is_published = skill["is_published"]
         self.description = skill["description"]
         url = skill["url"]
         if url[-1] == "/":
             url = url[:-1]
         self.url = url
+
+    def set_publish(self, new_status):
+        self.is_published = new_status
 
     def to_dict(self):
         return dict(id=self.id, name=self.name, owner_id=self.owner_id, is_published=self.is_published,

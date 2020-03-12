@@ -1,8 +1,11 @@
 from flask_socketio import SocketIO, emit
 from flask import current_app as app
+from flask_jwt_extended import decode_token
 from jsonschema import validate, ValidationError
 from flasgger.utils import get_schema_specs
 import logging
+
+from .models import Skill
 
 logger = logging.getLogger(__name__)
 socketio = SocketIO(cors_allowed_origins="*")
@@ -47,15 +50,63 @@ def handle_query(json):
 
 @socketio.on("train", namespace="/api")
 def handle_train(json):
-    file_size = len(json["file"])
-    if file_size > app.config["MAX_CONTENT_LENGTH"]:
-        max_len = app.config["MAX_CONTENT_LENGTH"]/(1024*1024)
-        emit("train", {"error": "File is too large. Maximum file size is {:.2f}MB".format(max_len)})
+    try:
+        file = json["file"]
+        jwt = json["jwt"]
+        id = json["id"]
+    except KeyError as e:
+        emit("train", {"error": "Missing value in request: {}".format(e)})
     else:
-        sentences = json["file"].decode("utf-8").split("\n")
-        emit("train", {"finished": True})
+        file_size = len(file)
+        if file_size > app.config["MAX_CONTENT_LENGTH"]:
+            max_len_mb = app.config["MAX_CONTENT_LENGTH"]/(1024*1024)
+            emit("train", {"error": "File is too large. Maximum file size is {:.2f}MB".format(max_len_mb)})
+        else:
+            try:
+                jwt = decode_token(jwt)
+            except Exception as e:
+                emit("train", {"error": "Invalid JWT: {}".format(e)})
+            else:
+                user = jwt["sub"]
+                skill = Skill.query.filter_by(id=id).first()
+                if not skill or skill.owner_id != user["id"]:
+                    if skill:
+                        logger.info("{} tried to train skill '{}' which does not belong to them".format(user["name"], skill.name))
+                    else:
+                        logger.info("{} tried to train skill with id '{}' which does not exist".format(user["name"], id))
+                    emit("train", {"error": "No skill found with id {}".format(id)})
+                else:
+                    try:
+                        sentences = json["file"].decode("utf-8").split("\n")
+                    except Exception as e:
+                        emit("train", {"error": "Failed to decode file: {}".format(e)})
+                    for result in skillSelector.train(skill.to_dict(), sentences, silent=False):
+                        emit("train", result)
+                    emit("train", {"finished": True})
 
 
 @socketio.on("unpublish", namespace="/api")
 def handle_unpublish(json):
-    emit("unpublish", {"finished": True})
+    try:
+        jwt = json["jwt"]
+        id = json["id"]
+    except KeyError as e:
+        emit("unpublish", {"error": "Missing value in request: {}".format(e)})
+    else:
+        try:
+            jwt = decode_token(jwt)
+        except Exception as e:
+            emit("unpublish", {"error": "Invalid JWT: {}".format(e)})
+        else:
+            user = jwt["sub"]
+            skill = Skill.query.filter_by(id=id).first()
+            if not skill or skill.owner_id != user["id"]:
+                if skill:
+                    logger.info("{} tried to unpublish skill '{}' which does not belong to them".format(user["name"], skill.name))
+                else:
+                    logger.info("{} tried to unpublish skill with id '{}' which does not exist".format(user["name"], id))
+                emit("train", {"error": "No skill found with id {}".format(id)})
+            else:
+                for result in skillSelector.unpublish(skill.to_dict(), silent=False):
+                    emit("train", result)
+                emit("unpublish", {"finished": True})

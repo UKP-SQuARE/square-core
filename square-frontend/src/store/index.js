@@ -154,11 +154,11 @@ export default new Vuex.Store({
       context.commit("setQueryOptions", { queryOptions: options })
       this._vm.$socket.client.emit("query", { question: question, options: options })
     },
-    SOCKET_train(context, {skill, file}) {
-      this._vm.$socket.client.emit("train", { skill: skill, file: file });
+    SOCKET_train(context, {id, file}) {
+      this._vm.$socket.client.emit("train", { id: id, file: file , jwt: context.state.jwt});
     },
-    SOCKET_unpublish(context, {skill}) {
-      this._vm.$socket.client.emit("unpublish", skill);
+    SOCKET_unpublish(context, {id}) {
+      this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });
     }
   },
 
