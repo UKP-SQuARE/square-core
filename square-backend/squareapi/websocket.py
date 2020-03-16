@@ -80,7 +80,7 @@ def handle_train(json):
                         sentences = json["file"].decode("utf-8").split("\n")
                     except Exception as e:
                         emit("train", {"error": "Failed to decode file: {}".format(e)})
-                    for result in skillSelector.train(skill.to_dict(), sentences, silent=False):
+                    for result in skillSelector.train(skill.to_dict(), sentences, generator=True):
                         emit("train", result)
                     emit("train", {"finished": True})
 
@@ -107,6 +107,7 @@ def handle_unpublish(json):
                     logger.info("{} tried to unpublish skill with id '{}' which does not exist".format(user["name"], id))
                 emit("train", {"error": "No skill found with id {}".format(id)})
             else:
-                for result in skillSelector.unpublish(skill.to_dict(), silent=False):
+                results = skillSelector.unpublish(skill.to_dict(), generator=True)
+                for result in results:
                     emit("train", result)
                 emit("unpublish", {"finished": True})

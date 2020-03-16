@@ -13,7 +13,7 @@
 
     <b-button to="/skills" variant="outline-secondary" class="float-left">◁ Back to My Skills</b-button>
 
-    <b-form class="offset-md-2 col-md-8" @submit="trainSkill">
+    <b-form class="offset-md-2 col-md-8" @submit.prevent="trainSkill">
       <b-form-group
         description="Text file containing example questions. Each line is treated as one example. File is expected to be UFT-8-encoded and smaller than 5MB."
       >
@@ -62,7 +62,7 @@
         <p>You will have to retrain the skill if you want to publish it again.</p>
         <template v-slot:modal-footer>
           <b-button variant="outline-success" @click="$bvModal.hide('modal-'+skill.name)">Cancel</b-button>
-          <b-button variant="outline-danger" @click="unpublishSkill()">Unpublish</b-button>
+          <b-button variant="outline-danger" @click="$bvModal.hide('modal-'+skill.name); unpublishSkill()">Unpublish</b-button>
         </template>
       </b-modal>
     </b-form>

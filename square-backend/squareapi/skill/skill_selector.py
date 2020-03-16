@@ -20,6 +20,14 @@ SELECTORS = {
 
 
 def train_selector(selector_name, selector, skill, sentences):
+    """
+    Train a given selector for a new skill with training sentences.
+    :param selector_name: name of the selector (for logging)
+    :param selector: the selector object
+    :param skill: the skill obeject with unique id
+    :param sentences: the training sentences
+    :return: Boolean indicating the success and a JSON-ready response
+    """
     try:
         selector.train(skill["id"], sentences)
         succ_msg = "Trained selector {} for skill {}".format(selector_name, skill["id"])
@@ -32,6 +40,13 @@ def train_selector(selector_name, selector, skill, sentences):
 
 
 def unpublish_selector(selector_name, selector, skill):
+    """
+    Unpublish a skill for a given selector.
+    :param selector_name: name of the selector (for logging)
+    :param selector: the selector object
+    :param skill: the skill obeject with unique id
+    :return: Boolean indicating the success and a JSON-ready response
+    """
     try:
         selector.unpublish(skill["id"])
         succ_msg = "Unpublished selector {} for skill {}".format(selector_name, skill["id"])
@@ -45,7 +60,7 @@ def unpublish_selector(selector_name, selector, skill):
 
 class SkillSelector:
     """
-    Interface between the API and the selector implementations. The API can decide which selector should be used for a request.
+    Bridge between the API and the selector implementations.
     """
     def __init__(self):
         self.selectors = {}
@@ -84,13 +99,39 @@ class SkillSelector:
         logger.debug("Query with selector {}".format(options["selector"]))
         return selector.query(question, options, generator)
 
-    def train(self, skill, sentences, silent):
+    def train(self, skill, sentences, generator=False):
         """
 
         :param skill:
         :param sentences:
-        :param silent:
-        :return:
+        :param generator: if true, returns a generator that yields status messages of the training
+        :return: if generator is true, returns a generator that yields status messages of the training, otherwise nothing is returned
+        """
+        if generator:
+            return self._train_generator(skill, sentences)
+
+        results = []
+        # TODO add to ES
+        count = len(self.selectors)
+        for result, msg in pool.starmap(train_selector, [(selector, self.selectors[selector], s, sent)
+                                                         for selector, s, sent in
+                                                         zip(self.selectors, repeat(skill, count), repeat(sentences, count))]):
+            results.append(result)
+        if all(results):
+            db_skill = Skill.query.filter_by(id=skill["id"]).first()
+            db_skill.set_publish(True)
+            db.session.commit()
+            msg = "Successfully trained all selectors with skill {}. Skill is now published".format(skill["name"])
+            logger.info(msg)
+        else:
+            self.unpublish(skill, generator=False)
+            msg = "Failed to train all selectors with skill {}. Rolled training back".format(skill["name"])
+            logger.info(msg)
+
+    def _train_generator(self, skill, sentences):
+        """
+        Generator variation of train()
+        :return: yields status messages of the training
         """
         results = []
         # TODO add to ES
@@ -99,40 +140,56 @@ class SkillSelector:
                                                          for selector, s, sent in
                                                          zip(self.selectors, repeat(skill, count), repeat(sentences, count))]):
             results.append(result)
-            if not silent:
-                yield msg
+            yield msg
         if all(results):
             db_skill = Skill.query.filter_by(id=skill["id"]).first()
             db_skill.set_publish(True)
             db.session.commit()
             msg = "Successfully trained all selectors with skill {}. Skill is now published".format(skill["name"])
             logger.info(msg)
-            if not silent:
-                yield {"msg": msg}
+            yield {"msg": msg}
         else:
-            self.unpublish(skill, silent=True)
+            self.unpublish(skill, generator=False)
             msg = "Failed to train all selectors with skill {}. Rolled training back".format(skill["name"])
             logger.info(msg)
-            if not silent:
-                yield {"error", msg}
+            yield {"error", msg}
 
-    def unpublish(self, skill, silent):
+    def unpublish(self, skill, generator=False):
         """
 
         :param skill:
-        :param silent:
-        :return:
+        :param generator: if true, returns a generator that yields status messages of the process
+        :return: if generator is true, returns a generator that yields status messages of the process, otherwise nothing is returned
         """
+        if generator:
+            return self._unpublish_generator(skill)
+
         count = len(self.selectors)
         for result, msg in pool.starmap(unpublish_selector, [(selector, self.selectors[selector], s)
-                                                         for selector, s, sent in zip(self.selectors, repeat(skill, count))]):
-            if not silent:
-                yield msg
+                                                             for selector, s in zip(self.selectors, repeat(skill, count))]):
+            pass
         db_skill = Skill.query.filter_by(id=skill["id"]).first()
         db_skill.set_publish(False)
         db.session.commit()
+        db.session.remove()
         # TODO remove from ES
         msg = "Skill {} is now unpublished".format(skill["name"])
         logger.info(msg)
-        if not silent:
-            yield {"msg": msg}
+
+    def _unpublish_generator(self, skill):
+        """
+        Generator variation of unpublish()
+        :return: yields status messages of the process
+        """
+        count = len(self.selectors)
+        for result, msg in pool.starmap(unpublish_selector, [(selector, self.selectors[selector], s)
+                                                             for selector, s in zip(self.selectors, repeat(skill, count))]):
+            yield msg
+        db_skill = Skill.query.filter_by(id=skill["id"]).first()
+        db_skill.set_publish(False)
+        db.session.commit()
+        db.session.remove()
+        # TODO remove from ES
+        msg = "Skill {} is now unpublished".format(skill["name"])
+        logger.info(msg)
+        yield {"msg": msg}

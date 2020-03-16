@@ -1,6 +1,5 @@
 import requests
 import eventlet
-#import concurrent.futures as cf
 import logging
 from itertools import repeat
 

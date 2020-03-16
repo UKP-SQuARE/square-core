@@ -1,8 +1,26 @@
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-db = SQLAlchemy()
+from sqlalchemy import Column, String, Boolean, ForeignKey, Integer
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship
+from sqlalchemy.ext.declarative import declarative_base
 
-class User(db.Model):
+
+db = declarative_base()
+
+def init_db(engine_string):
+    """
+    Initialize the database connection and prepare the db object.
+    Set db.query and db.session to work similar to Flask_SQLAlchemy.SQLAlchemy
+    :param engine_string: Database connenction string
+    """
+    engine = create_engine(engine_string)
+    session = scoped_session(sessionmaker(bind=engine))
+    db.query = session.query_property()
+    db.metadata.create_all(bind=engine)
+    db.session = session
+
+
+class User(db):
     """
     A user with a unique name.
     The password is only stored as hash (we do not salt currently).
@@ -10,10 +28,10 @@ class User(db.Model):
     """
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    password_hash = db.Column(db.String(100), nullable=False)
-    skills = db.relationship("Skill", backref="users")
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False, unique=True)
+    password_hash = Column(String(100), nullable=False)
+    skills = relationship("Skill", backref="users")
 
     def __init__(self, name, password):
         self.name = name
@@ -31,7 +49,7 @@ class User(db.Model):
     def to_dict(self):
         return dict(id=self.id, name=self.name)
 
-class Skill(db.Model):
+class Skill(db):
     """
     A skill with a unique name.
     It belongs to one user.
@@ -40,12 +58,12 @@ class Skill(db.Model):
     """
     __tablename__ = "skills"
 
-    id = db.Column(db.Integer, primary_key=True)
-    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    name = db.Column(db.String(50), nullable=False, unique=True)
-    is_published = db.Column(db.Boolean, nullable=False)
-    url = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.String(500), nullable=True)
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String(50), nullable=False, unique=True)
+    is_published = Column(Boolean, nullable=False)
+    url = Column(String(200), nullable=False)
+    description = Column(String(500), nullable=True)
 
     def __init__(self, user, skill):
         self.owner_id = user["id"]

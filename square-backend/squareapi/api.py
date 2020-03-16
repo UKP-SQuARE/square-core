@@ -43,8 +43,8 @@ def validation_error_handler(error, _, __):
     """
     Overwrite default flasgger error handler to return the error in a JSON instead of the body
     """
-    logger.debug("JSON Validation Error: "+error)
-    return jsonify({"msg": error}), 400
+    logger.debug("JSON Validation Error: {}".format(error))
+    return jsonify({"msg": "JSON Validation Error: {}".format(error)}), 400
 
 
 skillSelector = SkillSelector()
@@ -155,13 +155,17 @@ def get_skills():
             type: object
             properties:
                 id:
-                    type: string
+                    oneOf:
+                        - type: string
+                        - type: integer
                     description: the id of the skill
                 name:
                     type: string
                     description: the unique name of the skill
                 owner_id:
-                    type: string
+                    oneOf:
+                        - type: string
+                        - type: integer
                     description: the id of the owner of this skill
                 is_published:
                     type: boolean
@@ -224,18 +228,10 @@ def create_skill():
         Skill:
             type: object
             properties:
-                id:
-                    anyOf:
-                        - type: integer
-                        - type: string
-                    description: unique id of the skill
                 name:
                     type: string
                     description: the unique name of the skill
                     minLength: 1
-                is_published:
-                    type: boolean
-                    description: indicates whether a skill is visible to all or only to the owner
                 url:
                     type: string
                     description: url to the skill server
@@ -243,7 +239,7 @@ def create_skill():
                 description:
                     type: string
                     description: a short description of the skill
-            required: [id, name, is_published, url]
+            required: [name, url]
     responses:
         200:
             description: Created the skill.
@@ -340,7 +336,7 @@ def delete_skill(id):
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     db.session.delete(skill)
     db.session.commit()
-    skillSelector.unpublish(skill.to_dict(), silent=True)
+    skillSelector.unpublish(skill.to_dict(), generator=True)
     logger.info("{} deleted skill with id '{}'".format(user["name"], id))
     return jsonify(skill.to_dict()), 200
 
@@ -351,7 +347,7 @@ def train_skill(id):
     """
     Endpoint to train a skill belonging to the user with provided training data. JWT required.
     ---
-   consumes:
+    consumes:
         - multipart/form-data
     parameters:
         - name: id
@@ -384,21 +380,19 @@ def train_skill(id):
     file = request.files["file"]
     sentences = []
     for l in file.readlines():
-        sentences.append(l.strip())
+        sentences.append(l.strip().decode("utf-8"))
 
-    pool.spawn(skillSelector.train, skill.to_dict(), sentences)
+    pool.spawn_n(skillSelector.train, skill.to_dict(), sentences, False)
     logger.info("{} started training for skill '{}'".format(user["name"], skill.name))
     return jsonify({"msg": "Started training for the skill"}), 200
 
 
 @api.route("/skill/<string:id>/unpublish", methods=["POST"])
 @jwt_required
-def train_skill(id):
+def unpublish_skill(id):
     """
     Endpoint to unpublish a skill belonging to the user. JWT required.
     ---
-   consumes:
-        - multipart/form-data
     parameters:
         - name: id
           in: path
@@ -420,7 +414,7 @@ def train_skill(id):
             logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
 
-    pool.spawn(skillSelector.unpublish, skill.to_dict())
+    pool.spawn_n(skillSelector.unpublish, skill.to_dict(), False)
     logger.info("{} started unpublishing for skill '{}'".format(user["name"], skill.name))
     return jsonify({"msg": "Started unpublishing for the skill"}), 200
 
@@ -484,24 +478,28 @@ def ask_question():
                             type: array
                             description: the list of skills that the selector can choose from
                             items:
+                                description: Skill model from the DB
                                 type: object
                                 properties:
                                     id:
-                                        anyOf:
-                                            - type: integer
+                                        oneOf:
                                             - type: string
-                                        description: unique id of the skill
+                                            - type: integer
+                                        description: the id of the skill
                                     name:
                                         type: string
                                         description: the unique name of the skill
-                                        minLength: 1
+                                    owner_id:
+                                        oneOf:
+                                            - type: string
+                                            - type: integer
+                                        description: the id of the owner of this skill
                                     is_published:
                                         type: boolean
                                         description: indicates whether a skill is visible to all or only to the owner
                                     url:
                                         type: string
                                         description: url to the skill server
-                                        minLength: 1
                                     description:
                                         type: string
                                         description: a short description of the skill
