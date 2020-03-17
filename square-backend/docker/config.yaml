@@ -9,3 +9,6 @@ skillSelector:
   selectors:
     - name: base
       config: {}
+elasticsearch:
+  url: "http://squarecore_es_1:9200"
+  index: square_selector_data
