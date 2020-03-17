@@ -10,3 +10,9 @@ skillSelector:
   selectors:
     - name: base
       config: {}
+    - name: elasticsearch
+      config:
+
+elasticsearch:
+  url: "http://localhost:9200"
+  index: square_selector_data

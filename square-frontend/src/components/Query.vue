@@ -103,7 +103,14 @@ export default {
       });
     },
     availableSkillSelectors() {
-      return this.$store.state.availableSkillSelectors;
+      return this.$store.state.availableSkillSelectors.map(selector => {
+        return {
+          text: `${selector.name} ${
+            selector.description ? "- " + selector.description : ""
+          }`,
+          value: selector.name
+        };
+      });
     },
     queryOptions() {
       return this.$store.state.queryOptions;

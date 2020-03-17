@@ -54,7 +54,7 @@ export default new Vuex.Store({
       }
       // Value for selector should be set to a selector.
       if (!state.flags.initialisedSelector) {
-        state.queryOptions.selector = state.availableSkillSelectors[0]
+        state.queryOptions.selector = state.availableSkillSelectors[0].name
         state.flags.initialisedSelector = true
       }
     },

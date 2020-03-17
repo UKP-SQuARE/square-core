@@ -17,35 +17,18 @@ class UnpublishException(Exception):
     pass
 
 
-def request_skill(question, options, skill, score):
-    """
-    Send a query request to a skill.
-    maxResultsPerSkill is enforced by this method.
-    :param question: the question for the query
-    :param options: the options for the query
-    :param skill: the skill to query
-    :param score: the relevance score for the skill valued [0;1]
-    :return: the answer of the query with additional informations about the skill
-    """
-    maxResults = int(options["maxResultsPerSkill"])
-    try:
-        r = requests.post("{}/query".format(skill["url"]), json={
-            "question": question,
-            "options": {
-                "maxResults": maxResults
-            }
-        })
-        return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r.json()[:maxResults]}
-    except requests.Timeout as e:
-        return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
-    except requests.ConnectionError as e:
-        return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
-
-
 class Selector:
     """
     Selector base class for all selector implementations
     """
+
+    def __init__(self, elasticsearch):
+        """
+        Init the selector.
+        :param elasticsearch: elasticsearch instance that holds the training data
+        """
+        self.es = elasticsearch
+
     def query(self, question, options, generator=False):
         """
         Answers a query with the skills chosen by the selector.
@@ -78,6 +61,31 @@ class Selector:
         raise NotImplementedError
 
     @staticmethod
+    def request_skill(question, options, skill, score):
+        """
+        Send a query request to a skill.
+        maxResultsPerSkill is enforced by this method.
+        :param question: the question for the query
+        :param options: the options for the query
+        :param skill: the skill to query
+        :param score: the relevance score for the skill valued [0;1]
+        :return: the answer of the query with additional informations about the skill
+        """
+        maxResults = int(options["maxResultsPerSkill"])
+        try:
+            r = requests.post("{}/query".format(skill["url"]), json={
+                "question": question,
+                "options": {
+                    "maxResults": maxResults
+                }
+            })
+            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r.json()[:maxResults]}
+        except requests.Timeout as e:
+            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
+        except requests.ConnectionError as e:
+            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
+
+    @staticmethod
     def query_skills(question, options, skills, scores):
         """
         Query all skills in a given list asynchronously.
@@ -92,7 +100,7 @@ class Selector:
             question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
         results = []
         count = len(skills)
-        for skill_result in pool.imap(request_skill, repeat(question, count), repeat(options, count), skills, scores):
+        for skill_result in pool.imap(Selector.request_skill, repeat(question, count), repeat(options, count), skills, scores):
             results.append(skill_result)
 
     @staticmethod
@@ -109,7 +117,7 @@ class Selector:
         logger.debug("Chose the following skill for the question '{}': {}".format(
             question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
         count = len(skills)
-        for skill_result in pool.imap(request_skill, repeat(question, count), repeat(options, count), skills, scores):
+        for skill_result in pool.imap(Selector.request_skill, repeat(question, count), repeat(options, count), skills, scores):
             yield skill_result
 
     @staticmethod
@@ -127,8 +135,8 @@ class BaseSelector(Selector):
     A simple base selector that always choses the first maxQuerriedSkills skills in the options to query.
     This selector can be used if a developer wants to query specific skills.
     """
-    def __init__(self):
-        super(BaseSelector, self).__init__()
+    def __init__(self, elasticsearch):
+        super(BaseSelector, self).__init__(elasticsearch)
 
     def query(self, question, options, generator=False):
         skills = options["selectedSkills"][:int(options["maxQuerriedSkills"])]
@@ -152,8 +160,8 @@ class ElasticsearchVoteSelector(Selector):
     A simple base selector that always choses the first maxQuerriedSkills skills in the options to query.
     This selector can be used if a developer wants to query specific skills.
     """
-    def __init__(self):
-        super(ElasticsearchVoteSelector, self).__init__()
+    def __init__(self, elasticsearch):
+        super(ElasticsearchVoteSelector, self).__init__(elasticsearch)
 
     def query(self, question, options, generator=False):
         skills = self._filter_unpublished_skills(options["selectedSkills"])

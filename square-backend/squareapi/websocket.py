@@ -37,7 +37,7 @@ def handle_query(json):
         scheme = get_schema_specs("Query", swagger)["definitions"]["Query"]
         validate(json, scheme)
     except ValidationError as e:
-        logger.debug("JSON Validation Error: "+e)
+        logger.debug("JSON Validation Error: {}".format(e))
         emit("skillResult", {"error_msg": "Invalid query: {}".format(e)}) # error is already used by skillResult so error_msg it is
     else:
         logger.debug("Query request: {}".format(json))
