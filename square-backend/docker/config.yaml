@@ -9,6 +9,11 @@ skillSelector:
   selectors:
     - name: base
       config: {}
+    - name: Elasticsearch
+      config:
+        k: 50
+        weighting: score
+
 elasticsearch:
   url: "http://squarecore_es_1:9200"
   index: square_selector_data
