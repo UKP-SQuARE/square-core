@@ -80,9 +80,10 @@ def handle_train(json):
                         sentences = json["file"].decode("utf-8").split("\n")
                     except Exception as e:
                         emit("train", {"error": "Failed to decode file: {}".format(e)})
-                    for result in skillSelector.train(skill.to_dict(), sentences, generator=True):
-                        emit("train", result)
-                    emit("train", {"finished": True})
+                    else:
+                        for result in skillSelector.train(skill.to_dict(), sentences, generator=True):
+                            emit("train", result)
+                        emit("train", {"finished": True})
 
 
 @socketio.on("unpublish", namespace="/api")
@@ -105,9 +106,9 @@ def handle_unpublish(json):
                     logger.info("{} tried to unpublish skill '{}' which does not belong to them".format(user["name"], skill.name))
                 else:
                     logger.info("{} tried to unpublish skill with id '{}' which does not exist".format(user["name"], id))
-                emit("train", {"error": "No skill found with id {}".format(id)})
+                emit("unpublish", {"error": "No skill found with id {}".format(id)})
             else:
                 results = skillSelector.unpublish(skill.to_dict(), generator=True)
                 for result in results:
-                    emit("train", result)
+                    emit("unpublish", result)
                 emit("unpublish", {"finished": True})

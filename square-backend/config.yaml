@@ -8,10 +8,12 @@ JWT_SECRET_KEY: change this key to something else
 JWT_ACCESS_TOKEN_EXPIRES: 10000
 skillSelector:
   selectors:
-    - name: base
+    - name: Base
       config: {}
-    - name: elasticsearch
+    - name: Elasticsearch
       config:
+        k: 50
+        weighting: score
 
 elasticsearch:
   url: "http://localhost:9200"

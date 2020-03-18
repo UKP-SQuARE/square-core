@@ -155,9 +155,7 @@ def get_skills():
             type: object
             properties:
                 id:
-                    oneOf:
-                        - type: string
-                        - type: integer
+                    type: integer
                     description: the id of the skill
                 name:
                     type: string
@@ -482,9 +480,7 @@ def ask_question():
                                 type: object
                                 properties:
                                     id:
-                                        oneOf:
-                                            - type: string
-                                            - type: integer
+                                        type: integer
                                         description: the id of the skill
                                     name:
                                         type: string

@@ -1,6 +1,6 @@
 import time
 from collections import OrderedDict
-from .selectors import TrainingException, UnpublishException, BaseSelector
+from .selectors import TrainingException, UnpublishException, BaseSelector, ElasticsearchVoteSelector
 import logging
 import eventlet
 from elasticsearch import Elasticsearch
@@ -17,9 +17,13 @@ pool = eventlet.GreenPool()
 All implemented selectors and their names
 """
 SELECTORS = {
-    "base": {
+    "Base": {
         "class": BaseSelector,
-        "description": "Performs no selection and just selects the first n skills from the selected skills"
+        "description": "Selects the first n skills. Works with unpublished skills, too."
+    },
+    "Elasticsearch": {
+        "class": ElasticsearchVoteSelector,
+        "description": "Select based on vote between similar questions retrieved with Elasticsearch. Published skills only."
     }
 }
 
@@ -125,9 +129,8 @@ class SkillSelector:
         else:
             results = []
             count = len(self.selectors)
-            for result, msg in pool.starmap(self.train_selector, [(selector, self.selectors[selector], s, sent)
-                                                             for selector, s, sent in
-                                                             zip(self.selectors, repeat(skill, count), repeat(sentences, count))]):
+            for result, msg in pool.starmap(self.train_selector, [(selector, self.selectors[selector], s)
+                                                                  for selector, s in zip(self.selectors, repeat(skill, count))]):
                 results.append(result)
             if all(results):
                 db_skill = Skill.query.filter_by(id=skill["id"]).first()
@@ -155,13 +158,12 @@ class SkillSelector:
         success, info = pool.spawn(self.add_to_es, skill, sentences).wait()
 
         if not success:
-            logger.warning("Failed to add training examples to Elasticsearch. Aborting training. Resposne from Elasticsearch was: {}".format(info))
+            logger.warning("Failed to add training examples to Elasticsearch. Aborting training. Response from Elasticsearch was: {}".format(info))
             yield {"error": "Failed to store training examples. Training aborted. Please try again later."}
         else:
             count = len(self.selectors)
-            for result, msg in pool.starmap(self.train_selector, [(selector, self.selectors[selector], s, sent)
-                                                             for selector, s, sent in
-                                                             zip(self.selectors, repeat(skill, count), repeat(sentences, count))]):
+            for result, msg in pool.starmap(self.train_selector, [(selector, self.selectors[selector], s)
+                                                             for selector, s in zip(self.selectors, repeat(skill, count))]):
                 results.append(result)
                 yield msg
             if all(results):
@@ -189,7 +191,7 @@ class SkillSelector:
             return self._unpublish_generator(skill)
 
         if not skill["is_published"]:
-            logger.info("Skill is already not published.")
+            logger.info("Skill is already unpublished.")
         else:
             count = len(self.selectors)
             for result, msg in pool.starmap(self.unpublish_selector, [(selector, self.selectors[selector], s)
@@ -209,8 +211,8 @@ class SkillSelector:
         :return: yields status messages of the process
         """
         if not skill["is_published"]:
-            logger.info("Skill is already not published.")
-            yield {"msg": "Skill is already not published."}
+            logger.info("Skill is already unpublished.")
+            yield {"msg": "Skill is already unpublished."}
         else:
             count = len(self.selectors)
             for result, msg in pool.starmap(self.unpublish_selector, [(selector, self.selectors[selector], s)
@@ -228,22 +230,21 @@ class SkillSelector:
             yield {"msg": msg}
 
     @staticmethod
-    def train_selector(selector_name, selector, skill, sentences):
+    def train_selector(selector_name, selector, skill):
         """
         Train a given selector for a new skill with training sentences.
         :param selector_name: name of the selector (for logging)
         :param selector: the selector object
         :param skill: the skill obeject with unique id
-        :param sentences: the training sentences
         :return: Boolean indicating the success and a JSON-ready response
         """
         try:
-            selector.train(skill["id"], sentences)
-            succ_msg = "Trained selector {} for skill {}".format(selector_name, skill["id"])
+            selector.train(skill["id"])
+            succ_msg = "Trained selector {} for skill {}".format(selector_name, skill["name"])
             logger.info(succ_msg)
             return True, {"msg": succ_msg}
         except TrainingException as e:
-            error_msg = "Failed to train selector {} for skill {}: {}".format(selector_name, skill["id"], e)
+            error_msg = "Failed to train selector {} for skill {}: {}".format(selector_name, skill["name"], e)
             logger.warning(error_msg)
             return False, {"error", error_msg}
 
@@ -258,11 +259,11 @@ class SkillSelector:
         """
         try:
             selector.unpublish(skill["id"])
-            succ_msg = "Unpublished selector {} for skill {}".format(selector_name, skill["id"])
+            succ_msg = "Unpublished selector {} for skill {}".format(selector_name, skill["name"])
             logger.info(succ_msg)
             return True, {"msg": succ_msg}
         except UnpublishException as e:
-            error_msg = "Failed to unpublish selector {} for skill {}: {}".format(selector_name, skill["id"], e)
+            error_msg = "Failed to unpublish selector {} for skill {}: {}".format(selector_name, skill["name"], e)
             logger.warning(error_msg)
             return False, {"error", error_msg}
 

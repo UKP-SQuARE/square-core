@@ -27,6 +27,7 @@
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
           required
+          no-drop
         ></b-form-file>
       </b-form-group>
 
@@ -75,7 +76,7 @@ export default {
   name: "train",
   data() {
     return {
-      file: undefined,
+      file: null,
       success: false,
       successMessage: "",
       failure: false,
@@ -108,7 +109,8 @@ export default {
     train(val) {
       if (val.finished) {
         this.waitingTraining = false;
-        this.$store.dispatch("updateSkills");
+        this.$store.dispatch("updateSkills")
+        .then(() => this.$store.commit("initQueryOptions", {forceSkillInit: true}));
       } else if (val.error) {
         this.waitingTraining = false;
         this.failure = true;
@@ -121,7 +123,8 @@ export default {
     unpublish(val) {
       if (val.finished) {
         this.waitingUnpublishing = false;
-        this.$store.dispatch("updateSkills");
+        this.$store.dispatch("updateSkills")
+        .then(() => this.$store.commit("initQueryOptions", {forceSkillInit: true}));
       } else if (val.error) {
         this.waitingTraining = false;
         this.failure = true;
