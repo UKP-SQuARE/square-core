@@ -1,11 +1,20 @@
 ---
 DEBUG: true
+MAX_CONTENT_LENGTH: 5242880 # 5MB
 SQLALCHEMY_DATABASE_URI: sqlite:///C:/Users/Gregor/Documents/Programming/square-core/square-backend/app.db
 SQLALCHEMY_TRACK_MODIFICATIONS: false
-JWT_IDENTITY_CLAIM: sub
+JWT_IDENTITY_CLAIM: sub # overwrite legacy default in flask-jwt-extended
 JWT_SECRET_KEY: change this key to something else
 JWT_ACCESS_TOKEN_EXPIRES: 10000
 skillSelector:
   selectors:
-    - name: base
+    - name: Base
       config: {}
+    - name: Elasticsearch
+      config:
+        k: 50
+        weighting: score
+
+elasticsearch:
+  url: "http://localhost:9200"
+  index: square_selector_data

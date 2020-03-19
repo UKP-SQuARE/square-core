@@ -7,6 +7,7 @@ from flask_jwt_extended import (
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from flasgger import Swagger
+import eventlet
 from .models import db, User, Skill
 from .skill import SkillSelector
 
@@ -14,6 +15,9 @@ api = Blueprint("api", __name__)
 jwt = JWTManager()
 
 logger = logging.getLogger(__name__)
+
+# Global Pool
+pool = eventlet.GreenPool()
 
 template = {
     "swagger": "2.0",
@@ -39,8 +43,8 @@ def validation_error_handler(error, _, __):
     """
     Overwrite default flasgger error handler to return the error in a JSON instead of the body
     """
-    logger.debug("JSON Validation Error: "+error)
-    return jsonify({"msg": error}), 400
+    logger.debug("JSON Validation Error: {}".format(error))
+    return jsonify({"msg": "JSON Validation Error: {}".format(error)}), 400
 
 
 skillSelector = SkillSelector()
@@ -151,13 +155,15 @@ def get_skills():
             type: object
             properties:
                 id:
-                    type: string
+                    type: integer
                     description: the id of the skill
                 name:
                     type: string
                     description: the unique name of the skill
                 owner_id:
-                    type: string
+                    oneOf:
+                        - type: string
+                        - type: integer
                     description: the id of the owner of this skill
                 is_published:
                     type: boolean
@@ -224,9 +230,6 @@ def create_skill():
                     type: string
                     description: the unique name of the skill
                     minLength: 1
-                is_published:
-                    type: boolean
-                    description: indicates whether a skill is visible to all or only to the owner
                 url:
                     type: string
                     description: url to the skill server
@@ -234,7 +237,7 @@ def create_skill():
                 description:
                     type: string
                     description: a short description of the skill
-            required: [name, is_published, url]
+            required: [name, url]
     responses:
         200:
             description: Created the skill.
@@ -331,8 +334,90 @@ def delete_skill(id):
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     db.session.delete(skill)
     db.session.commit()
+    skillSelector.unpublish(skill.to_dict(), generator=True)
     logger.info("{} deleted skill with id '{}'".format(user["name"], id))
     return jsonify(skill.to_dict()), 200
+
+
+@api.route("/skill/<string:id>/train", methods=["POST"])
+@jwt_required
+def train_skill(id):
+    """
+    Endpoint to train a skill belonging to the user with provided training data. JWT required.
+    ---
+    consumes:
+        - multipart/form-data
+    parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: id of the skill
+        - in: formData
+          name: file
+          type: file
+          description: the UTF-8 encoded text file containing the training data. Each line represents one sentence.
+          required: true
+    responses:
+        200:
+            description: Started the training.
+        404:
+            description: No skill found with the id that belongs to the user
+    """
+    user = get_jwt_identity()
+    skill = Skill.query.filter_by(id=id).first()
+    if not skill or skill.owner_id != user["id"]:
+        if skill:
+            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["name"], skill.name))
+        else:
+            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
+        return jsonify({"msg": "No skill found with id {}".format(id)}), 404
+
+    if "file" not in request.files or request.files["file"].filename == "":
+        return jsonify({"msg": "No file found."}), 404
+    file = request.files["file"]
+    sentences = []
+    for l in file.readlines():
+        sentences.append(l.strip().decode("utf-8"))
+
+    pool.spawn_n(skillSelector.train, skill.to_dict(), sentences, False)
+    logger.info("{} started training for skill '{}'".format(user["name"], skill.name))
+    return jsonify({"msg": "Started training for the skill"}), 200
+
+
+@api.route("/skill/<string:id>/unpublish", methods=["POST"])
+@jwt_required
+def unpublish_skill(id):
+    """
+    Endpoint to unpublish a skill belonging to the user. JWT required.
+    ---
+    parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: id of the skill
+    responses:
+        200:
+            description: Started the unpublishing.
+        404:
+            description: No skill found with the id that belongs to the user
+    """
+    user = get_jwt_identity()
+    skill = Skill.query.filter_by(id=id).first()
+    if not skill or skill.owner_id != user["id"]:
+        if skill:
+            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["name"], skill.name))
+        else:
+            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
+        return jsonify({"msg": "No skill found with id {}".format(id)}), 404
+
+    pool.spawn_n(skillSelector.unpublish, skill.to_dict(), False)
+    logger.info("{} started unpublishing for skill '{}'".format(user["name"], skill.name))
+    return jsonify({"msg": "Started unpublishing for the skill"}), 200
+
+
+
 
 
 @api.route("/question", methods=["POST"])
@@ -391,19 +476,30 @@ def ask_question():
                             type: array
                             description: the list of skills that the selector can choose from
                             items:
+                                description: Skill model from the DB
                                 type: object
                                 properties:
+                                    id:
+                                        type: integer
+                                        description: the id of the skill
                                     name:
                                         type: string
                                         description: the unique name of the skill
-                                        minLength: 1
+                                    owner_id:
+                                        oneOf:
+                                            - type: string
+                                            - type: integer
+                                        description: the id of the owner of this skill
+                                    is_published:
+                                        type: boolean
+                                        description: indicates whether a skill is visible to all or only to the owner
                                     url:
                                         type: string
                                         description: url to the skill server
-                                        minLength: 1
                                     description:
                                         type: string
                                         description: a short description of the skill
+                                required: [id, name, is_published, url]
                             minItems: 1
                         maxQuerriedSkills:
                             type: integer
@@ -457,4 +553,5 @@ def ask_question():
     question_data = request.json
     logger.debug("Query request: {}".format(question_data))
     logger.info("Query with question: '{}'".format(question_data["question"]))
-    return jsonify(skillSelector.query(question_data)), 200
+    result = pool.spawn(skillSelector.query, question_data).wait()
+    return jsonify(result), 200

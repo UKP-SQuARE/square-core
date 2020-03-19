@@ -54,7 +54,7 @@ export default new Vuex.Store({
       }
       // Value for selector should be set to a selector.
       if (!state.flags.initialisedSelector) {
-        state.queryOptions.selector = state.availableSkillSelectors[0]
+        state.queryOptions.selector = state.availableSkillSelectors[0].name
         state.flags.initialisedSelector = true
       }
     },
@@ -153,6 +153,12 @@ export default new Vuex.Store({
       context.commit("setAnsweredQuestion", { results: [], question: question })
       context.commit("setQueryOptions", { queryOptions: options })
       this._vm.$socket.client.emit("query", { question: question, options: options })
+    },
+    SOCKET_train(context, {id, file}) {
+      this._vm.$socket.client.emit("train", { id: id, file: file , jwt: context.state.jwt});
+    },
+    SOCKET_unpublish(context, {id}) {
+      this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });
     }
   },
 

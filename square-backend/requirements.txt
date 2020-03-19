@@ -1,5 +1,5 @@
 Flask
-Flask-SQLAlchemy
+SQLAlchemy
 Flask-Migrate
 Flask-Script
 Flask-CORS
@@ -9,3 +9,4 @@ requests
 flasgger
 eventlet
 pyyaml
+elasticsearch=>7.0.0
