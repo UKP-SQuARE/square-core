@@ -154,8 +154,8 @@ export default new Vuex.Store({
       context.commit("setQueryOptions", { queryOptions: options })
       this._vm.$socket.client.emit("query", { question: question, options: options })
     },
-    SOCKET_train(context, {id, file}) {
-      this._vm.$socket.client.emit("train", { id: id, file: file , jwt: context.state.jwt});
+    SOCKET_train(context, {id, train_file, dev_file}) {
+      this._vm.$socket.client.emit("train", { id: id, train_file: train_file, dev_file: dev_file , jwt: context.state.jwt});
     },
     SOCKET_unpublish(context, {id}) {
       this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });

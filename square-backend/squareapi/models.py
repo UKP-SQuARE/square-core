@@ -64,11 +64,12 @@ class Skill(db):
     is_published = Column(Boolean, nullable=False)
     url = Column(String(200), nullable=False)
     description = Column(String(500), nullable=True)
+    examples = relationship("SkillExampleSentence", backref="skills")
 
     def __init__(self, user, skill):
         self.owner_id = user["id"]
         self.name = skill["name"]
-        self.is_published = False  # skill["is_published"]
+        self.is_published = False
         self.description = skill["description"]
         url = skill["url"]
         if url[-1] == "/":
@@ -90,3 +91,20 @@ class Skill(db):
     def to_dict(self):
         return dict(id=self.id, name=self.name, owner_id=self.owner_id, is_published=self.is_published,
                     description=self.description, url=self.url)
+
+
+class SkillExampleSentence(db):
+    """
+    An example sentence of a skill used for training and validation
+    """
+    __tablename__ = "skillexamplesentences"
+
+    id = Column(Integer, primary_key=True)
+    skill_id = Column(Integer, ForeignKey("skills.id"))
+    is_dev = Column(Boolean, nullable=False)
+    sentence = Column(String(300), nullable=False)
+
+    def __init__(self, skill, sentence, is_dev):
+        self.skill_id = skill["id"]
+        self.sentence = sentence
+        self.is_dev = is_dev

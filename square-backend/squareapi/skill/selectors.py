@@ -1,8 +1,15 @@
+import time
+
 import requests
 import eventlet
 import logging
 from itertools import repeat
 
+from elasticsearch.helpers import bulk
+from sqlalchemy import and_, func
+from elasticsearch import Elasticsearch
+
+from ..models import db, SkillExampleSentence, Skill
 logger = logging.getLogger(__name__)
 
 # Global pool for all requests
@@ -21,13 +28,6 @@ class Selector:
     """
     Selector base class for all selector implementations
     """
-
-    def __init__(self, elasticsearch):
-        """
-        Init the selector.
-        :param elasticsearch: elasticsearch instance that holds the training data
-        """
-        self.es = elasticsearch
 
     def query(self, question, options, generator=False):
         """
@@ -140,8 +140,8 @@ class BaseSelector(Selector):
     A simple base selector that always choses the first maxQuerriedSkills skills in the options to query.
     This selector can be used if a developer wants to query specific skills.
     """
-    def __init__(self, elasticsearch):
-        super(BaseSelector, self).__init__(elasticsearch)
+    def __init__(self):
+        super(BaseSelector, self).__init__()
 
     def query(self, question, options, generator=False):
         skills = options["selectedSkills"][:int(options["maxQuerriedSkills"])]
@@ -174,18 +174,59 @@ class ElasticsearchVoteSelector(Selector):
     """
     WEIGHTINGS = {"uniform", "score"}
 
-    def __init__(self, elasticsearch, k=50, weighting="uniform"):
-        """
+    """
+    Mapping for the ES Index that holds the training data
+    """
+    ES_MAPPING = {
+        "mappings": {
+            "properties": {
+                "question_id": { # Id of the question in the DB
+                    "type": "integer"
+                },
+                "question_text": { # The Question
+                    "type": "text",
+                },
+                "skill_id": { # Unique skill id
+                    "type": "keyword",
+                }
+            }
+        }
+    }
 
+    def __init__(self, elasticsearch, k=50, weighting="uniform", weight_by_number_examples=True):
+        """
+        :param elasticsearch: config for Elasticsearch instance
         :param k: the number of retrieved questions from Elasticsearch; the k in kNN
         :param weighting: the weighting scheme chosen from WEIGHTINGS
         """
-        super(ElasticsearchVoteSelector, self).__init__(elasticsearch)
+        super(ElasticsearchVoteSelector, self).__init__()
+
+        self.es = Elasticsearch(hosts=[elasticsearch["url"]], index=elasticsearch["index"])
+        self.es.index_name = elasticsearch["index"]
+        logger.info("Waiting for Elasticsearch at {} to start...".format(elasticsearch["url"]))
+        while not self.es.ping():
+            logger.info("Cannot connect to Elasticsearch. Retrying in 30s.")
+            time.sleep(30)
+        logger.info("Waiting for Elasticsearch to be ready...")
+        self.es.cluster.health(wait_for_status='yellow', request_timeout=120)
+        if not self.es.indices.exists(self.es.index_name):
+            logger.info("Elasticsearch Index {} does not exist. Creating it...".format(self.es.index_name))
+            self.es.indices.create(index=self.es.index_name, body=self.ES_MAPPING)
+
         self.k = k
         if weighting in self.WEIGHTINGS:
             self.weighting = weighting
         else:
             raise ValueError("Weighting {} is not in the set of available weightings {}".format(weighting, self.WEIGHTINGS))
+
+        self.skill_example_count = None
+        self.weight_by_number_examples = weight_by_number_examples
+        self.update_skill_example_count()
+
+    def update_skill_example_count(self):
+        if self.weight_by_number_examples:
+            res = db.session.query(func.count(SkillExampleSentence.skill_id), SkillExampleSentence.skill_id).group_by(SkillExampleSentence.skill_id).all()
+            self.skill_example_count = {b[1]: b[0] for b in res}
 
     def query(self, question, options, generator=False):
         skills = self._filter_unpublished_skills(options["selectedSkills"])
@@ -217,18 +258,20 @@ class ElasticsearchVoteSelector(Selector):
         if self.weighting == "uniform":
             weights = [1/len(res)]*len(res)
         elif self.weighting == "score":
-            total = sum([r["_score"] for r in res])
-            weights = [r["_score"]/total for r in res]
+            weights = [r["_score"] for r in res]
         # vote score for all skills, not only selected
         votes = {}
         for r, w in zip(res, weights):
             rs = r["_source"]
+            if self.skill_example_count is not None:
+                w = w/self.skill_example_count[rs["skill_id"]]
             if rs["skill_id"] in votes:
                 votes[rs["skill_id"]] += w
             else:
                 votes[rs["skill_id"]] = w
+        total_weight = sum(votes.values())
+        votes = {key: votes[key]/total_weight for key in votes}
         max_score = max(votes.values())
-
         # now we reduce to only the selected skills and we only select first maxQuerriedSkills ; if they are not in votes, they get a score of 0
         # we also change the score to a more binary value that indicates the relevance of a skill independent from the others
         skills_with_score = sorted([(skill, votes[skill["id"]]/max_score if skill["id"] in votes else 0.0)
@@ -237,12 +280,30 @@ class ElasticsearchVoteSelector(Selector):
         chosen_skills, scores = zip(*skills_with_score)
         return chosen_skills, scores
 
-
-
     def train(self, id):
-        # Data is already in Elasticsearch; needs no additional training.
-        pass
+        sentences = SkillExampleSentence.query.filter(and_(SkillExampleSentence.skill_id == id, SkillExampleSentence.is_dev == False)).all()
+        es_sentences = ({
+            "_index": self.es.index_name,
+            "_source": {
+                'question_id': sent.id,
+                'question_text': sent.sentence,
+                'skill_id': id
+            }
+        } for sent in sentences)
+        success, info = bulk(self.es, es_sentences, request_timeout=5*60, max_retries=5)
+        db.session.remove()
+        self.update_skill_example_count()
+        if not success:
+            raise TrainingException("Failed to add training examples to Elasticsearch. Aborting training. Response from Elasticsearch was: {}".format(info))
 
     def unpublish(self, id):
-        # Data is already removed from Elasticsearch by others.
-        pass
+        body = {
+            "query": {
+                "bool": {
+                    "filter": {
+                        "term": {"skill_id": id}
+                    }
+                }
+            }
+        }
+        self.es.delete_by_query(index=[self.es.index_name], body=body, refresh=True)

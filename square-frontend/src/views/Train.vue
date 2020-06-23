@@ -18,12 +18,29 @@
         description="Text file containing example questions. Each line is treated as one example. File is expected to be UFT-8-encoded and smaller than 5MB."
       >
         <label
-          for="file"
+          for="train_file"
         >{{skill.is_published ? 'Upload training data (this will overwrite previous training data and retrain models):' : 'Upload training data:'}}</label>
         <b-form-file
-          v-model="file"
+          v-model="train_file"
           :state="Boolean(file)"
-          name="file"
+          name="train_file"
+          placeholder="Choose a file or drop it here..."
+          drop-placeholder="Drop file here..."
+          required
+          no-drop
+        ></b-form-file>
+      </b-form-group>
+
+      <b-form-group
+        description="Text file containing example dev questions for validation. Each line is treated as one example. File is expected to be UFT-8-encoded and smaller than 5MB."
+      >
+        <label
+          for="dev_file"
+        >{{skill.is_published ? 'Upload dev data (this will overwrite previous dev data and retrain models):' : 'Upload dev data:'}}</label>
+        <b-form-file
+          v-model="dev_file"
+          :state="Boolean(file)"
+          name="dev_file"
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
           required
@@ -76,7 +93,8 @@ export default {
   name: "train",
   data() {
     return {
-      file: null,
+      train_file: null,
+      dev_file: null,
       success: false,
       successMessage: "",
       failure: false,
@@ -96,7 +114,7 @@ export default {
       this.failure = false;
       this.success = false;
       this.waitingTraining = true;
-      this.$store.dispatch("SOCKET_train",  { id: this.skill.id, file: this.file });
+      this.$store.dispatch("SOCKET_train",  { id: this.skill.id, train_file: this.train_file, dev_file: this.dev_file });
     },
     unpublishSkill() {
       this.failure = false;

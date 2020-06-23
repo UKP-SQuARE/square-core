@@ -47,18 +47,20 @@ def handle_query(json):
             emit("skillResult", result)
         emit("skillResult", {"finished": True})
 
-
+# this is ugly but I cannot early return
 @socketio.on("train", namespace="/api")
 def handle_train(json):
     try:
-        file = json["file"]
+        train_file = json["train_file"]
+        dev_file = json["dev_file"]
         jwt = json["jwt"]
         id = json["id"]
     except KeyError as e:
         emit("train", {"error": "Missing value in request: {}".format(e)})
     else:
-        file_size = len(file)
-        if file_size > app.config["MAX_CONTENT_LENGTH"]:
+        train_file_size = len(train_file)
+        dev_file_size = len(dev_file)
+        if train_file_size > app.config["MAX_CONTENT_LENGTH"] or dev_file_size > app.config["MAX_CONTENT_LENGTH"]:
             max_len_mb = app.config["MAX_CONTENT_LENGTH"]/(1024*1024)
             emit("train", {"error": "File is too large. Maximum file size is {:.2f}MB".format(max_len_mb)})
         else:
@@ -77,13 +79,18 @@ def handle_train(json):
                     emit("train", {"error": "No skill found with id {}".format(id)})
                 else:
                     try:
-                        sentences = json["file"].decode("utf-8").split("\n")
+                        train_sentences = train_file.decode("utf-8").split("\n")
+                        dev_sentences = dev_file.decode("utf-8").split("\n")
+                        if len(train_sentences) == 0:
+                            emit("train", {"error": "Train file is empty."})
+                        elif len(dev_sentences) == 0:
+                            emit("train", {"error": "Dev file is empty."})
+                        else:
+                            for result in skillSelector.train(skill.to_dict(), train_sentences, dev_sentences, generator=True):
+                                emit("train", result)
+                            emit("train", {"finished": True})
                     except Exception as e:
                         emit("train", {"error": "Failed to decode file: {}".format(e)})
-                    else:
-                        for result in skillSelector.train(skill.to_dict(), sentences, generator=True):
-                            emit("train", result)
-                        emit("train", {"finished": True})
 
 
 @socketio.on("unpublish", namespace="/api")

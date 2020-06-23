@@ -36,11 +36,11 @@ services:
   #    - 8080:8080
 
   es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
     environment:
       - node.name=es01
       - cluster.name=es-docker-cluster
-      - discovery.type=single.node
+      - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:

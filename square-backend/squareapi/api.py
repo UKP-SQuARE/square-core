@@ -39,6 +39,14 @@ template = {
 swagger = Swagger(template=template)
 
 
+@api.teardown_request
+def session_remove(exception):
+    """
+    Remove session after request
+    Required because we use custom created scopes
+    """
+    db.session.remove()
+
 def validation_error_handler(error, _, __):
     """
     Overwrite default flasgger error handler to return the error in a JSON instead of the body
@@ -354,9 +362,14 @@ def train_skill(id):
           required: true
           description: id of the skill
         - in: formData
-          name: file
+          name: train_file
           type: file
           description: the UTF-8 encoded text file containing the training data. Each line represents one sentence.
+          required: true
+        - in: formData
+          name: dev_file
+          type: file
+          description: the UTF-8 encoded text file containing the dev data. Each line represents one sentence.
           required: true
     responses:
         200:
@@ -373,14 +386,27 @@ def train_skill(id):
             logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
 
-    if "file" not in request.files or request.files["file"].filename == "":
-        return jsonify({"msg": "No file found."}), 404
-    file = request.files["file"]
-    sentences = []
-    for l in file.readlines():
-        sentences.append(l.strip().decode("utf-8"))
+    if "train_file" not in request.files or request.files["train_file"].filename == "":
+        return jsonify({"msg": "No train file found."}), 404
+    train_file = request.files["train_file"]
+    train_sentences = []
+    for l in train_file.readlines():
+        train_sentences.append(l.strip().decode("utf-8"))
 
-    pool.spawn_n(skillSelector.train, skill.to_dict(), sentences, False)
+    if len(train_sentences) == 0:
+        return jsonify({"msg": "Train file is empty."}), 400
+
+    if "dev_file" not in request.files or request.files["dev_file"].filename == "":
+        return jsonify({"msg": "No dev file found."}), 404
+    dev_file = request.files["dev_file"]
+    dev_sentences = []
+    for l in dev_file.readlines():
+        dev_sentences.append(l.strip().decode("utf-8"))
+
+    if len(dev_sentences) == 0:
+        return jsonify({"msg": "Dev file is empty."}), 400
+
+    pool.spawn_n(skillSelector.train, skill.to_dict(), train_sentences, dev_sentences, False)
     logger.info("{} started training for skill '{}'".format(user["name"], skill.name))
     return jsonify({"msg": "Started training for the skill"}), 200
 
