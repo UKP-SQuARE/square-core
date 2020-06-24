@@ -5,7 +5,7 @@ from jsonschema import validate, ValidationError
 from flasgger.utils import get_schema_specs
 import logging
 
-from .models import Skill
+from squareapi.models import Skill
 
 logger = logging.getLogger(__name__)
 socketio = SocketIO(cors_allowed_origins="*")

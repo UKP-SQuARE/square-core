@@ -9,7 +9,8 @@ from elasticsearch.helpers import bulk
 from sqlalchemy import and_, func
 from elasticsearch import Elasticsearch
 
-from ..models import db, SkillExampleSentence, Skill
+from squareapi.models import db, SkillExampleSentence
+
 logger = logging.getLogger(__name__)
 
 # Global pool for all requests

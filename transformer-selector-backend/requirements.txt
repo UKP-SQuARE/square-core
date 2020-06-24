@@ -1,0 +1,6 @@
+Flask
+Flask-CORS
+requests
+pyyaml
+pytorch
+transformer

@@ -1,12 +1,9 @@
-import time
 from collections import OrderedDict
-from .selectors import TrainingException, UnpublishException, BaseSelector, ElasticsearchVoteSelector
+from .selectors import BaseSelector, ElasticsearchVoteSelector
 import logging
 import eventlet
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
 from itertools import repeat
-from ..models import Skill, db, SkillExampleSentence
+from squareapi.models import Skill, db, SkillExampleSentence
 
 logger = logging.getLogger(__name__)
 

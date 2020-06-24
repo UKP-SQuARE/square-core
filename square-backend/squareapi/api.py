@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from flasgger import Swagger
 import eventlet
-from .models import db, User, Skill
+from squareapi.models import db, User, Skill
 from .skill import SkillSelector
 
 api = Blueprint("api", __name__)

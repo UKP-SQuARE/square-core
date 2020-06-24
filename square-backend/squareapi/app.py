@@ -4,7 +4,7 @@ import yaml
 from flask import Flask
 from flask_cors import CORS
 from .api import api, jwt, swagger, skillSelector
-from .models import init_db, db
+from squareapi.models import init_db, db
 from .websocket import socketio, init_socket
 
 logger = logging.getLogger(__name__)
