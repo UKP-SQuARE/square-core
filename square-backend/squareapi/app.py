@@ -35,8 +35,4 @@ def create_app(app_name="SQUARE_API", config_path="./config.yaml", logging_confi
     init_socket(skillSelector, swagger)
     logger.info("Successfully created the Flask App")
 
-    @app.teardown_appcontext
-    def shutdown_session(exception=None):
-        db.session.remove()
-
     return socketio, app

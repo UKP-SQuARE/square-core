@@ -88,11 +88,11 @@ class SkillSelector:
             self.unpublish(skill, generator=False)
 
         for s in train_sentences:
-            sentence = SkillExampleSentence(skill, s, False)
+            sentence = SkillExampleSentence(skill, s.strip(), False)
             db.session.add(sentence)
 
         for s in dev_sentences:
-            sentence = SkillExampleSentence(skill, s, True)
+            sentence = SkillExampleSentence(skill, s.strip(), True)
             db.session.add(sentence)
         db.session.commit()
 
@@ -126,11 +126,11 @@ class SkillSelector:
             yield from self.unpublish(skill, generator=True)
 
         for s in train_sentences:
-            sentence = SkillExampleSentence(skill, s, False)
+            sentence = SkillExampleSentence(skill, s.strip(), False)
             db.session.add(sentence)
 
         for s in dev_sentences:
-            sentence = SkillExampleSentence(skill, s, True)
+            sentence = SkillExampleSentence(skill, s.strip(), True)
             db.session.add(sentence)
         db.session.commit()
 

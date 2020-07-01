@@ -1,6 +1,6 @@
 import eventlet
 eventlet.monkey_patch()
-from squareapi.app import create_app
+from api.app import create_app
 import argparse
 import logging
 
