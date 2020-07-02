@@ -1,24 +1,23 @@
 ---
 SQLALCHEMY_DATABASE_URI: sqlite:///C:/Users/Gregor/Documents/Programming/square-core/square-backend/app.db
 max_inference_threads: 3
+max_num_stored_models: 1
 model_config:
-  cache_dir: "C:/Users/Gregor/Documents/Programming/square-skill-selector/data/cache/toy"
+  cache_dir: "C:/Users/Gregor/Documents/Programming/square-skill-selector/data/cache/transformer"
   model_folder: "E:/Programming/HiwiSquare/square_core/"
   model:
     version: v1
-    max_length: 80
+    max_length: 50
     model_name: albert-base-v2 #albert-base-v2 #google/electra-small-discriminator #bert-base-uncased
     classification_dim: 256
   train:
-    freeze_extend: False
-    freeze_bert: True
     batch_size: 32
     gradient_accumulation_steps: 1
-    epochs: 10
+    epochs: 1
     learning_rate: 0.0003
     warmup_fraction: 0.1
     max_grad_norm: 1.0
     weight_decay: 0.0
   dev:
-    batch_size: 64
+    batch_size: 32
 

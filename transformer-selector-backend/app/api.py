@@ -10,19 +10,19 @@ api = APIRouter()
 model_manager = ModelManager()
 
 
-@api.post("/scores")
+@api.get("/scores")
 async def scores(question: str):
     results = await model_manager.scores(question)
     return results
 
 
 @api.post("/train")
-async def train(id: str):
+async def train(id: int):
     await model_manager.train(id)
     return {"msg": "ok"}
 
 
 @api.post("/unpublish")
-async def scores(id: str):
-    await model_manager.unpublish(id)
+def scores(id: int):
+    model_manager.unpublish(id)
     return {"msg": "ok"}

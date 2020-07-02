@@ -22,12 +22,10 @@
         >{{skill.is_published ? 'Upload training data (this will overwrite previous training data and retrain models):' : 'Upload training data:'}}</label>
         <b-form-file
           v-model="train_file"
-          :state="Boolean(file)"
+          :state="Boolean(train_file)"
           name="train_file"
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
-          required
-          no-drop
         ></b-form-file>
       </b-form-group>
 
@@ -39,12 +37,10 @@
         >{{skill.is_published ? 'Upload dev data (this will overwrite previous dev data and retrain models):' : 'Upload dev data:'}}</label>
         <b-form-file
           v-model="dev_file"
-          :state="Boolean(file)"
+          :state="Boolean(dev_file)"
           name="dev_file"
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
-          required
-          no-drop
         ></b-form-file>
       </b-form-group>
 

@@ -321,8 +321,8 @@ class TransformerModel:
         inputs = {"input_ids": input_ids, "attention_mask": attention_mask}
         with torch.no_grad():
             scores = self.model(**inputs)[0].cpu().tolist()[0]
-        score_dict = {skill_id: score for skill_id, score in zip(self.all_skills, scores)
-                      if skill_id not in self.ignore_list}
+        score_dict = [(skill_id, score) for skill_id, score in zip(self.all_skills, scores)
+                      if skill_id not in self.ignore_list]
         return score_dict
 
 
@@ -339,19 +339,22 @@ class ModelManager:
     def init(self, config):
         self.inference_executor = ThreadPoolExecutor(max_workers=config.get("max_inference_threads", 3))
         self.train_config = config["model_config"]
-        self.max_num_stored_models = config.get("max_num_stored_models", 0)
+        self.max_num_stored_models = config.get("max_num_stored_models", 1)
         skills = Skill.query.filter(Skill.is_published == False).all()
         # need to be initialized with DB and not empty for case of unpublished skill with no retraining since
         self.ignore_list = {skill.id for skill in skills}
         newest_model = TransformerModelDB.query.with_entities(TransformerModelDB.model_folder)\
             .order_by(desc(TransformerModelDB.training_timestamp)).first()
-        self.inference_model = TransformerModel(newest_model.model_folder, self.ignore_list)
+        if newest_model is not None:
+            self.inference_model = TransformerModel(newest_model.model_folder, self.ignore_list)
+        else:
+            logger.warning("No model in database. Cannot do inference until a model is trained.")
         db.session.remove()
 
     async def train(self, id):
         logger.info("Training new model with new skill {}".format(id))
         new_ignore_list = set(self.ignore_list)
-        new_ignore_list.remove(id)
+        new_ignore_list.discard(id)
         train_config = deepcopy(self.train_config)
         model_timestamp = datetime.datetime.now()
         model_folder = os.path.join(self.train_config["model_folder"], model_timestamp.strftime("%Y-%m-%d_%H-%M"))
@@ -366,6 +369,7 @@ class ModelManager:
         train_dataset = defaultdict(lambda: list())
         dev_dataset = defaultdict(lambda: list())
         for (sent_id, is_dev, sent) in sentences:
+            sent_id = sent_id
             if is_dev:
                 dev_dataset[sent_id].append(sent)
             else:
@@ -379,7 +383,7 @@ class ModelManager:
             logger.warning("Failed to train new model with new skill {}.\n{}".format(id, e))
             raise e
         logger.info("Finished training new model with new skill {}".format(id))
-        db.sesssion.add(TransformerModelDB(model_folder, model_timestamp))
+        db.session.add(TransformerModelDB(model_folder, model_timestamp))
         if self.max_num_stored_models > 0 and db.session.query(func.count(TransformerModelDB.id)).scalar() > self.max_num_stored_models:
             oldest_model = TransformerModelDB.query.order_by(asc(TransformerModelDB.training_timestamp)).first()
             db.session.delete(oldest_model)
@@ -393,10 +397,13 @@ class ModelManager:
 
     def unpublish(self, id):
         self.ignore_list.add(id)
-        self.inference_model.ignore_list.add(id)
+        if self.inference_model is not None:
+            self.inference_model.ignore_list.add(id)
         logger.info("Added {} to ignore list".format(id))
 
     async def scores(self, question):
+        if self.inference_model is None:
+            raise RuntimeError("Attempted inference without a model loaded")
         loop = asyncio.get_running_loop()
         result = await loop.run_in_executor(self.inference_executor, self.inference_model.inference, [question])
         return result
