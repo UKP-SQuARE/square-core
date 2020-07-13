@@ -25,7 +25,7 @@ Run `python flask-mange.py db init` `python flask-mange.py db migrate` `python f
 `python flask-mange.py shell` starts a Python shell in the app context so you can easily manage the DB manually with it.
 
 ## Starting the server
-Run `python appserver.py`.
+Run `python main.py`.
 
 ## API Documentation
 The API is documented [here](squareapi/api.py) in the docstrings as YAML-formatted Swagger documentation.

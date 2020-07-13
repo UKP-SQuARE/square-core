@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from .selectors import BaseSelector, ElasticsearchVoteSelector
+from .selectors import BaseSelector, ElasticsearchVoteSelector, TransformerSelector
 import logging
 import eventlet
 from itertools import repeat
@@ -21,7 +21,12 @@ SELECTORS = {
     "Elasticsearch": {
         "class": ElasticsearchVoteSelector,
         "description": "Select based on vote between similar questions retrieved with Elasticsearch. Published skills only."
+    },
+    "Transformer": {
+        "class": TransformerSelector,
+        "description": "Select based on scoring by a trained model. Published skills only."
     }
+
 }
 
 

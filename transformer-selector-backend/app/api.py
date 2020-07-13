@@ -18,11 +18,20 @@ async def scores(question: str):
 
 @api.post("/train")
 async def train(id: int):
-    await model_manager.train(id)
-    return {"msg": "ok"}
-
+    try:
+        await model_manager.train(id)
+        return {"success": True, "msg": "ok"}
+    except Exception as e:
+        return {"success": False, "msg": repr(e)}
 
 @api.post("/unpublish")
 def scores(id: int):
-    model_manager.unpublish(id)
-    return {"msg": "ok"}
+    try:
+        model_manager.unpublish(id)
+        return {"success": True, "msg": "ok"}
+    except Exception as e:
+        return {"success": False, "msg": repr(e)}
+
+@api.get("/ping")
+def ping():
+    return {"msg": "pong"}

@@ -45,9 +45,8 @@ class Selector:
     def train(self, id):
         """
         Train the selector for a new skill uniquely identified by the id.
-        Training data is found in Elasticsearch.
+        Training data is found in the database.
         A TrainingException is raised if there are any problems with the training that prevent its completion.
-        Training results such as weights should be mapped to the given id so they can later be used to score the skill for a given question.
         :param id: Unique id of the skill. This id will be available in query() for the selected skills
         :raise TrainingException: raised if there are any problems with the training that prevent its completion
         """
@@ -138,7 +137,7 @@ class Selector:
 
 class BaseSelector(Selector):
     """
-    A simple base selector that always choses the first maxQuerriedSkills skills in the options to query.
+    A simple base selector that always chooses the first maxQuerriedSkills skills in the options to query.
     This selector can be used if a developer wants to query specific skills.
     """
     def __init__(self):
@@ -222,9 +221,9 @@ class ElasticsearchVoteSelector(Selector):
 
         self.skill_example_count = None
         self.weight_by_number_examples = weight_by_number_examples
-        self.update_skill_example_count()
+        self._update_skill_example_count()
 
-    def update_skill_example_count(self):
+    def _update_skill_example_count(self):
         if self.weight_by_number_examples:
             res = db.session.query(func.count(SkillExampleSentence.skill_id), SkillExampleSentence.skill_id).group_by(SkillExampleSentence.skill_id).all()
             self.skill_example_count = {b[1]: b[0] for b in res}
@@ -274,12 +273,12 @@ class ElasticsearchVoteSelector(Selector):
         votes = {key: votes[key]/total_weight for key in votes}
         max_score = max(votes.values())
         # now we reduce to only the selected skills and we only select first maxQuerriedSkills ; if they are not in votes, they get a score of 0
-        # we also change the score to a more binary value that indicates the relevance of a skill independent from the others
+        # we also [0-1]-normalize the scores
         skills_with_score = sorted([(skill, votes[skill["id"]]/max_score if skill["id"] in votes else 0.0)
                                     for skill in skills], key=lambda v: v[1], reverse=True)[:max_querried_skills]
 
-        chosen_skills, scores = zip(*skills_with_score)
-        return chosen_skills, scores
+        selected_skills, scores = zip(*skills_with_score)
+        return selected_skills, scores
 
     def train(self, id):
         sentences = SkillExampleSentence.query.filter(and_(SkillExampleSentence.skill_id == id, SkillExampleSentence.is_dev == False)).all()
@@ -293,7 +292,7 @@ class ElasticsearchVoteSelector(Selector):
         } for sent in sentences)
         success, info = bulk(self.es, es_sentences, request_timeout=5*60, max_retries=5)
         db.session.remove()
-        self.update_skill_example_count()
+        self._update_skill_example_count()
         if not success:
             raise TrainingException("Failed to add training examples to Elasticsearch. Aborting training. Response from Elasticsearch was: {}".format(info))
 
@@ -308,3 +307,48 @@ class ElasticsearchVoteSelector(Selector):
             }
         }
         self.es.delete_by_query(index=[self.es.index_name], body=body, refresh=True)
+
+
+class TransformerSelector(Selector):
+    """
+    This selector is a Transformer model with an classification head for each skill which gives a relevance score for
+    each skill which is used for the ranking.
+    Only uses published skills.
+    """
+    def __init__(self, transformer_server_url):
+        """
+        :param transformer_server_url: the URL to the transformer server (a running instance of the server in the folder transformer-selector-backend)
+        """
+        super(TransformerSelector, self).__init__()
+        self.server_url = transformer_server_url
+        try:
+            r = requests.get("{}/api/ping".format(self.server_url)).json()
+        except Exception as e:
+            raise RuntimeError("Cannot connect to Transformer Server at {}".format(transformer_server_url), e)
+
+    def query(self, question, options, generator=False):
+        skills = self._filter_unpublished_skills(options["selectedSkills"])
+        selected_skills, scores = self.scores(question, skills, int(options["maxQuerriedSkills"]))
+        if generator:
+            return self.query_skills_generator(question, options, selected_skills, scores)
+        else:
+            return self.query_skills(question, options, selected_skills, scores)
+
+    def scores(self, question, skills, max_querried_skills):
+        skill_id_map = {skill["id"]: skill for skill in skills}
+        skillid_score_tuples = requests.get("{}/api/scores".format(self.server_url), params={"question": question}).json()
+        skills_with_score = sorted([(skill_id_map[skillid], score) for (skillid, score) in skillid_score_tuples],
+                                   key=lambda v: v[1], reverse=True)[:max_querried_skills]
+
+        selected_skills, scores = zip(*skills_with_score)
+        return selected_skills, scores
+
+    def train(self, id):
+        training_result = requests.post("{}/api/train".format(self.server_url), params={"id": id}).json()
+        if not training_result["success"]:
+            raise TrainingException("Exception during training: {}".format(training_result["msg"]))
+
+    def unpublish(self, id):
+        unpublish_result = requests.post("{}/api/unpublish".format(self.server_url), params={"id": id}).json()
+        if not unpublish_result["success"]:
+            raise UnpublishException("Exception during training: {}".format(unpublish_result["msg"]))
