@@ -1,19 +1,18 @@
 ---
 DEBUG: false
-SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://square:dbpw@squarecore_db_1:5432/square
+SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://square:dbpw@square-core_db_1:5432/square
 SQLALCHEMY_TRACK_MODIFICATIONS: false
 JWT_IDENTITY_CLAIM: sub
 JWT_SECRET_KEY: change this key to something else
 JWT_ACCESS_TOKEN_EXPIRES: 10000
 skillSelector:
   selectors:
-    - name: base
+    - name: Base
       config: {}
     - name: Elasticsearch
       config:
         k: 50
         weighting: score
-
-elasticsearch:
-  url: "http://squarecore_es_1:9200"
-  index: square_selector_data
+        elasticsearch:
+          url: "http://square-core_es_1:9200"
+          index: square_selector_data

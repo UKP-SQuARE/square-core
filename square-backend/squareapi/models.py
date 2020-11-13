@@ -18,6 +18,7 @@ def init_db(engine_string):
     db.query = session.query_property()
     db.metadata.create_all(bind=engine)
     db.session = session
+    db.engine = engine
 
 
 class User(db):

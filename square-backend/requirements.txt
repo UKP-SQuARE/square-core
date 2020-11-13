@@ -9,4 +9,4 @@ requests
 flasgger
 eventlet
 pyyaml
-elasticsearch=>7.0.0
+elasticsearch>=7.0.0
