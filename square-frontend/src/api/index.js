@@ -21,9 +21,10 @@ export function fetchResults(question, options) {
  * Register a new user 
  * @param {String} username the username for the new user
  * @param {String} password the password for the new user
+ * @param {String} email the email for the new user
  */
-export function registerUser(username, password) {
-    return axios.post(`${API_URL}/register`, { username: username, password: password })
+export function registerUser(username, password, email) {
+    return axios.post(`${API_URL}/register`, { username: username, password: password,email:email })
 }
 
 /**

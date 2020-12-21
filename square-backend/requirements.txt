@@ -10,3 +10,5 @@ flasgger
 eventlet
 pyyaml
 elasticsearch>=7.0.0
+itsdangerous
+Flask-Mail

@@ -3,19 +3,27 @@ import logging.config
 import yaml
 from flask import Flask
 from flask_cors import CORS
-from .api import api, jwt, swagger, skillSelector
+from squareapi.api import api,jwt,swagger,skillSelector
 from squareapi.models import init_db, db
-from .websocket import socketio, init_socket
+from squareapi.websocket import socketio, init_socket
+from flask_mail import Mail
+import secrets
+import os
+from os import listdir
+from os.path import isfile, join
+
 
 logger = logging.getLogger(__name__)
 
-
 def create_app(app_name="SQUARE_API", config_path="./config.yaml", logging_config_path="./logging_config.yaml"):
-    logging.config.dictConfig(yaml.load(open(logging_config_path)))
+
+    logging.config.dictConfig(yaml.safe_load(open(logging_config_path)))
 
     logger.info("Creating Flask App")
-    config = yaml.load(open(config_path))
+    config = yaml.safe_load(open(config_path))
+
     app = Flask(app_name)
+
     app.config.from_mapping(config)
 
     app.register_blueprint(api, url_prefix="/api")
@@ -33,6 +41,9 @@ def create_app(app_name="SQUARE_API", config_path="./config.yaml", logging_confi
     socketio.init_app(app)
 
     init_socket(skillSelector, swagger)
+
+    mail = Mail(app)
+
     logger.info("Successfully created the Flask App")
 
-    return socketio, app
+    return socketio, mail, app

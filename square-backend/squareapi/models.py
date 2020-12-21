@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import Column, String, Boolean, ForeignKey, Integer
+from sqlalchemy import Column, String, Boolean, ForeignKey, Integer,DateTime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -11,7 +11,7 @@ def init_db(engine_string):
     """
     Initialize the database connection and prepare the db object.
     Set db.query and db.session to work similar to Flask_SQLAlchemy.SQLAlchemy
-    :param engine_string: Database connenction string
+    :param engine_string: Database connection string
     """
     engine = create_engine(engine_string)
     session = scoped_session(sessionmaker(bind=engine))
@@ -20,35 +20,40 @@ def init_db(engine_string):
     db.session = session
     db.engine = engine
 
-
 class User(db):
-    """
-    A user with a unique name.
-    The password is only stored as hash (we do not salt currently).
-    A user can own multiple skills.
-    """
-    __tablename__ = "users"
+
+    __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False, unique=True)
-    password_hash = Column(String(100), nullable=False)
+    username = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    authenticated = Column(Boolean, default=False)
+    email_confirmation_sent_on = Column(DateTime, nullable=True)
+    email_confirmed = Column(Boolean, nullable=True, default=False)
+    email_confirmed_on = Column(DateTime, nullable=True)
     skills = relationship("Skill", backref="users")
 
-    def __init__(self, name, password):
-        self.name = name
-        self.password_hash = generate_password_hash(password, method="sha256")
+    def __init__(self, username, email, plaintext_password, email_confirmation_sent_on=None):
+        self.email = email
+        self.username = username
+        self.password_hash = generate_password_hash(plaintext_password, method="sha256")
+        self.authenticated = False
+        self.email_confirmation_sent_on = email_confirmation_sent_on
+        self.email_confirmed = False
+        self.email_confirmed_on = None
 
     @classmethod
     def authenticate(cls, username, password):
         if not username or not password:
             return None
-        user = cls.query.filter_by(name=username).first()
+        user = cls.query.filter_by(username=username).first()
         if not user or not check_password_hash(user.password_hash, password):
             return None
         return user
 
     def to_dict(self):
-        return dict(id=self.id, name=self.name)
+        return dict(id=self.id, username=self.username)
 
 class Skill(db):
     """

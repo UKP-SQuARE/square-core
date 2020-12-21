@@ -1,5 +1,6 @@
 ---
 DEBUG: false
+SECRET_KEY : "square2020"
 SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://square:dbpw@square-core_db_1:5432/square
 SQLALCHEMY_TRACK_MODIFICATIONS: false
 JWT_IDENTITY_CLAIM: sub
@@ -16,3 +17,13 @@ skillSelector:
         elasticsearch:
           url: "http://square-core_es_1:9200"
           index: square_selector_data
+
+MAIL_SERVER : 'smtp.gmail.com'
+MAIL_PORT : 465
+MAIL_USE_TLS : False
+MAIL_USE_SSL : True
+MAIL_USERNAME : 'ukpsquare@gmail.com'
+MAIL_PASSWORD : 'pmrhlebedoevquzp'
+MAIL_DEFAULT_SENDER : 'ukpsquare@gmail.com'
+MAIL_SUPPRESS_SEND: False
+TESTING : False

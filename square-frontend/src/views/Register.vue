@@ -7,13 +7,16 @@
     <b-alert
       v-model="success"
       variant="success"
-    >Account was created successfully! You can log in now.</b-alert>
+    >{{successMessage}}</b-alert>
     <b-alert v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
 
     <b-form-row v-if="!success">
       <b-form v-on:submit.prevent="onSubmit" class="offset-md-4 col-md-4">
         <b-form-group>
           <b-form-input v-model="form.username" type="text" required placeholder="Username"></b-form-input>
+        </b-form-group>
+        <b-form-group>
+          <b-form-input v-model="form.email" type="text" required placeholder="Email"></b-form-input>
         </b-form-group>
         <b-form-group>
           <b-form-input v-model="form.password" type="password" required placeholder="Password"></b-form-input>
@@ -32,19 +35,21 @@ export default {
     return {
       form: {
         username: "",
-        password: ""
+        password: "",
+        email: ""
       },
       success: false,
       failure: false,
+      successMessage: "",
       failureMessage: ""
     };
   },
   methods: {
     onSubmit() {
-      registerUser(this.form.username, this.form.password)
-        .then(() => {
+      registerUser(this.form.username, this.form.password, this.form.email)
+        .then((successMessage) => {
           this.success = true;
-          this.failure = false;
+          this.successMessage = successMessage;
         })
         .catch(failureMessage => {
           this.failure = true;

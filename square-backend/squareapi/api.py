@@ -10,6 +10,9 @@ from flasgger import Swagger
 import eventlet
 from squareapi.models import db, User, Skill
 from .skill import SkillSelector
+from .emailService.utils import send_confirmation_email
+from itsdangerous import URLSafeTimedSerializer
+from datetime import datetime
 
 api = Blueprint("api", __name__)
 jwt = JWTManager()
@@ -38,6 +41,7 @@ template = {
 }
 swagger = Swagger(template=template)
 
+skillSelector = SkillSelector()
 
 @api.teardown_request
 def session_remove(exception):
@@ -95,14 +99,18 @@ def register():
     """
     username = request.json["username"]
     password = request.json["password"]
-    user = User(username, password)
+    email = request.json["email"]
+    user = User(username, email, password)
     db.session.add(user)
+    send_confirmation_email(email)
     try:
+        #send_confirmation_email(email)
         db.session.commit()
     except IntegrityError:
-        return jsonify({"msg": "Username already exists."}), 403
+        db.session.rollback()
+        return jsonify({"msg": "Email already exists."}), 403
     logger.info("Created new user '{}'".format(username))
-    return jsonify(user.to_dict()), 201
+    return jsonify({"msg": "Thanks for registering. Please check your email to confirm your email address."}), 201
 
 
 @api.route('/login', methods=['POST'])
@@ -149,6 +157,25 @@ def login():
     logger.info("{} logged in".format(username))
     return jsonify(token=access_token), 200
 
+@api.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        confirm_serializer = URLSafeTimedSerializer("square2020")
+        email = confirm_serializer.loads(token, salt='email-confirmation-salt', max_age=3600)
+    except:
+        return jsonify({"message":"The confirmation link is invalid or has expired."}), 401
+
+    user = User.query.filter_by(email=email).first()
+
+    if user.email_confirmed:
+        return jsonify({"message":"Account already confirmed. Please login."}), 200
+    else:
+        user.email_confirmed = True
+        user.email_confirmed_on = datetime.now()
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"message":"Thank you for confirming your email address!"}), 200
+        #return redirect(url_for('login'))
 
 @api.route("/skills", methods=["GET"])
 @jwt_optional
@@ -441,10 +468,6 @@ def unpublish_skill(id):
     pool.spawn_n(skillSelector.unpublish, skill.to_dict(), False)
     logger.info("{} started unpublishing for skill '{}'".format(user["name"], skill.name))
     return jsonify({"msg": "Started unpublishing for the skill"}), 200
-
-
-
-
 
 @api.route("/question", methods=["POST"])
 @swagger.validate("Query", validation_error_handler=validation_error_handler)

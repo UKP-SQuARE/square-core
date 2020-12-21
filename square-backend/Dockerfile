@@ -6,9 +6,11 @@ RUN pip install -r /app/requirements.txt
 RUN pip install psycopg2
 
 COPY ./squareapi /app/squareapi
-COPY flask-manage.py /app/flask-manage.py
+COPY flask_manage.py /app/flask_manage.py
 COPY main.py /app/main.py
 COPY ./docker /app
+COPY __init__.py /app/__init__.py
+COPY ./templates /app/templates
 
 WORKDIR /app
 RUN mkdir -p logs
