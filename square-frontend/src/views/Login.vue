@@ -15,7 +15,11 @@
         <b-form-group>
           <b-form-input v-model="form.password" type="password" required placeholder="Password"></b-form-input>
         </b-form-group>
-        <b-button type="submit" variant="primary">Login</b-button>
+        <div>
+          <b-button type="submit" variant="primary">Login</b-button>
+
+          <router-link to="ForgotPassword" tag="b-button" >Reset</router-link>
+        </div>
       </b-form>
     </b-form-row>
   </b-container>

@@ -38,6 +38,34 @@ export function loginUser(username, password) {
 }
 
 /**
+ * Create and send reset password link.
+ * Success will result in a JWT for further authentication.
+ * @param {String} token the registered email
+ */
+export function confirmEmail(token) {
+    return axios.post(`${API_URL}/confirmEmail`, { token: token})
+}
+
+/**
+ * Create and send reset password link.
+ * Success will result in a JWT for further authentication.
+ * @param {String} email the registered email
+ */
+export function requestresetPassword(email) {
+    return axios.post(`${API_URL}/requestresetPassword`, { email: email})
+}
+
+/**
+ * Reset password for registered user.
+ * Success will result in a JWT for further authentication.
+ * @param {String} token the registered email
+ * @param {String} password the new password of the user
+ */
+export function validatenewPassword(token,password) {
+    return axios.post(`${API_URL}/validatenewPassword`, { token: token, password:password})
+}
+
+/**
  * Get a list of possible skill selectors that the backend supports
  */
 export function fetchSelectors() {

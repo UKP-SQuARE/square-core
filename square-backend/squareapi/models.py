@@ -52,8 +52,24 @@ class User(db):
             return None
         return user
 
+    @classmethod
+    def get_user_by_email(cls,email):
+        if not email:
+            return None
+        user = cls.query.filter_by(email=email).first()
+        if not user:
+            return None
+        else:
+            return user
+
+    # setter method
+    def set_password(self, value):
+        self.password_hash = generate_password_hash(value, method="sha256")
+
     def to_dict(self):
         return dict(id=self.id, username=self.username)
+
+
 
 class Skill(db):
     """

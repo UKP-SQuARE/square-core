@@ -10,7 +10,7 @@ from flasgger import Swagger
 import eventlet
 from squareapi.models import db, User, Skill
 from .skill import SkillSelector
-from .emailService.utils import send_confirmation_email
+from .emailService.utils import send_confirmation_email,send_password_reset_email
 from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime
 
@@ -97,15 +97,15 @@ def register():
             description: Username already exists
 
     """
-    username = request.json["username"]
-    password = request.json["password"]
-    email = request.json["email"]
-    user = User(username, email, password)
-    db.session.add(user)
-    send_confirmation_email(email)
     try:
-        #send_confirmation_email(email)
+        username = request.json["username"]
+        password = request.json["password"]
+        email = request.json["email"]
+        user = User(username, email, password)
+        db.session.add(user)
         db.session.commit()
+
+        send_confirmation_email(email)
     except IntegrityError:
         db.session.rollback()
         return jsonify({"msg": "Email already exists."}), 403
@@ -157,25 +157,57 @@ def login():
     logger.info("{} logged in".format(username))
     return jsonify(token=access_token), 200
 
-@api.route('/confirm/<token>')
-def confirm_email(token):
-    try:
-        confirm_serializer = URLSafeTimedSerializer("square2020")
-        email = confirm_serializer.loads(token, salt='email-confirmation-salt', max_age=3600)
-    except:
-        return jsonify({"message":"The confirmation link is invalid or has expired."}), 401
-
-    user = User.query.filter_by(email=email).first()
+@api.route('/confirmEmail', methods=['POST'])
+def confirmEmail():
+    #try:
+    token = request.json["token"]
+    confirm_serializer = URLSafeTimedSerializer("square2020")
+    # TODO: Check deserialize token problem
+    email = confirm_serializer.loads(token, salt='email-confirmation-salt', max_age=3600)
+    user = User.get_user_by_email(email)
+    #except:
+        #return jsonify({"message":"The confirmation link is invalid or has expired."}), 403
 
     if user.email_confirmed:
-        return jsonify({"message":"Account already confirmed. Please login."}), 200
+        return jsonify({"message":"Account already confirmed. Please login!"}), 403
     else:
         user.email_confirmed = True
         user.email_confirmed_on = datetime.now()
         db.session.add(user)
         db.session.commit()
-        return jsonify({"message":"Thank you for confirming your email address!"}), 200
-        #return redirect(url_for('login'))
+        return jsonify({"message":"Thank you for confirming your email address. Please login !"}), 200
+
+
+@api.route('/requestresetPassword', methods=['GET', 'POST'])
+def requestresetPassword():
+    email = request.json["email"]
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return jsonify({"message":"Please check your email. This email is invalid"}),403
+    else:
+        if user.email_confirmed:
+            send_password_reset_email(user.email)
+            return jsonify({"message":"Please check your email for a password reset link."}),200
+        else:
+             return jsonify({"message":"Your email address must be confirmed before attempting a password reset."}),403
+
+@api.route('/validatenewPassword', methods=['POST','GET'])
+def validatenewPassword():
+    token = request.json["token"]
+    new_password = request.json["password"]
+    confirm_serializer = URLSafeTimedSerializer("square2020")
+    # TODO: Check deserialize problem
+    email = confirm_serializer.loads(token, salt='password-reset-salt', max_age=3600)
+
+    user = User.get_user_by_email(email)
+    try:
+        user.set_password("bbbb")
+        db.session.flush()
+        db.session.commit()
+    except:
+         return jsonify({"message":"The confirmation link is invalid or has expired."}), 401
+    return jsonify({"message":"Your password has been updated!"}), 200
 
 @api.route("/skills", methods=["GET"])
 @jwt_optional

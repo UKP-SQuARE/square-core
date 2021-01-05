@@ -11,6 +11,9 @@ import Skills from '@/views/Skills.vue'
 import Skill from '@/views/Skill.vue'
 import Home from '@/views/Home.vue'
 import Train from '@/views/Train.vue'
+import ResetPassword from "../views/ResetPassword";
+import ForgotPassword from "../views/ForgotPassword";
+import ConfirmEmailLanding from "../views/ConfirmEmailLanding";
 Vue.use(VueRouter)
 
 const routes = [
@@ -23,6 +26,22 @@ const routes = [
     path: '/register',
     name: 'register',
     component: Register
+  },
+  {
+    path: '/confirmEmailLanding/:token',
+    name: 'confirmEmailLanding',
+    component: ConfirmEmailLanding
+  },
+  {
+    path: '/resetPassword/:token',
+    name: 'resetPassword',
+    component: ResetPassword,
+    params: true
+  },
+  {
+    path: '/forgotPassword',
+    name: 'forgotPassword',
+    component: ForgotPassword
   },
   {
     path: '/login',

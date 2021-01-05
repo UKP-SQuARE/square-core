@@ -1,4 +1,4 @@
-from flask import render_template, url_for
+from flask import current_app, render_template, url_for
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from threading import Thread
@@ -20,26 +20,20 @@ def send_password_reset_email(user_email):
     # Generate reset token
     password_reset_serializer = URLSafeTimedSerializer("square2020")
 
-    # Generate the rest link
-    password_reset_url = url_for('api.reset_with_token',
-                                token = password_reset_serializer.dumps(user_email, salt='password-reset-salt'),
-                                _external=True)
+    # TODO: Fix Generate the reset link
 
+    token = password_reset_serializer.dumps(user_email, salt='password-reset-salt')
+    password_reset_url = "http://localhost/#/ResetPassword/"+token
     html = render_template('email_password_reset.html', password_reset_url=password_reset_url)
     send_email('Password Reset Requested', [user_email], html)
 
 def send_confirmation_email(user_email):
     # Generate confirmation token,
-    confirm_serializer = URLSafeTimedSerializer('square2020')
+    confirm_serializer = URLSafeTimedSerializer("square2020")
 
-    # Generate confirmation token
-    confirm_url = url_for('api.confirm_email',
-                           token = confirm_serializer.dumps(user_email, salt='email-confirmation-salt'),
-                           _external=True)
+    #TODO: Fix Generate confirmation token
 
+    token = confirm_serializer.dumps(user_email, salt='email-confirmation-salt')
+    confirm_url = "http://localhost/#/ConfirmEmailLanding/"+token
     html = render_template('email_confirmation.html', confirm_url=confirm_url)
-    send_email('Confirm Your Email Address', [user_email], html)
-
-    #msg = Message("Hello",recipients=[user_email])
-    #msg.body = "testing"
-    #mail.send(msg)
+    send_email('Please complete your registration', [user_email], html)

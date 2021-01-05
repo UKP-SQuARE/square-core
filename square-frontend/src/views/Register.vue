@@ -49,11 +49,11 @@ export default {
       registerUser(this.form.username, this.form.password, this.form.email)
         .then((successMessage) => {
           this.success = true;
-          this.successMessage = successMessage;
+          this.successMessage = successMessage.data.msg;
         })
         .catch(failureMessage => {
           this.failure = true;
-          this.failureMessage = failureMessage;
+          this.failureMessage = failureMessage.data.msg;
         });
     }
   }
