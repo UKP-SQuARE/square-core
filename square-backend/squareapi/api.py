@@ -159,14 +159,14 @@ def login():
 
 @api.route('/confirmEmail', methods=['POST'])
 def confirmEmail():
-    #try:
-    token = request.json["token"]
-    confirm_serializer = URLSafeTimedSerializer("square2020")
-    # TODO: Check deserialize token problem
-    email = confirm_serializer.loads(token, salt='email-confirmation-salt', max_age=3600)
-    user = User.get_user_by_email(email)
-    #except:
-        #return jsonify({"message":"The confirmation link is invalid or has expired."}), 403
+    try:
+        token = request.json["token"]
+        confirm_serializer = URLSafeTimedSerializer("square2020")
+
+        email = confirm_serializer.loads(token, salt='email-confirmation-salt', max_age=3600)
+        user = User.get_user_by_email(email)
+    except:
+        return jsonify({"message":"The confirmation link is invalid or has expired."}), 403
 
     if user.email_confirmed:
         return jsonify({"message":"Account already confirmed. Please login!"}), 403
@@ -180,33 +180,34 @@ def confirmEmail():
 
 @api.route('/requestresetPassword', methods=['GET', 'POST'])
 def requestresetPassword():
+
     email = request.json["email"]
     user = User.query.filter_by(email=email).first()
 
     if not user:
         return jsonify({"message":"Please check your email. This email is invalid"}),403
+    elif user.email_confirmed == True:
+        send_password_reset_email(user.email)
+        return jsonify({"message":"Please check your email for a password reset link."}),200
     else:
-        if user.email_confirmed:
-            send_password_reset_email(user.email)
-            return jsonify({"message":"Please check your email for a password reset link."}),200
-        else:
-             return jsonify({"message":"Your email address must be confirmed before attempting a password reset."}),403
+         return jsonify({"message":"Your email address must be confirmed before attempting a password reset."}),403
 
 @api.route('/validatenewPassword', methods=['POST','GET'])
 def validatenewPassword():
-    token = request.json["token"]
-    new_password = request.json["password"]
-    confirm_serializer = URLSafeTimedSerializer("square2020")
-    # TODO: Check deserialize problem
-    email = confirm_serializer.loads(token, salt='password-reset-salt', max_age=3600)
-
-    user = User.get_user_by_email(email)
     try:
-        user.set_password("bbbb")
-        db.session.flush()
-        db.session.commit()
+        token = request.json["token"]
+        new_password = request.json["password"]
+        confirm_serializer = URLSafeTimedSerializer("square2020")
     except:
-         return jsonify({"message":"The confirmation link is invalid or has expired."}), 401
+        return jsonify({"message":"The confirmation link is invalid or has expired."}), 401
+
+    email = confirm_serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    user = User.get_user_by_email(email)
+
+    user.set_password(new_password)
+    db.session.flush()
+    db.session.commit()
+
     return jsonify({"message":"Your password has been updated!"}), 200
 
 @api.route("/skills", methods=["GET"])

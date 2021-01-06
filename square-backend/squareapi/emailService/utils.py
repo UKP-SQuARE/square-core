@@ -20,8 +20,6 @@ def send_password_reset_email(user_email):
     # Generate reset token
     password_reset_serializer = URLSafeTimedSerializer("square2020")
 
-    # TODO: Fix Generate the reset link
-
     token = password_reset_serializer.dumps(user_email, salt='password-reset-salt')
     password_reset_url = "http://localhost/#/ResetPassword/"+token
     html = render_template('email_password_reset.html', password_reset_url=password_reset_url)
@@ -30,8 +28,6 @@ def send_password_reset_email(user_email):
 def send_confirmation_email(user_email):
     # Generate confirmation token,
     confirm_serializer = URLSafeTimedSerializer("square2020")
-
-    #TODO: Fix Generate confirmation token
 
     token = confirm_serializer.dumps(user_email, salt='email-confirmation-salt')
     confirm_url = "http://localhost/#/ConfirmEmailLanding/"+token

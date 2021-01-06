@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Boolean, ForeignKey, Integer,DateTime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-
+from datetime import datetime
 
 db = declarative_base()
 
@@ -28,13 +28,16 @@ class User(db):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
+    registered_on = Column(DateTime, nullable=True)
     authenticated = Column(Boolean, default=False)
     email_confirmation_sent_on = Column(DateTime, nullable=True)
     email_confirmed = Column(Boolean, nullable=True, default=False)
     email_confirmed_on = Column(DateTime, nullable=True)
+    role = Column(String, default="user")
     skills = relationship("Skill", backref="users")
 
-    def __init__(self, username, email, plaintext_password, email_confirmation_sent_on=None):
+
+    def __init__(self, username, email, plaintext_password, email_confirmation_sent_on=None, role="user"):
         self.email = email
         self.username = username
         self.password_hash = generate_password_hash(plaintext_password, method="sha256")
@@ -42,6 +45,8 @@ class User(db):
         self.email_confirmation_sent_on = email_confirmation_sent_on
         self.email_confirmed = False
         self.email_confirmed_on = None
+        self.registered_on = datetime.now()
+        self.role = role
 
     @classmethod
     def authenticate(cls, username, password):
