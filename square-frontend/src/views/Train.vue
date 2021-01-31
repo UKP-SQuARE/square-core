@@ -110,7 +110,11 @@ export default {
       this.failure = false;
       this.success = false;
       this.waitingTraining = true;
-      this.$store.dispatch("SOCKET_train",  { id: this.skill.id, train_file: this.train_file, dev_file: this.dev_file });
+      if (this.train_file !== null && this.dev_file !== null ) {
+        this.$store.dispatch("SOCKET_train", {id: this.skill.id, train_file: this.train_file, dev_file: this.dev_file});
+      } else {
+        this.failureMessage = " The training file or validation file cannot be found"
+      }
     },
     unpublishSkill() {
       this.failure = false;
