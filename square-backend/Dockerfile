@@ -13,4 +13,5 @@ COPY ./docker /app
 WORKDIR /app
 RUN mkdir -p logs
 
+RUN ["chmod", "+x", "./entry.sh"]
 ENTRYPOINT ["./entry.sh"]
