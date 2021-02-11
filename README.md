@@ -4,11 +4,11 @@ Frontend and QA backend server code
 ## Run locally (development)
 The README.md in square-backend, square-frontend and reference-skill-example describes how to start the server locally for development.
 
-## Run on Skill on a remote server and □-core locally
+## Run Skill on a remote server and □-core locally
 1. Login to the remote server
 2. Get IP of the node with `ifconfig`
 3. Start the webserver of the skill
-4. On you local machine, create a tunnel to the remote `ssh -L 5003:$IP:5003 $USERNAME@$HOST` (Note you might need to change 5003 to whatever port you are running the skill webserver on).
+4. On you local machine, create a tunnel to the remote with `ssh -L 5003:$IP:5003 $USERNAME@$HOST` (Note you might need to change the port 5003 to whatever port you are running the skill webserver on).
 5. Assert that you can reach the skill from you local machine, e.g. by querying the /ping endpoint. `curl localhost:5003/api/ping`
 6. Run square-core with docker-compose
    `docker-compose up`
