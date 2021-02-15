@@ -2,6 +2,8 @@ import time
 import json
 import os
 
+import http.client
+
 import requests
 import eventlet
 import logging
@@ -74,22 +76,25 @@ class Selector:
         :return: the answer of the query with additional informations about the skill
         """
         maxResults = int(options["maxResultsPerSkill"])
-        try:
-#             resp = requests.post("{}/query".format(skill["url"]), json={
-#                 "question": question,
-#                 "options": {
-#                     "maxResults": maxResults
-#                 }
-#             })
-            headers = {'content-type': 'application/json'}
-            resp = requests.get("{}/ping".format(skill["url"]),headers=headers)
-            #binary = resp.text
-            #r = json.loads(binary)
-            #temp = r["msg"]
-            result = [{"type": "plain_text", "result": str(resp.status_code)+str(resp.headers) +"{}/ping".format(skill["url"]) }]
+        host = skill["url"].split()
+        url = skill["url"].split("/")[2]
+        host = url.split(":")[0]
+        port = int(url.split(":")[1])
 
-            #return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r[:maxResults]}
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": result}
+        try:
+            conn = http.client.HTTPConnection(host, port)
+            payload = {
+               "question": question,
+               "options": {
+                   "maxResults": maxResults
+               }
+            }
+            headers = {'Content-type': 'application/json'}
+            conn.request("POST", "/api/query", json.dumps(payload), headers)
+            resp = conn.getresponse()
+            data = resp.read().decode("utf-8")
+            json_obj = json.loads(data)
+            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": json_obj[:maxResults]}
         except requests.Timeout as e:
             return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
         except requests.ConnectionError as e:

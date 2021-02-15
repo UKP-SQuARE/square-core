@@ -33,9 +33,6 @@ services:
   backend:
     build: ./square-backend
     restart: always
-    environment:
-      - HTTP_PROXY=http://127.0.0.1:5000
-      - HTTPS_PROXY=http://127.0.0.1:5000
     ports:
       - 5000:5000
     depends_on:
