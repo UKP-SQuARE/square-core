@@ -6,5 +6,11 @@ RUN pip install -r /app/requirements.txt
 COPY ./skillapi /app/skillapi
 COPY main.py /app/main.py
 COPY ./docker /app
+COPY __init__.py /app/__init__.py
 
-RUN mkdir -p /app/logs
+WORKDIR /app
+RUN mkdir -p logs
+
+CMD ["python", "main.py"]
+#ENTRYPOINT ["./entry.sh"]
+

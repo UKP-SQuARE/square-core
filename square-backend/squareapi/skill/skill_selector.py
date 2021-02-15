@@ -71,7 +71,7 @@ class SkillSelector:
         question = request["question"]
         options = request["options"]
         selector = self.selectors[options["selector"]]
-        logger.debug("Query with selector {}".format(options["selector"]))
+        logger.info("Query with selector {}".format(options["selector"]))
         return selector.query(question, options, generator)
 
     def train(self, skill, train_sentences, dev_sentences, generator=False):

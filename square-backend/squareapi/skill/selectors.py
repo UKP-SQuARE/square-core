@@ -1,4 +1,6 @@
 import time
+import json
+import os
 
 import requests
 import eventlet
@@ -73,13 +75,21 @@ class Selector:
         """
         maxResults = int(options["maxResultsPerSkill"])
         try:
-            r = requests.post("{}/query".format(skill["url"]), json={
-                "question": question,
-                "options": {
-                    "maxResults": maxResults
-                }
-            })
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r.json()[:maxResults]}
+#             resp = requests.post("{}/query".format(skill["url"]), json={
+#                 "question": question,
+#                 "options": {
+#                     "maxResults": maxResults
+#                 }
+#             })
+            headers = {'content-type': 'application/json'}
+            resp = requests.get("{}/ping".format(skill["url"]),headers=headers)
+            #binary = resp.text
+            #r = json.loads(binary)
+            #temp = r["msg"]
+            result = [{"type": "plain_text", "result": str(resp.status_code)+str(resp.headers) +"{}/ping".format(skill["url"]) }]
+
+            #return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r[:maxResults]}
+            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": result}
         except requests.Timeout as e:
             return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
         except requests.ConnectionError as e:
@@ -259,6 +269,7 @@ class ElasticsearchVoteSelector(Selector):
             weights = [1/len(res)]*len(res)
         elif self.weighting == "score":
             weights = [r["_score"] for r in res]
+
         # vote score for all skills, not only selected
         votes = {}
         for r, w in zip(res, weights):

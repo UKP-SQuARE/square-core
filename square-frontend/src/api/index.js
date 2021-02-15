@@ -8,6 +8,7 @@ import axios from "axios"
  * URL to the SQuARE backend server
  */
 var API_URL = process.env.VUE_APP_BACKEND_URL
+
 /**
  * Sends a question to the backend and receives the resulting answers
  * @param {String} question the asked question
@@ -118,6 +119,7 @@ export function createSkill(newSkill, jwt) {
  * Ping skill server to check for availability.
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
+
 export function pingSkill(skillUrl) {
-    return axios.get(`${skillUrl}/ping`)
+     return axios.get(`${skillUrl}/ping`)
 }

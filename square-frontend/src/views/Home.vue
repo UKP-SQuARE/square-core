@@ -2,6 +2,7 @@
 <template>
     <b-container>
         <Query></Query>
+
         <Results></Results>
     </b-container>
 </template>

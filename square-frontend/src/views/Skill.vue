@@ -9,7 +9,7 @@
 
     <b-button to="/skills" variant="outline-secondary" class="float-left">◁ Back to My Skills</b-button>
 
-    <b-form class="offset-md-2 col-md-8" @submit="onSubmit">
+    <b-form class="offset-md-2 col-md-8" @submit.prevent="onSubmit">
       <b-form-group label="Name:" label-for="name">
         <b-form-input
           id="name"
@@ -57,7 +57,7 @@
           v-model="skill.url"
           required
           v-bind:placeholder="skill.url"
-          v-on:change="testSkillUrl"
+          v-on:keydown.enter.prevent="testSkillUrl"
         ></b-form-input>
       </b-form-group>
 

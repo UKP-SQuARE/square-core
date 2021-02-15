@@ -67,6 +67,11 @@
             ></b-form-input>
           </b-form-group>
         </div>
+
+<!--        <div>-->
+<!--          <b-card-text>{{answer}}</b-card-text>-->
+<!--        </div>-->
+
       </b-form>
     </b-form-row>
   </b-container>
@@ -84,6 +89,7 @@ export default {
       },
       showEmptyWarning: false,
       inputQuestion: "",
+      // answer: null,
       failure: false,
       failureMessage: ""
     };
@@ -122,9 +128,9 @@ export default {
         this.showEmptyWarning = false;
         this.waitingQuery = true;
         var action = this.options.action;
+
         if (action === "query") {
-          this.$store
-            .dispatch(action, {
+          this.$store.dispatch(action, {
               question: this.inputQuestion,
               options: this.options
             })

@@ -50,6 +50,14 @@
         variant="outline-primary"
         class="mr-2"
       >{{skill.is_published ? 'Retrain' : 'Train and Publish'}}</b-button>
+
+      <b-button
+          v-if="!waitingTraining"
+          type="submit"
+          variant="outline-primary"
+          class="mr-2"
+      >{{skill.is_published ? 'Retrain' : 'Train and Publish'}}</b-button>
+
       <b-button v-else type="submit" variant="outline-primary" class="mr-2" disabled>
         Training...
         <b-spinner small label="Spinning"></b-spinner>

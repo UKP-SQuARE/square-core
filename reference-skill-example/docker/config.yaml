@@ -1,3 +1,3 @@
 ---
-DEBUG: false
-SERVER_NAME: 0.0.0.0:5003
+DEBUG: true
+SERVER_NAME: 0.0.0.0

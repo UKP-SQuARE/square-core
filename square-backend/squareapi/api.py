@@ -13,6 +13,7 @@ from .skill import SkillSelector
 from .emailService.utils import send_confirmation_email,send_password_reset_email
 from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime
+import requests
 
 api = Blueprint("api", __name__)
 jwt = JWTManager()
@@ -322,7 +323,7 @@ def create_skill():
         return jsonify({"msg": "Skill name already exists."}), 403
     except Exception as e:
         return jsonify({"msg": "Failed to create the skill. {}".format(e)}), 403
-    logger.info("{} created new skill '{}'".format(user["name"], skill_data["name"]))
+    logger.info("{} created new skill '{}'".format(user["username"], skill_data["name"]))
     return jsonify(skill.to_dict()), 201
 
 
@@ -360,9 +361,9 @@ def update_skill(id):
     skill = Skill.query.filter_by(id=id).first()
     if not skill or skill.owner_id != user["id"]:
         if skill:
-            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["name"], skill_data["name"]))
+            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["username"], skill_data["username"]))
         else:
-            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
+            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["username"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     skill.update(skill_data)
     try:
@@ -371,7 +372,7 @@ def update_skill(id):
         return jsonify({"msg": "Skill name already exists."}), 403
     except Exception as e:
         return jsonify({"msg": "Failed to update the skill. {}".format(e)}), 403
-    logger.info("{} updated skill '{}'".format(user["name"], skill_data["name"]))
+    logger.info("{} updated skill '{}'".format(user["username"], skill_data["name"]))
     return jsonify(skill.to_dict()), 200
 
 
@@ -396,14 +397,14 @@ def delete_skill(id):
     skill = Skill.query.filter_by(id=id).first()
     if not skill or skill.owner_id != user["id"]:
         if skill:
-            logger.info("{} tried to delete skill '{}' which does not belong to them".format(user["name"], skill.name))
+            logger.info("{} tried to delete skill '{}' which does not belong to them".format(user["username"], skill.name))
         else:
-            logger.info("{} tried to delete skill with id '{}' which does not exist".format(user["name"], id))
+            logger.info("{} tried to delete skill with id '{}' which does not exist".format(user["username"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
     db.session.delete(skill)
     db.session.commit()
     skillSelector.unpublish(skill.to_dict(), generator=True)
-    logger.info("{} deleted skill with id '{}'".format(user["name"], id))
+    logger.info("{} deleted skill with id '{}'".format(user["username"], id))
     return jsonify(skill.to_dict()), 200
 
 
@@ -441,9 +442,9 @@ def train_skill(id):
     skill = Skill.query.filter_by(id=id).first()
     if not skill or skill.owner_id != user["id"]:
         if skill:
-            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["name"], skill.name))
+            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["username"], skill.name))
         else:
-            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
+            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["username"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
 
     if "train_file" not in request.files or request.files["train_file"].filename == "":
@@ -467,7 +468,7 @@ def train_skill(id):
         return jsonify({"msg": "Dev file is empty."}), 400
 
     pool.spawn_n(skillSelector.train, skill.to_dict(), train_sentences, dev_sentences, False)
-    logger.info("{} started training for skill '{}'".format(user["name"], skill.name))
+    logger.info("{} started training for skill '{}'".format(user["username"], skill.name))
     return jsonify({"msg": "Started training for the skill"}), 200
 
 
@@ -493,13 +494,13 @@ def unpublish_skill(id):
     skill = Skill.query.filter_by(id=id).first()
     if not skill or skill.owner_id != user["id"]:
         if skill:
-            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["name"], skill.name))
+            logger.info("{} tried to change skill '{}' which does not belong to them".format(user["username"], skill.name))
         else:
-            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["name"], id))
+            logger.info("{} tried to change skill with id '{}' which does not exist".format(user["username"], id))
         return jsonify({"msg": "No skill found with id {}".format(id)}), 404
 
     pool.spawn_n(skillSelector.unpublish, skill.to_dict(), False)
-    logger.info("{} started unpublishing for skill '{}'".format(user["name"], skill.name))
+    logger.info("{} started unpublishing for skill '{}'".format(user["username"], skill.name))
     return jsonify({"msg": "Started unpublishing for the skill"}), 200
 
 @api.route("/question", methods=["POST"])
@@ -637,3 +638,17 @@ def ask_question():
     logger.info("Query with question: '{}'".format(question_data["question"]))
     result = pool.spawn(skillSelector.query, question_data).wait()
     return jsonify(result), 200
+
+# @api.route("/getSkills", methods=["GET"])
+# def ping():
+#     """
+#     Endpoint to check if the server is available
+#     """
+#     endpoint = request.json["skillUrl"]
+#     data = requests.get(endpoint+"/ping").json()
+#
+#     if data["msg"]=="pong" :
+#         return jsonify({"msg": "Endpoint exists"}), 200
+#     else:
+#         return jsonify({"msg": "Endpoint does not exist"}), 404
+

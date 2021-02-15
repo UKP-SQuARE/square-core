@@ -5,7 +5,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
-
+//import { loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
 Vue.use(Vuex)
 
 const LOCALSTORAGE_KEY_JWT = "jwt"
@@ -77,7 +77,8 @@ export default new Vuex.Store({
       state.jwt = payload.jwt
       if (payload.jwt && payload.jwt.split('.').length == 3) {
         const data = JSON.parse(atob(payload.jwt.split('.')[1]))
-        state.user = data.sub
+        state.user = data
+            .sub
       }
     },
     setQueryOptions(state, payload) {
@@ -98,10 +99,20 @@ export default new Vuex.Store({
    * Mostly wrappers around API calls that manage commiting the received results
    */
   actions: {
-    query(context, { question, options }) {
+    query: function (context, {question, options}) {
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
-      options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
+      options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
+      // let data;
+      // data = {"name": "t5", "score": 1, "skill_description": "t5"}
+      //
+      // return axios.post(`http://127.0.0.1:5003/api/query`,
+      //     {"question": question, "options": {"maxResults": options.maxResultsPerSkill}}).then((response) => {
+      //       data["results"]=[response.data]
+      //   context.commit("setAnsweredQuestion", {results: data, question: question})
+      //   context.commit("setQueryOptions", {queryOptions: options})
+      // })
+
       return fetchResults(question, options)
         .then((response) => {
           context.commit("setAnsweredQuestion", { results: response.data, question: question })

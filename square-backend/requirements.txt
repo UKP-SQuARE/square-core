@@ -4,8 +4,8 @@ Flask-Migrate
 Flask-Script
 Flask-CORS
 flask-jwt-extended
-flask-socketio
-requests
+flask-socketio==4.3.2
+requests==2.25.1
 flasgger
 eventlet
 pyyaml

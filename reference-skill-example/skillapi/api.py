@@ -1,11 +1,15 @@
 from flask import Blueprint, jsonify, request
+import logging
 
 api = Blueprint("api", __name__)
-
+logger = logging.getLogger(__name__)
 
 def _to_result(text):
     return {"type": "plain_text", "result": text}
 
+@api.route('/')
+def main():
+    return 'Welcome to the Test API!'
 
 @api.route("/query", methods=["POST"])
 def query():

@@ -20,6 +20,7 @@ services:
       - 5000:5000
     depends_on:
       - db
+      - es
     volumes:
       - migrations-data:/app/migrations
 
@@ -39,9 +40,9 @@ services:
     build: ./reference-skill-example
     restart: always
     ports:
-      - 5002:5002
-    environment:
-      - PORT=5002
+      - 8080:8080
+    #environment:
+    #  - PORT=5002
 
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
