@@ -67,12 +67,7 @@
             ></b-form-input>
           </b-form-group>
         </div>
-
-<!--        <div>-->
-<!--          <b-card-text>{{answer}}</b-card-text>-->
-<!--        </div>-->
-
-      </b-form>
+     </b-form>
     </b-form-row>
   </b-container>
 </template>
@@ -89,7 +84,6 @@ export default {
       },
       showEmptyWarning: false,
       inputQuestion: "",
-      // answer: null,
       failure: false,
       failureMessage: ""
     };
