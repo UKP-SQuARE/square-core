@@ -5,7 +5,6 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
-//import { loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
 Vue.use(Vuex)
 
 const LOCALSTORAGE_KEY_JWT = "jwt"
