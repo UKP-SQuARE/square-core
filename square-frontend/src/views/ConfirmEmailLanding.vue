@@ -2,17 +2,6 @@
   <b-container >
     <h2 class="text-center">Email Confirmation</h2>
     <hr />
-<!--    <b-card-->
-<!--        title="Congratulations"-->
-<!--        style="max-width: 20rem; display: none"-->
-<!--        class="mb-2 successCard"-->
-<!--    >-->
-<!--      <b-card-text>-->
-<!--        You have completed account registration for your UKP-SquARE account. Please login to start exploring UKP-SquARE-->
-<!--      </b-card-text>-->
-
-<!--      <router-link to="/Login" tag="button">Login</router-link>-->
-<!--    </b-card>-->
     <b-alert
         v-model="success"
         variant="success"
