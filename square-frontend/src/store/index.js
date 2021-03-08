@@ -101,7 +101,7 @@ export default new Vuex.Store({
     query(context, { question, options }) {
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
-      options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
+      options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
       return fetchResults(question, options)
         .then((response) => {
           context.commit("setAnsweredQuestion", { results: response.data, question: question })
@@ -154,10 +154,10 @@ export default new Vuex.Store({
       context.commit("setQueryOptions", { queryOptions: options })
       this._vm.$socket.client.emit("query", { question: question, options: options })
     },
-    SOCKET_train(context, {id, train_file, dev_file}) {
-      this._vm.$socket.client.emit("train", { id: id, train_file: train_file, dev_file: dev_file , jwt: context.state.jwt});
+    SOCKET_train(context, { id, train_file, dev_file }) {
+      this._vm.$socket.client.emit("train", { id: id, train_file: train_file, dev_file: dev_file, jwt: context.state.jwt });
     },
-    SOCKET_unpublish(context, {id}) {
+    SOCKET_unpublish(context, { id }) {
       this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });
     }
   },
