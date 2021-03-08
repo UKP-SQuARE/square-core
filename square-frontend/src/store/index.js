@@ -149,7 +149,7 @@ export default new Vuex.Store({
     SOCKET_query(context, { question, options }) {
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
-      options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
+      options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
       context.commit("setAnsweredQuestion", { results: [], question: question })
       context.commit("setQueryOptions", { queryOptions: options })
       this._vm.$socket.client.emit("query", { question: question, options: options })
