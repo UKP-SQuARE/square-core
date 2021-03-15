@@ -51,13 +51,6 @@
         class="mr-2"
       >{{skill.is_published ? 'Retrain' : 'Train and Publish'}}</b-button>
 
-      <b-button
-          v-if="!waitingTraining"
-          type="submit"
-          variant="outline-primary"
-          class="mr-2"
-      >{{skill.is_published ? 'Retrain' : 'Train and Publish'}}</b-button>
-
       <b-button v-else type="submit" variant="outline-primary" class="mr-2" disabled>
         Training...
         <b-spinner small label="Spinning"></b-spinner>
@@ -93,6 +86,7 @@
 
 
 <script>
+import { trainSkill } from "@/api";
 export default {
   name: "train",
   data() {
@@ -118,10 +112,29 @@ export default {
       this.failure = false;
       this.success = false;
       this.waitingTraining = true;
-      if (this.train_file !== null && this.dev_file !== null ) {
-        this.$store.dispatch("SOCKET_train", {id: this.skill.id, train_file: this.train_file, dev_file: this.dev_file});
+      if (this.train_file !== null && this.dev_file !== null ){
+        const files = new FormData();
+        files.append("train_file", this.train_file)
+        files.append("dev_file", this.dev_file)
+
+        trainSkill(this.skill.id, files, this.$store.state.jwt)
+            .then((successMessage) => {
+              console.log("tick")
+              this.waitingTraining = false;
+              this.success = true;
+              this.successMessage = successMessage.data.msg;
+              this.$store.dispatch("updateSkills")
+                  .then(() => this.$store.commit("initQueryOptions", {forceSkillInit: true}));
+            })
+            .catch(failureMessage => {
+              this.waitingTraining = false;
+              this.failure = true;
+              this.failureMessage = failureMessage.data.msg;
+            });
       } else {
-        this.failureMessage = " The training file or validation file cannot be found"
+          this.waitingTraining = false;
+          this.failure = true;
+          this.failureMessage = "The training file or validation file cannot be found"
       }
     },
     unpublishSkill() {

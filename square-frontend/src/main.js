@@ -7,17 +7,27 @@ import router from './router'
 import store from './store'
 import BootstrapVue from 'bootstrap-vue'
 import axios from 'axios'
-import VueSocketIOExt from 'vue-socket.io-extended';
-import io from 'socket.io-client';
+import Vuex from 'vuex';
+import VueSocketIO from 'vue-socket.io';
 
 Vue.config.productionTip = false
 
 // Install BootstrapVue
 Vue.use(BootstrapVue)
 
-const socket = io(process.env.VUE_APP_BACKEND_URL);
- 
-Vue.use(VueSocketIOExt, socket, { store });
+// Set Vue to use Vuex
+Vue.use(Vuex);
+
+// Set Vue to use VueSocketIO with Vuex integration
+Vue.use(new VueSocketIO({
+    debug: true,
+    connection: process.env.VUE_APP_BACKEND_URL,
+    vuex: {
+        store,
+        actionPrefix: "SOCKET_",
+        mutationPrefix: 'SOCKET_'
+    }
+}));
 
 // Init Vue
 new Vue({

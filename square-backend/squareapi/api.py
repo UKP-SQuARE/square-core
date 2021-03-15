@@ -407,7 +407,6 @@ def delete_skill(id):
     logger.info("{} deleted skill with id '{}'".format(user["username"], id))
     return jsonify(skill.to_dict()), 200
 
-
 @api.route("/skill/<string:id>/train", methods=["POST"])
 @jwt_required
 def train_skill(id):
@@ -469,8 +468,7 @@ def train_skill(id):
 
     pool.spawn_n(skillSelector.train, skill.to_dict(), train_sentences, dev_sentences, False)
     logger.info("{} started training for skill '{}'".format(user["username"], skill.name))
-    return jsonify({"msg": "Started training for the skill"}), 200
-
+    return jsonify({"msg": "Finished training"}), 200
 
 @api.route("/skill/<string:id>/unpublish", methods=["POST"])
 @jwt_required

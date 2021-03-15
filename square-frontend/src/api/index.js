@@ -123,3 +123,16 @@ export function createSkill(newSkill, jwt) {
 export function pingSkill(skillUrl) {
      return axios.get(`${skillUrl}/ping`)
 }
+
+/**
+ * Train a skill belonging to the user  with  provided training data. JWT required
+ * Only skills with owner ID as specified in JWT can be updated.
+ * @param {String} skillId ID of the skill that will be trained
+ * @param {FormData} files training and validation fle for training the skill. All files need to be preseent
+ * @param {String} jwt JWT for authentication of skill ownership
+ */
+export function trainSkill(skillId, files, jwt) {
+    return axios.post(`${API_URL}/skill/${skillId}/train`, files,
+        {headers: { Authorization: `Bearer ${jwt}`,
+                    "Content-Type": "multipart/form-data"}})
+}

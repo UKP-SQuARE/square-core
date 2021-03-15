@@ -5,7 +5,6 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
-//import { loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
 Vue.use(Vuex)
 
 const LOCALSTORAGE_KEY_JWT = "jwt"
@@ -92,7 +91,7 @@ export default new Vuex.Store({
       if (!payload.finished) {
         state.currentResults.push(payload)
       }
-    }
+    },
   },
 
   /**
@@ -103,16 +102,6 @@ export default new Vuex.Store({
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      // let data;
-      // data = {"name": "t5", "score": 1, "skill_description": "t5"}
-      //
-      // return axios.post(`http://127.0.0.1:5003/api/query`,
-      //     {"question": question, "options": {"maxResults": options.maxResultsPerSkill}}).then((response) => {
-      //       data["results"]=[response.data]
-      //   context.commit("setAnsweredQuestion", {results: data, question: question})
-      //   context.commit("setQueryOptions", {queryOptions: options})
-      // })
-
       return fetchResults(question, options)
         .then((response) => {
           context.commit("setAnsweredQuestion", { results: response.data, question: question })
@@ -163,10 +152,10 @@ export default new Vuex.Store({
       options.maxResultsPerSkill = parseInt(options.maxQuerriedSkills)
       context.commit("setAnsweredQuestion", { results: [], question: question })
       context.commit("setQueryOptions", { queryOptions: options })
-      this._vm.$socket.client.emit("query", { question: question, options: options })
+      this._vm.$socket.emit("query", { question: question, options: options })
     },
     SOCKET_train(context, {id, train_file, dev_file}) {
-      this._vm.$socket.client.emit("train", { id: id, train_file: train_file, dev_file: dev_file , jwt: context.state.jwt});
+      this._vm.$socket.emit("train", { id: id, train_file: train_file, dev_file: dev_file , jwt: context.state.jwt});
     },
     SOCKET_unpublish(context, {id}) {
       this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });
