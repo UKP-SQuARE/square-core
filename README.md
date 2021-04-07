@@ -6,7 +6,8 @@ Highly modular web app focus on question answering
 - Advanced question answering using automatic skill selector, which predicts the best skill that can answer the question
 - Provides an overview of your skills and skills that were published by other users
 - Develop your own skill and publish on square
-- Register, publish, unpublish retrain and delete your skills
+- Manage Register, publish, unpublish retrain and delete your skills
+- Integrated user and session management 
 
 ##  :rainbow: Quick Demo: 
 To launch Square, the only prerequisites is docker and docker-compose. docker-compose will build docker containers from scratch install all requirements for you.
