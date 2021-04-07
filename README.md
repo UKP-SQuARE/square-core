@@ -6,6 +6,8 @@
 - Develop your own skill and publish on square
 - Register, publish, unpublish retrain and delete your skills
 &nbsp;
+&nbsp;
+&nbsp;
 ## Quick Demo: 
 To launch Square, the only prerequisites is docker and docker-compose. docker-compose will build docker containers from scratch install all requirements for you.
 1. Install docker and docker-compose
