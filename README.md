@@ -24,3 +24,7 @@ This starts no additional skill server.
 However, skill server can also be run independently from the core server.  
 If a skill server is run in the same cluster, then its container name should be used as host and not 127.0.0.1.
 The client will say it is not available, but the backend server can resolve it. 
+
+
+## System Overview
+![Oveview](https://github.com/UKPLab/square-core/blob/master/system.jpg)
