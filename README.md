@@ -55,7 +55,7 @@ The client will say it is not available, but the backend server can resolve it.
 
 
 ### :pencil: System Overview
-![Oveview](https://github.com/UKPLab/square-core/blob/master/system.jpg)
+![Oveview](https://github.com/UKPLab/square-core/blob/master/doc/system.jpg)
 
 __Front-End Application__, web app which currently support two user actions
 - receives questions from the user and talks to the square-backend to give the answers
