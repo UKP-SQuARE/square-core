@@ -20,13 +20,24 @@ The project is a Flask webserver.
     * models.py: The models used in the database
 
 ## Creating a database
-Run `python flask-mange.py db init` `python flask-mange.py db migrate` `python flask-mange.py db upgrade` to create a fresh database with all required tables.
+Run `python flask_manage.py db init` `python flask_manage.py db migrate` `python flask-mange.py db upgrade` to create a fresh database with all required tables.
 
-`python flask-mange.py shell` starts a Python shell in the app context so you can easily manage the DB manually with it.
+`python flask-manage.py shell` starts a Python shell in the app context so you can easily manage the DB manually with it.
 
 ## Starting the server
 Run `python main.py`.
 
+## Postgres
+Run `docker exec -it square-core_db_1 psql -U square` to access the postgres container
+and then use psql command to inspect the db.
+
 ## API Documentation
 The API is documented [here](squareapi/api.py) in the docstrings as YAML-formatted Swagger documentation.
 The endpoint `/apidocs` of a running server renders the entire documentation as a webpage.
+
+## BACKEND DEBUG 
+Besides setting DEBUG=True, please add these following line to be able to print to console  
+`print("whatever you want print")`  
+`import sys`  
+`sys.stdout.flush() `  
+
