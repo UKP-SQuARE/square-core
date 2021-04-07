@@ -1,12 +1,12 @@
 # Overview
-## Core features:
+## :rocket: Core features:
 - Questions answering using a pretrained model with no training needed
 - Advanced question answering using automatic skill selector, which predicts the best skill that can answer the question
 - Provides an overview of your skills and skills that were published by other users
 - Develop your own skill and publish on square
 - Register, publish, unpublish retrain and delete your skills
-\n
-## Quick Demo: 
+
+##  :rainbow: Quick Demo: 
 To launch Square, the only prerequisites is docker and docker-compose. docker-compose will build docker containers from scratch install all requirements for you.
 1. Install docker and docker-compose
 2. Clone Square repository from github
@@ -21,12 +21,12 @@ To launch Square, the only prerequisites is docker and docker-compose. docker-co
 3. Register your sample skill 
 4. Choose your sample skill to answer the question 
 
-## For developers
+## :computer: For developers
 ### Developing SQUARE-CORE
 - Each module square-backend, square-frontend and reference-skill-example has a README.md, which describes how to start the server individually for your local development
 - You can launch all SQUARE-CORE modules at once with docker-composer or individually since each module also have it own Dockerfile so that they can be started, restarted or killed individually. 
 
-### Basic commands
+### :triangular_flag_on_post: Basic commands
 
 #### Deploy on a remote server and square-core locally
 Skill can be deployed on a different server than the SQUARE-CORE, which can create some issues. We has found a work-around solution for this problem.
@@ -51,7 +51,7 @@ If a skill server is run in the same cluster, then its container name should be 
 The client will say it is not available, but the backend server can resolve it. 
 
 
-### System Overview
+### :pencil: System Overview
 ![Oveview](https://github.com/UKPLab/square-core/blob/master/system.jpg)
 
 __Front-End Application__, web app which currently support two user actions
