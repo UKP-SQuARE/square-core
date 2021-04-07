@@ -1,6 +1,3 @@
-# square-core
-Frontend and QA backend server code
-
 # Overview
 ## Core features:
 - Questions answering using a pretrained model with no training needed
@@ -10,7 +7,7 @@ Frontend and QA backend server code
 - Register, publish, unpublish retrain and delete your skills
 
 ## Quick Demo: 
-To start Square, you can start a with docker-compose
+To launch Square, the only prerequisites is docker and docker-compose. docker-compose will build docker containers from scratch install all requirements for you.
 1. Install docker and docker-compose
 2. Clone Square repository from github
 `git clone https://github.com/UKPLab/square-core.git`
@@ -18,17 +15,21 @@ To start Square, you can start a with docker-compose
 `cd square`
 `docker-compose up  --build`
 
-## Basic Workflow: 
+## Basic Workflow with pretrained skill 
 1. Launch demo app
 2. Create a sample skill and launch 
-3.  Register your sample skill 
+3. Register your sample skill 
 4. Choose your sample skill to answer the question 
 
 ## For developers
-### Run locally (development)
-The README.md in square-backend, square-frontend and reference-skill-example describes how to start the server locally for development.
+### Developing SQUARE-CORE
+- Each module square-backend, square-frontend and reference-skill-example has a README.md, which describes how to start the server individually for your local development
+- You can launch all SQUARE-CORE modules at once with docker-composer or individually since each module also have it own Dockerfile so that they can be started, restarted or killed individually. 
 
-### Run Skill on a remote server and □-core locally
+### Basic commands
+
+#### Deploy on a remote server and square-core locally
+Skill can be deployed on a different server than the SQUARE-CORE, which can create some issues. We has found a work-around solution for this problem.
 1. Login to the remote server
 2. Get IP of the node with `ifconfig`
 3. Start the webserver of the skill
@@ -40,7 +41,7 @@ The README.md in square-backend, square-frontend and reference-skill-example des
 8. Create a new skill, as URL enter `http://host.docker.internal:5003/api` (Note that currently the form will say the skill is not available, this is a [bug](https://github.com/UKPLab/square-core/issues/8))
 9. Go back to home and try your skill.
 
-### Docker-Compose
+#### Docker-Compose
 Run `docker-compose up [--build]` to run front- and backend along with a Postgres DB in production mode.
 This starts no additional skill server.
 
@@ -52,3 +53,21 @@ The client will say it is not available, but the backend server can resolve it.
 
 ### System Overview
 ![Oveview](https://github.com/UKPLab/square-core/blob/master/system.jpg)
+
+__Front-End Application__, web app which currently support two user actions
+- receives questions from the user and talks to the square-backend to give the answers
+- allows the registration of skills endpoint
+
+__Backend__
+- API Service: receives HTTP GET requests containing user queries and forwards them to other system and gives back the answers
+- Selector: select skills chosen by the users and get answer from these skills
+- ElasticsearchVoteSelector: calculate similarity between question by user and saved questions to decide which skill are relevant automatically
+
+__PostgresDB__: 
+- save metadata of registered skills
+- save user information
+- save examples for training and validation of all skill 
+
+__ElasticSearch__: 
+- save examples for training and validation of all skill 
+
