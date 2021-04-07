@@ -1,4 +1,6 @@
 # Overview
+Highly modular web app focus on question answering 
+
 ## :rocket: Core features:
 - Questions answering using a pretrained model with no training needed
 - Advanced question answering using automatic skill selector, which predicts the best skill that can answer the question
@@ -15,11 +17,11 @@ To launch Square, the only prerequisites is docker and docker-compose. docker-co
 `cd square`
 `docker-compose up  --build`
 
-## Basic Workflow with pretrained skill 
-1. Launch demo app
-2. Create a sample skill and launch 
-3. Register your sample skill 
-4. Choose your sample skill to answer the question 
+## :sparkles: Basic Workflow with a pretrained skill 
+1. Launch demo app, which hasn't had any skills registerd so you can't ask question yet.
+2. Create a sample skill and deploy it
+3. Register your sample skill on SQUARE 
+4. Choose the skill you have just created sample to answer questions 
 
 ## :computer: For developers
 ### Developing SQUARE-CORE
@@ -56,16 +58,16 @@ The client will say it is not available, but the backend server can resolve it.
 
 __Front-End Application__, web app which currently support two user actions
 - receives questions from the user and talks to the square-backend to give the answers
-- allows the registration of skills endpoint
+- allows the CRUD of skills endpoints
 
 __Backend__
-- API Service: receives HTTP GET requests containing user queries and forwards them to other system and gives back the answers
+- API Service: receives HTTP GET requests containing user question and forwards them to other system and gives back the answers
 - Selector: select skills chosen by the users and get answer from these skills
 - ElasticsearchVoteSelector: calculate similarity between question by user and saved questions to decide which skill are relevant automatically
 
 __PostgresDB__: 
-- save metadata of registered skills
-- save user information
+- save metadata of registered skills: owner, name, description, ect.
+- save user information: username, password, etc.
 - save examples for training and validation of all skill 
 
 __ElasticSearch__: 
