@@ -25,7 +25,7 @@ To launch Square, the only prerequisites is docker and docker-compose. docker-co
 
 ## :computer: For developers
 ### Developing SQUARE-CORE
-- Each module square-backend, square-frontend and reference-skill-example has a README.md, which describes how to start the server individually for your local development
+- Each module [square-backend](https://github.com/UKPLab/square-core/tree/master/square-backend), [square-frontend](https://github.com/UKPLab/square-core/tree/master/square-frontend) and [reference-skill-example](https://github.com/UKPLab/square-core/tree/master/reference-skill-example) has its own README.md, which these module in details and shows you how to start these module individually.
 - You can launch all SQUARE-CORE modules at once with docker-composer or individually since each module also have it own Dockerfile so that they can be started, restarted or killed individually. 
 
 ### :triangular_flag_on_post: Basic commands
