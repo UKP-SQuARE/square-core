@@ -57,7 +57,7 @@ If you are running the square-backend as a container and still want to debug it 
 - Stand-alone mode: `python flask-manage.py shell` starts a Python shell in the app context so you can easily manage the DB manually with it.
 - Inside a docker container: Run `docker exec -it square-core_db_1 psql -U square` to get inside the postgre container
 and then use psql command to inspect the db. You can read [psql documentation](http://postgresguide.com/utilities/psql.html) to write your own queries
-2. Elasticsearch:
+[Data model](https://github.com/UKPLab/square-core/blob/master/doc/models.png)
 
 
 
