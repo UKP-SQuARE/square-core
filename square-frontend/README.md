@@ -59,25 +59,33 @@ A central location where all of the routing between URLs to a page (also called 
 
 ### Routing Guidelines 
 __Homepage__(URL: /#/)
-* a page for question answering
+* a page for question answering   
+ 
 __Sign in/ Register pages__ (URL: /#/login, /#/register)
-* uses JWT
+* uses JWT  
+
 __Forgot Password__ (URL: /#/forgotPassword)
-* send request to reset password, a reset email with a temporal token (60mins) will be sent to user
+* send request to reset password, a reset email with a temporal token (60mins) will be sent to user  
+
 __Email Confirmation__
 * this page is called when the user click on the reset link in the password reset email
-* if user don’t reset password in 60 mins, the token got expired and they got to send the password reset request again . 
+* if user don’t reset password in 60 mins, the token got expired and they got to send the password reset request again .   
+
 __Reset Password__ (URL: /#/resetPassword/:token)  
-* user can set new password here
+* user can set new password here  
+
 __Skills page__ (URL: /#/skills)
 * login required
 * list of all available skills with information such as whether the skill is published
-* create new skill or delete skills
+* create new skill or delete skills  
+
 __Skill page__ (URL: /#/skill/:id)  
 * shows basic skill info: name, description skill status (endpoint available? skill published?)
-* edit skill information 
+* edit skill information   
+
 __Train page__ (URL: /#/train/:id) 
-* page to upload training data for a skill
+* page to upload training data for a skill  
+
 
 __src/store/index.js__
 A central file to defined all of the states that are used in the app, which can latter be used in the views. This file implemented the store concept in Vuejs, different components shared a state, and there are certain actions bind to a state change. When a state changed, the store raises events to fire the predefined actions. 
