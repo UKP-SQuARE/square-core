@@ -81,11 +81,13 @@ __Train page__ (URL: /#/train/:id)
   src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG">
    <figcaption><b>Homepage</b></figcaption>
 </figure>
+<br>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
   <figcaption><b>Register</b></figcaption>
 </figure>
+<br>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/login.PNG">
