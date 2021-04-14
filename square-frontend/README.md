@@ -41,27 +41,32 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
+\
+\
+\
+
 ## Detailed description of the source directory
-__src/api /index.js__  
+__###src/api /index.js__  
 
 A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
 
- __src/components__  
+ __###src/components__  
  
 A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
 
-__src/components__  
+__###src/components__  
 
 contains all of the reusable template components that can be rendered in different pages (e.g navigation bar)
 
-__src/components/results__  
+__###src/components/results__  
 
 contains reusable templates to render different type of query results or also called answers. The template will create a slot for an answer.
 
-__src/router/index.js__  
+__###src/router/index.js__  
 
-A central location where all of the routing between URLs to a page (also called view or component) are defined. 
+A central location where all of the routing between URLs to a page (also called view or component) are defined. When a new page is created a path to this page shoul must be registered here
 
+\
 ### Routing Guidelines 
 __Homepage__(URL: /#/)  
 * a page for question answering   
@@ -92,8 +97,8 @@ __Train page__ (URL: /#/train/:id)
 * page to upload training data for a skill  
 
 
-__src/store/index.js__
+__###src/store/index.js__
 A central file to defined all of the states that are used in the app, which can latter be used in the views. This file implemented the store concept in Vuejs, different components shared a state, and there are certain actions bind to a state change. When a state changed, the store raises events to fire the predefined actions. 
 
-__src/views/…__
+__###src/views/…__
 This directory stores all of the different views /HTML pages for the app
