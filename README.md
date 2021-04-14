@@ -2,7 +2,7 @@
 Highly modular web app focus on question answering 
 
 ## :rocket: Core features:
-- Questions answering using a pretrained model with no training needed via *skill*, each skill created to handle a specific questions-answering task (domain-specific e.g covid19, biomedical, ... or factoid question that based on Freebase knowledge graph). A user can implement skill model on their own or in more simple way is to use third-party API such as t5 or elli5 from huggingface.
+- Central location to store and ask question with pretrained *skills*, each skill created to handle a specific questions-answering task (domain-specific e.g covid19, biomedical, ... or factoid question that based on Freebase knowledge graph). A user can implement skill model on their own or in more simple way is to use third-party API such as t5 or elli5 from huggingface.
 - Advanced question answering using automatic skill selector, which predicts the best availble skill from a pool of avaible skill that can provide the answer based on the similarity of the user question and the questions, on which a skill is trained on.
 - Provides an overview of your skills and skills that were published by other users
 - Develop your own skill as REST API, deploy it and publish its endpoints on square 
