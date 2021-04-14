@@ -2,11 +2,11 @@
 Highly modular web app focus on question answering 
 
 ## :rocket: Core features:
-- Questions answering using a pretrained model with no training needed
-- Advanced question answering using automatic skill selector, which predicts the best skill that can answer the question
+- Questions answering using a pretrained model with no training needed via *skill*, each skill created to handle a specific questions-answering task (domain-specific e.g covid19, biomedical, ... or factoid question that based on Freebase knowledge graph). A user can implement skill model on their own or in more simple way is to use third-party API such as t5 or elli5 from huggingface.
+- Advanced question answering using automatic skill selector, which predicts the best availble skill from a pool of avaible skill that can provide the answer based on the similarity of the user question and the questions, on which a skill is trained on.
 - Provides an overview of your skills and skills that were published by other users
-- Develop your own skill and publish on square
-- Manage Register, publish, unpublish retrain and delete your skills
+- Develop your own skill as REST API, deploy it and publish its endpoints on square 
+- Manage register, publish, unpublish retrain and delete your skills
 - Integrated user and session management 
 
 ##  :rainbow: Quick Demo: 
@@ -57,7 +57,7 @@ The client will say it is not available, but the backend server can resolve it.
 ### :pencil: System Overview
 ![Oveview](https://github.com/UKPLab/square-core/blob/master/doc/system.jpg)
 
-__Front-End Application__, web app which currently support two user actions
+__Front-End Application__, web app which supports user actions
 - receives questions from the user and talks to the square-backend to give the answers
 - allows the CRUD of skills endpoints
 
