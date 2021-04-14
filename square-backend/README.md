@@ -1,4 +1,4 @@
-# :atom: Overview
+# :rocket: Overview
 Square backend is a Flask webserver with basics funciton:
 - manages user accounts 
 - everyone can send question, however users have to registered to create and manage their skills
