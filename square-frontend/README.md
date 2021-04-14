@@ -41,3 +41,46 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
+## Detailed description of the source directory
+__src/api /index.js__
+A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
+
+ __src/components__
+A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
+
+__src/components __
+contains all of the reusable template components that can be rendered in different pages (e.g navigation bar)
+
+__src/components/results__
+contains reusable templates to render different type of query results or also called answers. The template will create a slot for an answer.
+
+__src/router/index.js__
+A central location where all of the routing between URLs to a page (also called view or component) are defined. 
+
+### Routing Guidelines 
+__Homepage__(URL: /#/)
+* a page for question answering
+__Sign in/ Register pages__ (URL: /#/login, /#/register)
+* uses JWT
+__Forgot Password__ (URL: /#/forgotPassword)
+* send request to reset password, a reset email with a temporal token (60mins) will be sent to user
+__Email Confirmation__
+* this page is called when the user click on the reset link in the password reset email
+* if user don’t reset password in 60 mins, the token got expired and they got to send the password reset request again . 
+__Reset Password__ (URL: /#/resetPassword/:token)  
+* user can set new password here
+__Skills page__ (URL: /#/skills)
+* login required
+* list of all available skills with information such as whether the skill is published
+* create new skill or delete skills
+__Skill page__ (URL: /#/skill/:id)  
+* shows basic skill info: name, description skill status (endpoint available? skill published?)
+* edit skill information 
+__Train page__ (URL: /#/train/:id) 
+* page to upload training data for a skill
+
+__src/store/index.js__
+A central file to defined all of the states that are used in the app, which can latter be used in the views. This file implemented the store concept in Vuejs, different components shared a state, and there are certain actions bind to a state change. When a state changed, the store raises events to fire the predefined actions. 
+
+__src/views/…__
+This directory stores all of the different views /HTML pages for the app
