@@ -80,18 +80,58 @@ __Train page__ (URL: /#/train/:id)
 ### Screenshot of the demo
 <figure>
   <img
-  src="https://developer.mozilla.org/static/img/favicon144.png"
-  alt="The beautiful MDN logo.">
-  <figcaption>MDN Logo</figcaption>
+  src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG">
+  <figcaption>Homepage</figcaption>
 </figure>
-![Homepage](https://github.com/UKPLab/square-core/blob/master/doc/home.PNG)
-![Register](https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG)
-![Login](https://github.com/UKPLab/square-core/blob/master/doc/login.PNG)
-![Confirm Registration](https://github.com/UKPLab/square-core/blob/master/doc/emailConfirmation.PNG)
-![Forgot Password](https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG)
-![Email Confirmation](https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG)
-![Reset Password](https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG)
-![Skills page](https://github.com/UKPLab/square-core/blob/master/doc/skills.PNG)
-![Train page](https://github.com/UKPLab/square-core/blob/master/doc/train_skill.PNG)
-![Create new skill](https://github.com/UKPLab/square-core/blob/master/doc/newskill.PNG)
-![Reset Email](https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG)
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
+  <figcaption>Register</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/login.PNG">
+  <figcaption>Login</figcaption>
+</figure>
+
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/skills.PNG">
+  <figcaption>Skills page</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/train_skill.PNG">
+  <figcaption>Train page</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/newskill.PNG">
+  <figcaption>Create new skill</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/emailConfirmation.PNG">
+  <figcaption>Confirm Registration</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
+  <figcaption>Forgot Password</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
+  <figcaption>Email Confirmation</figcaption>
+</figure>
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
+  <figcaption>Reset Password</figcaption>
+</figure>
+
+<figure>
+  <img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
+  <figcaption>Reset Email</figcaption>
+</figure>
