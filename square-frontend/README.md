@@ -41,7 +41,7 @@ A central file to defined all of the states that are used in the app, which can 
 ### src/views/…
 This directory stores all of the different views /HTML pages for the app
 
-### Routing Guidelines 
+### :memo: Routing Guidelines 
 __Homepage__(URL: /#/)  
 * a page for question answering, all request will be directed to home
 
@@ -76,13 +76,13 @@ __Train page__ (URL: /#/train/:id)
 * retrain skill
 
 ### :triangular_flag_on_post: Screenshot of the demo
-<figure>
+:paperclip: <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG">
    <figcaption><b>Homepage</b></figcaption>
 </figure>
 <br>
-<figure>
+:paperclip:<figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
   <figcaption><b>Register</b></figcaption>
