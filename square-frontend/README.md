@@ -130,7 +130,7 @@ __Train page__ (URL: /#/train/:id)
 </figure>
 
 :bell:<figure>
-     <figcaption><b>Reset Email</b></figcaption>
+     <figcaption><b>Reset Password</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
 </figure>
