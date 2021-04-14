@@ -37,10 +37,16 @@ contains reusable templates to render different type of query results or also ca
 A central location where all of the routing between URLs to a page (also called view or component) are defined. When a new page is created, a path to this page must be registered here.
 
 
+### src/store/index.js
+A central file to defined all of the states that are used in the app, which can latter be used in the views. This file implemented the store concept in Vuejs, different components shared a state, and there are certain actions bind to a state change. When a state changed, the store raises events to fire the predefined actions. 
+
+### src/views/…
+This directory stores all of the different views /HTML pages for the app
+
 ### Routing Guidelines 
 __Homepage__(URL: /#/)  
 * a page for question answering, all request will be directed to home
- 
+
 __Sign in/ Register__ (URL: /#/login, /#/register)
 * uses JWT  
 
@@ -71,8 +77,15 @@ __Train page__ (URL: /#/train/:id)
 * page to upload training data for a skill  
 * retrain skill
 
-### src/store/index.js
-A central file to defined all of the states that are used in the app, which can latter be used in the views. This file implemented the store concept in Vuejs, different components shared a state, and there are certain actions bind to a state change. When a state changed, the store raises events to fire the predefined actions. 
-
-### src/views/…
-This directory stores all of the different views /HTML pages for the app
+### Screenshot of the demo
+![Homepage](https://github.com/UKPLab/square-core/blob/master/doc/home.PNG)
+![Register](https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG)
+![Login](https://github.com/UKPLab/square-core/blob/master/doc/login.PNG)
+![Confirm Registration](https://github.com/UKPLab/square-core/blob/master/doc/emailConfirmation.PNG)
+![Forgot Password](https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG)
+![Email Confirmation](https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG)
+![Reset Password](https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG)
+![Skills page](https://github.com/UKPLab/square-core/blob/master/doc/skills.PNG)
+![Train page](https://github.com/UKPLab/square-core/blob/master/doc/train_skill.PNG)
+![Create new skill](https://github.com/UKPLab/square-core/blob/master/doc/newskill.PNG)
+![Reset Email](https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG)
