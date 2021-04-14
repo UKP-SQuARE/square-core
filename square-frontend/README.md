@@ -1,7 +1,5 @@
 # :rocket: Overview: square-frontend
-The frontend client for SQuARE.  
-User can ask questions and receive answers.
-Developer can create an account and manage existing or create new skills for others to use.
+An user interface so that user ask questions, register their skills and perform skill training.
 
 This project is build with the [Vue Framework](https://vuejs.org/v2/guide/index.html).  
 Styling is done with [Bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/) and [BootstrapVue components](https://bootstrap-vue.js.org/docs/components/) are used heavily for this. 
