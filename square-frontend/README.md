@@ -75,61 +75,61 @@ __Train page__ (URL: /#/train/:id)
 * page to upload training data for a skill  
 * retrain skill
 
-### Screenshot of the demo
+### :triangular_flag_on_post: Screenshot of the demo
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG">
-  <figcaption>Homepage</figcaption>
+   <figcaption><b>Homepage</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
-  <figcaption>Register</figcaption>
+  <figcaption><b>Register</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/login.PNG">
-  <figcaption>Login</figcaption>
+  <figcaption><b>Login</b></figcaption>
 </figure>
 
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/skills.PNG">
-  <figcaption>Skills page</figcaption>
+  <figcaption><b>Skills page</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/train_skill.PNG">
-  <figcaption>Train page</figcaption>
+  <figcaption><b>Train page</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/newskill.PNG">
-  <figcaption>Create new skill</figcaption>
+  <figcaption><b>Create new skill</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/emailConfirmation.PNG">
-  <figcaption>Confirm Registration</figcaption>
+  <figcaption><b>Confirm Registration</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
-  <figcaption>Forgot Password</figcaption>
+  <figcaption><b>Forgot Password</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
-  <figcaption>Email Confirmation</figcaption>
+  <figcaption><b>Email Confirmation</b></figcaption>
 </figure>
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
-  <figcaption>Reset Password</figcaption>
+  <figcaption><b>Reset Password</b></figcaption>
 </figure>
 
 <figure>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
-  <figcaption>Reset Email</figcaption>
+  <figcaption><b>Reset Email</b></figcaption>
 </figure>
