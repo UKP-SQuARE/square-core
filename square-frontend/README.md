@@ -41,32 +41,30 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-\
-\
-\
+
 
 ## Detailed description of the source directory
-__###src/api /index.js__  
+### src/api /index.js 
 
 A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
 
- __###src/components__  
+### src/components
  
 A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
 
-__###src/components__  
+### src/components  
 
 contains all of the reusable template components that can be rendered in different pages (e.g navigation bar)
 
-__###src/components/results__  
+### src/components/results
 
 contains reusable templates to render different type of query results or also called answers. The template will create a slot for an answer.
 
-__###src/router/index.js__  
+### src/router/index.js
 
 A central location where all of the routing between URLs to a page (also called view or component) are defined. When a new page is created a path to this page shoul must be registered here
 
-\
+
 ### Routing Guidelines 
 __Homepage__(URL: /#/)  
 * a page for question answering   
@@ -97,8 +95,8 @@ __Train page__ (URL: /#/train/:id)
 * page to upload training data for a skill  
 
 
-__###src/store/index.js__
+### src/store/index.js
 A central file to defined all of the states that are used in the app, which can latter be used in the views. This file implemented the store concept in Vuejs, different components shared a state, and there are certain actions bind to a state change. When a state changed, the store raises events to fire the predefined actions. 
 
-__###src/views/…__
+### src/views/…
 This directory stores all of the different views /HTML pages for the app
