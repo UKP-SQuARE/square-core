@@ -42,23 +42,28 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## Detailed description of the source directory
-__src/api /index.js__
+__src/api /index.js__  
+
 A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
 
- __src/components__
+ __src/components__  
+ 
 A central location that contains all of the API requests that call the API server in backend. The API calls is done with Axios a built-in HTTP client module. All API requests should be registered here and be imported from here to reduce boilerplate in code rather than writing the request directly in the view page.
 
-__src/components __
+__src/components__  
+
 contains all of the reusable template components that can be rendered in different pages (e.g navigation bar)
 
-__src/components/results__
+__src/components/results__  
+
 contains reusable templates to render different type of query results or also called answers. The template will create a slot for an answer.
 
-__src/router/index.js__
+__src/router/index.js__  
+
 A central location where all of the routing between URLs to a page (also called view or component) are defined. 
 
 ### Routing Guidelines 
-__Homepage__(URL: /#/)
+__Homepage__(URL: /#/)  
 * a page for question answering   
  
 __Sign in/ Register pages__ (URL: /#/login, /#/register)
