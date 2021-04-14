@@ -76,62 +76,61 @@ __Train page__ (URL: /#/train/:id)
 * retrain skill
 
 ### :triangular_flag_on_post: Screenshot of the demo
-:paperclip: <figure>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG">
-   <figcaption><b>Homepage</b></figcaption>
+:bell:<figure>
+  <figcaption><b>Homepage</b></figcaption><img
+  src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG"> 
 </figure>
 <br>
-:paperclip:<figure>
+:bell:<figure>
+     <figcaption><b>Register</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
-  <figcaption><b>Register</b></figcaption>
 </figure>
 <br>
-<figure>
+:bell:<figure>
+     <figcaption><b>Login</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/login.PNG">
-  <figcaption><b>Login</b></figcaption>
 </figure>
 
-<figure>
+:bell:<figure>
+     <figcaption><b>Skills page</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/skills.PNG">
-  <figcaption><b>Skills page</b></figcaption>
 </figure>
-<figure>
+:bell:<figure>
+     <figcaption><b>Train page</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/train_skill.PNG">
-  <figcaption><b>Train page</b></figcaption>
 </figure>
-<figure>
+:bell:<figure>
+     <figcaption><b>Create new skill</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/newskill.PNG">
-  <figcaption><b>Create new skill</b></figcaption>
 </figure>
-<figure>
+:bell:<figure>
+     <figcaption><b>Confirm Registration</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/emailConfirmation.PNG">
-  <figcaption><b>Confirm Registration</b></figcaption>
 </figure>
-<figure>
+:bell:<figure>
+     <figcaption><b>Forgot Password</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
-  <figcaption><b>Forgot Password</b></figcaption>
 </figure>
-<figure>
+:bell:<figure>
+     <figcaption><b>Email Confirmation</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
-  <figcaption><b>Email Confirmation</b></figcaption>
 </figure>
-<figure>
+:bell:<figure>
+     <figcaption><b>Reset Password</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
-  <figcaption><b>Reset Password</b></figcaption>
 </figure>
 
-<figure>
+:bell:<figure>
+     <figcaption><b>Reset Email</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
-  <figcaption><b>Reset Email</b></figcaption>
 </figure>
