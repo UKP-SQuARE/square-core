@@ -78,6 +78,12 @@ __Train page__ (URL: /#/train/:id)
 * retrain skill
 
 ### Screenshot of the demo
+<figure>
+  <img
+  src="https://developer.mozilla.org/static/img/favicon144.png"
+  alt="The beautiful MDN logo.">
+  <figcaption>MDN Logo</figcaption>
+</figure>
 ![Homepage](https://github.com/UKPLab/square-core/blob/master/doc/home.PNG)
 ![Register](https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG)
 ![Login](https://github.com/UKPLab/square-core/blob/master/doc/login.PNG)
