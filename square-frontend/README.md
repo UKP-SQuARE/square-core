@@ -75,18 +75,18 @@ __Train page__ (URL: /#/train/:id)
 * page to upload training data for a skill  
 * retrain skill
 
-### :triangular_flag_on_post: Screenshot of the demo
+## :triangular_flag_on_post: Screenshot of the demo
 :bell:<figure>
   <figcaption><b>Homepage</b></figcaption><img
   src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG"> 
 </figure>
-<br>
+
 :bell:<figure>
      <figcaption><b>Register</b></figcaption>
   <img
   src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
 </figure>
-<br>
+
 :bell:<figure>
      <figcaption><b>Login</b></figcaption>
   <img
