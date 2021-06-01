@@ -60,8 +60,13 @@ jobs:
           tags: ${{ steps.prep.outputs.tagged_image }}-test
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-
+        
       - name: Retrieve Test Report
         uses: docker://${{ steps.prep.outputs.tagged_image }}-test
         run: cp -r /app/pytest.existcode ./square-backend/pytest.existcode
         run: cp -r /app/test-reports ./square-backend/test-reports
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: './square-backend/test-reports/junit.xml'
