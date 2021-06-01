@@ -61,10 +61,17 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
         
-      - name: Retrieve Test Report
-        uses: docker://${{ steps.prep.outputs.tagged_image }}-test
-        run: cp -r /app/pytest.existcode ./square-backend/pytest.existcode
-        run: cp -r /app/test-reports ./square-backend/test-reports
+      - name: Retrieve Test Result
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.tagged_image }}-test
+          path: '/app/pytest.existcode ./square-backend/pytest.existcode'
+
+      - name: Retrieve Test Reports
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.tagged_image }}-test
+          path: '/app/test-reports ./square-backend'
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
