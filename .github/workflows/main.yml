@@ -52,7 +52,7 @@ jobs:
       - name: Build test image
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./square-backend
           builder: ${{ steps.buildx.outputs.name }}
           file: ./square-backend/Dockerfile
           target: test
