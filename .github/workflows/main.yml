@@ -60,6 +60,9 @@ jobs:
           tags: ${{ steps.prep.outputs.tagged_image }}-test
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      - run: |
+          docker image ls
         
       - name: Retrieve Test Result
         uses: shrink/actions-docker-extract@v1
