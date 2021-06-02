@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v2
       
@@ -19,7 +19,7 @@ jobs:
         id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="hub.docker.com/repository/docker/ukpsquare/square-backend"
+          IMAGE="ukpsquare/square-backend"
           echo ::set-output name=tagged_image::${IMAGE}:${TAG} 
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
@@ -32,9 +32,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-multi-buildx
+            ${{ runner.os }}-buildx-
             
       - name: Build test image
         uses: docker/build-push-action@v2
@@ -46,7 +46,7 @@ jobs:
           push: false
           tags: ${{ steps.prep.outputs.tagged_image }}-test
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
 
       - run: |
           docker image ls
