@@ -68,9 +68,9 @@ jobs:
           path: /app/test-reports
 
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v2
+        uses: EnricoMi/publish-unit-test-result-action@v1
         with:
-          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          files: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
 
       - name: Check Test Result
         run: if [ $(cat ${{ steps.extract.outputs.destination }}/test-reports/pytest.exitcode) != 0 ]; then exit 1; fi  
