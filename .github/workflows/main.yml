@@ -20,7 +20,6 @@ jobs:
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           IMAGE="ukpsquare/square-backend"
-          echo ::set-output name=tagged_image::${IMAGE}:${TAG} 
           echo ::set-output name=image::${IMAGE}
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
@@ -44,7 +43,7 @@ jobs:
           context: ./square-backend
           target: test
           load: true
-          tags: ${{ steps.prep.outputs.tagged_image }}-test
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
       
@@ -56,15 +55,12 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-      - run: |
-          docker image ls
         
       - name: Retrieve Test Reports
         id: extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ${{ steps.prep.outputs.tagged_image }}-test
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
           path: /app/test-reports
 
       - uses: actions/upload-artifact@v2
@@ -86,8 +82,7 @@ jobs:
           context: ./square-backend
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
-          image: ${{ steps.prep.outputs.image }}
-          tags: ${{ steps.prep.outputs.tag }}, latest
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
@@ -108,7 +103,6 @@ jobs:
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           IMAGE="ukpsquare/square-frontend"
-          echo ::set-output name=tagged_image::${IMAGE}:${TAG} 
           echo ::set-output name=image::${IMAGE}
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
@@ -133,7 +127,7 @@ jobs:
           target: build
           push:  ${{github.ref == 'refs/heads/master'}}
           image: ${{ steps.prep.outputs.image }}
-          tags: ${{ steps.prep.outputs.tag }}, latest
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
