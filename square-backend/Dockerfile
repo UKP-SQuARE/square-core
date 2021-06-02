@@ -27,7 +27,7 @@ RUN pytest \
     --cov \
     --cov-report=xml:test-reports/coverage.xml \
     --cov-report=html:test-reports/coverage.html; \
-    echo $? > pytest.existcode
+    echo $? > test-reports/pytest.existcode
 
 FROM base as build
 
