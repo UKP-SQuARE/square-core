@@ -32,8 +32,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-backend-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-buildx-backend-
             ${{ runner.os }}-buildx-
             
       - name: Build test image
@@ -115,8 +116,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-frontend-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-buildx-frontend-
             ${{ runner.os }}-buildx-
           
       - name: Build deployable image
@@ -126,7 +128,6 @@ jobs:
           context: ./square-frontend
           target: build
           push:  ${{github.ref == 'refs/heads/master'}}
-          image: ${{ steps.prep.outputs.image }}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
