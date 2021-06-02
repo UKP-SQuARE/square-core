@@ -129,7 +129,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./square-backend
+          context: ./square-frontend
           target: build
           push:  ${{github.ref == 'refs/heads/master'}}
           image: ${{ steps.prep.outputs.image }}
