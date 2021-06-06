@@ -14,5 +14,5 @@ jobs:
       uses: distributhor/workflow-webhook@v2
       env:
         webhook_url: http://${{ secrets.VM_IP }}:${{ secrets.VM_WEBHOOK_PORT }}/hooks/redeploy-webhook
-        data: '{ webhook_token: ${{secrets.WEBHOOK_TOKEN}} }'
+        webhook_secret: ${{ secrets.WEBHOOK_TOKEN }}
         verify_ssl: false  
