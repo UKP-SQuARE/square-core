@@ -14,7 +14,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    build: ./square-backend
+    image: ukpsquare/square-backend:latest
     restart: always
     ports:
       - 5000:5000
@@ -24,7 +24,7 @@ services:
       - migrations-data:/app/migrations
 
   frontend:
-    build: ./square-frontend
+    image: ukpsquare/square-frontend:latest
     restart: always
     ports:
       - 80:80
@@ -35,22 +35,22 @@ services:
   #  ports:
   #    - 8080:8080
 
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
-    environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - es01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
+  # es:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
+  #   environment:
+  #     - node.name=es01
+  #     - cluster.name=es-docker-cluster
+  #     - discovery.type=single-node
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - es01:/usr/share/elasticsearch/data
+  #   ports:
+  #     - 9200:9200
 
 volumes:
   db-data:

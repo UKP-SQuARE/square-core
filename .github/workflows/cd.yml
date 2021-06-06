@@ -1,0 +1,17 @@
+name: CD
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    - name: Webhook
+      uses: distributhor/workflow-webhook
+      with:
+        url: "http://${{ secrets.VM_IP }}:${{ secrets.VM_WEBHOOK_PORT }}/hooks/redeploy-webhook"
+        json: '{ webhook_token: ${{secrets.WEBHOOK_TOKEN}} }'        
