@@ -14,7 +14,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    image: ukpsquare/square-backend
+    image: ukpsquare/square-backend:latest
     restart: always
     ports:
       - 5000:5000
@@ -24,7 +24,7 @@ services:
       - migrations-data:/app/migrations
 
   frontend:
-    image: ukpsquare/square-frontend
+    image: ukpsquare/square-frontend:latest
     restart: always
     ports:
       - 80:80
