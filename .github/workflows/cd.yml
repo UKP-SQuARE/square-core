@@ -10,9 +10,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Webhook
-        uses: distributhor/workflow-webhook@v2
-        env:
-          webhook_url: "http://${{ secrets.VM_IP }}:${{ secrets.VM_WEBHOOK_PORT }}/hooks/redeploy-webhook"
-          data: '{ webhook_token: ${{secrets.WEBHOOK_TOKEN}} }'  
-          verify_ssl: false  
+    - name: Invoke deployment hook
+      uses: distributhor/workflow-webhook@v2
+      env:
+        webhook_url: http://${{ secrets.VM_IP }}:${{ secrets.VM_WEBHOOK_PORT }}/hooks/redeploy-webhook
+        data: '{ webhook_token: ${{secrets.WEBHOOK_TOKEN}} }'
+        verify_ssl: false  
