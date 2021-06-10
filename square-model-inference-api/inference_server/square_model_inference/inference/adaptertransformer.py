@@ -10,21 +10,21 @@ from square_model_inference.inference.transformer import Transformer
 from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput
-from square_model_inference.core.config import MODEL_NAME, TRANSFORMERS_CACHE
 
 
 class AdapterTransformer(Transformer):
-    def __init__(self):
-        self._load_model(AutoModelWithHeads)
-        self._load_adapter()
+    def __init__(self, model_name, max_batch_size, disable_gpu, transformers_cache, **kwargs):
+        self._load_model(AutoModelWithHeads, model_name, disable_gpu)
+        self._load_adapter(model_name, transformers_cache)
+        self.max_batch_size = max_batch_size
 
-    def _load_adapter(self):
+    def _load_adapter(self, model_name, transformers_cache):
         """
         Pre-load all available adapters for MODEL_NAME from adapterhub.ml.
         We parse the hub index to extract all names and then load each model.
         """
         logger.info("Loading all available adapters from adapterhub.ml")
-        index_file = download_cached(ADAPTER_HUB_INDEX_FILE.format(MODEL_NAME))
+        index_file = download_cached(ADAPTER_HUB_INDEX_FILE.format(model_name))
         adapter_index = json.load(open(index_file))
         adapters = set()
         for task, datasets in adapter_index.items():
@@ -35,7 +35,7 @@ class AdapterTransformer(Transformer):
                             adapters.add(f"{task}/{dataset}@{org}")
         for adapter in adapters:
             logger.debug(f"Loading adapter {adapter}")
-            self.model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=TRANSFORMERS_CACHE)
+            self.model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=transformers_cache)
 
     # def _load_single_adapter(self, adapter_name: str):
     #     if adapter_name not in self.model.config.adapters.adapters:
@@ -79,6 +79,8 @@ class AdapterTransformer(Transformer):
             return self._sequence_classification(request)
         elif request.task == Task.token_classification:
             return self._token_classification(request)
+        elif request.task == Task.question_answering:
+            return self._question_answering(request)
         elif request.task == Task.embedding:
             return self._embedding(request)
         elif request.task == Task.generation:

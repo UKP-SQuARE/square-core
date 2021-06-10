@@ -11,6 +11,7 @@ class Task(str, Enum):
     """
     sequence_classification = "sequence_classification"
     token_classification = "token_classification"
+    question_answering = "question_answering"
     embedding = "embedding"
     generation = "generation"
 

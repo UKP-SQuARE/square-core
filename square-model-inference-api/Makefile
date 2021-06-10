@@ -7,14 +7,14 @@ SHELL := /bin/bash
 all: clean test install run deploy down
 
 test:
-	python -m pip install --upgrade pip && pip install setuptools tox
-	tox
+	python -m pip install --upgrade pip && pip install pytest
+	pytest
 
 install:
 	pip install --upgrade pip && pip install -r inference_server/requirements.txt
 
 run:
-	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8002 --env-file inference_server/.env.debug
+	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8002 --env-file inference_server/.env
 
 build:
 	docker-compose build
@@ -31,12 +31,8 @@ clean:
 	-find . -name '__pycache__' -exec rm -rf {} \;
 	-find . -name 'Thumbs.db' -exec rm -rf {} \;
 	-find . -name '*~' -exec rm -rf {} \;
-	-rm -rf .cache
 	-rm -rf build
 	-rm -rf dist
 	-rm -rf *.egg-info
-	-rm -rf htmlcov*
-	-rm -rf .tox/
 	-rm -rf docs/_build
-	-rm -r .coverage
 	-rm -rf .pytest_cache
