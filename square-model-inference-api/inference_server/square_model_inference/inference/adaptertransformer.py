@@ -68,10 +68,10 @@ class AdapterTransformer(Transformer):
 
     async def predict(self, request: PredictionRequest) -> PredictionOutput:
         if request.is_preprocessed:
-            ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+            raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
 
         if not request.adapter_name or request.adapter_name not in self.model.config.adapters.adapters:
-            ValueError(f"Unknown or missing adapter {request.adapter_name}. "
+            raise ValueError(f"Unknown or missing adapter {request.adapter_name}. "
                        f"Please provider a fully specified adapter name from adapterhub.ml")
         self.model.set_active_adapters(request.adapter_name)
 

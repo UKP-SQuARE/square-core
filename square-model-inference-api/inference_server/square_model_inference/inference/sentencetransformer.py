@@ -37,9 +37,9 @@ class SentenceTransformer(Model):
 
     async def predict(self, request: PredictionRequest) -> PredictionOutput:
         if request.is_preprocessed:
-            ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+            raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
 
         if request.task != Task.embedding:
-            NotImplementedError("Only embedding task supported by this model")
+            raise NotImplementedError("Only embedding task supported by this model")
         return self._embedding(request)
 

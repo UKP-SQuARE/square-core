@@ -39,7 +39,7 @@ class PredictionRequest(BaseModel):
     model_kwargs: dict = Field(
         default={},
         description="Dictionary containing parameters that are passed to the model for the forward pass. "
-                    "Set ‘output_attention=True’ to receive the attention weights for Huggingface Transformers in the "
+                    "Set ‘output_attentions=True’ to receive the attention weights for Huggingface Transformers in the "
                     "output."
     )
     task: Task = Field(...)

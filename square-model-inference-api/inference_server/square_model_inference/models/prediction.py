@@ -8,7 +8,7 @@ from pydantic import Field, BaseModel
 from square_model_inference.core.config import RETURN_PLAINTEXT_ARRAYS
 
 
-def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]]) -> Dict[str, Union[list, str]]:
+def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], return_plaintext: bool=RETURN_PLAINTEXT_ARRAYS) -> Dict[str, Union[list, str]]:
     """
     Encodes the Torch Tensors first to Numpy arrays and then makes either plain lists or base64-encode them depending
     on the flag RETURN_PLAINTEXT_ARRAYS
@@ -16,7 +16,7 @@ def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]]) -> D
     :return: the same dictionary with all tensors replaced by lists or base64-encoded array strings.
     """
     def encode(arr):
-        if RETURN_PLAINTEXT_ARRAYS:
+        if return_plaintext:
             return arr.tolist()
         else:
             # np.save expects a file which we emulate with BytesIO

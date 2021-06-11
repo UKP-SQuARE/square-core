@@ -7,8 +7,8 @@ SHELL := /bin/bash
 all: clean test install run deploy down
 
 test:
-	python -m pip install --upgrade pip && pip install pytest
-	pytest
+	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
+	pytest --cov
 
 install:
 	pip install --upgrade pip && pip install -r inference_server/requirements.txt

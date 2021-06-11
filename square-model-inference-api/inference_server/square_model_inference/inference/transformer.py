@@ -5,7 +5,7 @@ import torch
 from loguru import logger
 import numpy as np
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
-                        AutoModelForTokenClassification, AutoModelForQuestionAnswering
+    AutoModelForTokenClassification, AutoModelForQuestionAnswering, AutoModelForCausalLM
 
 from square_model_inference.inference.model import Model
 from square_model_inference.models.request import PredictionRequest, Task
@@ -15,8 +15,9 @@ from square_model_inference.models.prediction import PredictionOutput
 CLASS_MAPPING = {
     "base": AutoModel,
     "sequence_classification": AutoModelForSequenceClassification,
-    "token_classifcation": AutoModelForTokenClassification,
-    "question_answering": AutoModelForQuestionAnswering
+    "token_classification": AutoModelForTokenClassification,
+    "question_answering": AutoModelForQuestionAnswering,
+    "generation": AutoModelForCausalLM
 }
 
 class Transformer(Model):
@@ -97,7 +98,7 @@ class Transformer(Model):
         }
 
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
-            ValueError(f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
+            raise ValueError(f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
 
         if embedding_mode == "cls":
             emb = hidden_state[:, 0, :]
@@ -153,7 +154,7 @@ class Transformer(Model):
         return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
-        NotImplementedError("Generation is currently not implemented")
+        raise NotImplementedError("Generation is currently not implemented")
 
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
         # Making heavy use of https://huggingface.co/transformers/_modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
@@ -244,7 +245,7 @@ class Transformer(Model):
 
     async def predict(self, request: PredictionRequest) -> PredictionOutput:
         if request.is_preprocessed:
-            ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+            raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
 
         if request.task == Task.sequence_classification:
             return self._sequence_classification(request)
