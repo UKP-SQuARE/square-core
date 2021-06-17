@@ -13,11 +13,20 @@ from square_model_inference.models.prediction import PredictionOutput
 
 
 class SentenceTransformer(Model):
-    SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token"]
+    """
+    The class for all sentence-transformers models
+    """
 
-    def __init__(self, model_name, max_batch_size, disable_gpu, **kwargs):
+    def __init__(self, model_name, batch_size, disable_gpu, **kwargs):
+        """
+        Initialize the SentenceTransformer
+        :param model_name: the sentence-transformer model name (https://sbert.net/docs/pretrained_models.html)
+        :param batch_size: batch size used for inference
+        :param disable_gpu: do not move model to GPU even if CUDA is available
+        :param kwargs: Not used
+        """
         self._load_model(model_name, disable_gpu)
-        self.max_batch_size = max_batch_size
+        self.batch_size = batch_size
 
     def _load_model(self, model_name, disable_gpu):
         """
@@ -31,7 +40,7 @@ class SentenceTransformer(Model):
         self.model = model
 
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
-        embeddings = self.model.encode(request.input, batch_size=self.max_batch_size, show_progress_bar=False)
+        embeddings = self.model.encode(request.input, batch_size=self.batch_size, show_progress_bar=False)
         return PredictionOutput(model_outputs={"embeddings": embeddings}, task_outputs={})
 
 

@@ -7,7 +7,7 @@ environ["TRANSFORMERS_CACHE"] = TRANSFORMERS_TESTING_CACHE
 environ["MODEL_NAME"] = "test"
 environ["MODEL_TYPE"] = "test"
 environ["DISABLE_GPU"] = "True"
-environ["MAX_BATCH_SIZE"] = "1"
+environ["BATCH_SIZE"] = "1"
 environ["RETURN_PLAINTEXT_ARRAYS"] = "True"
 
 from square_model_inference.inference.transformer import Transformer

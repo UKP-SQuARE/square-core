@@ -22,13 +22,24 @@ CLASS_MAPPING = {
 }
 
 class Transformer(Model):
+    """
+    The class for all Huggingface transformer-based models
+    """
     SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token"]
 
-    def __init__(self, model_name, model_class, max_batch_size, disable_gpu, **kwargs):
+    def __init__(self, model_name, model_class, batch_size, disable_gpu, **kwargs):
+        """
+        Initialize the Transformer
+        :param model_name: the Huggingface model name
+        :param model_class: the class name (according to CLASS_MAPPING) to use
+        :param batch_size: batch size used for inference
+        :param disable_gpu: do not move model to GPU even if CUDA is available
+        :param kwargs: Not used
+        """
         if model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
         self._load_model(CLASS_MAPPING[model_class], model_name, disable_gpu)
-        self.max_batch_size = max_batch_size
+        self.batch_size = batch_size
 
     def _load_model(self, model_cls, model_name, disable_gpu):
         """
@@ -59,15 +70,22 @@ class Transformer(Model):
 
     def _predict(self, request: PredictionRequest, output_features=False) \
             -> Union[dict, Tuple[dict, dict]]:
+        """
+        Inference on the input.
+        :param request: the request with the input and optional kwargs
+        :param output_features: return the features of the input.
+        Necessary if, e.g., attention mask is needed for post-processing.
+        :return: The model outputs and optionally the input features
+        """
         all_predictions = []
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
         request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get("truncation", True)
         features = self.tokenizer(request.input,
                                   return_tensors="pt",
                                   **request.preprocessing_kwargs)
-        for start_idx in range(0, len(request.input), self.max_batch_size):
+        for start_idx in range(0, len(request.input), self.batch_size):
             with torch.no_grad():
-                input_features = {k: features[k][start_idx:start_idx+self.max_batch_size] for k in features.keys()}
+                input_features = {k: features[k][start_idx:start_idx+self.batch_size] for k in features.keys()}
                 input_features = self._ensure_tensor_on_device(**input_features)
                 predictions = self.model(**input_features, **request.model_kwargs)
                 all_predictions.append(predictions)
@@ -123,7 +141,7 @@ class Transformer(Model):
 
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
         predictions, features = self._predict(request, output_features=True)
-        # If logits dim > 1 or if the 'regression' flag is not set, we assume classification:
+        # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
         label2id = self.model.config.label2id
         id2label = {v:k for k,v in label2id.items()}
@@ -145,7 +163,7 @@ class Transformer(Model):
         task_outputs = {
             "id2label": id2label
         }
-        # If logits dim > 1 or if the 'regression' flag is not set, we assume classification:
+        # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
         if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
@@ -159,6 +177,7 @@ class Transformer(Model):
         request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens", False)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
+        # We cannot batch generate so we have to to it separately for each input prompt.
         for prompt in request.input:
             features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
             input_ids = features["input_ids"]
@@ -185,6 +204,13 @@ class Transformer(Model):
         return PredictionOutput(model_outputs=model_outputs, task_outputs=task_outputs)
 
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
+        """
+        Span-based question answering for a given question and context.
+
+        We expect the input to use the (question, context) format for the text pairs.
+        :param request:
+        :return:
+        """
         # Making heavy use of https://huggingface.co/transformers/_modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
         def decode(start_: np.ndarray, end_: np.ndarray, topk: int, max_answer_len: int, undesired_tokens_: np.ndarray) -> Tuple:
                 """
@@ -254,7 +280,7 @@ class Transformer(Model):
             end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
 
             starts, ends, scores = decode(
-                start, end, request.task_kwargs.get("topk", 1), request.task_kwargs.get("max_answer_len", 512), undesired_tokens
+                start, end, request.task_kwargs.get("topk", 1), request.task_kwargs.get("max_answer_len", 128), undesired_tokens
             )
             enc = features[idx]
             answers = [

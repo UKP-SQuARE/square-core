@@ -1,6 +1,5 @@
 import json
 
-import torch
 from loguru import logger
 
 from transformers import AutoModelWithHeads
@@ -13,10 +12,22 @@ from square_model_inference.models.prediction import PredictionOutput
 
 
 class AdapterTransformer(Transformer):
-    def __init__(self, model_name, max_batch_size, disable_gpu, transformers_cache, **kwargs):
+    """
+    The class for all adapter-based models using the adapter-transformers package
+    """
+    def __init__(self, model_name, batch_size, disable_gpu, transformers_cache, **kwargs):
+        """
+        Initialize the Adapter with its underlying Transformer and pre-load all available adapters from adapterhub.ml
+        :param model_name: the Huggingface model name
+        :param batch_size: batch size used for inference
+        :param disable_gpu: do not move model to GPU even if CUDA is available
+        :param transformers_cache: Should be same as TRANSFORMERS_CACHE env variable.
+        This folder will be used to store the adapters
+        :param kwargs: Not used
+        """
         self._load_model(AutoModelWithHeads, model_name, disable_gpu)
         self._load_adapter(model_name, transformers_cache)
-        self.max_batch_size = max_batch_size
+        self.batch_size = batch_size
 
     def _load_adapter(self, model_name, transformers_cache):
         """
@@ -24,6 +35,7 @@ class AdapterTransformer(Transformer):
         We parse the hub index to extract all names and then load each model.
         """
         logger.info("Loading all available adapters from adapterhub.ml")
+        logger.warning("This will not load adapters published only on https://huggingface.co/models")
         index_file = download_cached(ADAPTER_HUB_INDEX_FILE.format(model_name))
         adapter_index = json.load(open(index_file))
         adapters = set()
@@ -69,7 +81,6 @@ class AdapterTransformer(Transformer):
     async def predict(self, request: PredictionRequest) -> PredictionOutput:
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
-
         if not request.adapter_name or request.adapter_name not in self.model.config.adapters.adapters:
             raise ValueError(f"Unknown or missing adapter {request.adapter_name}. "
                        f"Please provider a fully specified adapter name from adapterhub.ml")

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from loguru import logger
 
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
-from square_model_inference.core.config import MODEL_TYPE, MODEL_NAME, MODEL_CLASS, DISABLE_GPU, MAX_BATCH_SIZE, TRANSFORMERS_CACHE
+from square_model_inference.core.config import MODEL_TYPE, MODEL_NAME, MODEL_CLASS, DISABLE_GPU, BATCH_SIZE, TRANSFORMERS_CACHE
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
 from square_model_inference.inference.transformer import Transformer
 
@@ -18,7 +18,7 @@ MODEL_KWARGS = {
     "model_name": MODEL_NAME,
     "model_class": MODEL_CLASS,
     "disable_gpu": DISABLE_GPU,
-    "max_batch_size": MAX_BATCH_SIZE,
+    "batch_size": BATCH_SIZE,
     "transformers_cache": TRANSFORMERS_CACHE
 }
 

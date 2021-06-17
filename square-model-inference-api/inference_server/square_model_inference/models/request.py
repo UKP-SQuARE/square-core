@@ -25,31 +25,55 @@ class PredictionRequest(BaseModel):
         ...,
         description="Input for the model. Supports Huggingface Transformer inputs (i.e., list of sentences, or "
                     "list of pairs of sentences), a dictionary with Transformer inputs, or a dictionary containing "
-                    "numpy arrays (as lists). For the numpy arrays, also set is_preprocessed=True."
+                    "numpy arrays (as lists). For the numpy arrays, also set is_preprocessed=True. "
+                    "<br><br>"
+                    "Transformer/ Adapter:<br>"
+                    "Task 'question_answering' expects the input to be in the (question, context) format."
     )
     is_preprocessed: bool = Field(
         default=False,
         description="Flag indicating that the input contains already pre-processed numpy arrays "
-                    "as list and that it needs no further pre-processing."
+                    "as list and that it needs no further pre-processing.<br><br>"
+                    "Transformer/ Adapter/ SentenceTransformer: 'is_preprocessed' is not supported."
     )
     preprocessing_kwargs: dict = Field(
         default={},
-        description="Dictionary containing additional parameters for the pre-processing step."
+        description="Optional dictionary containing additional parameters for the pre-processing step.<br><br>"
+                    "SentenceTransformer: This is ignored.<br>"
+                    "Transformer/ Adapter: See the Huggingface tokenizer for possible parameters."
     )
     model_kwargs: dict = Field(
         default={},
-        description="Dictionary containing parameters that are passed to the model for the forward pass. "
-                    "Set ‘output_attentions=True’ to receive the attention weights for Huggingface Transformers in the "
-                    "output."
+        description="Optional dictionary containing parameters that are passed to the model for the forward pass "
+                    "to control what additional tensors are returned.<br><br>"
+                    "SentenceTransformer: This is ignored.<br>"
+                    "Transformer/ Adapter: See the forward method of the Huggingface models for possible parameters"
+                    "For example, set ‘output_attentions=True’ to receive the attention results in the output."
     )
     task: Task = Field(...)
     task_kwargs: dict = Field(
         default={},
-        description="Dictionary containing additional parameters for handling of the task and "
-                    "task-related post-processing."
+        description="Optional dictionary containing additional parameters for handling of the task and "
+                    "task-related post-processing.<br><br>"
+                    "SentenceTransformer: This is ignored.<br>"
+                    "Transformer/ Adapter:<br>"
+                    "'sentence_classification':<br>"
+                    "- 'is_regression': Flag to treat output of models with num_labels>1 as regression, too, i.e., no softmax and no labels are returned<br>"
+                    "'token_classification':<br>"
+                    "- 'is_regression': Flag to treat output of models with num_labels>1 as regression, too, i.e., no softmax and no labels are returned<br>"
+                    "'embedding':<br>"
+                    "- 'embedding_mode: One of 'mean', 'max', 'cls', 'token'. The pooling mode used (or not used for 'token'). Default 'mean'.<br>"
+                    "'question_answering':<br>"
+                    "- 'topk': Return the top-k most likely spans. Default 1.<br>"
+                    "- 'max_answer_len': Maximal token length of answers. Default 128.<br>"
+                    "'generation':<br>"
+                    "- 'clean_up_tokenization_spaces': See parameter in Huggingface tokenizer.decode(). Default False<br>"
+                    "- See Huggingface model.generate() for all possible parameters that can be used. "
+                    "Note, 'model_kwargs' and 'task_kwargs' are merged for generation."
+
     )
     adapter_name: Optional[str] = Field(
         default="",
-        description="Only necessary for adapter-based models. "
+        description="Only necessary for Adapter. "
                     "The fully specified name of the to-be-used adapter from adapterhub.ml"
     )
