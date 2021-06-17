@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from typing import Union, Tuple
 
 import torch
@@ -130,7 +131,7 @@ class Transformer(Model):
             "id2label": id2label,
             "word_ids": [features.word_ids(i) for i in range(len(request.input))]
         }
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("regression", False):
+        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
@@ -146,7 +147,7 @@ class Transformer(Model):
         }
         # If logits dim > 1 or if the 'regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("regression", False):
+        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
@@ -154,7 +155,34 @@ class Transformer(Model):
         return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
-        raise NotImplementedError("Generation is currently not implemented")
+        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", False)
+        request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens", False)
+        task_outputs = {"generated_texts": []}
+        model_outputs = defaultdict(list)
+        for prompt in request.input:
+            features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
+            input_ids = features["input_ids"]
+            input_ids = self._ensure_tensor_on_device(input_ids=input_ids)["input_ids"]
+            request.model_kwargs.update(request.task_kwargs)
+            request.model_kwargs["return_dict_in_generate"] = True
+            res = self.model.generate(input_ids, **request.model_kwargs)
+
+            # put everything on CPU and add it to model_outputs
+            for key in res.keys():
+                if isinstance(res[key], tuple):
+                    if isinstance(res[key][0], tuple):
+                        res[key] = tuple((tuple(tensor.cpu() for tensor in tpl)) for tpl in res[key])
+                    else:
+                        res[key] = tuple(tensor.cpu() for tensor in res[key])
+                else:
+                    res[key] = res[key].cpu()
+                model_outputs[key].append(res[key])
+
+            generated_texts = [self.tokenizer.decode(seq, skip_special_tokens=True,
+                                         clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
+                               for seq in res["sequences"]]
+            task_outputs["generated_texts"].append(generated_texts)
+        return PredictionOutput(model_outputs=model_outputs, task_outputs=task_outputs)
 
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
         # Making heavy use of https://huggingface.co/transformers/_modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline

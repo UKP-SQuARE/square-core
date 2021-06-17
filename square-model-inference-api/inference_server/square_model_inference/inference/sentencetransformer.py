@@ -4,7 +4,7 @@ from typing import Union, Tuple
 import torch
 from loguru import logger
 import numpy as np
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 
 from square_model_inference.inference.model import Model
 from square_model_inference.models.request import PredictionRequest, Task
@@ -26,7 +26,7 @@ class SentenceTransformer(Model):
         """
         logger.debug(f"Loading model {model_name}")
         device = "cuda" if torch.cuda.is_available() and not disable_gpu else "cpu"
-        model = SentenceTransformer(model_name_or_path=model_name, device=device)
+        model = SentenceTransformerModel(model_name_or_path=model_name, device=device)
         logger.info(f"Model {model_name} loaded on {device}")
         self.model = model
 
@@ -40,6 +40,6 @@ class SentenceTransformer(Model):
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
 
         if request.task != Task.embedding:
-            raise NotImplementedError("Only embedding task supported by this model")
+            raise ValueError("Only embedding task supported by this model")
         return self._embedding(request)
 

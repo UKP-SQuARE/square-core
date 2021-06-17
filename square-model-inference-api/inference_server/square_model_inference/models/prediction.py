@@ -1,3 +1,4 @@
+from collections import Iterable
 from typing import Dict, Union, Tuple
 
 import torch
@@ -15,7 +16,10 @@ def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], retu
     :param obj: the objects whose tensors will be encoded
     :return: the same dictionary with all tensors replaced by lists or base64-encoded array strings.
     """
+    # Encode numpy array either as lists or base64 string
     def encode(arr):
+        if isinstance(arr, torch.Tensor):
+            arr = arr.numpy()
         if return_plaintext:
             return arr.tolist()
         else:
@@ -30,13 +34,17 @@ def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], retu
             # arr_binary_b64 = arr_string_b64.encode()
             # arr_binary = base64.decodebytes(arr_binary_b64)
             # arr = np.load(BytesIO(arr_binary))
+
+    # Recursively go through a value and encode leafs (=tensors) it or iterate over values and encode them
+    def enc_or_iterate(val):
+        if isinstance(val, Iterable) and not isinstance(val, torch.Tensor) and not isinstance(val, np.ndarray):
+            return [enc_or_iterate(v) for v in val]
+        else:
+            return encode(val)
+
     for k, v in obj.items():
-        if isinstance(v, torch.Tensor):
-            v = v.numpy()
-            obj[k] = encode(v)
-        elif isinstance(v, tuple) and isinstance(v[0], torch.Tensor):
-            v = [encode(vv.numpy()) for vv in v]
-            obj[k] = v
+        v = enc_or_iterate(v)
+        obj[k] = v
     return obj
 
 

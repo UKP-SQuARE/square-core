@@ -9,8 +9,8 @@ COPY requirements.txt ./
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-COPY ./tests/pre_test_setup_for_docker_caching.py ./tests/pre_test_setup_for_docker_caching.py
-RUN python ./tests/pre_test_setup_for_docker_caching.py
+COPY ./inference_server/tests/pre_test_setup_for_docker_caching.py ./inference_server/tests/pre_test_setup_for_docker_caching.py
+RUN PYTHONPATH=./inference_server; python ./inference_server/tests/pre_test_setup_for_docker_caching.py
 
 COPY . ./
 
@@ -18,7 +18,7 @@ FROM base as test
 WORKDIR /app
 RUN pip install pytest pytest-cov pytest-asyncio
 COPY ../tests tests
-RUN pytest --cov
+RUN PYTHONPATH=./inference_server; pytest --cov
 
 FROM base as build
 

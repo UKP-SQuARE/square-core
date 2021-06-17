@@ -23,17 +23,12 @@ from square_model_inference.inference.transformer import Transformer
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
 
+
 @pytest.fixture(scope="session")
 def test_app():
     app = get_app()
     app.state.model = TestModel()
     return app
-
-
-@pytest.fixture()
-def test_client(test_app):
-    with TestClient(test_app) as test_client:
-        yield test_client
 
 
 class TestModel(Model):

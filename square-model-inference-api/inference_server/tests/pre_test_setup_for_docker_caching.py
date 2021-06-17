@@ -16,7 +16,7 @@ from square_model_inference.inference.sentencetransformer import SentenceTransfo
 
 #Downloaded models:
 TRANSFORMER_MODEL = "bert-base-uncased"
-SENTENCE_MODEL = "paraphrase-MiniLM-L6-v2 "
+SENTENCE_MODEL = "paraphrase-albert-small-v2"
 
 if __name__ == "__main__":
     bert_transformer = Transformer(TRANSFORMER_MODEL, "base", 1, True)
