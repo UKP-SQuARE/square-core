@@ -52,7 +52,7 @@ services:
 
   filebeat:
     image: "docker.elastic.co/beats/filebeat:7.13.2"
-    command: --strict.perms=false
+    command: -e --strict.perms=false
     user: root
     volumes:
         - type: bind
