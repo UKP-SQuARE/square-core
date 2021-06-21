@@ -4,3 +4,6 @@
 __pycache__/
 *.py[cod]
 .venv
+.pytest_cache
+.es-data
+.DS_Store
