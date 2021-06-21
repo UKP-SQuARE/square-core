@@ -7,3 +7,4 @@ __pycache__/
 .pytest_cache
 .es-data
 .DS_Store
+*.egg-info
