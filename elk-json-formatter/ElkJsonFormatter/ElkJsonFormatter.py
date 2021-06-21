@@ -7,4 +7,4 @@ class ElkJsonFormatter(jsonlogger.JsonFormatter):
         log_record['@timestamp'] = datetime.now().isoformat()
         log_record['level'] = record.levelname
         log_record['logger'] = record.name
-        log_record['application'] = 'MY-APPLICATION'
+        log_record['application'] = 'SQUARE'
