@@ -1,0 +1,80 @@
+version: "3.2"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+    volumes:
+      - type: bind
+        source: ./config/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+      - type: volume
+        source: es-data
+        target: /usr/share/elasticsearch/data
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: changeme
+      discovery.type: single-node
+    networks:
+      - elk
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.13.2
+    volumes:
+      - type: bind
+        source: ./config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    ports:
+      - "5044:5044"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.2
+    volumes:
+      - type: bind
+        source: ./config/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+        read_only: true
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: "docker.elastic.co/beats/filebeat:7.13.2"
+    user: root
+    volumes:
+        - type: bind
+          source: ./config/filebeat.yml
+          target: /usr/share/filebeat/filebeat.yml
+          read_only: true
+        - type: bind
+          source: /var/lib/docker
+          target: /var/lib/docker
+          read_only: true
+        - type: bind
+          source: /var/run/docker.sock
+          target: /var/run/docker.sock
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+    
+networks:
+  elk:
+    driver: bridge
+
+volumes:
+    es-data:
+      driver_opts:
+        device: ./es-data
