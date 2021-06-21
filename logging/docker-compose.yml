@@ -76,5 +76,6 @@ networks:
 
 volumes:
     es-data:
+      type: local
       driver_opts:
         device: ./es-data
