@@ -1,6 +1,6 @@
 Flask
 SQLAlchemy
-Flask-Migrate
+Flask-Migrate==2.7.0
 Flask-Script
 Flask-CORS
 flask-jwt-extended==3.25.1
@@ -10,3 +10,4 @@ flasgger
 eventlet
 pyyaml
 elasticsearch>=7.0.0
+ElkJsonFormatter.tar.gz

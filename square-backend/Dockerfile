@@ -4,6 +4,7 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
+COPY ElkJsonFormatter.tar.gz ./ElkJsonFormatter.tar.gz
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 # not in requirements because we use SQLite for dev server
@@ -30,6 +31,8 @@ RUN pytest \
     echo $? > test-reports/pytest.existcode
 
 FROM base as build
+
+COPY logging.conf logging.conf
 
 RUN ["chmod", "+x", "./entry.sh"]
 ENTRYPOINT ["./entry.sh"]
