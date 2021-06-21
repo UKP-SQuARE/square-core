@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser.add_argument("--logging_config", type=str, default="./logging.conf")
     args = parser.parse_args()
 
-    logging.config.fileConfig(args.logging_config)
+    logging.config.fileConfig(args.logging_config, disable_existing_loggers=False)
 
     socketio, app = create_app(config_path=args.config)
 
