@@ -9,7 +9,7 @@ services:
         target: /usr/share/elasticsearch/config/elasticsearch.yml
         read_only: true
       - type: volume
-        source: es-data
+        source: logging-es-data
         target: /usr/share/elasticsearch/data
     environment:
       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
@@ -76,7 +76,4 @@ networks:
     driver: bridge
 
 volumes:
-    es-data:
-      type: local
-      driver_opts:
-        device: ./es-data
+    logging-es-data:
