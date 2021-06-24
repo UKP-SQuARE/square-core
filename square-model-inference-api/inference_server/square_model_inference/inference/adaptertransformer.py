@@ -36,6 +36,7 @@ class AdapterTransformer(Transformer):
         """
         logger.info("Loading all available adapters from adapterhub.ml")
         logger.warning("This will not load adapters published only on https://huggingface.co/models")
+        logger.warning("UPDATE with https://github.com/Adapter-Hub/adapter-transformers/pull/193")
         index_file = download_cached(ADAPTER_HUB_INDEX_FILE.format(model_name))
         adapter_index = json.load(open(index_file))
         adapters = set()

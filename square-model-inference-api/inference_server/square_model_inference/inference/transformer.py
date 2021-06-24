@@ -267,7 +267,10 @@ class Transformer(Model):
             start = start.numpy()
             end = end.numpy()
             # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
-            undesired_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1) & features["attention_mask"][idx].numpy()
+            question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
+            # Unmask CLS token for 'no answer'
+            question_tokens[0] = 1
+            undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
 
             # Generate mask
             undesired_tokens_mask = undesired_tokens == 0.0
@@ -278,6 +281,10 @@ class Transformer(Model):
 
             start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
             end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
+
+            # Get score for 'no answer' then mask for decoding step (CLS token
+            no_answer_score = (start[0] * end[0]).item()
+            start[0] = end[0] = 0.0
 
             starts, ends, scores = decode(
                 start, end, request.task_kwargs.get("topk", 1), request.task_kwargs.get("max_answer_len", 128), undesired_tokens
@@ -294,6 +301,8 @@ class Transformer(Model):
                               enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]],
                 }
                 for s, e, score in zip(starts, ends, scores)]
+            answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
+            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
             task_outputs["answers"].append(answers)
         return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
 

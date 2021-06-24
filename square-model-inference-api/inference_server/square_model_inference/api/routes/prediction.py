@@ -15,7 +15,7 @@ async def predict(
     prediction_request: PredictionRequest = None,
 ) -> PredictionOutput:
 
-    logger.info(f"Request: {request.dict()}")
+    logger.info(f"Request: {prediction_request.dict()}")
     model: Model = request.app.state.model
     prediction: PredictionOutput = await model.predict(prediction_request)
 
