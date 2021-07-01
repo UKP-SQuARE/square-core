@@ -80,7 +80,7 @@ def test_sentence_transformer():
     return SentenceTransformer(SENTENCE_MODEL, 1, True)
 
 @pytest.fixture()
-def request():
+def prediction_request():
     request = PredictionRequest.parse_obj({
         "input": ["test"],
         "is_preprocessed": False,
