@@ -78,3 +78,16 @@ def test_adapter():
 @pytest.fixture(scope="class")
 def test_sentence_transformer():
     return SentenceTransformer(SENTENCE_MODEL, 1, True)
+
+@pytest.fixture()
+def request():
+    request = PredictionRequest.parse_obj({
+        "input": ["test"],
+        "is_preprocessed": False,
+        "preprocessing_kwargs": {},
+        "model_kwargs": {},
+        "task": "sequence_classification",
+        "task_kwargs": {},
+        "adapter_name": ""
+    })
+    return request
