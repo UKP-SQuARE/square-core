@@ -1,23 +1,14 @@
-from fastapi import FastAPI
-from fastapi.param_functions import Query, Path
-from vespa.application import Vespa
-import models
+from fastapi import APIRouter
+from fastapi.param_functions import Path, Query
+
+from ..core.models import *
+from ..core.vespa import vespa_app
 
 
-app = FastAPI()
-vespa_app = Vespa(url="http://localhost:8080")
-# app_package = ApplicationPackage()
+router = APIRouter(tags=["Query"])
 
 
-@app.get(
-    "/datastore",
-    summary="all available datastores",
-)
-def all_datastores():
-    pass
-
-
-@app.get(
+@router.get(
     "/datastore/{datastore_name}/indexs/{index_name}/search",
     summary="Search the documentstore with given query and return top-k documents",
     description="Searches the given datastore with the search strategy specified by the given index \
@@ -31,7 +22,7 @@ def search(
     top_k: int = Query(40, description="Number of documents to retrieve."),
     query_encoder: str = Query("dpr", description="Identifier of the query encoder."),
 ):
-    query_embedding = models.encode_query(query_encoder, query)
+    query_embedding = encode_query(query_encoder, query)
     body = {
         "query": query,
         "type": "any",
