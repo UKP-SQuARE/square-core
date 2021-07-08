@@ -7,13 +7,20 @@
 - Tutorial for supporting multiple-embedding system like [ColBERT](https://github.com/stanford-futuredata/ColBERT): [vespa/msmarco-ranking](https://github.com/vespa-engine/sample-apps/blob/master/msmarco-ranking/passage-ranking.md)
 - [Official documentation](https://docs.vespa.ai/en/vespa-quick-start.html)
 
-## Dependency
+## Requirements
 - Docker
 - Jave 11: **The version number is very important!**
 - Python 3 (transformers needed)
-- Linux x86_64
 
-## Usage
+Python requirements:
+```
+pip install -r requirements.txt
+```
+
+## Setup
+
+### Vespa
+
 First pull the core docker container of Vespa:
 ```shell
 $ docker pull vespaengine/vespa
@@ -68,3 +75,17 @@ Remove the container after usage:
 ```
 docker rm -f vespa
 ```
+
+### FastAPI
+
+Make sure the Vespa Docker container is running (see above):
+  ```shell
+  curl -s --head http://localhost:8080/ApplicationStatus
+  ```
+
+Start the FastAPI server:
+```
+uvicorn app.main:app --reload --reload-dir app
+```
+
+Got to **http://localhost:8000/docs** for interactive documentation.
