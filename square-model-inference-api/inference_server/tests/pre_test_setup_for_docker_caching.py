@@ -5,9 +5,8 @@ import json
 
 from sentence_transformers import SentenceTransformer
 from starlette.config import environ
-from transformers import AutoTokenizer, AutoModelWithHeads
+from transformers import AutoTokenizer, AutoModelWithHeads, list_adapters
 from loguru import logger
-from transformers.adapter_utils import download_cached, ADAPTER_HUB_INDEX_FILE
 
 TRANSFORMERS_TESTING_CACHE = "./.model_testing_cache"
 environ["TRANSFORMERS_CACHE"] = TRANSFORMERS_TESTING_CACHE
@@ -16,6 +15,7 @@ environ["MODEL_TYPE"] = "test"
 environ["DISABLE_GPU"] = "True"
 environ["BATCH_SIZE"] = "1"
 environ["RETURN_PLAINTEXT_ARRAYS"] = "True"
+environ["MAX_INPUT_SIZE"] = "100"
 
 # Downloaded models:
 TRANSFORMER_MODEL = "bert-base-uncased"
@@ -32,19 +32,20 @@ if __name__ == "__main__":
     model = AutoModelWithHeads.from_pretrained(TRANSFORMER_MODEL).to(device)
 
     # Pre-download adapters
-    logger.warning("UPDATE with https://github.com/Adapter-Hub/adapter-transformers/pull/193")
-    index_file = download_cached(ADAPTER_HUB_INDEX_FILE.format(TRANSFORMER_MODEL))
-    adapter_index = json.load(open(index_file))
-    adapters = set()
-    for task, datasets in adapter_index.items():
-        for dataset in datasets.keys():
-            for key in datasets[dataset].keys():
-                if key != "default":
-                    for org in datasets[dataset][key]["versions"].keys():
-                        adapters.add(f"{task}/{dataset}@{org}")
+    logger.info("Loading all available adapters")
+    adapter_infos = [info for info in list_adapters(source="ah") if info.model_name==TRANSFORMER_MODEL]
+    adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in adapter_infos)
     for adapter in adapters:
         logger.debug(f"Loading adapter {adapter}")
-        model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=TRANSFORMERS_TESTING_CACHE)
+        try:
+            model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=TRANSFORMERS_TESTING_CACHE)
+        except KeyError as e:
+            logger.debug(f"Could not load {adapter} due to incomplete config:\n{e.args[0]}")
+        except RuntimeError as e:
+            if "Error(s) in loading state_dict" in e.args[0]:
+                logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
+            else:
+                raise(e)
 
     # Pre-download sentence-transformer models for tests
     _ = SentenceTransformer(model_name_or_path=SENTENCE_MODEL, device=device)

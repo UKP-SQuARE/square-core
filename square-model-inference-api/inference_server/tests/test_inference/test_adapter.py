@@ -3,7 +3,8 @@ import pytest
 from square_model_inference.models.request import PredictionRequest
 import numpy as np
 
-
+# todo
+@pytest.mark.skip(reason="Waiting for next update of adapter-transformers")
 def test_adapter():
     pytest.fail("Adapter tests waiting for next version of adapter-transformers. "
                 "Not enough heads available. "

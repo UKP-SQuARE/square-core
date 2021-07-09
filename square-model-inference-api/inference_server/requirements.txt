@@ -1,8 +1,0 @@
-uvicorn
-fastapi
-pydantic
-loguru
-python-dotenv
-adapter-transformers
-sentencepiece
-torch

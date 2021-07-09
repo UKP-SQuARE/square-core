@@ -11,7 +11,10 @@ test:
 	pytest --cov
 
 install:
-	pip install --upgrade pip && pip install -r inference_server/requirements.txt
+	pip install --upgrade pip
+	pip install -r inference_server/requirements1.txt
+    pip uninstall -y -r inference_server/uninstall_requirements.txt
+    pip install -r inference_server/requirements2.txt
 
 run:
 	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8002 --env-file inference_server/.env

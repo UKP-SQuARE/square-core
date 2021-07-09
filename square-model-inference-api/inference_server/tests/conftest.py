@@ -43,41 +43,41 @@ class TestModel(Model):
 @pytest.fixture(scope="class")
 def test_transformer_sequence_classification():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "sequence_classification", 1, True)
+    return Transformer(TRANSFORMER_MODEL, "sequence_classification", 1, True, 50)
 
 
 @pytest.fixture(scope="class")
 def test_transformer_embedding():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "base", 1, True)
+    return Transformer(TRANSFORMER_MODEL, "base", 1, True, 50)
 
 
 @pytest.fixture(scope="class")
 def test_transformer_token_classification():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "token_classification", 1, True)
+    return Transformer(TRANSFORMER_MODEL, "token_classification", 1, True, 50)
 
 
 @pytest.fixture(scope="class")
 def test_transformer_question_answering():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "question_answering", 1, True)
+    return Transformer(TRANSFORMER_MODEL, "question_answering", 1, True, 50)
 
 
 @pytest.fixture(scope="class")
 def test_transformer_generation():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "generation", 1, True)
+    return Transformer(TRANSFORMER_MODEL, "generation", 1, True, 50)
 
 
 @pytest.fixture(scope="class")
 def test_adapter():
-    return AdapterTransformer(TRANSFORMER_MODEL, 1, True, TRANSFORMERS_TESTING_CACHE)
+    return AdapterTransformer(TRANSFORMER_MODEL, 1, True, TRANSFORMERS_TESTING_CACHE, 50)
 
 
 @pytest.fixture(scope="class")
 def test_sentence_transformer():
-    return SentenceTransformer(SENTENCE_MODEL, 1, True)
+    return SentenceTransformer(SENTENCE_MODEL, 1, True, 50)
 
 @pytest.fixture()
 def prediction_request():
@@ -86,7 +86,6 @@ def prediction_request():
         "is_preprocessed": False,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
-        "task": "sequence_classification",
         "task_kwargs": {},
         "adapter_name": ""
     })

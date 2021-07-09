@@ -1,0 +1,8 @@
+uvicorn==0.13.4
+fastapi==0.65.1
+pydantic==1.8.2
+loguru==0.5.3
+python-dotenv==0.17.1
+sentencepiece==0.1.95
+torch==1.8.1
+sentence-transformers==1.2.0

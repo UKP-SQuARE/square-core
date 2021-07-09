@@ -1,5 +1,5 @@
 from collections import Iterable
-from typing import Dict, Union, Tuple
+from typing import Dict, Union, Tuple, List, Optional
 
 import torch
 from io import BytesIO
@@ -53,7 +53,7 @@ class PredictionOutput(BaseModel):
     """
     The results of the prediction of the model on the given input for the requested task.
     """
-    model_outputs: dict = Field(
+    model_outputs: Dict = Field(
         description="Dictionary containing the model tensor outputs either as plain list or as base64-encoded numpy array.<br><br>"
                     "Decode the base64 string 'arr_string_b64' back to an array in Python like this:<br>"
                     "arr_binary_b64 = arr_string_b64.encode()<br>"
@@ -79,34 +79,6 @@ class PredictionOutput(BaseModel):
                     "- 'sequences': The generated vocab ids for the sequence<br>"
                     "Task 'generation' does not concatenate the tensors of the inputs together but instead creates a list"
                     "of the tensors for each input."
-
-    )
-    task_outputs: dict = Field(
-        description="Dictionary containing the task outputs. This covers anything from generated text, "
-                    "labels, id2label mappings, token2word mappings, etc.<br><br>"
-                    "SentenceTransformer: This is not used.<br>"
-                    "Transformer/ Adapter:<br>"
-                    "'sentence_classification':<br>"
-                    "- 'labels': List of the predicted label ids for the input <br>"
-                    "- 'id2label': Mapping from label id to the label name <br>"
-                    "'token_classification':<br>"
-                    "- 'labels': List of the predicted label ids for the input <br>"
-                    "- 'id2label': Mapping from label id to the label name <br>"
-                    "- 'word_ids': Mapping from tokens (as produced by the model tokenizer) to the words of the input. <br>"
-                    "'None' represents special tokens that have been added by the tokenizer <br>"
-                    "'embedding':<br>"
-                    "- 'embedding_mode: One of 'mean', 'max', 'cls', 'token'. The pooling mode used (or not used for 'token')<br>"
-                    "- 'word_ids': Mapping from tokens (as produced by the model tokenizer) to the words of the input. "
-                    "Only returned if 'embedding_mode=token' <br>"
-                    "'question_answering':<br>"
-                    "- 'answers': List of lists of answers. Length of outer list is the number of inputs, "
-                    "length of inner list is parameter 'topk' from the request's 'task_kwargs' (default 1). "
-                    "Each answer is a dictionary with 'score', 'start' (span start index in context), 'end' (span end index in context), "
-                    "and 'answer' (the extracted span). The inner list is sorted by score. If no answer span was extracted, "
-                    "the empty span is returned (start and end both 0).<br>"
-                    "'generation':<br>"
-                    "- 'generated_texts': List of list of the generated texts. Length of outer list is the number of inputs, "
-                    "length of inner list is parameter 'num_return_sequences' in request's 'task_kwargs'"
     )
     model_output_is_encoded: bool = Field(
         not RETURN_PLAINTEXT_ARRAYS,
@@ -125,3 +97,56 @@ class PredictionOutput(BaseModel):
         super().__init__(**data)
         self.model_outputs = _encode_numpy(self.model_outputs)
 
+
+class PredictionOutputForSequenceClassification(PredictionOutput):
+    labels: List[int] = Field([], description="List of the predicted label ids for the input. Not set for regression.")
+    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. Not set for regression.")
+
+    def __init__(self, **data):
+        super().__init__(**data)
+
+
+class PredictionOutputForTokenClassification(PredictionOutput):
+    labels: List[List[int]] = Field([], description="List of the predicted label ids for the input. Not set for regression.")
+    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. Not set for regression.")
+    word_ids: List[List[Optional[int]]] = Field(..., description="Mapping from each token to the corresponding word in the input. "
+                                                           "'None' represents special tokens added by tokenizer")
+    def __init__(self, **data):
+        super().__init__(**data)
+
+
+class PredictionOutputForEmbedding(PredictionOutput):
+    embedding_mode: str = Field("", description="Only used by Transformers/ Adapters.<br> One of 'mean', 'max', 'cls', 'token'. The pooling mode used (or not used for 'token')")
+    word_ids: List[List[Optional[int]]] = Field([], description="Only used by Transformers/ Adapters.<br> "
+                                                          "Only set with embedding_mode='token'."
+                                                          " Mapping from each token to the corresponding word in the input. "
+                                                           "'None' represents special tokens added by tokenizer")
+    def __init__(self, **data):
+        super().__init__(**data)
+
+
+class PredictionOutputForGeneration(PredictionOutput):
+    generated_texts: List[List[str]] = Field(..., description="List of list of the generated texts. Length of outer list is the number of inputs, "
+                                                      "length of inner list is parameter 'num_return_sequences' in request's 'task_kwargs'")
+    def __init__(self, **data):
+        super().__init__(**data)
+
+
+class QAAnswer(BaseModel):
+    """
+    A span answer for question_answering with a score, the start and end character index and the extracted span answer.
+    """
+    score: float
+    start: int
+    end: int
+    answer: str
+
+
+class PredictionOutputForQuestionAnswering(PredictionOutput):
+    answers: List[List[QAAnswer]] = Field(..., description="List of lists of answers. Length of outer list is the number of inputs, "
+                                                   "length of inner list is parameter 'topk' from the request's 'task_kwargs' (default 1). "
+                                                   "Each answer is a dictionary with 'score', 'start' (span start index in context), 'end' (span end index in context), "
+                                                   "and 'answer' (the extracted span). The inner list is sorted by score. If no answer span was extracted, "
+                                                   "the empty span is returned (start and end both 0)")
+    def __init__(self, **data):
+        super().__init__(**data)

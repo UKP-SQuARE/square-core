@@ -27,15 +27,21 @@ Python 3.7+, Docker (optional), Make (optional)
 
 ## Installation
 Install the required packages in your local environment (ideally virtualenv, conda, etc.).
-<!-- ```bash
-pip install -r requirements
-```  -->
-
+```bash
+pip install -r inference_server/requirements1.txt
+pip uninstall -y -r inference_server/uninstall_requirements.txt
+pip install -r inference_server/requirements2.txt
+```
+or
 ```sh
-python -m venv venv
-source venv/bin/activate
 make install
 ```
+**Why two requirement.txt and why the uninstall?**  
+`sentence-transformers` depends on `transformers` and it will be installed along with it.
+However, we use `adapter-transformers` (a fork of `transformers`) in this project.
+Both `transformers` and `adapter-transformers` use the same namespace so they conflict.
+Thus, we first install `sentence-transformers` along with `transformers`, 
+uninstall `transformers`, and finally install `adapter-transformers`.
 
 #### Running Localhost
 

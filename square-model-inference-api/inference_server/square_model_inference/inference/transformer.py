@@ -11,7 +11,8 @@ from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassific
 from square_model_inference.inference.model import Model
 from square_model_inference.models.request import PredictionRequest, Task
 
-from square_model_inference.models.prediction import PredictionOutput
+from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForSequenceClassification, PredictionOutputForTokenClassification, \
+    PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
 
 CLASS_MAPPING = {
     "base": AutoModel,
@@ -27,19 +28,21 @@ class Transformer(Model):
     """
     SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token"]
 
-    def __init__(self, model_name, model_class, batch_size, disable_gpu, **kwargs):
+    def __init__(self, model_name, model_class, batch_size, disable_gpu, max_input_size, **kwargs):
         """
         Initialize the Transformer
         :param model_name: the Huggingface model name
         :param model_class: the class name (according to CLASS_MAPPING) to use
         :param batch_size: batch size used for inference
         :param disable_gpu: do not move model to GPU even if CUDA is available
+        :param max_input_size: requests with a larger input are rejected
         :param kwargs: Not used
         """
         if model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
         self._load_model(CLASS_MAPPING[model_class], model_name, disable_gpu)
         self.batch_size = batch_size
+        self.max_input_size = max_input_size
 
     def _load_model(self, model_cls, model_name, disable_gpu):
         """
@@ -137,7 +140,7 @@ class Transformer(Model):
             task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
         predictions["embeddings"] = emb
 
-        return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
+        return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
 
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
         predictions, features = self._predict(request, output_features=True)
@@ -154,7 +157,7 @@ class Transformer(Model):
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
 
-        return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
+        return PredictionOutputForTokenClassification(model_outputs=predictions, **task_outputs)
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         predictions = self._predict(request)
@@ -170,7 +173,7 @@ class Transformer(Model):
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
 
-        return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
+        return PredictionOutputForSequenceClassification(model_outputs=predictions, **task_outputs)
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", False)
@@ -201,7 +204,7 @@ class Transformer(Model):
                                          clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
                                for seq in res["sequences"]]
             task_outputs["generated_texts"].append(generated_texts)
-        return PredictionOutput(model_outputs=model_outputs, task_outputs=task_outputs)
+        return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
 
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
         """
@@ -304,20 +307,22 @@ class Transformer(Model):
             answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
             answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
             task_outputs["answers"].append(answers)
-        return PredictionOutput(model_outputs=predictions, task_outputs=task_outputs)
+        return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
-    async def predict(self, request: PredictionRequest) -> PredictionOutput:
+    async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+        if len(request.input) > self.max_input_size:
+            raise ValueError(f"Input is too large. Max input size is {self.max_input_size}")
 
-        if request.task == Task.sequence_classification:
+        if task == Task.sequence_classification:
             return self._sequence_classification(request)
-        elif request.task == Task.token_classification:
+        elif task == Task.token_classification:
             return self._token_classification(request)
-        elif request.task == Task.embedding:
+        elif task == Task.embedding:
             return self._embedding(request)
-        elif request.task == Task.question_answering:
+        elif task == Task.question_answering:
             return self._question_answering(request)
-        elif request.task == Task.generation:
+        elif task == Task.generation:
             return self._generation(request)
 
