@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  auth:
+    build: ./auth_server/.
+    ports:
+      - 8081:8081
+    env_file:
+      - ./auth_server/.env.example
+
+  nginx:
+    image: nginx
+    ports:
+      - 8080:8080
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  # Example config for one model server
+  inference_bert:
+    build: ./inference_server/.
+    image: square_model_inference:latest
+    ports:
+      - 8000:8000
+    env_file:
+      - ./inference_server/.env.bert
+    container_name: square_model_inference_bert
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+      #- ./inference_server/:/app/ #for developement
+
+  # Example config for another model server
+  inference_roberta:
+    build: ./inference_server/.
+    image: square_model_inference:latest
+    ports:
+      - 8001:8000
+    env_file:
+      - ./inference_server/.env.roberta
+    container_name: square_model_inference_roberta
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+      #- ./inference_server/:/app/ #for developement

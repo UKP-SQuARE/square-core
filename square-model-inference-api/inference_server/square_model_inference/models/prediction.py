@@ -36,15 +36,23 @@ def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], retu
             # arr_binary = base64.decodebytes(arr_binary_b64)
             # arr = np.load(BytesIO(arr_binary))
 
-    # Recursively go through a value and encode leafs (=tensors) it or iterate over values and encode them
+    # Recursively go through a value and encode leaves (=tensors) it or iterate over values and encode them
     def enc_or_iterate(val):
+        # Stop attempt to encode an already encoded array
+        # This can happen because PredictionOutput is initialized twice
+        # - once by Model and once when request response is serialized by fastAPI
+        if isinstance(val, int) or isinstance(val, float) or isinstance(val, str):
+            raise ValueError("Array is already encoded")
         if isinstance(val, Iterable) and not isinstance(val, torch.Tensor) and not isinstance(val, np.ndarray):
             return [enc_or_iterate(v) for v in val]
         else:
             return encode(val)
 
     for k, v in obj.items():
-        v = enc_or_iterate(v)
+        try:
+            v = enc_or_iterate(v)
+        except ValueError:
+            break
         obj[k] = v
     return obj
 
