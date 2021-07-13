@@ -54,6 +54,7 @@ class PredictionOutput(BaseModel):
     The results of the prediction of the model on the given input for the requested task.
     """
     model_outputs: Dict = Field(
+        {},
         description="Dictionary containing the model tensor outputs either as plain list or as base64-encoded numpy array.<br><br>"
                     "Decode the base64 string 'arr_string_b64' back to an array in Python like this:<br>"
                     "arr_binary_b64 = arr_string_b64.encode()<br>"

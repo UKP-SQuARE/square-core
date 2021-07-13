@@ -17,8 +17,9 @@ import torch
 
 from main import get_app
 from square_model_inference.inference.model import Model
-from square_model_inference.models.prediction import PredictionOutput
-from square_model_inference.models.request import PredictionRequest
+from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForGeneration, \
+    PredictionOutputForEmbedding, PredictionOutputForTokenClassification, PredictionOutputForSequenceClassification, PredictionOutputForQuestionAnswering
+from square_model_inference.models.request import PredictionRequest, Task
 from square_model_inference.inference.transformer import Transformer
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
@@ -32,11 +33,17 @@ def test_app():
 
 
 class TestModel(Model):
-    def __init__(self):
-        self.prediction = PredictionOutput(model_outputs={}, task_outputs={})
-
-    async def predict(self, payload: PredictionRequest) -> PredictionOutput:
-        return self.prediction
+    async def predict(self, payload, task) -> PredictionOutput:
+        if task == Task.generation:
+            return PredictionOutputForGeneration(generated_texts=[[""]])
+        elif task == Task.question_answering:
+            return PredictionOutputForQuestionAnswering(answers=[[{"score": 0, "start": 0, "end": 0, "answer": ""}]])
+        elif task == Task.embedding:
+            return PredictionOutputForEmbedding(word_ids=[[0]])
+        elif task == Task.token_classification:
+            return PredictionOutputForTokenClassification(word_ids=[[0]])
+        elif task == Task.sequence_classification:
+            return PredictionOutputForSequenceClassification()
 
 
 # We only load bert-base-uncased, so we fix the random seed to always get the same randomly generated heads on top

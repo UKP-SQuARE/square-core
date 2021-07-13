@@ -42,14 +42,11 @@ class AdapterTransformer(Transformer):
             logger.debug(f"Loading adapter {adapter}")
             try:
                 self.model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=transformers_cache)
-            except KeyError as e:
-                logger.debug(f"Could not load {adapter} due to incomplete config: Missing key {e.args[0]}")
             except RuntimeError as e:
                 if "Error(s) in loading state_dict" in e.args[0]:
                     logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
                 else:
-                    raise(e)
-
+                    raise e
 
 # def _load_single_adapter(self, adapter_name: str):
     #     if adapter_name not in self.model.config.adapters.adapters:

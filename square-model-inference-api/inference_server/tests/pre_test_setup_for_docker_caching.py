@@ -39,8 +39,6 @@ if __name__ == "__main__":
         logger.debug(f"Loading adapter {adapter}")
         try:
             model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=TRANSFORMERS_TESTING_CACHE)
-        except KeyError as e:
-            logger.debug(f"Could not load {adapter} due to incomplete config:\n{e.args[0]}")
         except RuntimeError as e:
             if "Error(s) in loading state_dict" in e.args[0]:
                 logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
