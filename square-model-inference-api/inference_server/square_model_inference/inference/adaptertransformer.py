@@ -45,6 +45,8 @@ class AdapterTransformer(Transformer):
                     logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
                 else:
                     raise e
+        # Move all freshly loaded adapter weights to the same device as the model
+        self.model.to(self.model.device)
 
 # def _load_single_adapter(self, adapter_name: str):
     #     if adapter_name not in self.model.config.adapters.adapters:
