@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.param_functions import Path, Query
 
 from ..core.models import *
-from ..core.vespa import vespa_app
+from ..core.vespa_app import vespa_app
 
 
 router = APIRouter(tags=["Query"])

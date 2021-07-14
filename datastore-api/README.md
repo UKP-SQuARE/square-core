@@ -9,7 +9,7 @@
 
 ## Requirements
 - Docker
-- Jave 11: **The version number is very important!**
+- Java 11: **The version number is very important!**
 - Python 3 (transformers needed)
 
 Python requirements:
@@ -19,19 +19,26 @@ pip install -r requirements.txt
 
 ## Setup
 
+### Docker containers
+
+We use Docker containers for:
+- MongoDB
+- Vespa
+
+Everything can be started via Docker Compose:
+```
+docker compose up --detach
+```
+
+And teared down again after usage:
+```
+docker compose down
+```
+
 ### Vespa
 
-First pull the core docker container of Vespa:
-```shell
-$ docker pull vespaengine/vespa
-```
-
-Start the Vespa engine:
-```shell
-$ docker run --detach --name vespa --hostname vespa-container   --publish 8080:8080 --publish 19071:19071   vespaengine/vespa
-```
-
-Wait and check the status until one gets 200 OK:
+First start the docker container (see above).
+Then wait and check the status until you get 200 OK:
 ```shell
 $ curl -s --head http://localhost:19071/ApplicationStatus
 ```
@@ -59,7 +66,7 @@ Download the sample data (extract from MS MARCO):
 wget https://public.ukp.informatik.tu-darmstadt.de/kwang/tutorial/vespa/dense-retrieval/msmarco/sample-feed.jsonl
 ```
 
-Upload the sample data as corups:
+Upload the sample data as corpus:
 ```python
 $ java -jar vespa-http-client-jar-with-dependencies.jar \
   --file sample-feed.jsonl --endpoint http://localhost:8080
@@ -71,17 +78,17 @@ $ python query_api.py
 what is the population of achill island?
 ```
 
-Remove the container after usage:
-```
-docker rm -f vespa
-```
-
 ### FastAPI
 
 Make sure the Vespa Docker container is running (see above):
-  ```shell
-  curl -s --head http://localhost:8080/ApplicationStatus
-  ```
+```shell
+curl -s --head http://localhost:8080/ApplicationStatus
+```
+
+For the MongoDB database, we need to set the environment variable: 
+```
+export MONGODB_URL="mongodb://root:root@localhost:27017/admin?retryWrites=true&w=majority"
+```
 
 Start the FastAPI server:
 ```

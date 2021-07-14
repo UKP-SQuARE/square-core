@@ -3,7 +3,7 @@ from fastapi.param_functions import Path, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from ..core.vespa import vespa_app
+from ..core.vespa_app import vespa_app
 
 
 router = APIRouter(tags=["Documents"])
