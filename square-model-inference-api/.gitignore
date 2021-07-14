@@ -57,6 +57,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+.model_testing_cache
 
 # Translations
 *.mo

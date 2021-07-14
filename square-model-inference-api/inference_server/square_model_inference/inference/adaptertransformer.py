@@ -1,5 +1,3 @@
-import json
-
 from loguru import logger
 
 from transformers import AutoModelWithHeads, list_adapters

@@ -3,6 +3,9 @@ import auth_api.security as security
 
 app = FastAPI()
 
+
 @app.get("/auth")
-async def auth(authenticated: bool = Depends(security.validate_request),):
-    return {"authenticated": True}
+async def auth(authenticated: bool = Depends(security.validate_request)):
+    # authenticated is always True because security.validate_request raises an exception if validation fails
+    # and it does not return False
+    return {"authenticated": authenticated}

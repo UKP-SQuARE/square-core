@@ -24,7 +24,11 @@ MODEL_KWARGS = {
     "max_input_size": MAX_INPUT_SIZE
 }
 
+
 def _startup_model(app: FastAPI) -> None:
+    """
+    Initialize the model used by the server and set it to the app state for global access
+    """
     if MODEL_TYPE not in MODEL_MAPPING:
         raise RuntimeError(f"Unknown MODEL_MAPPING. Must be one of {MODEL_MAPPING.keys()}")
     model_instance = MODEL_MAPPING[MODEL_TYPE](**MODEL_KWARGS)

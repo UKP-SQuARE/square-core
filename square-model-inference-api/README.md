@@ -4,21 +4,30 @@ Receives input and returns prediction and other artifacts (e.g. attention scores
 
 ## Project structure
 
-TODO
+The Model API uses 3 components: 
+1 authorization server, n inference servers (each with their own model), 
+and a nginx server that serves as API gateway to forward requests to the correct inference server and
+to handle authorization of requests with the auth server.
 ```
-├───tests
-│   ├───test_api
-│   └───test_service
-├───auth_server
+├───auth_server                 # FastAPI Authorization Server
+│   ├───main.py                 # Entry point in server
+│   ├───Dockerfile              # Dockerfile for server
 │   └───auth_api
-├───nginx
-├───inference_server
-│   ├───square_model_inference
-│   │   ├───api                  - Model API
-│   │   │   ├───routes
-│   │   ├───core                 
-│   │   ├───models               - Pydantic model definitions for in-/ output
-│   │   ├───inference
+├───nginx                       # nginx config for API Gateway & Authorizatio
+│   └───nginx.conf
+├───inference_server            # FastAPI Model API Server
+│   ├───tests                   # Unit Tests
+│   │   ├───test_api
+│   │   ├───test_inference
+│   ├───main.py                 # Entry point in server
+│   ├───Dockerfile              # Dockerfile for server
+│   └───square_model_inference  # Server Logic
+│       ├───api                 # API Routes
+│       │   ├───routes
+│       ├───core                # Server config, Startup logic, etc.
+│       ├───models              # Input/ output modelling for API
+│       └───inference           # Deep Model implementation and inference code for NLP tasks
+└───example_docker-compose.yml  # Example docker-compose setup for the Model API
 ```
 
 ## Requirements
@@ -43,11 +52,16 @@ Both `transformers` and `adapter-transformers` use the same namespace so they co
 Thus, we first install `sentence-transformers` along with `transformers`, 
 uninstall `transformers`, and finally install `adapter-transformers`.
 
+## Running
+
 #### Running Localhost
 
 ```sh
 make run
 ```
+This *only* starts one inference server using `inference_server/.env`. No nginx, no auth server.  
+For debugging, `inference_server/main.py` can also be used as entry.
+
 
 #### Running Via Docker
 
@@ -62,25 +76,10 @@ make test
 ```
 
 ## Setup
-TODO
-
-## Run without `make` for development
-
-1. Start your  app with: 
-```bash
-PYTHONPATH=./inference_server uvicorn main:app --reload
-```
-
-2. Go to [http://localhost:8000/docs](http://localhost:8000/docs) or  [http://localhost:8000/redoc](http://localhost:8000/redoc) for alternative swagger
-
-
-## Run Tests with using `make`
-
-Install testing libraries and run `tox`:
-```bash
-pip install tox pytest flake8 coverage bandit
-tox
-```
-This runs tests and coverage for Python 3.8 and Flake8, Bandit.
-
-
+1. Create `auth_server/.env` with secret API key. See [here](auth_server/.env.example) for an example.
+2. For each model server that should run, create a `.env.$model` to configure it.  
+   See [here](inference_server/.env.example) for an example.
+3. Configure `nginx/nginx.conf` to correctly forward requests to each server. The server DNS name has to
+   match `container_name` of each server in the `docker-compose.yaml`.
+4. Configure `docker-compose.yaml` by adding services for the auth server, nginx (with the config), and the
+model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.

@@ -8,6 +8,7 @@ from square_model_inference.models.prediction import PredictionOutputForSequence
 
 router = APIRouter()
 
+
 @router.post("/sequence-classification", response_model=PredictionOutputForSequenceClassification, name="sequence classification")
 async def sequence_classification(
         request: Request,
@@ -15,10 +16,11 @@ async def sequence_classification(
 ) -> PredictionOutputForSequenceClassification:
 
     logger.info(f"Sequence Classification Request: {prediction_request.dict()}")
-    model = request.app.state.model
+    model = request.app.state.model  # Access model from global app state
     prediction = await model.predict(prediction_request, Task.sequence_classification)
 
     return prediction
+
 
 @router.post("/token-classification", response_model=PredictionOutputForTokenClassification, name="token classification")
 async def token_classification(
@@ -32,6 +34,7 @@ async def token_classification(
 
     return prediction
 
+
 @router.post("/embedding", response_model=PredictionOutputForEmbedding, name="embedding")
 async def embedding(
         request: Request,
@@ -44,6 +47,7 @@ async def embedding(
 
     return prediction
 
+
 @router.post("/question-answering", response_model=PredictionOutputForQuestionAnswering, name="question answering")
 async def question_answering(
         request: Request,
@@ -55,6 +59,7 @@ async def question_answering(
     prediction = await model.predict(prediction_request, Task.question_answering)
 
     return prediction
+
 
 @router.post("/generation", response_model=PredictionOutputForGeneration, name="generation")
 async def generation(

@@ -1,5 +1,4 @@
-from collections import Iterable
-from typing import Dict, Union, Tuple, List, Optional
+from typing import Dict, Union, Tuple, List, Optional, Iterable
 
 import torch
 from io import BytesIO

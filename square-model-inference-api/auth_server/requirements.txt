@@ -1,3 +1,3 @@
-uvicorn==0.13.4
-fastapi==0.65.1
-pydantic==1.8.2
+uvicorn==0.13.4     # ASGI server
+fastapi==0.65.1     # REST API Framework
+pydantic==1.8.2     # Input/ output modelling

@@ -8,16 +8,16 @@ all: clean test install run deploy down
 
 test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
-	pytest --cov
+	PYTHONPATH=inference_server/ pytest --cov
 
 install:
 	pip install --upgrade pip
 	pip install -r inference_server/requirements1.txt
-    pip uninstall -y -r inference_server/uninstall_requirements.txt
-    pip install -r inference_server/requirements2.txt
+	pip uninstall -y -r inference_server/uninstall_requirements.txt
+	pip install -r inference_server/requirements2.txt
 
 run:
-	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8002 --env-file inference_server/.env
+	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8000 --env-file inference_server/.env
 
 build:
 	docker-compose build
