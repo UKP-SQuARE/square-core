@@ -4,9 +4,16 @@ from typing import List
 
 import motor.motor_asyncio
 from filelock import FileLock
-from vespa.package import QueryProfile, Schema, QueryProfileType
+from vespa.package import QueryProfile, QueryProfileType, Schema
 
-from .vespa_package_utils import hosts_to_text, query_profile_to_text, query_profile_type_to_text, services_to_text, validation_overrides_to_text
+from ..models.index import Index
+from .vespa_package_utils import (
+    hosts_to_text,
+    query_profile_to_text,
+    query_profile_type_to_text,
+    services_to_text,
+    validation_overrides_to_text,
+)
 
 
 class DatastoreDB:
@@ -43,7 +50,37 @@ class DatastoreDB:
         result = await self.db.schemas.delete_one({"name": schema_name})
         return result.deleted_count > 0
 
-    # Query profiles
+    # Indices
+
+    async def get_indices(self, datastore_name: str, limit=200) -> List[Index]:
+        indices = await self.db.indices.find({"datastore_name": datastore_name}).to_list(length=limit)
+        for index_dict in indices:
+            index_dict.pop("_id")
+        return [Index(**index_dict) for index_dict in indices]
+
+    async def get_index(self, datastore_name: str, index_name: str) -> Index:
+        index_dict = await self.db.indices.find_one({"datastore_name": datastore_name, "name": index_name})
+        if index_dict is not None:
+            index_dict.pop("_id")
+            return Index(**index_dict)
+        else:
+            return None
+
+    async def add_index(self, index: Index):
+        result = await self.db.indices.insert_one(index.dict())
+        return result.inserted_id
+
+    async def update_index(self, index: Index):
+        result = await self.db.indices.update_one(
+            {"datastore_name": index.datastore_name, "name": index.name}, {"$set": index.dict()}
+        )
+        return result.modified_count > 0
+
+    async def delete_index(self, datastore_name: str, index_name: str) -> bool:
+        result = await self.db.indices.delete_one({"datastore_name": datastore_name, "name": index_name})
+        return result.deleted_count > 0
+
+    # # Query profiles
 
     async def get_query_profiles(self, limit=200) -> List[QueryProfile]:
         items = await self.db.query_profiles.find().to_list(length=limit)
@@ -89,9 +126,15 @@ class DatastoreDB:
             os.makedirs(os.path.join(folder, "schemas"))
             os.makedirs(os.path.join(folder, "search", "query-profiles", "types"))
 
-            # Write schemas to folder
+            # Get schemas, extend by indices & write to folder
             schemas = await self.get_schemas()
             for schema in schemas:
+                indices = await self.get_indices(schema.name)
+                for index in indices:
+                    embedding_field = index.get_vespa_embedding_field()
+                    if embedding_field is not None:
+                        schema.add_fields(embedding_field)
+                    schema.add_rank_profile(index.get_vespa_rank_profile())
                 with open(os.path.join(folder, "schemas", schema.name + ".sd"), "w") as f:
                     f.write(schema.schema_to_text)
             # Write query profiles to folder
@@ -102,7 +145,9 @@ class DatastoreDB:
             # Write query profile types to folder
             query_profile_types = await self.get_query_profile_types()
             for query_profile_type in query_profile_types:
-                with open(os.path.join(folder, "search", "query-profiles", "types", query_profile_type.name + ".xml"), "w") as f:
+                with open(
+                    os.path.join(folder, "search", "query-profiles", "types", query_profile_type.name + ".xml"), "w"
+                ) as f:
                     f.write(query_profile_type_to_text(query_profile_type))
 
             # Write hosts, services & validation overrides to folder

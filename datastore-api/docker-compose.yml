@@ -7,6 +7,13 @@ services:
     ports:
       - "8080:8080"
       - "19071:19071"
+    volumes:
+      - type: bind
+        source: storage/vespa/var
+        target: /opt/vespa/var
+      - type: bind
+        source: storage/vespa/logs
+        target: /opt/vespa/logs
 
   mongodb:
     image: mongo:5.0
@@ -16,3 +23,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=root
     ports:
       - "27017:27017"
+    volumes:
+      - type: bind
+        source: storage/db/data
+        target: /data/db

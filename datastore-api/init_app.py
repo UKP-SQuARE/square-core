@@ -1,41 +1,53 @@
 import asyncio
 
-from vespa.package import Document, QueryField, QueryProfile, QueryProfileType, QueryTypeField, Schema, Field
+from vespa.package import Document, Field, QueryProfile, QueryProfileType, Schema
 
 from app.core.db import db
 from app.core.generate_package import generate_and_upload_package
+from app.models.index import Index
 
 
 async def recreate_db():
     await db.client.drop_database("square_datastores")
     await db.add_schema(
-        Schema("wiki", Document(fields=[Field("id", "long"), Field("title", "string"), Field("text", "string")]))
+        Schema(
+            "wiki",
+            Document(
+                fields=[
+                    Field("id", "long"),
+                    Field("title", "string", indexing=["index", "summary"], index="enable-bm25"),
+                    Field("text", "string", indexing=["index", "summary"], index="enable-bm25"),
+                ]
+            ),
+        )
     )
-    await db.add_schema(
-        Schema("news", Document(fields=[Field("id", "long"), Field("title", "string"), Field("text", "string")]))
+    await db.add_index(
+        Index(
+            datastore_name="wiki",
+            name="bm25",
+            query_yql="select * from sources %{datastore_name} where userQuery();",
+            document_encoder="",
+            embedding_type=None,
+            hnsw=None,
+            first_phase_ranking="bm25(title) + bm25(text)",
+            second_phase_ranking=None,
+        )
     )
-    # Query profile types
-    root_query_profile_type = QueryProfileType(
-        fields=[
-            QueryTypeField(name="ranking.features.query(query_embedding)", type="tensor<float>(x[769])"),
-            QueryTypeField(name="datastore_name", type="string"),
-        ]
+    await db.add_index(
+        Index(
+            datastore_name="wiki",
+            name="dense_retrieval",
+            query_yql='select * from sources %{datastore_name} where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(text_embedding,query_embedding)) or userQuery();',
+            document_encoder="",
+            embedding_type="tensor<float>(x[769])",
+            hnsw={"distance_metric": "euclidean", "max_links_per_node": 16, "neighbors_to_explore_at_insert": 500},
+            first_phase_ranking="closeness(dense_retrieval)",
+            second_phase_ranking=None,
+        )
     )
-    await db.add_query_profile_type(root_query_profile_type)
-    # Query profiles
-    bm25_query_profile = QueryProfile(
-        fields=[
-            QueryField(name="rankings.profile", value="bm25"),
-            QueryField(name="yql", value="select * from sources %{datastore_name} where userQuery();"),
-        ]
-    )
-    await db.add_query_profile(bm25_query_profile)
-    # dense_query_profile = QueryProfile(fields=[
-    #     QueryField(name="rankings.profile", value="dense-retrieval"),
-    #     QueryField(name="yql", value="select * from sources %{datastore_name} where ([{\"targetNumHits\":100, \"hnsw.exploreAdditionalHits\":100}]nearestNeighbor(text_embedding,query_embedding)) or userQuery();"),
-    # ])
-    # dense_query_profile.name = "dense-retrieval"
-    # await db.add_query_profile(dense_query_profile)
+
+    await db.add_query_profile_type(QueryProfileType())
+    await db.add_query_profile(QueryProfile())
 
 
 if __name__ == "__main__":

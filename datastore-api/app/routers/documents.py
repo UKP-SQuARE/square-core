@@ -92,7 +92,9 @@ async def get_batch_documents(datastore_name: str):
     endpoint = "{}/document/v1/{}/{}/docid".format(vespa_app.end_point, datastore_name, datastore_name)
     response = vespa_app.http_session.get(endpoint, cert=vespa_app.cert)
     documents = [{"id": doc["id"], "title": doc["fields"]["title"], "text": doc["fields"]["text"]} for doc in response.json()["documents"]]
-    continuation = response.json()["continuation"]
+    continuation = None
+    if "continuation" in response.json():
+        continuation = response.json()["continuation"]
     while continuation is not None:
         vespa_format = {
             "continuation": continuation,
