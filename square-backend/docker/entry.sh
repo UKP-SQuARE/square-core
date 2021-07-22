@@ -10,4 +10,4 @@ python flask-manage.py db migrate --directory=migration
 python flask-manage.py db upgrade --directory=migration
 
 echo "Starting the server"
-python main.py --host "0.0.0.0"
+python main.py --host "0.0.0.0" --logging_conf logging.conf

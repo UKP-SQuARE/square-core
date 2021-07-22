@@ -1,5 +1,4 @@
 import logging
-import logging.config
 import yaml
 from flask import Flask
 from flask_cors import CORS
@@ -10,8 +9,7 @@ from .websocket import socketio, init_socket
 logger = logging.getLogger(__name__)
 
 
-def create_app(app_name="SQUARE_API", config_path="./config.yaml", logging_config_path="./logging_config.yaml"):
-    logging.config.dictConfig(yaml.load(open(logging_config_path)))
+def create_app(app_name="SQUARE_API", config_path="./config.yaml"):
 
     logger.info("Creating Flask App")
     config = yaml.load(open(config_path))
