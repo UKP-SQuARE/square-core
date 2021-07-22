@@ -5,10 +5,10 @@ import os
 import logging
 import json
 import pickle
+from dataclasses import dataclass
 from typing import Union, List
-
+import h5py
 import torch
-from pydantic import BaseModel, Field
 # Conditionally load adapter or sentence-transformer later to simplify installation
 #from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 import transformers
@@ -18,55 +18,16 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class PredictionRequest(BaseModel):
+@dataclass
+class PredictionRequest:
     """
     Prediction request containing the input, pre-processing parameters, parameters for the model forward pass,
      the task with task-specific parameters, and parameters for any post-processing
     """
-    input: Union[List[str], List[List[str]], dict] = Field(
-        ...,
-        description="Input for the model. Supports Huggingface Transformer inputs (i.e., list of sentences, or "
-                    "list of pairs of sentences), a dictionary with Transformer inputs, or a dictionary containing "
-                    "numpy arrays (as lists). For the numpy arrays, also set is_preprocessed=True. "
-                    "<br><br>"
-                    "Transformer/ Adapter:<br>"
-                    "Task 'question_answering' expects the input to be in the (question, context) format."
-    )
-    preprocessing_kwargs: dict = Field(
-        default={},
-        description="Optional dictionary containing additional parameters for the pre-processing step.<br><br>"
-                    "SentenceTransformer: This is ignored.<br>"
-                    "Transformer/ Adapter: See the Huggingface tokenizer for possible parameters."
-    )
-    model_kwargs: dict = Field(
-        default={},
-        description="Optional dictionary containing parameters that are passed to the model for the forward pass "
-                    "to control what additional tensors are returned.<br><br>"
-                    "SentenceTransformer: This is ignored.<br>"
-                    "Transformer/ Adapter: See the forward method of the Huggingface models for possible parameters"
-                    "For example, set ‘output_attentions=True’ to receive the attention results in the output."
-    )
-    task_kwargs: dict = Field(
-        default={},
-        description="Optional dictionary containing additional parameters for handling of the task and "
-                    "task-related post-processing.<br><br>"
-                    "SentenceTransformer: This is ignored.<br>"
-                    "Transformer/ Adapter:<br>"
-                    "'sentence_classification':<br>"
-                    "- 'is_regression': Flag to treat output of models with num_labels>1 as regression, too, i.e., no softmax and no labels are returned<br>"
-                    "'token_classification':<br>"
-                    "- 'is_regression': Flag to treat output of models with num_labels>1 as regression, too, i.e., no softmax and no labels are returned<br>"
-                    "'embedding':<br>"
-                    "- 'embedding_mode: One of 'mean', 'max', 'cls', 'token'. The pooling mode used (or not used for 'token'). Default 'mean'.<br>"
-                    "'question_answering':<br>"
-                    "- 'topk': Return the top-k most likely spans. Default 1.<br>"
-                    "- 'max_answer_len': Maximal token length of answers. Default 128.<br>"
-                    "'generation':<br>"
-                    "- 'clean_up_tokenization_spaces': See parameter in Huggingface tokenizer.decode(). Default False<br>"
-                    "- See Huggingface model.generate() for all possible parameters that can be used. "
-                    "Note, 'model_kwargs' and 'task_kwargs' are merged for generation."
-
-    )
+    input: Union[List[str], List[List[str]], dict]
+    preprocessing_kwargs: dict
+    model_kwargs: dict
+    task_kwargs: dict
 
 
 class SentenceTransformer:
@@ -282,9 +243,11 @@ def encode(args):
                 texts = [line["text"] for line in lines]
                 ids = [line["id"] for line in lines]
 
-                input = PredictionRequest(input=texts)
+                input = PredictionRequest(input=texts, preprocessing_kwargs={}, model_kwargs={}, task_kwargs={"embedding_mode": "mean"})
                 embeddings = model.embedding(input)
                 embeddings = embeddings.cpu().numpy()
+                if args.float16:
+                    embeddings = embeddings.astype("float16")
 
                 current_output.update({id: row for id, row in zip(ids, embeddings)})
 
@@ -294,11 +257,17 @@ def encode(args):
             if current_processed_lines >= chunk_size or finished_reading:
                 logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
 
-                chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
-                with open(chunk_output_file, "wb") as out_f:
-                    logger.info(f"Writing chunk in {chunk_output_file}")
-                    pickle.dump(current_output, out_f)
-
+                if args.hdf5:
+                    chunk_output_file = f"{output_file}_{chunk_idx}.h5"
+                    with h5py.File(chunk_output_file, "w") as out_f:
+                        logger.info(f"Writing chunk in {chunk_output_file}")
+                        for k, v in current_output.items():
+                            out_f.create_dataset(k, data=v)
+                else:
+                    chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
+                    with open(chunk_output_file, "wb") as out_f:
+                        logger.info(f"Writing chunk in {chunk_output_file}")
+                        pickle.dump(current_output, out_f)
                 current_processed_lines = 0
                 current_output = {}
                 chunk_idx += 1
@@ -317,6 +286,8 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", help="Output .pkl file. A chunk index will be inserted between the name and extension: 'path/to/name_chunkidx.pkl' ."
                                               "Format: Dict[str, numpy.ndarray], i.e. mapping ids to the document embeddings")
     parser.add_argument("--adapter_name", help="For model_type=adapter, the name of the adapter that should be loaded")
+    parser.add_argument("--hdf5", action="store_true")
+    parser.add_argument("--float16", action="store_true")
     args = parser.parse_args()
 
     encode(args)
