@@ -45,7 +45,7 @@ async def put_datastore(datastore_name: str, fields: List[DatastoreField]):
         if success_upload:
             return Datastore.from_vespa(schema)
         else:
-            return Response(status_code=400)
+            return Response(status_code=500)
     else:
         return Response(status_code=400)
 

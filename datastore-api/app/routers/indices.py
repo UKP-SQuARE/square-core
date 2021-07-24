@@ -1,34 +1,36 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from ..core.db import db
 from ..core.generate_package import generate_and_upload_package
 from ..core.vespa_app import vespa_app
-from ..models.index import IndexRequest, create_index_object
+from ..models.index import Index, IndexRequest, create_index_object
 
 
 router = APIRouter(tags=["Indices"])
 
 
 @router.put("/datastore/{datastore_name}/indices/{index_name}")
-async def create_index(
+async def put_index(
     datastore_name: str = Path(...), index_name: str = Path(...), index_request: IndexRequest = Body(...)
 ):
-    if await db.get_index(datastore_name, index_name) is not None:
-        return HTTPException(
-            status_code=400,
-            detail="Index with name {} already exists in datastore {}".format(index_name, datastore_name),
-        )
-    index = create_index_object(datastore_name, index_name, index_request)
-    success = await db.add_index(index) is not None
-    if success:
-        success &= await generate_and_upload_package()
+    index = await db.get_index(datastore_name, index_name)
+    if index is None:
+        new_index = create_index_object(datastore_name, index_name, index_request)
+        success = await db.add_index(new_index) is not None
+    else:
+        new_index = create_index_object(datastore_name, index_name, index_request)
+        success = await db.update_index(new_index)
 
     if success:
-        return index
+        success_upload = await generate_and_upload_package()
+        if success_upload:
+            return new_index
+        else:
+            return Response(status_code=500)
     else:
         return Response(status_code=400)
 
@@ -61,6 +63,7 @@ def retrieve_document_embeddings(datastore_name: str, index_name: str):
         continuation = response.get("continuation", None)
 
 
+# TODO currently not working
 @router.get("/datastore/{datastore_name}/indices/{index_name}/embeddings")
 async def get_index_embeddings(datastore_name: str = Path(...), index_name: str = Path(...)):
     return StreamingResponse(
@@ -76,40 +79,42 @@ async def delete_index(datastore_name: str = Path(...), index_name: str = Path(.
         if success:
             return Response(status_code=204)
         else:
-            return Response(status_code=400)
+            return Response(status_code=500)
     else:
         return Response(status_code=400)
 
 
-@router.get("/datastore/{datastore_name}/indices/{index_name}/{doc_id}")
+@router.get("/datastore/{datastore_name}/indices/{index_name}/embeddings/{doc_id}")
 async def get_document_embedding(
     datastore_name: str = Path(...), index_name: str = Path(...), doc_id: str = Path(...)
 ):
     res = vespa_app.get_data(datastore_name, doc_id)
     doc = res.json
-    if res.status_code == 200 and index_name in doc["fields"]:
-        return [x["value"] for x in doc["fields"][index_name]["cells"]]
+    embedding_name = Index.get_embedding_field_name(index_name)
+    if res.status_code == 200 and embedding_name in doc["fields"]:
+        return [x["value"] for x in doc["fields"][embedding_name]["cells"]]
     return Response(status_code=404)
 
 
-@router.post("/datastore/{datastore_name}/indices/{index_name}/{doc_id}")
-async def update_document_embedding(
+@router.post("/datastore/{datastore_name}/indices/{index_name}/embeddings/{doc_id}")
+async def set_document_embedding(
     datastore_name: str = Path(...),
     index_name: str = Path(...),
     doc_id: str = Path(...),
     embedding: List[float] = Body(...),
 ):
-    fields = {index_name: {"values": embedding}}
+    embedding_name = Index.get_embedding_field_name(index_name)
+    fields = {embedding_name: {"values": embedding}}
     response = vespa_app.update_data(datastore_name, doc_id, fields)
     return JSONResponse(status_code=response.status_code, content=response.json)
 
 
-@router.post("/datastore/{datastore_name}/indices/{index_name}/indexing")
-async def update_index(
-    datastore_name: str = Path(...), index_name: str = Path(...), reindex: str = Path(...), filtering: list = Body([])
-):
-    # TODO
-    pass
+# TODO
+# @router.post("/datastore/{datastore_name}/indices/{index_name}/indexing")
+# async def update_index(
+#     datastore_name: str = Path(...), index_name: str = Path(...), reindex: str = Path(...), filtering: list = Body([])
+# ):
+#     pass
 
 
 @router.get("/datastore/{datastore_name}/indices")

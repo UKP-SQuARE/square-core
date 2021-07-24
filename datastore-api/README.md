@@ -35,29 +35,29 @@ And teared down again after usage:
 docker compose down
 ```
 
-### Vespa
+### Demo configuration & data
 
-First start the docker container (see above).
-Then wait and check the status until you get 200 OK:
+To showcase the API methods, we configure a demo datastore and fill it with some data.
+The demo has a datastore `wiki` with two indices `bm25` and `dpr`.
+
+After starting Docker, first check the Vespa status until it returns HTTP 200:
 ```shell
-$ curl -s --head http://localhost:19071/ApplicationStatus
+curl -s --head http://localhost:19071/ApplicationStatus
 ```
 
-Upload the application package to the Vespa engine:
-```shell
-$ (cd application && zip -r - .) | \
-  curl --header Content-Type:application/zip --data-binary @- \
-  localhost:19071/application/v2/tenant/default/prepareandactivate
+Initialize the app and the demo datastore:
+```
+python init_app.py
 ```
 
-Wait and check the status until one gets 200 OK:
+Wait and check the Vespa app status until you get HTTP 200:
 ```shell
-$ curl -s --head http://localhost:8080/ApplicationStatus
+curl -s --head http://localhost:8080/ApplicationStatus
 ```
 
 Download the Vespa tool for uploading data:
 ```shell
-$ curl -L -o vespa-http-client-jar-with-dependencies.jar \
+curl -L -o vespa-http-client-jar-with-dependencies.jar \
   https://search.maven.org/classic/remotecontent?filepath=com/yahoo/vespa/vespa-http-client/7.391.28/vespa-http-client-7.391.28-jar-with-dependencies.jar
 ```
 
@@ -65,29 +65,21 @@ Download the sample data (extract from MS MARCO):
 ```
 wget https://public.ukp.informatik.tu-darmstadt.de/kwang/tutorial/vespa/dense-retrieval/msmarco/sample-feed.jsonl
 ```
-
-Upload the sample data as corpus:
-```python
-$ java -jar vespa-http-client-jar-with-dependencies.jar \
-  --file sample-feed.jsonl --endpoint http://localhost:8080
+Modify the data for our app:
+```
+sed -i 's/text_embedding/dpr_embedding/g' sample-feed.jsonl
 ```
 
-Run the API and input an query:
+Upload the sample data to the datastore:
 ```
-$ python query_api.py
-what is the population of achill island?
+java -jar vespa-http-client-jar-with-dependencies.jar --file sample-feed.jsonl --endpoint http://localhost:8080
 ```
 
-### FastAPI
+### API server
 
-Make sure the Vespa Docker container is running (see above):
+Make sure the Vespa app server is running (see above):
 ```shell
 curl -s --head http://localhost:8080/ApplicationStatus
-```
-
-For the MongoDB database, we need to set the environment variable: 
-```
-export MONGODB_URL="mongodb://root:root@localhost:27017/admin?retryWrites=true&w=majority"
 ```
 
 Start the FastAPI server:

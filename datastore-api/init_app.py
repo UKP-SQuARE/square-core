@@ -1,6 +1,6 @@
 import asyncio
 
-from vespa.package import Document, Field, QueryProfile, QueryProfileType, Schema
+from vespa.package import Document, Field, QueryProfile, QueryProfileType, Schema, FieldSet, QueryTypeField
 
 from app.core.db import db
 from app.core.generate_package import generate_and_upload_package
@@ -14,18 +14,20 @@ async def recreate_db():
             "wiki",
             Document(
                 fields=[
-                    Field("id", "long"),
-                    Field("title", "string", indexing=["index", "summary"], index="enable-bm25"),
-                    Field("text", "string", indexing=["index", "summary"], index="enable-bm25"),
+                    Field("title", "string", indexing=["summary", "index"], index="enable-bm25"),
+                    Field("text", "string", indexing=["summary", "index"], index="enable-bm25"),
+                    Field("id", "long", indexing=["summary", "attribute"]),
                 ]
             ),
+            # TODO add this dataset creation via API
+            fieldsets=[FieldSet(name="default", fields=["title", "text"])],
         )
     )
     await db.add_index(
         Index(
             datastore_name="wiki",
             name="bm25",
-            query_yql="select * from sources %{datastore_name} where userQuery();",
+            query_yql="select * from sources wiki where userQuery();",
             document_encoder="",
             embedding_type=None,
             hnsw=None,
@@ -36,17 +38,20 @@ async def recreate_db():
     await db.add_index(
         Index(
             datastore_name="wiki",
-            name="dense_retrieval",
-            query_yql='select * from sources %{datastore_name} where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(text_embedding,query_embedding)) or userQuery();',
+            name="dpr",
+            query_yql='select * from sources wiki where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,query_embedding)) or userQuery();',
             document_encoder="",
             embedding_type="tensor<float>(x[769])",
             hnsw={"distance_metric": "euclidean", "max_links_per_node": 16, "neighbors_to_explore_at_insert": 500},
-            first_phase_ranking="closeness(dense_retrieval)",
+            first_phase_ranking="closeness(dpr_embedding)",
             second_phase_ranking=None,
         )
     )
 
-    await db.add_query_profile_type(QueryProfileType())
+    # TODO: Apparently, we need to specify type of the query embedding here. But this doens't support different sizes.
+    await db.add_query_profile_type(QueryProfileType(fields=[
+        QueryTypeField("ranking.features.query(query_embedding)", "tensor<float>(x[769])")
+    ]))
     await db.add_query_profile(QueryProfile())
 
 

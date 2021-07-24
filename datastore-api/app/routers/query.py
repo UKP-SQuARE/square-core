@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from fastapi.param_functions import Path, Query
 
+from ..core.db import db
 from ..core.models import *
 from ..core.vespa_app import vespa_app
 
@@ -15,19 +16,22 @@ router = APIRouter(tags=["Query"])
             and if necessery encodes the query with the specified encoder",
     response_description="The top-K documents",
 )
-def search(
+async def search(
     datastore_name: str = Path(..., description="Name of the datastore."),
     index_name: str = Path(..., description="Index name."),
     query: str = Query(..., description="The query string."),
     top_k: int = Query(40, description="Number of documents to retrieve."),
     query_encoder: str = Query("dpr", description="Identifier of the query encoder."),
 ):
+    index = await db.get_index(datastore_name, index_name)
+    if index is None:
+        return Response(status_code=404, content="Datastore or index not found.")
     query_embedding = encode_query(query_encoder, query)
     body = {
         "query": query,
         "type": "any",
-        "datastore_name": datastore_name,
-        "queryProfile": index_name,
+        "yql": index.query_yql,
+        "ranking.profile": index_name,
         "ranking.features.query(query_embedding)": query_embedding,
         "hits": top_k,
     }

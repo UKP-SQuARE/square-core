@@ -1,3 +1,6 @@
+"""
+Just a dummy module.
+"""
 import transformers
 
 tokenizer = transformers.DPRQuestionEncoderTokenizer.from_pretrained('facebook/dpr-question_encoder-single-nq-base')
@@ -10,7 +13,4 @@ def encode_document(encoder: str, document: str):
 
 
 def encode_query(encoder: str, query: str):
-    if encoder == "dpr":
-        return pipeline([query])[0].tolist() + [0]
-    else:
-        raise ValueError("Unknown encoder.")
+    return pipeline([query])[0].tolist() + [0]

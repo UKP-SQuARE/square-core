@@ -12,7 +12,7 @@ class Index(BaseModel):
     query_yql: str
 
     # Model
-    document_encoder: str
+    document_encoder: Optional[str]
 
     # Embedding field
     embedding_type: Optional[str] = None
@@ -22,10 +22,19 @@ class Index(BaseModel):
     first_phase_ranking: str
     second_phase_ranking: Optional[str] = None
 
+    @staticmethod
+    def get_embedding_field_name(index) -> Optional[str]:
+        if isinstance(index, str):
+            return index + "_embedding"
+        if index.embedding_type is not None:
+            return index.name + "_embedding"
+        else:
+            return None
+
     def get_vespa_embedding_field(self) -> Optional[Field]:
         if self.embedding_type is not None:
             return Field(
-                name=self.name,
+                name=Index.get_embedding_field_name(self),
                 type=self.embedding_type,
                 indexing=["attribute", "index"],
                 ann=HNSW.from_dict(self.hnsw) if self.hnsw is not None else None,
@@ -40,13 +49,25 @@ class Index(BaseModel):
             second_phase=SecondPhaseRanking(self.second_phase_ranking)
             if self.second_phase_ranking is not None
             else None,
+            inherits="default",
         )
 
 
 class IndexRequest(BaseModel):
     bm25: bool
-    doc_encoder: Optional[str] = None
+    document_encoder: Optional[str] = None
+    embedding_size: Optional[int] = None
     distance_metric: Optional[str] = None
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "bm25": False,
+                "document_encoder": "facebook/dpr-ctx_encoder-single-nq-base",
+                "embedding_size": 769,
+                "distance_metric": "euclidean",
+            }
+        }
 
 
 def create_index_object(datastore_name: str, index_name: str, index_request: IndexRequest):
@@ -57,10 +78,10 @@ def create_index_object(datastore_name: str, index_name: str, index_request: Ind
         embedding_type = None
         hnsw = None
     else:
-        yql = "select * from sources " + datastore_name + "where ([{'targetNumHits':100, 'hnsw.exploreAdditionalHits':100}]nearestNeighbor(text_embedding,query_embedding)) or userQuery();"
-        ranking_expression = "closeness(text_embedding)"
-        dim = 4  #TODO
-        embedding_type = "tensor<float>(x[{}])".format(dim)
+        embedding_name = Index.get_embedding_field_name(index_name)
+        yql = "select * from sources " + datastore_name + " where ([{'targetNumHits':100, 'hnsw.exploreAdditionalHits':100}]nearestNeighbor(" + embedding_name + ",query_embedding)) or userQuery();"
+        ranking_expression = "closeness({})".format(embedding_name)
+        embedding_type = "tensor<float>(x[{}])".format(index_request.embedding_size)
         hnsw = {
             "distance_metric": index_request.distance_metric,
             "max_links_per_node": 16,
@@ -70,7 +91,7 @@ def create_index_object(datastore_name: str, index_name: str, index_request: Ind
         datastore_name=datastore_name,
         name=index_name,
         query_yql=yql,
-        document_encoder=index_request.doc_encoder,
+        document_encoder=index_request.document_encoder,
         embedding_type=embedding_type,
         hnsw=hnsw,
         first_phase_ranking=ranking_expression,

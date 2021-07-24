@@ -1,12 +1,13 @@
 import os
 import shutil
-from typing import List
+from typing import List, Optional
 
 import motor.motor_asyncio
 from filelock import FileLock
 from vespa.package import QueryProfile, QueryProfileType, Schema
 
 from ..models.index import Index
+from .config import settings
 from .vespa_package_utils import (
     hosts_to_text,
     query_profile_to_text,
@@ -17,8 +18,7 @@ from .vespa_package_utils import (
 
 
 class DatastoreDB:
-    def __init__(self, mongo_db_string=None):
-        mongo_db_string = mongo_db_string or os.environ["MONGODB_URL"]
+    def __init__(self, mongo_db_string):
         self.client = motor.motor_asyncio.AsyncIOMotorClient(mongo_db_string)
         self.db = self.client.square_datastores
 
@@ -30,7 +30,7 @@ class DatastoreDB:
             schema_dict.pop("_id")
         return [Schema.from_dict(schema_dict) for schema_dict in schemas]
 
-    async def get_schema(self, schema_name: str) -> Schema:
+    async def get_schema(self, schema_name: str) -> Optional[Schema]:
         schema_dict = await self.db.schemas.find_one({"name": schema_name})
         if schema_dict is not None:
             schema_dict.pop("_id")
@@ -44,7 +44,7 @@ class DatastoreDB:
 
     async def update_schema(self, schema: Schema) -> bool:
         result = await self.db.schemas.update_one({"name": schema.name}, {"$set": schema.to_dict})
-        return result.modified_count > 0
+        return result.matched_count > 0
 
     async def delete_schema(self, schema_name: str) -> bool:
         result = await self.db.schemas.delete_one({"name": schema_name})
@@ -58,7 +58,7 @@ class DatastoreDB:
             index_dict.pop("_id")
         return [Index(**index_dict) for index_dict in indices]
 
-    async def get_index(self, datastore_name: str, index_name: str) -> Index:
+    async def get_index(self, datastore_name: str, index_name: str) -> Optional[Index]:
         index_dict = await self.db.indices.find_one({"datastore_name": datastore_name, "name": index_name})
         if index_dict is not None:
             index_dict.pop("_id")
@@ -74,7 +74,7 @@ class DatastoreDB:
         result = await self.db.indices.update_one(
             {"datastore_name": index.datastore_name, "name": index.name}, {"$set": index.dict()}
         )
-        return result.modified_count > 0
+        return result.matched_count > 0
 
     async def delete_index(self, datastore_name: str, index_name: str) -> bool:
         result = await self.db.indices.delete_one({"datastore_name": datastore_name, "name": index_name})
@@ -160,4 +160,4 @@ class DatastoreDB:
                     f.write(validation_overrides_to_text())
 
 
-db = DatastoreDB()
+db = DatastoreDB(mongo_db_string=settings.MONGODB_URL)

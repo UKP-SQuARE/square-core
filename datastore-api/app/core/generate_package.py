@@ -1,9 +1,10 @@
 import os
 import zipfile
-from filelock import FileLock
 
 import requests
+from filelock import FileLock
 
+from .config import settings
 from .db import db
 
 
@@ -22,10 +23,7 @@ async def zip_application_package(path):
 
 
 async def upload_new_schema(path):
-    # TODO move this to config
-    host = "localhost"
-    port = 19071
-    url = "http://" + host + ":" + str(port) + "/application/v2/tenant/default/prepareandactivate"
+    url = settings.VESPA_CONFIG_URL + "/application/v2/tenant/default/prepareandactivate"
 
     zip_path = await zip_application_package(path)
 
