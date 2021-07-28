@@ -1,13 +1,18 @@
+from io import BytesIO
 from typing import List
 
+import h5py
+import requests
 from fastapi import APIRouter, Response
 from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
+from ..core.config import settings
 from ..core.db import db
 from ..core.generate_package import generate_and_upload_package
 from ..core.vespa_app import vespa_app
 from ..models.index import Index, IndexRequest, create_index_object
+from ..models.upload import UploadResponse, UploadUrlSet
 
 
 router = APIRouter(tags=["Indices"])
@@ -41,34 +46,69 @@ async def get_index_status(datastore_name: str = Path(...), index_name: str = Pa
     pass
 
 
-def retrieve_document_embeddings(datastore_name: str, index_name: str):
-    endpoint = "{0}/document/v1/{1}/{1}/docid".format(vespa_app.end_point, datastore_name)
-    response = vespa_app.http_session.get(endpoint, cert=vespa_app.cert).json()
-    for document in response["documents"]:
-        if index_name in document["fields"]:
-            yield "{}, {}".format(
-                document["id"], [x["value"] for x in document["fields"][index_name]["cells"]]
-            ).encode()
-    continuation = response.get("continuation", None)
-    while continuation is not None:
-        vespa_format = {
-            "continuation": continuation,
-        }
-        response = vespa_app.http_session.get(endpoint, params=vespa_format, cert=vespa_app.cert).json()
-        for document in response["documents"]:
-            if index_name in document["fields"]:
-                yield "{}, {}".format(
-                    document["id"], [x["value"] for x in document["fields"][index_name]["cells"]]
-                ).encode()
-        continuation = response.get("continuation", None)
+@router.get("/datastore/{datastore_name}/indices/{index_name}/embeddings", response_class=StreamingResponse)
+async def get_document_embeddings(
+    datastore_name: str = Path(...), index_name: str = Path(...),
+    offset: int = Query(0), size: int = Query(100),
+):
+    if size > settings.MAX_RETURN_ITEMS:
+        return Response(status_code=400, content="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS))
+
+    embedding_name = Index.get_embedding_field_name(index_name)
+    batch = [(datastore_name, i) for i in range(offset, offset + size)]
+    vespa_responses = vespa_app.get_batch(batch)
+
+    buffer = BytesIO()
+    with h5py.File(buffer, "w") as f:
+        for response in vespa_responses:
+            print(response.url)
+            if response.status_code == 200 and embedding_name in response.json["fields"]:
+                doc_id = response.json["id"].split(":")[-1]
+                embedding = [x["value"] for x in response.json["fields"][embedding_name]["cells"]]
+                f.create_dataset(doc_id, data=embedding)
+    buffer.seek(0)
+    return StreamingResponse(buffer, media_type="application/octet-stream")
 
 
-# TODO currently not working
-@router.get("/datastore/{datastore_name}/indices/{index_name}/embeddings")
-async def get_index_embeddings(datastore_name: str = Path(...), index_name: str = Path(...)):
-    return StreamingResponse(
-        retrieve_document_embeddings(datastore_name, index_name), media_type="application/octet-stream"
-    )
+@router.post(
+    "/datastore/{datastore_name}/indices/{index_name}/embeddings",
+    response_model=UploadResponse,
+    status_code=201,
+    responses={400: {"model": UploadResponse}},
+)
+def upload_document_embeddings_from_urls(
+    datastore_name: str,
+    index_name: str,
+    urlset: UploadUrlSet,
+    api_response: Response,
+):
+    doc_count = 0
+    embedding_name = Index.get_embedding_field_name(index_name)
+
+    for url in urlset.urls:
+        r = requests.get(url)
+        if r.status_code != 200:
+            api_response.status_code = 400
+            return UploadResponse(
+                message=f"Failed to retrieve embeddings from {url}.",
+                successful_uploads=doc_count,
+            )
+        # TODO how to handle files that are too big?
+        buffer = BytesIO(r.content)
+        with h5py.File(buffer, "r") as f:
+            for doc_id, embedding in f.items():
+                fields = {embedding_name: {"values": embedding[:].tolist()}}
+                vespa_response = vespa_app.update_data(datastore_name, doc_id, fields)
+                print(vespa_response.json)
+                if vespa_response.status_code != 200:
+                    api_response.status_code = 400
+                    return UploadResponse(
+                        message=f"No document with ID {doc_id} in datastore.",
+                        successful_uploads=doc_count,
+                    )
+                doc_count += 1
+
+    return UploadResponse(message=f"Successfully uploaded {doc_count} embeddings.", successful_uploads=doc_count)
 
 
 @router.delete("/datastore/{datastore_name}/indices/{index_name}")
@@ -105,6 +145,7 @@ async def set_document_embedding(
 ):
     embedding_name = Index.get_embedding_field_name(index_name)
     fields = {embedding_name: {"values": embedding}}
+    # TODO investigate, why create=False doesn't seem to work
     response = vespa_app.update_data(datastore_name, doc_id, fields)
     return JSONResponse(status_code=response.status_code, content=response.json)
 

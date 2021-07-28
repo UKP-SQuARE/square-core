@@ -6,3 +6,4 @@ uvicorn[standard]==0.14.0
 pyvespa==0.7.0
 filelock==3.0.12
 motor==2.4.0
+h5py==3.3.0
