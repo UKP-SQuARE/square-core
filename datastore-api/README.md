@@ -8,13 +8,18 @@
 - [Official documentation](https://docs.vespa.ai/en/vespa-quick-start.html)
 
 ## Requirements
+
 - Docker
 - Java 11: **The version number is very important!**
-- Python 3 (transformers needed)
+- Python 3.8+
 
-Python requirements:
+Python requirements via pip (ideally with virtualenv):
 ```
 pip install -r requirements.txt
+```
+... or via conda:
+```
+conda env create -f environment.yml
 ```
 
 ## Setup
