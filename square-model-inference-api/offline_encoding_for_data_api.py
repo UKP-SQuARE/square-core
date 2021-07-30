@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Union, List
 import h5py
 import torch
+import numpy as np
 # Conditionally load adapter or sentence-transformer later to simplify installation
 #from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 import transformers
@@ -235,7 +236,7 @@ def encode(args):
         total_processed_lines = 0
         chunk_idx = 0
         current_processed_lines = 0
-        current_output = {}
+        current_output = {"ids": [], "embeddings": []}
         while not finished_reading:
             lines, finished_reading = read_batch(f_in, batch_size)
             if lines:
@@ -249,7 +250,8 @@ def encode(args):
                 if args.float16:
                     embeddings = embeddings.astype("float16")
 
-                current_output.update({id: row for id, row in zip(ids, embeddings)})
+                current_output["ids"].extend(ids)
+                current_output["embeddings"].append(embeddings)
 
             total_processed_lines += len(lines)
             current_processed_lines += len(lines)
@@ -257,19 +259,25 @@ def encode(args):
             if current_processed_lines >= chunk_size or finished_reading:
                 logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
 
+                current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+
                 if args.hdf5:
                     chunk_output_file = f"{output_file}_{chunk_idx}.h5"
                     with h5py.File(chunk_output_file, "w") as out_f:
                         logger.info(f"Writing chunk in {chunk_output_file}")
-                        for k, v in current_output.items():
-                            out_f.create_dataset(k, data=v)
+                        if args.hdf5_gzip_level < 0:
+                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
+                            out_f.create_dataset("embeddings", data=current_output["embeddings"])
+                        else:
+                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                            out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
                 else:
                     chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
                     with open(chunk_output_file, "wb") as out_f:
                         logger.info(f"Writing chunk in {chunk_output_file}")
                         pickle.dump(current_output, out_f)
                 current_processed_lines = 0
-                current_output = {}
+                current_output = {"ids": [], "embeddings": []}
                 chunk_idx += 1
 
 if __name__ == "__main__":
@@ -279,14 +287,17 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", help="Model type, one of 'adapter', 'transformer', 'sentence-transformer'")
     parser.add_argument("--batch_size", type=int, help="Batch size used for encoding")
     parser.add_argument("--chunk_size", type=int, help="Chunk size used for writing out embeddings. "
-                                                       "ATTENTION: This value will be set to the first value satisfying true_chunk_size mod batch_size == 0"
+                                                       "ATTENTION: This value will be set to the first value satisfying: true_chunk_size mod batch_size == 0"
                                                        "Each output file contains chunk_size embeddings "
-                                                       "(except the last one if len($input) mod chunk_size != 0)")
+                                                       "(except the last one if len(input) mod chunk_size != 0)")
     parser.add_argument("--input_file", help="Input .jsonl file. Each line is a dict object: {'id': 'xxx', 'text': 'abc...'}")
     parser.add_argument("--output_file", help="Output .pkl file. A chunk index will be inserted between the name and extension: 'path/to/name_chunkidx.pkl' ."
-                                              "Format: Dict[str, numpy.ndarray], i.e. mapping ids to the document embeddings")
+                                              "Format: {'ids': List[str], 'embeddings': ndarray}. "
+                                              "Note for hdf5, use f['ids'].asstr() to load ids as string because default is binary.")
     parser.add_argument("--adapter_name", help="For model_type=adapter, the name of the adapter that should be loaded")
     parser.add_argument("--hdf5", action="store_true")
+    parser.add_argument("--hdf5-gzip-level", type=int, default=4, help="GZIP compression level for HDF5 in range 0-9, default 4 (bigger is more compressed). "
+                                                                       "Set to negative value to disable compression")
     parser.add_argument("--float16", action="store_true")
     args = parser.parse_args()
 
