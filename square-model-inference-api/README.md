@@ -30,6 +30,9 @@ to handle authorization of requests with the auth server.
 └───example_docker-compose.yml  # Example docker-compose setup for the Model API
 ```
 
+### Logging
+The components use the json-formatted logging used by the ELK Stack in square-core/logging.
+
 ## Requirements
 
 Python 3.7+, Docker (optional), Make (optional)

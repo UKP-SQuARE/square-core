@@ -1,5 +1,8 @@
 from fastapi import FastAPI, Depends
 import auth_api.security as security
+from logging.config import fileConfig
+
+fileConfig("logging.conf")
 
 app = FastAPI()
 

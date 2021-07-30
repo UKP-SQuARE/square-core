@@ -1,10 +1,14 @@
+import sys
+
 from fastapi import FastAPI
 from square_model_inference.api.routes.router import api_router
 from square_model_inference.core.config import API_PREFIX, APP_NAME, APP_VERSION
 from square_model_inference.core.event_handlers import start_app_handler, stop_app_handler
-
+from logging.config import fileConfig
 
 def get_app() -> FastAPI:
+    # Set logging config. Loguru uses this then, too
+    fileConfig("logging.conf")
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION)
     fast_app.include_router(api_router, prefix=API_PREFIX)
 

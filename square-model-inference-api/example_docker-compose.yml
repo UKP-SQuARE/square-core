@@ -2,7 +2,8 @@ version: "3"
 
 services:
   auth:
-    build: ./auth_server/.
+    #build: ./auth_server/.
+    image: ukpsquare/square-model-api-auth:latest
     ports:
       - 8081:8081
     env_file:
@@ -17,8 +18,8 @@ services:
 
   # Example config for one model server
   inference_bert:
-    build: ./inference_server/.
-    image: square_model_inference:latest
+    #build: ./inference_server/.
+    image: ukpsquare/square-model-api:latest
     ports:
       - 8000:8000
     env_file:
@@ -30,8 +31,8 @@ services:
 
   # Example config for another model server
   inference_roberta:
-    build: ./inference_server/.
-    image: square_model_inference:latest
+    #build: ./inference_server/.
+    image: ukpsquare/square-model-api:latest
     ports:
       - 8001:8000
     env_file:
