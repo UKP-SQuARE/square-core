@@ -12,7 +12,10 @@ class Index(BaseModel):
     query_yql: str
 
     # Model
-    document_encoder: Optional[str]
+    doc_encoder_model: Optional[str]
+    doc_encoder_adapter: Optional[str]
+    query_encoder_model: Optional[str]
+    query_encoder_adapter: Optional[str]
 
     # Embedding field
     embedding_type: Optional[str] = None
@@ -55,7 +58,10 @@ class Index(BaseModel):
 
 class IndexRequest(BaseModel):
     bm25: bool
-    document_encoder: Optional[str] = None
+    doc_encoder_model: Optional[str] = None
+    doc_encoder_adapter: Optional[str] = None
+    query_encoder_model: Optional[str] = None
+    query_encoder_adapter: Optional[str] = None
     embedding_size: Optional[int] = None
     distance_metric: Optional[str] = None
 
@@ -63,7 +69,8 @@ class IndexRequest(BaseModel):
         schema_extra = {
             "example": {
                 "bm25": False,
-                "document_encoder": "facebook/dpr-ctx_encoder-single-nq-base",
+                "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
+                "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
                 "embedding_size": 769,
                 "distance_metric": "euclidean",
             }
@@ -91,7 +98,10 @@ def create_index_object(datastore_name: str, index_name: str, index_request: Ind
         datastore_name=datastore_name,
         name=index_name,
         query_yql=yql,
-        document_encoder=index_request.document_encoder,
+        doc_encoder_model=index_request.doc_encoder_model,
+        doc_encoder_adapter=index_request.doc_encoder_adapter,
+        query_encoder_model=index_request.query_encoder_model,
+        query_encoder_adapter=index_request.query_encoder_adapter,
         embedding_type=embedding_type,
         hnsw=hnsw,
         first_phase_ranking=ranking_expression,

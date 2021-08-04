@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response
 from fastapi.param_functions import Path, Query
 
 from ..core.db import db
-from ..core.models import *
+from ..core.model_api import encode_query
 from ..core.vespa_app import vespa_app
 
 
@@ -21,12 +21,14 @@ async def search(
     index_name: str = Path(..., description="Index name."),
     query: str = Query(..., description="The query string."),
     top_k: int = Query(40, description="Number of documents to retrieve."),
-    query_encoder: str = Query("dpr", description="Identifier of the query encoder."),
 ):
     index = await db.get_index(datastore_name, index_name)
     if index is None:
         return Response(status_code=404, content="Datastore or index not found.")
-    query_embedding = encode_query(query_encoder, query)
+    try:
+        query_embedding = encode_query(query, index)
+    except Exception:
+        return Response(status_code=500, content="Model API error.")
     body = {
         "query": query,
         "type": "any",

@@ -1,22 +1,35 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from vespa.package import Field, Schema
 
 
 class DatastoreField(BaseModel):
     name: str
     type: str
-    indexing: Optional[List[str]] = None
-    index: Optional[str] = None
-    attribute: Optional[List[str]] = None
+    use_for_ranking: bool = True
+    return_with_document: bool = True
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "text",
+                "type": "string",
+            }
+        }
 
     def to_vespa(self) -> Field:
+        indexing = []
+        if self.return_with_document:
+            indexing.append("summary")
+        if self.use_for_ranking:
+            indexing += ["attribute", "index"]
+
         return Field(
             name=self.name,
             type=self.type,
-            indexing=self.indexing,
-            index=self.index,
-            attribute=self.attribute
+            indexing=indexing,
+            index="enable-bm25" if self.use_for_ranking else "",
+            attribute=[]
         )
 
     @staticmethod
@@ -33,6 +46,17 @@ class DatastoreField(BaseModel):
 class Datastore(BaseModel):
     name: str
     fields: List[DatastoreField]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "wiki",
+                "fields": [
+                    DatastoreField(name="title", type="string"),
+                    DatastoreField(name="text", type="string"),
+                ]
+            }
+        }
 
     @staticmethod
     def from_vespa(schema: Schema):
