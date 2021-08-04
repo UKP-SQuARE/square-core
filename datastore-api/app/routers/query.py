@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter
 from fastapi.param_functions import Path, Query
+from fastapi.responses import PlainTextResponse
 
 from ..core.db import db
 from ..core.model_api import encode_query
 from ..core.vespa_app import vespa_app
+from ..models.index import Index
 
 
 router = APIRouter(tags=["Query"])
@@ -24,17 +26,18 @@ async def search(
 ):
     index = await db.get_index(datastore_name, index_name)
     if index is None:
-        return Response(status_code=404, content="Datastore or index not found.")
+        return PlainTextResponse(status_code=404, content="Datastore or index not found.")
     try:
         query_embedding = encode_query(query, index)
     except Exception:
-        return Response(status_code=500, content="Model API error.")
+        return PlainTextResponse(status_code=500, content="Model API error.")
+    query_embedding_name = Index.get_query_embedding_field_name(index)
     body = {
         "query": query,
         "type": "any",
         "yql": index.query_yql,
         "ranking.profile": index_name,
-        "ranking.features.query(query_embedding)": query_embedding,
+        f"ranking.features.query({query_embedding_name})": query_embedding,
         "hits": top_k,
     }
     result = vespa_app.query(

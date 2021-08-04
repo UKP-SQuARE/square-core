@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response
 from fastapi.param_functions import Query
-from vespa.package import Schema, Document
+from vespa.package import Schema, Document, FieldSet
 from typing import List
 
 from ..models.datastore import Datastore, DatastoreField
@@ -33,11 +33,12 @@ async def put_datastore(datastore_name: str, fields: List[DatastoreField]):
     schema = await db.get_schema(datastore_name)
     success = False
     if schema is None:
-        schema = Schema(datastore_name, Document())
+        schema = Schema(datastore_name, Document(), fieldsets=[FieldSet("default", [f.name for f in fields if f.use_for_ranking])])
         schema.add_fields(*[field.to_vespa() for field in fields])
         success = await db.add_schema(schema) is not None
     else:
         schema.add_fields(*[field.to_vespa() for field in fields])
+        schema.fieldsets["default"].fields += [field.name for field in fields]
         success = await db.update_schema(schema)
 
     if success:

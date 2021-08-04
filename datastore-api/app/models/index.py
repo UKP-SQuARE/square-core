@@ -34,6 +34,15 @@ class Index(BaseModel):
         else:
             return None
 
+    @staticmethod
+    def get_query_embedding_field_name(index) -> Optional[str]:
+        if isinstance(index, str):
+            return index + "_query_embedding"
+        if index.embedding_type is not None:
+            return index.name + "_query_embedding"
+        else:
+            return None
+
     def get_vespa_embedding_field(self) -> Optional[Field]:
         if self.embedding_type is not None:
             return Field(
@@ -75,35 +84,3 @@ class IndexRequest(BaseModel):
                 "distance_metric": "euclidean",
             }
         }
-
-
-def create_index_object(datastore_name: str, index_name: str, index_request: IndexRequest):
-    if index_request.bm25:
-        yql = "select * from sources {} where userQuery();".format(datastore_name)
-        attributes = ["title", "text"]  # TODO
-        ranking_expression = " + ".join(["bm25({})".format(a) for a in attributes])
-        embedding_type = None
-        hnsw = None
-    else:
-        embedding_name = Index.get_embedding_field_name(index_name)
-        yql = "select * from sources " + datastore_name + " where ([{'targetNumHits':100, 'hnsw.exploreAdditionalHits':100}]nearestNeighbor(" + embedding_name + ",query_embedding)) or userQuery();"
-        ranking_expression = "closeness({})".format(embedding_name)
-        embedding_type = "tensor<float>(x[{}])".format(index_request.embedding_size)
-        hnsw = {
-            "distance_metric": index_request.distance_metric,
-            "max_links_per_node": 16,
-            "neighbors_to_explore_at_insert": 200,
-        }
-    return Index(
-        datastore_name=datastore_name,
-        name=index_name,
-        query_yql=yql,
-        doc_encoder_model=index_request.doc_encoder_model,
-        doc_encoder_adapter=index_request.doc_encoder_adapter,
-        query_encoder_model=index_request.query_encoder_model,
-        query_encoder_adapter=index_request.query_encoder_adapter,
-        embedding_type=embedding_type,
-        hnsw=hnsw,
-        first_phase_ranking=ranking_expression,
-        second_phase_ranking=None,
-    )

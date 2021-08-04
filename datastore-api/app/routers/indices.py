@@ -10,8 +10,9 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from ..core.config import settings
 from ..core.db import db
 from ..core.generate_package import generate_and_upload_package
+from ..core.utils import create_index_object
 from ..core.vespa_app import vespa_app
-from ..models.index import Index, IndexRequest, create_index_object
+from ..models.index import Index, IndexRequest
 from ..models.upload import UploadResponse, UploadUrlSet
 
 
@@ -24,10 +25,10 @@ async def put_index(
 ):
     index = await db.get_index(datastore_name, index_name)
     if index is None:
-        new_index = create_index_object(datastore_name, index_name, index_request)
+        new_index = await create_index_object(datastore_name, index_name, index_request)
         success = await db.add_index(new_index) is not None
     else:
-        new_index = create_index_object(datastore_name, index_name, index_request)
+        new_index = await create_index_object(datastore_name, index_name, index_request)
         success = await db.update_index(new_index)
 
     if success:
@@ -96,17 +97,23 @@ def upload_document_embeddings_from_urls(
         # TODO how to handle files that are too big?
         buffer = BytesIO(r.content)
         with h5py.File(buffer, "r") as f:
+            upload_batch = []
             for doc_id, embedding in f.items():
                 fields = {embedding_name: {"values": embedding[:].tolist()}}
-                vespa_response = vespa_app.update_data(datastore_name, doc_id, fields)
-                print(vespa_response.json)
-                if vespa_response.status_code != 200:
-                    api_response.status_code = 400
-                    return UploadResponse(
-                        message=f"No document with ID {doc_id} in datastore.",
-                        successful_uploads=doc_count,
-                    )
+                upload_batch.append((datastore_name, doc_id, fields, False))
                 doc_count += 1
+                if doc_count % settings.VESPA_FEED_BATCH_SIZE == 0:
+                    vespa_responses = vespa_app.update_batch(upload_batch)
+                    for i, vespa_response in enumerate(vespa_responses):
+                        print(vespa_response.json)
+                        if vespa_response.status_code != 200:
+                            api_response.status_code = 400
+                            errored_doc_id = upload_batch[i][1]
+                            return UploadResponse(
+                                message=f"Unable to find document with id {errored_doc_id} in datastore.",
+                                successful_uploads=doc_count,
+                            )
+                    upload_batch = []
 
     return UploadResponse(message=f"Successfully uploaded {doc_count} embeddings.", successful_uploads=doc_count)
 
@@ -114,6 +121,11 @@ def upload_document_embeddings_from_urls(
 @router.delete("/datastore/{datastore_name}/indices/{index_name}")
 async def delete_index(datastore_name: str = Path(...), index_name: str = Path(...)):
     success = await db.delete_index(datastore_name, index_name)
+    # also delete the corresponding query type field if available
+    query_embedding_name = Index.get_query_embedding_field_name(index_name)
+    query_type_field_name = f"ranking.features.query({query_embedding_name})"
+    await db.delete_query_type_field(query_type_field_name)
+
     if success:
         success &= await generate_and_upload_package(allow_content_removal=True)
         if success:

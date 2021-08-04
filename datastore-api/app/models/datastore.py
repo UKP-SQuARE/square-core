@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List
-from vespa.package import Field, Schema
+from vespa.package import Field, Schema, FieldSet
+
+FIELDSET_NAME = "default"
 
 
 class DatastoreField(BaseModel):
@@ -43,9 +45,22 @@ class DatastoreField(BaseModel):
         )
 
 
+class DatastoreFieldSet(BaseModel):
+    name: str
+    fields: List[str]
+
+    @staticmethod
+    def from_vespa(fieldset: FieldSet):
+        return DatastoreFieldSet(name=FIELDSET_NAME, fields=fieldset.fields)
+
+    def to_vespa(self):
+        return FieldSet(name=FIELDSET_NAME, fields=self.fields)
+
+
 class Datastore(BaseModel):
     name: str
     fields: List[DatastoreField]
+    fieldsets: List[DatastoreFieldSet]
 
     class Config:
         schema_extra = {
@@ -62,5 +77,6 @@ class Datastore(BaseModel):
     def from_vespa(schema: Schema):
         return Datastore(
             name=schema.name,
-            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields]
+            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields],
+            fieldsets=[DatastoreFieldSet.from_vespa(f) for f in schema.fieldsets.values()]
         )

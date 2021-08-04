@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import motor.motor_asyncio
 from filelock import FileLock
-from vespa.package import QueryProfile, QueryProfileType, Schema
+from vespa.package import QueryProfile, QueryProfileType, QueryTypeField, Schema
 
 from ..models.index import Index
 from .config import settings
@@ -82,34 +82,34 @@ class DatastoreDB:
 
     # # Query profiles
 
-    async def get_query_profiles(self, limit=200) -> List[QueryProfile]:
-        items = await self.db.query_profiles.find().to_list(length=limit)
-        for item_dict in items:
-            item_dict.pop("_id")
-        return [QueryProfile.from_dict(item_dict) for item_dict in items]
+    # async def get_query_profiles(self, limit=200) -> List[QueryProfile]:
+    #     items = await self.db.query_profiles.find().to_list(length=limit)
+    #     for item_dict in items:
+    #         item_dict.pop("_id")
+    #     return [QueryProfile.from_dict(item_dict) for item_dict in items]
 
-    async def add_query_profile(self, query_profile: QueryProfile):
-        result = await self.db.query_profiles.insert_one(query_profile.to_dict)
-        return result.inserted_id
+    # async def add_query_profile(self, query_profile: QueryProfile):
+    #     result = await self.db.query_profiles.insert_one(query_profile.to_dict)
+    #     return result.inserted_id
 
-    async def delete_query_profile(self, query_profile_name: str) -> bool:
-        result = await self.db.query_profiles.delete_one({"name": query_profile_name})
-        return result.deleted_count > 0
+    # async def delete_query_profile(self, query_profile_name: str) -> bool:
+    #     result = await self.db.query_profiles.delete_one({"name": query_profile_name})
+    #     return result.deleted_count > 0
 
     # Query profile types
 
-    async def get_query_profile_types(self, limit=200) -> List[QueryProfileType]:
-        items = await self.db.query_profile_types.find().to_list(length=limit)
+    async def get_query_type_fields(self, limit=200) -> List[QueryTypeField]:
+        items = await self.db.query_type_fields.find().to_list(length=limit)
         for item_dict in items:
             item_dict.pop("_id")
-        return [QueryProfileType.from_dict(item_dict) for item_dict in items]
+        return [QueryTypeField.from_dict(item_dict) for item_dict in items]
 
-    async def add_query_profile_type(self, query_profile_type: QueryProfileType):
-        result = await self.db.query_profile_types.insert_one(query_profile_type.to_dict)
+    async def add_query_type_field(self, query_type_field: QueryTypeField):
+        result = await self.db.query_type_fields.insert_one(query_type_field.to_dict)
         return result.inserted_id
 
-    async def delete_query_profile_type(self, query_profile_type_name: str) -> bool:
-        result = await self.db.query_profile_types.delete_one({"name": query_profile_type_name})
+    async def delete_query_type_field(self, query_type_field_name: str) -> bool:
+        result = await self.db.query_type_fields.delete_one({"name": query_type_field_name})
         return result.deleted_count > 0
 
     # Export
@@ -137,18 +137,18 @@ class DatastoreDB:
                     schema.add_rank_profile(index.get_vespa_rank_profile())
                 with open(os.path.join(folder, "schemas", schema.name + ".sd"), "w") as f:
                     f.write(schema.schema_to_text)
-            # Write query profiles to folder
-            query_profiles = await self.get_query_profiles()
-            for query_profile in query_profiles:
-                with open(os.path.join(folder, "search", "query-profiles", query_profile.name + ".xml"), "w") as f:
-                    f.write(query_profile_to_text(query_profile))
+            # Write default query profile to folder
+            query_profile = QueryProfile()
+            with open(os.path.join(folder, "search", "query-profiles", query_profile.name + ".xml"), "w") as f:
+                f.write(query_profile_to_text(query_profile))
             # Write query profile types to folder
-            query_profile_types = await self.get_query_profile_types()
-            for query_profile_type in query_profile_types:
-                with open(
-                    os.path.join(folder, "search", "query-profiles", "types", query_profile_type.name + ".xml"), "w"
-                ) as f:
-                    f.write(query_profile_type_to_text(query_profile_type))
+            query_profile_type = QueryProfileType()
+            query_type_fields = await self.get_query_type_fields()
+            query_profile_type.add_fields(*query_type_fields)
+            with open(
+                os.path.join(folder, "search", "query-profiles", "types", query_profile_type.name + ".xml"), "w"
+            ) as f:
+                f.write(query_profile_type_to_text(query_profile_type))
 
             # Write hosts, services & validation overrides to folder
             with open(os.path.join(folder, "hosts.xml"), "w") as f:

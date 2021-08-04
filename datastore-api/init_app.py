@@ -19,7 +19,6 @@ async def recreate_db():
                     Field("id", "long", indexing=["summary", "attribute"]),
                 ]
             ),
-            # TODO add this dataset creation via API
             fieldsets=[FieldSet(name="default", fields=["title", "text"])],
         )
     )
@@ -38,7 +37,7 @@ async def recreate_db():
         Index(
             datastore_name="wiki",
             name="dpr",
-            query_yql='select * from sources wiki where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,query_embedding)) or userQuery();',
+            query_yql='select * from sources wiki where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,dpr_query_embedding)) or userQuery();',
             doc_encoder_model="facebook/dpr-ctx_encoder-single-nq-base",
             query_encoder_model="facebook/dpr-question_encoder-single-nq-base",
             embedding_type="tensor<float>(x[769])",
@@ -48,11 +47,9 @@ async def recreate_db():
         )
     )
 
-    # TODO: Apparently, we need to specify type of the query embedding here. But this doens't support different sizes.
-    await db.add_query_profile_type(QueryProfileType(fields=[
-        QueryTypeField("ranking.features.query(query_embedding)", "tensor<float>(x[769])")
-    ]))
-    await db.add_query_profile(QueryProfile())
+    await db.add_query_type_field(
+        QueryTypeField("ranking.features.query(dpr_query_embedding)", "tensor<float>(x[769])")
+    )
 
 
 if __name__ == "__main__":

@@ -47,6 +47,5 @@ async def upload_new_schema(path):
 
 
 async def generate_and_upload_package(allow_content_removal: bool = False):
-    path_application = ".vespa_application_config"
-    await db.export(path_application, allow_content_removal=allow_content_removal)
-    return await upload_new_schema(path_application)
+    await db.export(settings.VESPA_APP_EXPORT_PATH, allow_content_removal=allow_content_removal)
+    return await upload_new_schema(settings.VESPA_APP_EXPORT_PATH)
