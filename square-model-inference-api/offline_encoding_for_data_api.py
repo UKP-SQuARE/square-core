@@ -5,6 +5,7 @@ import os
 import logging
 import json
 import pickle
+import time
 from dataclasses import dataclass
 from typing import Union, List
 import h5py
@@ -13,11 +14,15 @@ import numpy as np
 # Conditionally load adapter or sentence-transformer later to simplify installation
 #from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 import transformers
+import torch.multiprocessing as mp
+import queue
 from transformers import AutoModel, AutoTokenizer  #, AutoModelWithHeads
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(processName)s-%(levelname)s-%(asctime)s: %(message)s'))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 @dataclass
 class PredictionRequest:
@@ -42,10 +47,12 @@ class SentenceTransformer:
         :param model_name: the sentence-transformer model name (https://sbert.net/docs/pretrained_models.html)
         :param batch_size: batch size used for inference
         :param disable_gpu: do not move model to GPU even if CUDA is available
-        :param max_input_size: requests with a larger input are rejected
         """
         self._load_model(model_name, disable_gpu)
         self.batch_size = batch_size
+
+    def to(self, device):
+        self.model.to(device)
 
     def _load_model(self, model_name, disable_gpu):
         """
@@ -79,6 +86,9 @@ class Transformer:
         """
         self._load_model(AutoModel, model_name, disable_gpu)
         self.batch_size = batch_size
+
+    def to(self, device):
+        self.model.to(device)
 
     def _load_model(self, model_cls, model_name, disable_gpu):
         """
@@ -169,7 +179,6 @@ class Transformer:
             emb = sum_embeddings / sum_mask
         elif embedding_mode == "token":
             emb = hidden_state
-            #word_ids = [features.word_ids(i) for i in range(len(request.input))]
         return emb
 
 
@@ -280,6 +289,135 @@ def encode(args):
                 current_output = {"ids": [], "embeddings": []}
                 chunk_idx += 1
 
+
+def _read_process(input_file, batch_size, input_queue):
+    logger.info(f"Reading input from {input_file}")
+    with open(input_file, "r", encoding="utf-8") as f_in:
+        # We do not know how large the input file is so we read it batch-wise for memory safety reasons
+        finished_reading = False
+        while not finished_reading:
+            lines, finished_reading = read_batch(f_in, batch_size)
+            if lines:
+                lines = [json.loads(line) for line in lines]
+                texts = [line["text"] for line in lines]
+                ids = [line["id"] for line in lines]
+
+                input = PredictionRequest(input=texts, preprocessing_kwargs={}, model_kwargs={}, task_kwargs={"embedding_mode": "mean"})
+                input_queue.put((input, ids), block=True)
+
+
+def _encode_process(model, device, float16, input_queue, output_queue):
+    logger.info(f"Moving model to {device}")
+    model.to(device)
+    while True:
+        try:
+            input, ids = input_queue.get()
+            embeddings = model.embedding(input)
+            embeddings = embeddings.cpu().numpy()
+            if float16:
+                embeddings = embeddings.astype("float16")
+            output_queue.put((embeddings, ids))
+        except queue.Empty:
+            break
+
+
+def _write_process(output_file, chunk_size, args, output_queue):
+    chunk_idx = 0
+    current_processed_lines = 0
+    total_processed_lines = 0
+    current_output = {"ids": [], "embeddings": []}
+    while True:
+        try:
+            # We do not know when we are done writing. Instead we wait 60s and if we get nothing new, we assume we are done.
+            # i.e., after the timeout, queue.Empty exception is triggered and we write the remaining output and finish
+            embeddings, ids = output_queue.get(timeout=60)
+            current_output["ids"].extend(ids)
+            current_output["embeddings"].append(embeddings)
+
+            total_processed_lines += len(ids)
+            current_processed_lines += len(ids)
+
+            if current_processed_lines >= chunk_size:
+                logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
+
+                current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+
+                if args.hdf5:
+                    chunk_output_file = f"{output_file}_{chunk_idx}.h5"
+                    with h5py.File(chunk_output_file, "w") as out_f:
+                        logger.info(f"Writing chunk in {chunk_output_file}")
+                        if args.hdf5_gzip_level < 0:
+                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
+                            out_f.create_dataset("embeddings", data=current_output["embeddings"])
+                        else:
+                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                            out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                else:
+                    chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
+                    with open(chunk_output_file, "wb") as out_f:
+                        logger.info(f"Writing chunk in {chunk_output_file}")
+                        pickle.dump(current_output, out_f)
+                current_processed_lines = 0
+                current_output = {"ids": [], "embeddings": []}
+                chunk_idx += 1
+        except queue.Empty:
+            logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
+            current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+            if args.hdf5:
+                chunk_output_file = f"{output_file}_{chunk_idx}.h5"
+                with h5py.File(chunk_output_file, "w") as out_f:
+                    logger.info(f"Writing chunk in {chunk_output_file}")
+                    if args.hdf5_gzip_level < 0:
+                        out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
+                        out_f.create_dataset("embeddings", data=current_output["embeddings"])
+                    else:
+                        out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                        out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+            else:
+                chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
+                with open(chunk_output_file, "wb") as out_f:
+                    logger.info(f"Writing chunk in {chunk_output_file}")
+                    pickle.dump(current_output, out_f)
+            break
+
+
+def encode_multiprocess(args):
+    transformers_cache = args.transformers_cache
+    os.environ["TRANSFORMERS_CACHE"] = transformers_cache
+    model_name = args.model_name
+    model_type = args.model_type
+    batch_size = args.batch_size
+    chunk_size = args.chunk_size
+    input_file = args.input_file
+    output_file = os.path.splitext(args.output_file)[0]  # Remove file extension from name
+    adapter_name = args.adapter_name
+    devices = args.gpus.split(",")
+
+    ctx = mp.get_context('spawn')
+
+    if model_type == "sentence-transformer":
+        model = SentenceTransformer(model_name, batch_size, True)
+    elif model_type == "transformer":
+        model = Transformer(model_name, batch_size, True)
+    elif model_type == "adapter":
+        model = AdapterTransformer(model_name, batch_size, True, transformers_cache, adapter_name)
+
+    if os.path.dirname(output_file):
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+    input_queue = ctx.Queue(maxsize=2*len(devices))
+    output_queue = ctx.Queue()
+
+    read_p = ctx.Process(target=_read_process, args=(input_file, batch_size, input_queue), daemon=True)
+    read_p.start()
+    write_p = ctx.Process(target=_write_process, args=(output_file, chunk_size, args, output_queue), daemon=True)
+    write_p.start()
+    for cuda_id in devices:
+        p = ctx.Process(target=_encode_process, args=(model, cuda_id, args.float16, input_queue, output_queue), daemon=True)
+        p.start()
+
+    write_p.join()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--transformers_cache", help="Cache folder where model files will be downloaded into and loaded from")
@@ -291,14 +429,25 @@ if __name__ == "__main__":
                                                        "Each output file contains chunk_size embeddings "
                                                        "(except the last one if len(input) mod chunk_size != 0)")
     parser.add_argument("--input_file", help="Input .jsonl file. Each line is a dict object: {'id': 'xxx', 'text': 'abc...'}")
-    parser.add_argument("--output_file", help="Output .pkl file. A chunk index will be inserted between the name and extension: 'path/to/name_chunkidx.pkl' ."
+    parser.add_argument("--output_file", help="Output .pkl/.h5 file. A chunk index will be inserted between the name and extension: e.g. 'path/to/name_chunkidx.pkl' ."
                                               "Format: {'ids': List[str], 'embeddings': ndarray}. "
                                               "Note for hdf5, use f['ids'].asstr() to load ids as string because default is binary.")
     parser.add_argument("--adapter_name", help="For model_type=adapter, the name of the adapter that should be loaded")
-    parser.add_argument("--hdf5", action="store_true")
+    parser.add_argument("--hdf5", action="store_true", help="Save output with hdf5 instead of pickle")
     parser.add_argument("--hdf5-gzip-level", type=int, default=4, help="GZIP compression level for HDF5 in range 0-9, default 4 (bigger is more compressed). "
-                                                                       "Set to negative value to disable compression")
-    parser.add_argument("--float16", action="store_true")
+                                                                       "Set to negative value to disable compression."
+                                                                       "Only used when --hdf5 is also set.")
+    parser.add_argument("--float16", action="store_true", help="Save embeddings as float16")
+    parser.add_argument("--gpus", help="Set this value to use multiprocessing."
+                                       "Comma-separated list of devices (e.g., cuda:0,cuda:1) for multi-GPU processing."
+                                       "Reading, writing and each GPU is assigned its own process."
+                                       "Can also be used with only one device to use the multiprocessing for reading/ writing of outputs but this is not necessarily faster with one GPU.")
     args = parser.parse_args()
 
-    encode(args)
+    start_time = time.time()
+    if not args.gpus:
+        encode(args)
+    else:
+        encode_multiprocess(args)
+    end_time = time.time()
+    logger.info(f"Finished encoding in {end_time-start_time}s")
