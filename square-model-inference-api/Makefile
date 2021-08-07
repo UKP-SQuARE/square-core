@@ -8,6 +8,7 @@ all: clean test install run deploy down
 
 test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
+	PYTHONPATH=auth_server/ pytest --cov
 	PYTHONPATH=inference_server/ pytest --cov
 
 install:

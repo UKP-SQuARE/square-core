@@ -4,6 +4,7 @@ services:
   auth:
     #build: ./auth_server/.
     image: ukpsquare/square-model-api-auth:latest
+    container_name: square_model_auth
     ports:
       - 8081:8081
     env_file:

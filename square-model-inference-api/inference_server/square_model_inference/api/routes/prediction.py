@@ -1,10 +1,13 @@
 from fastapi import APIRouter
 from starlette.requests import Request
-from loguru import logger
 
 from square_model_inference.models.request import PredictionRequest, Task
 from square_model_inference.models.prediction import PredictionOutputForSequenceClassification, PredictionOutputForTokenClassification, \
     PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

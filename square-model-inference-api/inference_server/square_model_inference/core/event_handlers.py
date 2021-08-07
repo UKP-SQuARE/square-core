@@ -1,13 +1,16 @@
 from typing import Callable
 
 from fastapi import FastAPI
-from loguru import logger
 
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.core.config import MODEL_TYPE, MODEL_NAME, MODEL_CLASS, DISABLE_GPU, BATCH_SIZE, \
     TRANSFORMERS_CACHE, MAX_INPUT_SIZE
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
 from square_model_inference.inference.transformer import Transformer
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 MODEL_MAPPING = {
     "adapter": AdapterTransformer,

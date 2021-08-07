@@ -1,5 +1,3 @@
-from loguru import logger
-
 from transformers import AutoModelWithHeads, list_adapters
 
 from square_model_inference.inference.transformer import Transformer
@@ -7,6 +5,9 @@ from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AdapterTransformer(Transformer):
     """

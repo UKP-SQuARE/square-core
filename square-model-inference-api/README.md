@@ -12,9 +12,9 @@ to handle authorization of requests with the auth server.
 ├───auth_server                 # FastAPI Authorization Server
 │   ├───main.py                 # Entry point in server
 │   ├───Dockerfile              # Dockerfile for server
+│   ├───tests                   # Unit Tests
+│   │   ├───test_api
 │   └───auth_api
-├───nginx                       # nginx config for API Gateway & Authorizatio
-│   └───nginx.conf
 ├───inference_server            # FastAPI Model API Server
 │   ├───tests                   # Unit Tests
 │   │   ├───test_api
@@ -27,6 +27,9 @@ to handle authorization of requests with the auth server.
 │       ├───core                # Server config, Startup logic, etc.
 │       ├───models              # Input/ output modelling for API
 │       └───inference           # Deep Model implementation and inference code for NLP tasks
+├───nginx                       # nginx config for API Gateway & Authorizatio
+│   └───nginx.conf
+├───locust                      # Load testing configuration with Locust
 └───example_docker-compose.yml  # Example docker-compose setup for the Model API
 ```
 
@@ -73,10 +76,11 @@ make deploy
 ```
 
 #### Running Tests
-
+For unit tests:
 ```sh
 make test
 ```
+For load testing with Locust, see [this README](locust/README.md).
 
 ## Setup
 1. Create `auth_server/.env` with secret API key. See [here](auth_server/.env.example) for an example.

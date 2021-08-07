@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import torch
-from loguru import logger
 import numpy as np
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
     AutoModelForTokenClassification, AutoModelForQuestionAnswering, AutoModelForCausalLM
@@ -13,6 +12,10 @@ from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForSequenceClassification, PredictionOutputForTokenClassification, \
     PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 CLASS_MAPPING = {
     "base": AutoModel,

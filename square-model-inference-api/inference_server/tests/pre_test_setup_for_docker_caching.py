@@ -1,12 +1,12 @@
 # This file is used for the Docker image to cache long-running setup for the tests,
 # i.e., downloading finetuned Transformer models and so on.
 # This way, adding new tests or even changing the server code does NOT trigger a new download during building
-import json
-
 from sentence_transformers import SentenceTransformer
 from starlette.config import environ
 from transformers import AutoTokenizer, AutoModelWithHeads, list_adapters
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 TRANSFORMERS_TESTING_CACHE = "./.model_testing_cache"
 environ["TRANSFORMERS_CACHE"] = TRANSFORMERS_TESTING_CACHE

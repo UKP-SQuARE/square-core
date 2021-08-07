@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends
 import auth_api.security as security
 from logging.config import fileConfig
-from loguru import logger
+import logging
 
+logger = logging.getLogger(__name__)
 try:
     fileConfig("logging.conf")
 except:

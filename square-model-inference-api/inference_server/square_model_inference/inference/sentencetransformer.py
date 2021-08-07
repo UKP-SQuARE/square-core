@@ -1,9 +1,4 @@
-import json
-from typing import Union, Tuple
-
 import torch
-from loguru import logger
-import numpy as np
 from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 
 from square_model_inference.inference.model import Model
@@ -11,6 +6,9 @@ from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForEmbedding
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SentenceTransformer(Model):
     """

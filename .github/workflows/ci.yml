@@ -320,7 +320,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./square-model-inference-api/auth_server
-          #target: build  # Not multistage
+          target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
