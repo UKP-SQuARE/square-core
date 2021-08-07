@@ -4,20 +4,6 @@ from locust import between
 from locust.contrib.fasthttp import FastHttpUser
 
 
-def curry_config_in_task(callable, config, endpoint):
-    """
-    Identical task function might be called with different configs (different model etc.) but Locust calls tasks only
-    with the user as argument. We curry the task function with the given config into a Locust-callable task function.
-    :param callable: the task function to use
-    :param config: the specific config to be used for the task function
-    :param endpoint: the model API task endpoint that is called
-    :return: a Locust task function with signature f(user) that calls callable(user, config, model_api_task)
-    """
-    def task(user):
-        return callable(user, config, endpoint)
-    return task
-
-
 def task_query(config, endpoint):
     """
     Template to make Locust tasks for queries that are generated dynamically based on the given config and endpoint.
