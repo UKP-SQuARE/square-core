@@ -1,0 +1,8 @@
+uvicorn==0.13.4                 # ASGI server
+fastapi==0.65.1                 # REST API Framework
+pydantic==1.8.2                 # Input/ output modelling
+python-dotenv==0.17.1           # Required for .env configs
+sentencepiece==0.1.95
+torch==1.8.1
+sentence-transformers==1.2.0
+ElkJsonFormatter.tar.gz # Logging Formatter
