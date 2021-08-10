@@ -29,7 +29,7 @@ class Transformer(Model):
     """
     The class for all Huggingface transformer-based models
     """
-    SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token"]
+    SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token", "pooler"]
 
     def __init__(self, model_name, model_class, batch_size, disable_gpu, max_input_size, **kwargs):
         """
@@ -127,6 +127,8 @@ class Transformer(Model):
 
         if embedding_mode == "cls":
             emb = hidden_state[:, 0, :]
+        elif embedding_mode == "pooler":
+            emb = predictions["pooler_output"]
         # copied from sentence-transformers pooling
         elif embedding_mode == "max":
             input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()

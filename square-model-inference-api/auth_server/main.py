@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 try:
-    fileConfig("logging.conf")
+    fileConfig("logging.conf", disable_existing_loggers=False)
 except:
     logger.info("Failed to load 'logging.conf'. Continuing without configuring the server logger")
 app = FastAPI()

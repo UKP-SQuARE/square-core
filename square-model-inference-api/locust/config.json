@@ -5,8 +5,24 @@
   },
   "tasks": [
     {
-      "endpoint": "embedding",
+      "endpoint": "sequence-classification",
       "model": "bert-base-uncased",
+      "weight": 1,
+      "query_json": {
+        "input":
+        [
+          "test input"
+        ],
+        "is_preprocessed": false,
+        "preprocessing_kwargs": { },
+        "model_kwargs": { },
+        "task_kwargs": { },
+        "adapter_name": "nli/rte@ukp"
+      }
+    },
+    {
+      "endpoint": "embedding",
+      "model": "facebook/dpr-question_encoder-single-nq-base",
       "weight": 1,
       "query_json": {
         "input":

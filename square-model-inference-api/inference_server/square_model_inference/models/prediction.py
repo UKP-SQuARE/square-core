@@ -124,7 +124,7 @@ class PredictionOutputForTokenClassification(PredictionOutput):
 
 
 class PredictionOutputForEmbedding(PredictionOutput):
-    embedding_mode: str = Field("", description="Only used by Transformers/ Adapters.<br> One of 'mean', 'max', 'cls', 'token'. The pooling mode used (or not used for 'token')")
+    embedding_mode: str = Field("", description="Only used by Transformers/ Adapters.<br> One of 'mean', 'max', 'cls', 'pooler', 'token'. The pooling mode used (or not used for 'token')")
     word_ids: List[List[Optional[int]]] = Field([], description="Only used by Transformers/ Adapters.<br> "
                                                           "Only set with embedding_mode='token'."
                                                           " Mapping from each token to the corresponding word in the input. "

@@ -82,7 +82,9 @@ class TestTransformerEmbedding:
                                             (["this is a test"], "max"),
                                             (["this is a test", "this is a test with a longer sentence"], "max"),
                                             (["this is a test"], "cls"),
-                                            (["this is a test", "this is a test with a longer sentence"], "cls")],
+                                            (["this is a test", "this is a test with a longer sentence"], "cls"),
+                                            (["this is a test"], "pooler"),
+                                            (["this is a test", "this is a test with a longer sentence"], "pooler")],
                              )
     async def test_embedding(self, prediction_request, test_transformer_embedding, input, mode):
         prediction_request.input = input

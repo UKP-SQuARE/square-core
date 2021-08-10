@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_app() -> FastAPI:
     # Set logging config.
     try:
-        fileConfig("logging.conf")
+        fileConfig("logging.conf", disable_existing_loggers=False)
     except:
         logger.info("Failed to load 'logging.conf'. Continuing without configuring the server logger")
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION)

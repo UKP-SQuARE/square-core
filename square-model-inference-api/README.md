@@ -2,6 +2,15 @@
 Inference API that supports SOTA (QA) models & adapters. 
 Receives input and returns prediction and other artifacts (e.g. attention scores)
 
+## On the API Path
+The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
+is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
+
+However, to run and distinguish multiple models, we use an API gateway with nginx so we extend 
+the path to `/api/$modelname/$endpoint` which is then resolved by nginx to the correct model server and forwarded
+to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
+This requires you to setup the docker-compose and nginx config as described below.
+
 ## Project structure
 
 The Model API uses 3 components: 
@@ -58,6 +67,20 @@ Both `transformers` and `adapter-transformers` use the same namespace so they co
 Thus, we first install `sentence-transformers` along with `transformers`, 
 uninstall `transformers`, and finally install `adapter-transformers`.
 
+
+## Setup
+### Docker
+1. Create `auth_server/.env` with secret API key. See [here](auth_server/.env.example) for an example.
+2. For each model server that should run, create a `.env.$model` to configure it.  
+   See [here](inference_server/.env.example) for an example.
+3. Configure `nginx/nginx.conf` to correctly forward requests to each server. The server DNS name has to
+   match `container_name` of each server in the `docker-compose.yaml`.
+4. Configure `docker-compose.yaml` by adding services for the auth server, nginx (with the config), and the
+   model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.
+### Local
+Create `inference_server/.env` and configure it as needed for your local model server.
+You do not need nginx and the authorization server for local testing.
+
 ## Running
 
 #### Running Localhost
@@ -81,12 +104,3 @@ For unit tests:
 make test
 ```
 For load testing with Locust, see [this README](locust/README.md).
-
-## Setup
-1. Create `auth_server/.env` with secret API key. See [here](auth_server/.env.example) for an example.
-2. For each model server that should run, create a `.env.$model` to configure it.  
-   See [here](inference_server/.env.example) for an example.
-3. Configure `nginx/nginx.conf` to correctly forward requests to each server. The server DNS name has to
-   match `container_name` of each server in the `docker-compose.yaml`.
-4. Configure `docker-compose.yaml` by adding services for the auth server, nginx (with the config), and the
-model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.
