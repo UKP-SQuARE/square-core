@@ -2,6 +2,7 @@ from io import BytesIO
 from typing import List
 
 import h5py
+import numpy as np
 import requests
 from fastapi import APIRouter, Response
 from fastapi.param_functions import Body, Path, Query
@@ -56,17 +57,22 @@ async def get_document_embeddings(
         return Response(status_code=400, content="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS))
 
     embedding_name = Index.get_embedding_field_name(index_name)
+    # TODO This assumes id is always numeric
     batch = [(datastore_name, i) for i in range(offset, offset + size)]
     vespa_responses = vespa_app.get_batch(batch)
+    ids, embs = [], []
+    for response in vespa_responses:
+        print(response.url)
+        if response.status_code == 200 and embedding_name in response.json["fields"]:
+            doc_id = response.json["id"].split(":")[-1]
+            embedding = [x["value"] for x in response.json["fields"][embedding_name]["cells"]]
+            ids.append(doc_id)
+            embs.append(embedding)
 
     buffer = BytesIO()
     with h5py.File(buffer, "w") as f:
-        for response in vespa_responses:
-            print(response.url)
-            if response.status_code == 200 and embedding_name in response.json["fields"]:
-                doc_id = response.json["id"].split(":")[-1]
-                embedding = [x["value"] for x in response.json["fields"][embedding_name]["cells"]]
-                f.create_dataset(doc_id, data=embedding)
+        f.create_dataset("ids", data=np.array(ids, dtype="S"), compression="gzip")
+        f.create_dataset("embeddings", data=np.array(embs), compression="gzip")
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="application/octet-stream")
 
@@ -97,8 +103,11 @@ def upload_document_embeddings_from_urls(
         # TODO how to handle files that are too big?
         buffer = BytesIO(r.content)
         with h5py.File(buffer, "r") as f:
+            ids = f["ids"]
+            embs = f["embeddings"]
             upload_batch = []
-            for doc_id, embedding in f.items():
+            for doc_id_str, embedding in zip(ids, embs):
+                doc_id = doc_id_str.astype(str)
                 fields = {embedding_name: {"values": embedding[:].tolist()}}
                 upload_batch.append((datastore_name, doc_id, fields, False))
                 doc_count += 1

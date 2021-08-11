@@ -69,3 +69,9 @@ https://public.ukp.informatik.tu-darmstadt.de/kwang/tutorial/vespa/dense-retriev
 
 ... and their corresponding embeddings here:
 https://public.ukp.informatik.tu-darmstadt.de/kwang/tutorial/vespa/dense-retrieval/msmarco/0.hdf5
+
+In case documents or embeddings should be provided from a local folder, a development file server can be started:
+```
+cd /path/to/folder/with/documents
+python -m http.server 3000
+```
