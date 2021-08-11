@@ -12,7 +12,7 @@ router = APIRouter(tags=["Query"])
 
 
 @router.get(
-    "/datastore/{datastore_name}/indexs/{index_name}/search",
+    "/{index_name}/search",
     summary="Search the documentstore with given query and return top-k documents",
     description="Searches the given datastore with the search strategy specified by the given index \
             and if necessery encodes the query with the specified encoder",

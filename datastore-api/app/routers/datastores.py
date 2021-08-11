@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Response
-from fastapi.param_functions import Query
-from vespa.package import Schema, Document, FieldSet
 from typing import List
 
-from ..models.datastore import Datastore, DatastoreField
+from fastapi import APIRouter, Response, status
+from fastapi.param_functions import Query
+from vespa.package import Document, FieldSet, Schema
+
 from ..core.db import db
 from ..core.generate_package import generate_and_upload_package
+from ..models.datastore import Datastore, DatastoreField, DatastoreResponse
 
 
 router = APIRouter(tags=["Datastores"])
 
 
-@router.get("/datastore/", response_model=List[Datastore])
+@router.get("", response_model=List[DatastoreResponse])
 async def get_all_datastores(
     limit: int = Query(200, description="Maximal number of datastores to retrieve.")
 ):
@@ -19,7 +20,7 @@ async def get_all_datastores(
     return [Datastore.from_vespa(schema) for schema in schemas]
 
 
-@router.get("/datastore/{datastore_name}", response_model=Datastore)
+@router.get("/{datastore_name}", response_model=DatastoreResponse)
 async def get_datastore(datastore_name: str):
     schema = await db.get_schema(datastore_name)
     if schema is None:
@@ -27,8 +28,8 @@ async def get_datastore(datastore_name: str):
     return Datastore.from_vespa(schema)
 
 
-@router.put("/datastore/{datastore_name}", response_model=Datastore)
-async def put_datastore(datastore_name: str, fields: List[DatastoreField]):
+@router.put("/{datastore_name}", response_model=DatastoreResponse)
+async def put_datastore(datastore_name: str, fields: List[DatastoreField], response: Response):
     # Update if existing, otherwise add new
     schema = await db.get_schema(datastore_name)
     success = False
@@ -36,10 +37,12 @@ async def put_datastore(datastore_name: str, fields: List[DatastoreField]):
         schema = Schema(datastore_name, Document(), fieldsets=[FieldSet("default", [f.name for f in fields if f.use_for_ranking])])
         schema.add_fields(*[field.to_vespa() for field in fields])
         success = await db.add_schema(schema) is not None
+        response.status_code = status.HTTP_201_CREATED
     else:
         schema.add_fields(*[field.to_vespa() for field in fields])
         schema.fieldsets["default"].fields += [field.name for field in fields]
         success = await db.update_schema(schema)
+        response.status_code = status.HTTP_200_OK
 
     if success:
         success_upload = await generate_and_upload_package()
@@ -51,7 +54,7 @@ async def put_datastore(datastore_name: str, fields: List[DatastoreField]):
         return Response(status_code=400)
 
 
-@router.delete("/datastore/{datastore_name}")
+@router.delete("/{datastore_name}")
 async def delete_datastore(datastore_name: str):
     success = await db.delete_schema(datastore_name)
     if success:
@@ -59,6 +62,6 @@ async def delete_datastore(datastore_name: str):
         if success_upload:
             return Response(status_code=204)
         else:
-            return Response(status_code=400)
+            return Response(status_code=500)
     else:
         return Response(status_code=404)

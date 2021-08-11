@@ -34,9 +34,9 @@ class DatastoreField(BaseModel):
             attribute=[]
         )
 
-    @staticmethod
-    def from_vespa(field: Field):
-        return DatastoreField(
+    @classmethod
+    def from_vespa(cls, field: Field):
+        return cls(
             name=field.name,
             type=field.type,
             indexing=field.indexing,
@@ -62,6 +62,19 @@ class Datastore(BaseModel):
     fields: List[DatastoreField]
     fieldsets: List[DatastoreFieldSet]
 
+    @classmethod
+    def from_vespa(cls, schema: Schema):
+        return cls(
+            name=schema.name,
+            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields],
+            fieldsets=[DatastoreFieldSet.from_vespa(f) for f in schema.fieldsets.values()]
+        )
+
+
+class DatastoreResponse(BaseModel):
+    name: str
+    fields: List[DatastoreField]
+
     class Config:
         schema_extra = {
             "example": {
@@ -73,10 +86,6 @@ class Datastore(BaseModel):
             }
         }
 
-    @staticmethod
-    def from_vespa(schema: Schema):
-        return Datastore(
-            name=schema.name,
-            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields],
-            fieldsets=[DatastoreFieldSet.from_vespa(f) for f in schema.fieldsets.values()]
-        )
+    @classmethod
+    def from_datastore(cls, datastore: Datastore):
+        return cls(**datastore.dict())

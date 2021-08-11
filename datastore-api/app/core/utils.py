@@ -53,4 +53,7 @@ async def create_index_object(datastore_name: str, index_name: str, index_reques
         hnsw=hnsw,
         first_phase_ranking=ranking_expression,
         second_phase_ranking=None,
+        bm25=index_request.bm25,
+        embedding_size=index_request.embedding_size,
+        distance_metric=index_request.distance_metric,
     )

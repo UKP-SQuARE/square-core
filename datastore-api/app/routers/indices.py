@@ -4,7 +4,7 @@ from typing import List
 import h5py
 import numpy as np
 import requests
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, HTTPException, Response, status
 from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -13,24 +13,44 @@ from ..core.db import db
 from ..core.generate_package import generate_and_upload_package
 from ..core.utils import create_index_object
 from ..core.vespa_app import vespa_app
-from ..models.index import Index, IndexRequest
+from ..models.index import Index, IndexRequest, IndexResponse
 from ..models.upload import UploadResponse, UploadUrlSet
 
 
 router = APIRouter(tags=["Indices"])
 
 
-@router.put("/datastore/{datastore_name}/indices/{index_name}")
+@router.get("", response_model=List[IndexResponse])
+async def get_all_indices(datastore_name: str = Path(...)):
+    indices = await db.get_indices(datastore_name)
+    return indices
+
+
+@router.get("/{index_name}", response_model=IndexResponse)
+async def get_index(datastore_name: str = Path(...), index_name: str = Path(...)):
+    index = await db.get_index(datastore_name, index_name)
+    if index is None:
+        raise HTTPException(status_code=404, detail="Index not found.")
+    else:
+        return index
+
+
+@router.put("/{index_name}", response_model=IndexResponse)
 async def put_index(
-    datastore_name: str = Path(...), index_name: str = Path(...), index_request: IndexRequest = Body(...)
+    datastore_name: str = Path(...),
+    index_name: str = Path(...),
+    index_request: IndexRequest = Body(...),
+    response: Response = None,
 ):
     index = await db.get_index(datastore_name, index_name)
     if index is None:
         new_index = await create_index_object(datastore_name, index_name, index_request)
         success = await db.add_index(new_index) is not None
+        response.status_code = status.HTTP_201_CREATED
     else:
         new_index = await create_index_object(datastore_name, index_name, index_request)
         success = await db.update_index(new_index)
+        response.status_code = status.HTTP_200_OK
 
     if success:
         success_upload = await generate_and_upload_package()
@@ -42,16 +62,18 @@ async def put_index(
         return Response(status_code=400)
 
 
-@router.get("/datastore/{datastore_name}/indices/{index_name}/status")
+@router.get("/{index_name}/status")
 async def get_index_status(datastore_name: str = Path(...), index_name: str = Path(...)):
     # TODO
     pass
 
 
-@router.get("/datastore/{datastore_name}/indices/{index_name}/embeddings", response_class=StreamingResponse)
+@router.get("/{index_name}/embeddings", response_class=StreamingResponse)
 async def get_document_embeddings(
-    datastore_name: str = Path(...), index_name: str = Path(...),
-    offset: int = Query(0), size: int = Query(100),
+    datastore_name: str = Path(...),
+    index_name: str = Path(...),
+    offset: int = Query(0),
+    size: int = Query(100),
 ):
     if size > settings.MAX_RETURN_ITEMS:
         return Response(status_code=400, content="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS))
@@ -78,7 +100,7 @@ async def get_document_embeddings(
 
 
 @router.post(
-    "/datastore/{datastore_name}/indices/{index_name}/embeddings",
+    "/{index_name}/embeddings",
     response_model=UploadResponse,
     status_code=201,
     responses={400: {"model": UploadResponse}},
@@ -127,7 +149,7 @@ def upload_document_embeddings_from_urls(
     return UploadResponse(message=f"Successfully uploaded {doc_count} embeddings.", successful_uploads=doc_count)
 
 
-@router.delete("/datastore/{datastore_name}/indices/{index_name}")
+@router.delete("/{index_name}")
 async def delete_index(datastore_name: str = Path(...), index_name: str = Path(...)):
     success = await db.delete_index(datastore_name, index_name)
     # also delete the corresponding query type field if available
@@ -142,10 +164,10 @@ async def delete_index(datastore_name: str = Path(...), index_name: str = Path(.
         else:
             return Response(status_code=500)
     else:
-        return Response(status_code=400)
+        return Response(status_code=404)
 
 
-@router.get("/datastore/{datastore_name}/indices/{index_name}/embeddings/{doc_id}")
+@router.get("/{index_name}/embeddings/{doc_id}")
 async def get_document_embedding(
     datastore_name: str = Path(...), index_name: str = Path(...), doc_id: str = Path(...)
 ):
@@ -157,7 +179,7 @@ async def get_document_embedding(
     return Response(status_code=404)
 
 
-@router.post("/datastore/{datastore_name}/indices/{index_name}/embeddings/{doc_id}")
+@router.post("/{index_name}/embeddings/{doc_id}")
 async def set_document_embedding(
     datastore_name: str = Path(...),
     index_name: str = Path(...),
@@ -172,14 +194,8 @@ async def set_document_embedding(
 
 
 # TODO
-# @router.post("/datastore/{datastore_name}/indices/{index_name}/indexing")
+# @router.post("/{index_name}/indexing")
 # async def update_index(
 #     datastore_name: str = Path(...), index_name: str = Path(...), reindex: str = Path(...), filtering: list = Body([])
 # ):
 #     pass
-
-
-@router.get("/datastore/{datastore_name}/indices")
-async def get_all_indices(datastore_name: str = Path(...)):
-    indices = await db.get_indices(datastore_name)
-    return indices

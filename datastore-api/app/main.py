@@ -1,10 +1,15 @@
 from fastapi import FastAPI
-from .routers import datastores, documents, query, indices
+
+from .core.config import settings
+from .routers import api
 
 
-app = FastAPI(title="SQuARE Datastore API")
+def get_app():
+    app = FastAPI(title="SQuARE Datastore API")
 
-app.include_router(datastores.router)
-app.include_router(documents.router)
-app.include_router(query.router)
-app.include_router(indices.router)
+    app.include_router(api.router, prefix=settings.API_PREFIX)
+
+    return app
+
+
+app = get_app()

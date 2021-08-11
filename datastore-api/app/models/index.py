@@ -4,8 +4,19 @@ from pydantic import BaseModel
 from vespa.package import HNSW, Field, RankProfile, SecondPhaseRanking
 
 
-class Index(BaseModel):
-    """Models one index in a datastore."""
+class IndexBase(BaseModel):
+    """The common base class for all index model classes."""
+    bm25: bool
+    doc_encoder_model: Optional[str] = None
+    doc_encoder_adapter: Optional[str] = None
+    query_encoder_model: Optional[str] = None
+    query_encoder_adapter: Optional[str] = None
+    embedding_size: Optional[int] = None
+    distance_metric: Optional[str] = None
+
+
+class Index(IndexBase):
+    """Models an index as stored in the database."""
 
     datastore_name: str
     name: str
@@ -65,14 +76,8 @@ class Index(BaseModel):
         )
 
 
-class IndexRequest(BaseModel):
-    bm25: bool
-    doc_encoder_model: Optional[str] = None
-    doc_encoder_adapter: Optional[str] = None
-    query_encoder_model: Optional[str] = None
-    query_encoder_adapter: Optional[str] = None
-    embedding_size: Optional[int] = None
-    distance_metric: Optional[str] = None
+class IndexRequest(IndexBase):
+    """Models an index as requested by the user."""
 
     class Config:
         schema_extra = {
@@ -84,3 +89,24 @@ class IndexRequest(BaseModel):
                 "distance_metric": "euclidean",
             }
         }
+
+
+class IndexResponse(IndexBase):
+    """Models an index as returned to the user."""
+    name: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "dpr",
+                "bm25": False,
+                "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
+                "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
+                "embedding_size": 769,
+                "distance_metric": "euclidean",
+            }
+        }
+
+    @classmethod
+    def from_index(cls, index: Index):
+        return cls(**index.dict())

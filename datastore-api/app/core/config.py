@@ -2,6 +2,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    API_PREFIX: str = ""
     VESPA_CONFIG_URL: str
     VESPA_APP_URL: str
     VESPA_APP_EXPORT_PATH: str = ".vespa_application_config"

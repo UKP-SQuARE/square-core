@@ -1,6 +1,6 @@
 import asyncio
 
-from vespa.package import Document, Field, QueryProfile, QueryProfileType, Schema, FieldSet, QueryTypeField
+from vespa.package import Document, Field, Schema, FieldSet, QueryTypeField
 
 from app.core.db import db
 from app.core.generate_package import generate_and_upload_package
@@ -31,6 +31,7 @@ async def recreate_db():
             hnsw=None,
             first_phase_ranking="bm25(title) + bm25(text)",
             second_phase_ranking=None,
+            bm25=True,
         )
     )
     await db.add_index(
@@ -44,6 +45,7 @@ async def recreate_db():
             hnsw={"distance_metric": "euclidean", "max_links_per_node": 16, "neighbors_to_explore_at_insert": 500},
             first_phase_ranking="closeness(dpr_embedding)",
             second_phase_ranking=None,
+            bm25=False,
         )
     )
 
