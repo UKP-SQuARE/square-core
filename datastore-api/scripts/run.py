@@ -69,22 +69,33 @@ def wait_for_vespa_app_server():
     )
 
 
-def run():
+def run(dev=False, port=8000):
     wait_for_vespa_config_server()
     wait_for_vespa_app_server()
-    os.system("uvicorn app.main:app --reload --reload-dir app --port 8000")
+    if dev:
+        os.system(f"uvicorn app.main:app --port {port} --reload --reload-dir app")
+    else:
+        os.system(f"uvicorn app.main:app --port {port} --log-config logging.conf")
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["wait-vespa-config", "wait-vespa-app", "run"])
+    subparsers = parser.add_subparsers(dest="command")
+
+    parser_wait_vespa = subparsers.add_parser("wait-vespa")
+    parser_wait_vespa.add_argument("server", choices=["config", "app"])
+
+    parser_run = subparsers.add_parser("run")
+    parser_run.add_argument("--dev", action="store_true")
+    parser_run.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args()
-    if args.command == "wait-vespa-config":
-        wait_for_vespa_config_server()
-    elif args.command == "wait-vespa-app":
-        wait_for_vespa_app_server()
+    if args.command == "wait-vespa":
+        if args.server == "config":
+            wait_for_vespa_config_server()
+        elif args.server == "app":
+            wait_for_vespa_app_server()
     elif args.command == "run":
-        run()
+        run(dev=args.dev, port=args.port)
