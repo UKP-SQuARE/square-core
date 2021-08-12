@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class DocumentEmbedding(BaseModel):
     """Models the embeddings for one document."""
-    id: str
+    id: int
     embedding: List[float]
 
     class Config:
@@ -20,4 +20,4 @@ class DocumentEmbedding(BaseModel):
     def from_vespa(cls, doc: Dict, embedding_name: str):
         """Reads a document embedding object from a Vespa document API response."""
         embedding = [x["value"] for x in doc["fields"][embedding_name]["cells"]]
-        return cls(id=doc["id"].split(":")[-1], embedding=embedding)
+        return cls(id=int(doc["id"].split(":")[-1]), embedding=embedding)

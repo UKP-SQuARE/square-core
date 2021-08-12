@@ -6,7 +6,7 @@ from app.core.db import db
 from app.core.vespa_app import vespa_app
 from app.core.generate_package import generate_and_upload_package
 from app.models.index import Index
-from app.models.datastore import Datastore
+from app.models.datastore import DatastoreResponse
 from fastapi.testclient import TestClient
 from vespa.package import Document, Field, FieldSet, QueryTypeField, Schema
 
@@ -19,7 +19,6 @@ def wiki_schema():
             fields=[
                 Field("title", "string", indexing=["summary", "index"], index="enable-bm25"),
                 Field("text", "string", indexing=["summary", "index"], index="enable-bm25"),
-                # TODO
                 Field("id", "long", indexing=["summary", "attribute"]),
             ]
         ),
@@ -29,7 +28,7 @@ def wiki_schema():
 
 @pytest.fixture(scope="package")
 def wiki_datastore(wiki_schema):
-    return Datastore.from_vespa(wiki_schema)
+    return DatastoreResponse.from_vespa(wiki_schema)
 
 
 @pytest.fixture(scope="package")
@@ -37,7 +36,7 @@ def bm25_index():
     return Index(
         datastore_name="wiki",
         name="bm25",
-        query_yql="select * from sources wiki where userQuery();",
+        yql_where_clause="userQuery()",
         embedding_type=None,
         hnsw=None,
         first_phase_ranking="bm25(title) + bm25(text)",
@@ -51,7 +50,7 @@ def dpr_index():
     return Index(
         datastore_name="wiki",
         name="dpr",
-        query_yql='select * from sources wiki where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,dpr_query_embedding)) or userQuery();',
+        yql_where_clause='([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,dpr_query_embedding)) or userQuery()',
         doc_encoder_model="facebook/dpr-ctx_encoder-single-nq-base",
         query_encoder_model="facebook/dpr-question_encoder-single-nq-base",
         embedding_type="tensor<float>(x[769])",
@@ -81,7 +80,7 @@ def db_init(wiki_schema, bm25_index, dpr_index, dpr_query_type_field):
 @pytest.fixture(scope="package")
 def test_document():
     return {
-        "id": "1",
+        "id": 1,
         "title": "test document",
         "text": "this is a test document",
     }
@@ -95,7 +94,7 @@ def test_document_embedding():
 @pytest.fixture(scope="package")
 def query_document():
     return {
-        "id": "2",
+        "id": 2,
         "title": "document title",
         "text": "document containing the query word quack",
     }

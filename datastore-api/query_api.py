@@ -12,7 +12,7 @@ def query(query_text, index="dpr", hits=10):
     if index == "bm25":
         yql = "select * from sources wiki where userQuery();"
     elif index == "dpr":
-        yql = 'select * from sources wiki where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,query_embedding)) or userQuery();'
+        yql = 'select * from sources wiki where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,dpr_query_embedding)) or userQuery();'
     else:
         raise ValueError()
 
@@ -22,7 +22,7 @@ def query(query_text, index="dpr", hits=10):
         "type": "any",
         "yql": yql,
         "hits": hits,
-        "ranking.features.query(query_embedding)": query_embedding,
+        "ranking.features.query(dpr_query_embedding)": query_embedding,
         "ranking.profile": index
     }
 

@@ -1,6 +1,9 @@
-from pydantic import BaseModel
+from collections.abc import Iterable
 from typing import List
-from vespa.package import Field, Schema, FieldSet
+
+from pydantic import BaseModel, validator
+from vespa.package import Document, Field, FieldSet, Schema
+
 
 FIELDSET_NAME = "default"
 
@@ -39,9 +42,8 @@ class DatastoreField(BaseModel):
         return cls(
             name=field.name,
             type=field.type,
-            indexing=field.indexing,
-            index=field.index,
-            attribute=field.attribute,
+            use_for_ranking="index" in field.indexing,
+            return_with_document="summary" in field.indexing,
         )
 
 
@@ -57,21 +59,41 @@ class DatastoreFieldSet(BaseModel):
         return FieldSet(name=FIELDSET_NAME, fields=self.fields)
 
 
-class Datastore(BaseModel):
-    name: str
-    fields: List[DatastoreField]
-    fieldsets: List[DatastoreFieldSet]
+class DatastoreRequest(Iterable, BaseModel):
+    """Models a datastore as requested by the user."""
+    __root__: List[DatastoreField]
 
-    @classmethod
-    def from_vespa(cls, schema: Schema):
-        return cls(
-            name=schema.name,
-            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields],
-            fieldsets=[DatastoreFieldSet.from_vespa(f) for f in schema.fieldsets.values()]
-        )
+    def __iter__(self):
+        return self.__root__.__iter__()
+
+    @validator("__root__")
+    def cannot_contain_id(cls, v):
+        for field in v:
+            if field.name == "id":
+                raise ValueError("Cannot use reserved field 'id'.")
+        return v
+
+    class Config:
+        schema_extra = {
+            "example": [
+                DatastoreField(name="title", type="string"),
+                DatastoreField(name="text", type="string"),
+            ]
+        }
+
+    def to_vespa(self, datastore_name) -> Schema:
+        schema = Schema(datastore_name, Document())
+        # add default id field
+        schema.add_fields(Field("id", "long", indexing=["summary", "attribute"]))
+        # add all custom fields
+        schema.add_fields(*[field.to_vespa() for field in self])
+        # create a fieldset with all fields that could be used for ranking
+        schema.add_field_set(FieldSet(FIELDSET_NAME, [f.name for f in self if f.use_for_ranking]))
+        return schema
 
 
 class DatastoreResponse(BaseModel):
+    """Models a datastore as returned to the user."""
     name: str
     fields: List[DatastoreField]
 
@@ -87,5 +109,8 @@ class DatastoreResponse(BaseModel):
         }
 
     @classmethod
-    def from_datastore(cls, datastore: Datastore):
-        return cls(**datastore.dict())
+    def from_vespa(cls, schema: Schema):
+        return cls(
+            name=schema.name,
+            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields],
+        )

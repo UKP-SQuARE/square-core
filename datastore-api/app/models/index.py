@@ -20,7 +20,7 @@ class Index(IndexBase):
 
     datastore_name: str
     name: str
-    query_yql: str
+    yql_where_clause: str
 
     # Model
     doc_encoder_model: Optional[str]

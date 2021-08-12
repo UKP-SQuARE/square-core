@@ -1,7 +1,8 @@
-from .db import db
-from ..models.datastore import FIELDSET_NAME
-from ..models.index import IndexRequest, Index
 from vespa.package import QueryTypeField
+
+from ..models.datastore import FIELDSET_NAME
+from ..models.index import Index, IndexRequest
+from .db import db
 
 
 async def get_fields(datastore_name: str):
@@ -12,7 +13,7 @@ async def get_fields(datastore_name: str):
 
 async def create_index_object(datastore_name: str, index_name: str, index_request: IndexRequest):
     if index_request.bm25:
-        yql = "select * from sources {} where userQuery();".format(datastore_name)
+        yql = "userQuery()"
         attributes = await get_fields(datastore_name)
         ranking_expression = " + ".join(["bm25({})".format(a) for a in attributes])
         embedding_type = None
@@ -21,13 +22,11 @@ async def create_index_object(datastore_name: str, index_name: str, index_reques
         embedding_name = Index.get_embedding_field_name(index_name)
         query_embedding_name = Index.get_query_embedding_field_name(index_name)
         yql = (
-            "select * from sources "
-            + datastore_name
-            + " where ([{'targetNumHits':100, 'hnsw.exploreAdditionalHits':100}]nearestNeighbor("
+            "([{'targetNumHits':100, 'hnsw.exploreAdditionalHits':100}]nearestNeighbor("
             + embedding_name
             + ","
             + query_embedding_name
-            + ")) or userQuery();"
+            + ")) or userQuery()"
         )
         ranking_expression = "closeness({})".format(embedding_name)
         embedding_type = "tensor<float>(x[{}])".format(index_request.embedding_size)
@@ -44,7 +43,7 @@ async def create_index_object(datastore_name: str, index_name: str, index_reques
     return Index(
         datastore_name=datastore_name,
         name=index_name,
-        query_yql=yql,
+        yql_where_clause=yql,
         doc_encoder_model=index_request.doc_encoder_model,
         doc_encoder_adapter=index_request.doc_encoder_adapter,
         query_encoder_model=index_request.query_encoder_model,

@@ -40,10 +40,13 @@ async def post_document(request: Request, datastore_name: str, doc_id: int, docu
     vespa_response = vespa_app.feed_data_point(
         schema=datastore_name,
         data_id=doc_id,
-        fields={field: document[field] for field in fields},
+        fields={**document, "id": doc_id},
     )
     if vespa_response.status_code == 200:
-        return Response(status_code=201, headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)})
+        return Response(
+            status_code=201,
+            headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
+        )
     else:
         raise HTTPException(status_code=vespa_response.status_code, detail=vespa_response.json)
 
@@ -57,9 +60,13 @@ async def update_document(request: Request, datastore_name: str, doc_id: int, do
             content="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
-    vespa_response = vespa_app.update_data(datastore_name, doc_id, document, create=True)
+    doc_fields = {**document, "id": doc_id}
+    vespa_response = vespa_app.update_data(datastore_name, doc_id, doc_fields, create=True)
     if vespa_response.status_code == 200:  # TODO Vespa doesn't distinguish between 200 and 201
-        return Response(status_code=200, headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)})
+        return Response(
+            status_code=200,
+            headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
+        )
     else:
         raise HTTPException(status_code=vespa_response.status_code, detail=vespa_response.json)
 
@@ -98,7 +105,8 @@ def upload_documents_from_urls(datastore_name: str, urlset: UploadUrlSet, api_re
             for i, line in enumerate(r.iter_lines()):
                 try:
                     doc_data = json.loads(line)
-                    doc_id = doc_data.pop("id")
+                    # get doc id
+                    doc_id = doc_data.get("id")
                     upload_batch.append({"id": doc_id, "fields": doc_data})
                 except Exception:
                     api_response.status_code = 400

@@ -1,11 +1,11 @@
 from collections.abc import Mapping
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from pydantic import BaseModel
 
 
 class Document(Mapping, BaseModel):
-    __root__: Dict[str, str]
+    __root__: Dict[str, Any]
 
     def __iter__(self):
         return self.__root__.__iter__()
@@ -27,6 +27,8 @@ class Document(Mapping, BaseModel):
 
     @classmethod
     def from_vespa(cls, doc: Dict, fields: List):
-        data = {field: doc["fields"][field] for field in doc["fields"] if field in fields}
-        data["id"] = doc["id"].split(":")[-1]
+        data = {"id": int(doc["id"].split(":")[-1])}
+        for field in doc["fields"]:
+            if field in fields:
+                data[field] = doc["fields"][field]
         return cls(__root__=data)
