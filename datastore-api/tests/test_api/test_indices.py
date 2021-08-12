@@ -1,3 +1,4 @@
+import pytest
 from app.models.index import IndexRequest, IndexResponse
 
 
@@ -18,11 +19,11 @@ class TestIndices:
         response = client.get("/datastores/wiki/indices/not_found")
         assert response.status_code == 404
 
+    # TODO API method not implemented yet
+    @pytest.mark.skip
     def test_get_index_status(self, client, dpr_index):
         response = client.get("/datastores/wiki/indices/{}/status".format(dpr_index.name))
         assert response.status_code == 200
-        # TODO
-        raise NotImplementedError()
 
     def test_put_index(self, client):
         index_name = "test_index"
@@ -44,4 +45,18 @@ class TestIndices:
         response = client.delete("/datastores/wiki/indices/not_found")
         assert response.status_code == 404
 
-    # TODO add tests for embeddings
+    def test_get_document_embedding(self, client, dpr_index, test_document, test_document_embedding):
+        response = client.get("/datastores/wiki/indices/{0}/embeddings/{1}".format(dpr_index.name, test_document["id"]))
+        assert response.status_code == 200
+        assert response.json()["id"] == test_document["id"]
+        assert response.json()["embedding"] == test_document_embedding
+
+    def test_set_document_embedding(self, client, dpr_index, query_document):
+        embedding = [1] * 769
+        response = client.post(
+            "/datastores/wiki/indices/{0}/embeddings/{1}".format(dpr_index.name, query_document["id"]),
+            json=embedding,
+        )
+        assert response.status_code == 200
+
+    # TODO add tests for uploading/ downloading all embeddings

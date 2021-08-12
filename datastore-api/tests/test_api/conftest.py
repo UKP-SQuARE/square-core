@@ -88,6 +88,11 @@ def test_document():
 
 
 @pytest.fixture(scope="package")
+def test_document_embedding():
+    return [0] * 769
+
+
+@pytest.fixture(scope="package")
 def query_document():
     return {
         "id": "2",
@@ -97,8 +102,9 @@ def query_document():
 
 
 @pytest.fixture(scope="package")
-def feed_documents(test_document, query_document):
-    vespa_app.feed_data_point("wiki", test_document["id"], test_document)
+def feed_documents(test_document, query_document, test_document_embedding):
+    test_document_data = {**test_document, "dpr_embedding": {"values": test_document_embedding}}
+    vespa_app.feed_data_point("wiki", test_document["id"], test_document_data)
     vespa_app.feed_data_point("wiki", query_document["id"], query_document)
 
 

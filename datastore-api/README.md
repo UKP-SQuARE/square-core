@@ -49,6 +49,13 @@ make run
 
 Got to **http://localhost:8000/docs** for interactive documentation.
 
+### Tests
+
+Run API tests (requires Vespa to be running):
+```
+make test
+```
+
 ## Demo configuration & data
 
 To showcase the API methods, we configure a demo datastore and fill it with some data.
