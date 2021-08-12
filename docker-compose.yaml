@@ -29,6 +29,35 @@ services:
     ports:
       - 80:80
 
+### MODEL API
+  model_auth:
+    image: ukpsquare/square-model-api-auth:latest
+    env_file:
+      - ./square-model-inference-api/auth_server/.env
+
+  model_nginx:
+    image: nginx
+    ports:
+      - 8989:8080
+    volumes:
+      - ./square-model-inference-api/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  model_bert_adapter:
+    image: ukpsquare/square-model-api:latest
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.bert_adapter
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+
+  model_dpr:
+    image: ukpsquare/square-model-api:latest
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.dpr
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+
+### / MODEL API Finished
+
   #adminer:
   #  image: adminer
   #  restart: always
