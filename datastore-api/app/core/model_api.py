@@ -18,6 +18,8 @@ def _decode_embeddings(encoded_string: str):
 def encode_query(query: str, index: Index):
     if index.query_encoder_model is None:
         return None
+    if not settings.MODEL_API_URL:
+        raise EnvironmentError("Model API not available.")
 
     request_url = f"{settings.MODEL_API_URL}/{index.query_encoder_model}/embedding"
     data = {
@@ -27,7 +29,7 @@ def encode_query(query: str, index: Index):
     response = requests.post(request_url, json=data)
     if response.status_code != 200:
         print(response.json())
-        raise EnvironmentError(f"Model API returned {response.status_code}")
+        raise EnvironmentError(f"Model API returned {response.status_code}.")
     else:
         embeddings = _decode_embeddings(response.json()["model_outputs"]["embeddings"])
         # Add dimension for Vespa

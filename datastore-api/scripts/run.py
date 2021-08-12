@@ -1,20 +1,22 @@
-from dotenv import dotenv_values
-import requests
-import time
-import os
 import asyncio
-
+import os
 import sys
+import time
+
+import requests
+from dotenv import load_dotenv
+
+
 sys.path.append(os.getcwd())
 
 from app.core.generate_package import generate_and_upload_package
 
 
-config = dotenv_values(".env")
+load_dotenv(".env")
 
 
 def check_vespa_config_server():
-    url = config["VESPA_CONFIG_URL"] + "/ApplicationStatus"
+    url = os.environ.get("VESPA_CONFIG_URL") + "/ApplicationStatus"
     try:
         response = requests.get(url)
         return response.status_code == 200
@@ -23,7 +25,7 @@ def check_vespa_config_server():
 
 
 def check_vespa_app_server():
-    url = config["VESPA_APP_URL"] + "/ApplicationStatus"
+    url = os.environ.get("VESPA_APP_URL") + "/ApplicationStatus"
     try:
         response = requests.get(url)
         return response.status_code == 200
