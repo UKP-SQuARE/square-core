@@ -21,3 +21,19 @@ services:
       - "27017:27017"
     volumes:
       - ./storage/db/data:/data/db
+
+  # run with: docker-compose --profile deploy up
+  datastore_api:
+    profiles: ["deploy"]
+    build: .
+    depends_on:
+      - vespa
+      - mongodb
+    ports:
+      - "8000:8000"
+    environment:
+      - VESPA_CONFIG_URL=http://vespa:19071
+      - VESPA_APP_URL=http://vespa:8080
+      - MONGODB_URL=mongodb://root:root@mongodb:27017/admin?retryWrites=true&w=majority
+      # Specify Model API
+      # - MODEL_API_URL=http://localhost:9000/api
