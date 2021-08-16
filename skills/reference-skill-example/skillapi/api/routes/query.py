@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from starlette.requests import Request
 
 from skillapi.models.request import QueryRequest
 from skillapi.models.prediction import QueryOutput

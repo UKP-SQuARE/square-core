@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveInt
 
 
 class QueryRequest(BaseModel):
@@ -15,7 +15,7 @@ class QueryRequest(BaseModel):
         {},
         description="Optional values for specific parameters of the skill"
     )
-    num_results: int = Field(
-        ...,
+    num_results: PositiveInt = Field(
+        1,
         description="The (max.) number of results to return"
     )
