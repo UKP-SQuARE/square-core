@@ -4,7 +4,7 @@ from fastapi import APIRouter, Response, status
 from fastapi.param_functions import Query
 
 from ..core.db import db
-from ..core.generate_package import generate_and_upload_package
+from ..core.generate_package import package_generator
 from ..models.datastore import DatastoreRequest, DatastoreResponse
 
 
@@ -42,7 +42,7 @@ async def put_datastore(datastore_name: str, fields: DatastoreRequest, response:
         response.status_code = status.HTTP_200_OK
 
     if success:
-        success_upload = await generate_and_upload_package()
+        success_upload = await package_generator.generate_and_upload()
         if success_upload:
             return DatastoreResponse.from_vespa(schema)
         else:
@@ -55,7 +55,7 @@ async def put_datastore(datastore_name: str, fields: DatastoreRequest, response:
 async def delete_datastore(datastore_name: str):
     success = await db.delete_schema(datastore_name)
     if success:
-        success_upload = await generate_and_upload_package(allow_content_removal=True)
+        success_upload = await package_generator.generate_and_upload(allow_content_removal=True)
         if success_upload:
             return Response(status_code=204)
         else:

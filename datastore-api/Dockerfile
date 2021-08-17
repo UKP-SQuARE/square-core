@@ -15,15 +15,17 @@ COPY ./scripts .
 # -- Test stage --
 FROM base as test
 
-RUN pip install pytest pytest-cov
+RUN pip install pytest pytest-cov pytest-mock
 COPY ./tests ./tests
+COPY ./.env ./.env
 RUN mkdir test-reports
 RUN PYTHONPATH="." pytest \
     --junitxml=test-reports/junit.xml \
     --cov \
     --cov-report=xml:test-reports/coverage.xml \
-    --cov-report=html:test-reports/coverage.html; \
-    echo $? > test-reports/pytest.existcode
+    --cov-report=html:test-reports/coverage.html \
+    ./tests/test_api; \
+    echo $? > test-reports/pytest.exitcode
 
 # -- Deploy stage --
 FROM base as build

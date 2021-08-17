@@ -1,5 +1,10 @@
+import asyncio
+
 import pytest
 from app.main import get_app
+from app.core.db import db
+from app.core.vespa_app import vespa_app
+from app.core.generate_package import package_generator
 from app.models.index import Index
 from app.models.datastore import DatastoreResponse
 from fastapi.testclient import TestClient
@@ -62,6 +67,17 @@ def dpr_query_type_field():
 
 
 @pytest.fixture(scope="package")
+def db_init(wiki_schema, bm25_index, dpr_index, dpr_query_type_field):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(db.client.drop_database("square_datastores"))
+    loop.run_until_complete(db.add_schema(wiki_schema))
+    loop.run_until_complete(db.add_index(bm25_index))
+    loop.run_until_complete(db.add_index(dpr_index))
+    loop.run_until_complete(db.add_query_type_field(dpr_query_type_field))
+    loop.run_until_complete(package_generator.generate_and_upload(allow_content_removal=True))
+
+
+@pytest.fixture(scope="package")
 def test_document():
     return {
         "id": 1,
@@ -85,6 +101,13 @@ def query_document():
 
 
 @pytest.fixture(scope="package")
-def client():
+def feed_documents(test_document, query_document, test_document_embedding):
+    test_document_data = {**test_document, "dpr_embedding": {"values": test_document_embedding}}
+    vespa_app.feed_data_point("wiki", test_document["id"], test_document_data)
+    vespa_app.feed_data_point("wiki", query_document["id"], query_document)
+
+
+@pytest.fixture(scope="package")
+def client(db_init, feed_documents):
     client = TestClient(get_app())
     return client

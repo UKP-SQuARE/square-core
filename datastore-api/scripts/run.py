@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 sys.path.append(os.getcwd())
 
-from app.core.generate_package import generate_and_upload_package
+from app.core.generate_package import package_generator
 
 
 load_dotenv(".env")
@@ -35,7 +35,7 @@ def check_vespa_app_server():
 
 def activate_vespa_app_server():
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(generate_and_upload_package())
+    loop.run_until_complete(package_generator.generate_and_upload())
 
 
 def _wait_until_true(func, wait_msg, success_msg, timeout_msg, start_func=None, sleep_time=0.5, timeout=60):

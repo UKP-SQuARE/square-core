@@ -3,7 +3,7 @@ import asyncio
 from vespa.package import Document, Field, Schema, FieldSet, QueryTypeField
 
 from app.core.db import db
-from app.core.generate_package import generate_and_upload_package
+from app.core.generate_package import package_generator
 from app.models.index import Index
 
 
@@ -57,4 +57,4 @@ async def recreate_db():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(recreate_db())
-    loop.run_until_complete(generate_and_upload_package(allow_content_removal=True))
+    loop.run_until_complete(package_generator.generate_and_upload(allow_content_removal=True))

@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from ..core.config import settings
 from ..core.db import db
-from ..core.generate_package import generate_and_upload_package
+from ..core.generate_package import package_generator
 from ..core.utils import create_index_object
 from ..core.vespa_app import vespa_app
 from ..models.index import Index, IndexRequest, IndexResponse
@@ -57,7 +57,7 @@ async def put_index(
         response.status_code = status.HTTP_200_OK
 
     if success:
-        success_upload = await generate_and_upload_package()
+        success_upload = await package_generator.generate_and_upload()
         if success_upload:
             return new_index
         else:
@@ -176,7 +176,7 @@ async def delete_index(datastore_name: str = Path(...), index_name: str = Path(.
     await db.delete_query_type_field(query_type_field_name)
 
     if success:
-        success &= await generate_and_upload_package(allow_content_removal=True)
+        success &= await package_generator.generate_and_upload(allow_content_removal=True)
         if success:
             return Response(status_code=204)
         else:
