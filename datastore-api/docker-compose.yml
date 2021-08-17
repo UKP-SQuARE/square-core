@@ -1,18 +1,20 @@
-version: "3.9"
+version: "3.1"
 
 services:
   vespa:
     image: vespaengine/vespa
     container_name: vespa
+    hostname: vespa-container
+    privileged: true
     ports:
-      - "8080:8080"
+      - "8082:8080"
       - "19071:19071"
     volumes:
       - ./storage/vespa/var:/opt/vespa/var
       - ./storage/vespa/logs:/opt/vespa/logs
 
   mongodb:
-    image: mongo:5.0
+    image: mongo:4.0
     container_name: mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
@@ -22,18 +24,17 @@ services:
     volumes:
       - ./storage/db/data:/data/db
 
-  # run with: docker-compose --profile deploy up
-  datastore_api:
-    profiles: ["deploy"]
-    build: .
-    depends_on:
-      - vespa
-      - mongodb
-    ports:
-      - "8000:8000"
-    environment:
-      - VESPA_CONFIG_URL=http://vespa:19071
-      - VESPA_APP_URL=http://vespa:8080
-      - MONGODB_URL=mongodb://root:root@mongodb:27017/admin?retryWrites=true&w=majority
-      # Specify Model API
-      # - MODEL_API_URL=http://localhost:9000/api
+  # datastore_api:
+  #   privileged: true
+  #   build: .
+  #   depends_on:
+  #     - vespa
+  #     - mongodb
+  #   ports:
+  #     - "8002:8000"
+  #   environment:
+  #     - VESPA_CONFIG_URL=http://vespa:19071
+  #     - VESPA_APP_URL=http://vespa:8082
+  #     - MONGODB_URL=mongodb://root:root@mongodb:27017/admin?retryWrites=true&w=majority
+  #     # Specify Model API
+  #     # - MODEL_API_URL=http://localhost:9000/api

@@ -26,7 +26,10 @@ def encode_query(query: str, index: Index):
         "input": [query],
         "adapter_name": index.query_encoder_adapter,
     }
-    response = requests.post(request_url, json=data)
+    ################### Should be obtained somewhere ##################
+    headers = {"Authorization": "ef79b480-bfbf-4483-8cef-b120edab57a6"}
+    ###################################################################
+    response = requests.post(request_url, json=data, headers=headers)
     if response.status_code != 200:
         print(response.json())
         raise EnvironmentError(f"Model API returned {response.status_code}.")
