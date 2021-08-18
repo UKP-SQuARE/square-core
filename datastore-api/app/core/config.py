@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     MONGODB_URL: str
     MODEL_API_URL: str = ""
     MODEL_API_KEY: str = ""
-    MAX_RETURN_ITEMS: int = 1000
+    MAX_RETURN_ITEMS: int = 10000
 
     class Config:
         env_file = ".env"

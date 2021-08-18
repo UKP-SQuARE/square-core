@@ -1,3 +1,7 @@
+import json
+
+from requests_mock import Mocker
+
 
 class TestDocuments:
     def test_get_document(self, client, test_document):
@@ -39,4 +43,33 @@ class TestDocuments:
     #     response = client.delete("/datastores/wiki/documents/99999")
     #     assert response.status_code == 404
 
-    # TODO Tests for uploading from url, downloading all, and error cases
+    def test_upload_documents(self, client, documents_file):
+        response = client.post("/datastores/wiki/documents/upload", files={"file": documents_file})
+        assert response.status_code == 201
+        assert response.json()["successful_uploads"] == 10
+
+    def test_upload_documents_from_urls(self, requests_mock: Mocker, client, documents_file, upload_urlset):
+        requests_mock.real_http = True
+        requests_mock.get(upload_urlset.urls[0], body=documents_file)
+
+        response = client.post("/datastores/wiki/documents", json=upload_urlset.dict())
+        assert response.status_code == 201
+        assert response.json()["successful_uploads"] == 10
+
+    def test_upload_documents_from_urls_invalid(self, requests_mock: Mocker, client, upload_urlset):
+        requests_mock.real_http = True
+        requests_mock.get(upload_urlset.urls[0], status_code=404)
+
+        response = client.post("/datastores/wiki/documents", json=upload_urlset.dict())
+        assert response.status_code == 400
+        assert response.json()["successful_uploads"] == 0
+
+    def test_download_documents(self, client, test_document):
+        response = client.get("/datastores/wiki/documents")
+        assert response.status_code == 200
+        for item in response.iter_lines():
+            print(item)
+            data = json.loads(item)
+            assert "id" in data
+            assert "title" in data
+            assert "text" in data

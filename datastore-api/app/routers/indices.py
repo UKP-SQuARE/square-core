@@ -1,11 +1,11 @@
 import logging
 from io import BytesIO
-from typing import List
+from typing import List, Union
 
 import h5py
 import numpy as np
 import requests
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, UploadFile, File
 from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -14,8 +14,8 @@ from ..core.db import db
 from ..core.generate_package import package_generator
 from ..core.utils import create_index_object
 from ..core.vespa_app import vespa_app
-from ..models.index import Index, IndexRequest, IndexResponse
 from ..models.embedding import DocumentEmbedding
+from ..models.index import Index, IndexRequest, IndexResponse
 from ..models.upload import UploadResponse, UploadUrlSet
 
 
@@ -77,10 +77,12 @@ async def get_document_embeddings(
     datastore_name: str = Path(...),
     index_name: str = Path(...),
     offset: int = Query(0),
-    size: int = Query(100),
+    size: int = Query(1000),
 ):
     if size > settings.MAX_RETURN_ITEMS:
-        return Response(status_code=400, content="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS))
+        return HTTPException(
+            status_code=400, detail="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS)
+        )
 
     embedding_name = Index.get_embedding_field_name(index_name)
     # TODO This assumes id is always numeric
@@ -88,7 +90,6 @@ async def get_document_embeddings(
     vespa_responses = vespa_app.get_batch(batch)
     ids, embs = [], []
     for response in vespa_responses:
-        print(response.url)
         if response.status_code == 200 and embedding_name in response.json["fields"]:
             doc_embedding = DocumentEmbedding.from_vespa(response.json, embedding_name)
             ids.append(doc_embedding.id)
@@ -100,6 +101,73 @@ async def get_document_embeddings(
         f.create_dataset("embeddings", data=np.array(embs), compression="gzip")
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="application/octet-stream")
+
+
+def upload_embeddings_file(
+    datastore_name: str, embedding_name: str, file_name: str, file_buffer
+) -> Union[int, UploadResponse]:
+    total_docs = 0
+
+    with h5py.File(file_buffer, "r") as f:
+        ids = f["ids"]
+        embs = f["embeddings"]
+        upload_batch = []
+        for doc_id_str, embedding in zip(ids, embs):
+            doc_id = doc_id_str.astype(str)
+            fields = {embedding_name: {"values": embedding[:].tolist()}}
+            upload_batch.append((datastore_name, doc_id, fields, False))
+            # if batch is full, upload and reset
+            if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
+                vespa_responses = vespa_app.update_batch(upload_batch)
+                for i, vespa_response in enumerate(vespa_responses):
+                    logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
+                    if vespa_response.status_code != 200:
+                        errored_doc_id = upload_batch[i][1]
+                        return total_docs, UploadResponse(
+                            message=f"Unable to find document with id {errored_doc_id} in datastore.",
+                            successful_uploads=total_docs,
+                        )
+                    total_docs += 1
+                upload_batch = []
+
+        # upload remaining
+        if len(upload_batch) > 0:
+            vespa_responses = vespa_app.update_batch(upload_batch)
+            for i, vespa_response in enumerate(vespa_responses):
+                logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
+                if vespa_response.status_code != 200:
+                    errored_doc_id = upload_batch[i][1]
+                    return total_docs, UploadResponse(
+                        message=f"Unable to find document with id {errored_doc_id} in datastore.",
+                        successful_uploads=total_docs,
+                    )
+                total_docs += 1
+
+    return total_docs, None
+
+
+@router.post(
+    "/{index_name}/embeddings/upload",
+    response_model=UploadResponse,
+    status_code=201,
+    responses={400: {"model": UploadResponse}},
+)
+def upload_document_embeddings(
+    datastore_name: str,
+    index_name: str,
+    file: UploadFile = File(...),
+    response: Response = None,
+):
+    embedding_name = Index.get_embedding_field_name(index_name)
+
+    uploaded_docs, upload_response = upload_embeddings_file(datastore_name, embedding_name, file.filename, file.file)
+    if upload_response is not None:
+        response.status_code = 400
+        return upload_response
+    else:
+        return UploadResponse(
+            message=f"Successfully uploaded {uploaded_docs} embeddings.", successful_uploads=uploaded_docs
+        )
 
 
 @router.post(
@@ -118,51 +186,26 @@ def upload_document_embeddings_from_urls(
     embedding_name = Index.get_embedding_field_name(index_name)
 
     for url in urlset.urls:
-        r = requests.get(url)
-        if r.status_code != 200:
-            api_response.status_code = 400
-            return UploadResponse(
-                message=f"Failed to retrieve embeddings from {url}.",
-                successful_uploads=total_docs,
-            )
-        # TODO how to handle files that are too big?
-        buffer = BytesIO(r.content)
-        with h5py.File(buffer, "r") as f:
-            ids = f["ids"]
-            embs = f["embeddings"]
-            upload_batch = []
-            for doc_id_str, embedding in zip(ids, embs):
-                doc_id = doc_id_str.astype(str)
-                fields = {embedding_name: {"values": embedding[:].tolist()}}
-                upload_batch.append((datastore_name, doc_id, fields, False))
-                # if batch is full, upload and reset
-                if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
-                    vespa_responses = vespa_app.update_batch(upload_batch)
-                    for i, vespa_response in enumerate(vespa_responses):
-                        logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
-                        if vespa_response.status_code != 200:
-                            api_response.status_code = 400
-                            errored_doc_id = upload_batch[i][1]
-                            return UploadResponse(
-                                message=f"Unable to find document with id {errored_doc_id} in datastore.",
-                                successful_uploads=total_docs,
-                            )
-                        total_docs += 1
-                    upload_batch = []
+        try:
+            r = requests.get(url)
+            if r.status_code != 200:
+                api_response.status_code = 400
+                return UploadResponse(
+                    message=f"Failed to retrieve embeddings from {url}.",
+                    successful_uploads=total_docs,
+                )
 
-            # upload remaining
-            if len(upload_batch) > 0:
-                vespa_responses = vespa_app.update_batch(upload_batch)
-                for i, vespa_response in enumerate(vespa_responses):
-                    logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
-                    if vespa_response.status_code != 200:
-                        api_response.status_code = 400
-                        errored_doc_id = upload_batch[i][1]
-                        return UploadResponse(
-                            message=f"Unable to find document with id {errored_doc_id} in datastore.",
-                            successful_uploads=total_docs,
-                        )
-                    total_docs += 1
+            # TODO how to handle files that are too big?
+            buffer = BytesIO(r.content)
+            uploaded_docs, upload_response = upload_embeddings_file(datastore_name, embedding_name, url, buffer)
+            buffer.close()
+            if upload_response is not None:
+                api_response.status_code = 400
+                return upload_response
+            total_docs += uploaded_docs
+        except requests.exceptions.RequestException:
+            api_response.status_code = 400
+            return UploadResponse(message=f"Failed to connect to {url}.", successful_uploads=total_docs)
 
     return UploadResponse(message=f"Successfully uploaded {total_docs} embeddings.", successful_uploads=total_docs)
 

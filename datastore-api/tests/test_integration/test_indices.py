@@ -1,5 +1,6 @@
 import pytest
 from app.models.index import IndexRequest, IndexResponse
+from requests_mock import Mocker
 
 
 class TestIndices:
@@ -46,7 +47,9 @@ class TestIndices:
         assert response.status_code == 404
 
     def test_get_document_embedding(self, client, dpr_index, test_document, test_document_embedding):
-        response = client.get("/datastores/wiki/indices/{0}/embeddings/{1}".format(dpr_index.name, test_document["id"]))
+        response = client.get(
+            "/datastores/wiki/indices/{0}/embeddings/{1}".format(dpr_index.name, test_document["id"])
+        )
         assert response.status_code == 200
         assert response.json()["id"] == test_document["id"]
         assert response.json()["embedding"] == test_document_embedding
@@ -59,4 +62,36 @@ class TestIndices:
         )
         assert response.status_code == 200
 
-    # TODO add tests for uploading/ downloading all embeddings
+    def test_upload_embeddings(self, client, dpr_index, embeddings_file):
+        response = client.post(
+            "/datastores/wiki/indices/{0}/embeddings/upload".format(dpr_index.name),
+            files={"file": embeddings_file},
+        )
+        assert response.status_code == 201
+        assert response.json()["successful_uploads"] == 10
+
+    def test_upload_documents_from_urls(
+        self, requests_mock: Mocker, client, dpr_index, embeddings_file, upload_urlset
+    ):
+        requests_mock.real_http = True
+        requests_mock.get(upload_urlset.urls[0], body=embeddings_file)
+
+        response = client.post(
+            "/datastores/wiki/indices/{0}/embeddings".format(dpr_index.name),
+            json=upload_urlset.dict(),
+        )
+        assert response.status_code == 201
+        assert response.json()["successful_uploads"] == 10
+
+    def test_upload_documents_from_urls_invalid(self, requests_mock: Mocker, client, dpr_index, upload_urlset):
+        requests_mock.real_http = True
+        requests_mock.get(upload_urlset.urls[0], status_code=404)
+
+        response = client.post(
+            "/datastores/wiki/indices/{0}/embeddings".format(dpr_index.name),
+            json=upload_urlset.dict(),
+        )
+        assert response.status_code == 400
+        assert response.json()["successful_uploads"] == 0
+
+    # TODO add tests for downloading all embeddings

@@ -1,14 +1,38 @@
 import asyncio
+import os
 
 import pytest
-from app.main import get_app
 from app.core.db import db
-from app.core.vespa_app import vespa_app
 from app.core.generate_package import package_generator
-from app.models.index import Index
+from app.core.vespa_app import vespa_app
+from app.main import get_app
 from app.models.datastore import DatastoreResponse
+from app.models.index import Index
+from app.models.upload import UploadUrlSet
 from fastapi.testclient import TestClient
 from vespa.package import Document, Field, FieldSet, QueryTypeField, Schema
+
+
+file_dir = os.path.dirname(__file__)
+
+
+@pytest.fixture
+def documents_file():
+    f = open(file_dir + "/fixtures/0.jsonl", "rb")
+    yield f
+    f.close()
+
+
+@pytest.fixture
+def embeddings_file():
+    f = open(file_dir + "/fixtures/0.hdf5", "rb")
+    yield f
+    f.close()
+
+
+@pytest.fixture(scope="package")
+def upload_urlset():
+    return UploadUrlSet(urls=["http://imaginary_url"])
 
 
 @pytest.fixture(scope="package")
