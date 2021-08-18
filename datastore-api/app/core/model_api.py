@@ -26,14 +26,14 @@ def encode_query(query: str, index: Index):
         "input": [query],
         "adapter_name": index.query_encoder_adapter,
     }
-    ################### Should be obtained somewhere ##################
-    headers = {"Authorization": "ef79b480-bfbf-4483-8cef-b120edab57a6"}
-    ###################################################################
+
+    headers = {"Authorization": settings.MODEL_API_KEY}
     response = requests.post(request_url, json=data, headers=headers)
     if response.status_code != 200:
         print(response.json())
         raise EnvironmentError(f"Model API returned {response.status_code}.")
     else:
-        embeddings = _decode_embeddings(response.json()["model_outputs"]["embeddings"])
-        # Add dimension for Vespa
-        return embeddings.flatten().tolist() + [0]
+        embeddings = _decode_embeddings(response.json()["model_outputs"]["embeddings"]).flatten()
+        # The vector returned here may be shorter than the stored document vector.
+        # In that case, we fill the remaining values with zeros.
+        return embeddings.tolist() + [0] * (index.embedding_size - len(embeddings))

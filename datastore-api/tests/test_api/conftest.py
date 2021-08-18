@@ -53,6 +53,8 @@ def dpr_index():
         first_phase_ranking="closeness(dpr_embedding)",
         second_phase_ranking=None,
         bm25=False,
+        embedding_size=769,
+        distance_metric="euclidean",
     )
 
 

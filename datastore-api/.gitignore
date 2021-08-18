@@ -2,3 +2,4 @@
 *.zip
 storage
 *.hdf5
+*.lock
