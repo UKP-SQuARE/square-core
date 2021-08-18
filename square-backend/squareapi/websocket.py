@@ -41,7 +41,10 @@ def handle_query(json):
         emit("skillResult", {"error_msg": "Invalid query: {}".format(e)}) # error is already used by skillResult so error_msg it is
     else:
         logger.debug("Query request: {}".format(json))
-        logger.info("Query with question: '{}'".format(json["question"]))
+        logger.info("Query with question: '{}'".format(json["query"]))
+        # Add skill info from DB to query
+        skills = Skill.query.filter(Skill.name.in_(json["skills"])).all()
+        json["skills"] = [skill.to_dict() for skill in skills]
         skillResults = skillSelector.query(json, generator=True)
         for result in skillResults:
             emit("skillResult", result)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from square_model_inference.models.heartbeat import HeartbeatResult
+from skillapi.models.heartbeat import HeartbeatResult
 
 router = APIRouter()
 

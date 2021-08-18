@@ -1,7 +1,7 @@
 from starlette.config import Config
 
 APP_VERSION = "0.1.0"
-APP_NAME = "SQuARE Model Inference API"
+APP_NAME = "SQuARE Skill"
 API_PREFIX = ""
 
 config = Config(".env")

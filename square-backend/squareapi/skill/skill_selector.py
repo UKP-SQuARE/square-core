@@ -68,11 +68,10 @@ class SkillSelector:
         or that the result should contain all answers together once all skills have answered
         :return: the response from the selector
         """
-        question = request["question"]
-        options = request["options"]
-        selector = self.selectors[options["selector"]]
-        logger.debug("Query with selector {}".format(options["selector"]))
-        return selector.query(question, options, generator)
+        question = request["query"]
+        selector = self.selectors[request["meta_qa_skill_selector"]]
+        logger.debug("Query with selector {}".format(request["meta_qa_skill_selector"]))
+        return selector.query(question, request, generator)
 
     def train(self, skill, train_sentences, dev_sentences, generator=False):
         """

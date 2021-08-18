@@ -21,7 +21,7 @@ This project requires Python >=3.6.
 Install the dependencies with `pip install -r requirements`
 ### Run locally
 1. Create a `.env` file (see [the example](.env.example))
-2. `uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8000 --env-file .env`
+2. `uvicorn main:app --reload --host 0.0.0.0 --port 8000 --env-file .env`
 
 Alternatively, for debugging `python main.py` works as well.
 
@@ -46,3 +46,4 @@ and write your own .env file.
 3. Write your own [logging.conf](logging.conf) to configure logging as needed.
 4. For using different methods for configuring the server and logging and for additional
 code that should run when the server is started, change the [main.py](main.py) as needed.
+5. Adapt the [Dockerfile](Dockerfile) to include potential new, added files.

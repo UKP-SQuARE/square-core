@@ -62,5 +62,5 @@ async def test_data_api_call_error(mocker):
 async def test_predict(mocker, model_api_question_answering_response, data_api_response) -> None:
     mocker.patch("skillapi.skill.skill.requests.post", mock_request(model_api_question_answering_response, 200))
     mocker.patch("skillapi.skill.skill.requests.get", mock_request(data_api_response, 200))
-    res = await predict(QueryRequest(**{"query": "The query", "num_results": 1, "skill_args": {}}))
+    res = await predict(QueryRequest(**{"query": "The query", "num_results": 1, "skill_args": {}, "user_id": "1234"}))
     pass

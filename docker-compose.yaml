@@ -22,12 +22,25 @@ services:
       - db
     volumes:
       - migrations-data:/app/migrations
+      - ./square-backend/docker/entry.sh:/app/entry.sh
+      - ./square-backend/squareapi/:/app/squareapi #for developement
 
   frontend:
     image: ukpsquare/square-frontend:latest
     restart: always
     ports:
       - 80:80
+
+### Skills
+  naturalqa_retrieve_span_skill:
+    build: ./skills/naturalqa-retrieve-span-skill/.
+    ports:
+      - 8989:8000
+    env_file:
+      - ./skills/naturalqa-retrieve-span-skill/.env
+    volumes:
+      - ./skills/naturalqa-retrieve-span-skill/skillapi/:/app/skillapi #for developement
+      - ./skills/naturalqa-retrieve-span-skill/tests/data_api_response.json:/app/tests/data_api_response.json
 
 ### MODEL API
   model_auth:

@@ -19,3 +19,6 @@ class QueryRequest(BaseModel):
         1,
         description="The (max.) number of results to return"
     )
+    user_id: str = Field(
+        ""
+    )

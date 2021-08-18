@@ -12,9 +12,10 @@ var API_URL = process.env.VUE_APP_BACKEND_URL
  * Sends a question to the backend and receives the resulting answers
  * @param {String} question the asked question
  * @param {Object} options the options for the request
+ * @param {String} user_id the user id (if available)
  */
-export function fetchResults(question, options) {
-    return axios.post(`${API_URL}/question`, { question: question, options: options })
+export function fetchResults(question, options, user_id) {
+    return axios.post(`${API_URL}/question`, { query: question, meta_qa_skill_selector: options.selector , skills: options.selectedSkills, skill_args: options.skillArgs, num_selected_skills: options.maxQuerriedSkills, num_results: options.maxResultsPerSkill, user_id: user_id})
 }
 
 /**

@@ -26,7 +26,8 @@ def test_api(mocker, test_app) -> None:
         json={
             "query": "What is is the airspeed velocity of an unladen swallow?",
             "skill_args": {},
-            "num_results": 1
+            "num_results": 1,
+            "user_id": "1234"
         }
     )
     assert response.status_code == 200

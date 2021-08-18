@@ -15,6 +15,7 @@ COPY logging.conf logging.conf
 
 FROM base as test
 RUN pip install pytest pytest-cov pytest-asyncio pytest-mock
+COPY ./tests tests
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
