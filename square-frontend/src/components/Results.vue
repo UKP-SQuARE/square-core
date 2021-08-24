@@ -15,11 +15,32 @@
           <b-card-text>Error: {{ skillResult.error }}</b-card-text>
         </b-card>
         <b-card
-          v-for="(res, i) in skillResult.results"
-          v-bind:key="skillResult.name+i"
+          v-for="(res, i) in skillResult.predictions"
+          v-bind:key="res.prediction-documents+i"
           class="mt-2"
+          header-bg-variant="primary" 
+          header-text-variant="white"
+          footer-tag="footer"
         >
+        <template #header>
+          <h6 class="mb-0">
+            <span style="float: left">{{res.prediction_output.output}}</span>
+            <span style="float: right">{{res.prediction_output.output_score}}</span>
+          </h6> 
+        </template>
+        <b-card-text v-html="highlight(res.prediction_documents[0].document, res.prediction_documents[0].span)"></b-card-text>
           <component :is="res.type" v-bind:result="res"></component>
+        <template #footer>
+        <div>
+        <b-button
+          v-b-toggle.collapse-2 class="mt-1">
+          See similar documents ({{res.prediction_documents.length - 1}})
+        </b-button>
+        <b-collapse id="collapse-2" class="mt-2">
+            <b-card>I should start open!</b-card>
+          </b-collapse>
+        </div>
+      </template>
         </b-card>
       </b-tab>
     </b-tabs>
@@ -52,6 +73,11 @@ export default {
           return -1
         }
       });
+    }
+  },
+  methods: {
+    highlight(text, span) {
+      return text.substring(0, span[0]) + '<span class="highlightText">' + text.substring(span[0], span[1]) + '</span>' + text.substring(span[1], text.length);
     }
   }
 };

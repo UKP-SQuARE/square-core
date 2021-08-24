@@ -4,9 +4,9 @@ services:
   auth:
     #build: ./auth_server/.
     image: ukpsquare/square-model-api-auth:latest
-    container_name: square_model_auth
-    ports:
-      - 8081:8081
+    # Portforwarding not needed
+#    ports:
+#      - 8081:8081
     env_file:
       - ./auth_server/.env.example
 
@@ -21,11 +21,11 @@ services:
   inference_bert:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
-    ports:
-      - 8000:8000
+    # Portforwarding not needed
+#    ports:
+#      - 8000:8000
     env_file:
       - ./inference_server/.env.bert
-    container_name: square_model_inference_bert
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       #- ./inference_server/:/app/ #for developement
@@ -34,11 +34,11 @@ services:
   inference_roberta:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
-    ports:
-      - 8001:8000
+    # Portforwarding not needed
+#    ports:
+#      - 8001:8000
     env_file:
       - ./inference_server/.env.roberta
-    container_name: square_model_inference_roberta
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       #- ./inference_server/:/app/ #for developement

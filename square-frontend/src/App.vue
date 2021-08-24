@@ -19,6 +19,9 @@ export default {
 </script>
 
 <style lang='scss'>
+    .highlightText {
+        background: yellow ;
+    }
 @import "~bootstrap";
 @import "~bootstrap-vue";
 </style>

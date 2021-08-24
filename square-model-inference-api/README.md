@@ -74,7 +74,7 @@ uninstall `transformers`, and finally install `adapter-transformers`.
 2. For each model server that should run, create a `.env.$model` to configure it.  
    See [here](inference_server/.env.example) for an example.
 3. Configure `nginx/nginx.conf` to correctly forward requests to each server. The server DNS name has to
-   match `container_name` of each server in the `docker-compose.yaml`.
+   match the name of each model server service in the `docker-compose.yaml`.
 4. Configure `docker-compose.yaml` by adding services for the auth server, nginx (with the config), and the
    model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.
 ### Local
