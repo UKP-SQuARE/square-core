@@ -5,7 +5,7 @@ from typing import List, Union
 import h5py
 import numpy as np
 import requests
-from fastapi import APIRouter, HTTPException, Response, status, UploadFile, File
+from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
 from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -15,6 +15,7 @@ from ..core.generate_package import package_generator
 from ..core.utils import create_index_object
 from ..core.vespa_app import vespa_app
 from ..models.embedding import DocumentEmbedding
+from ..models.httperror import HTTPError
 from ..models.index import Index, IndexRequest, IndexResponse
 from ..models.upload import UploadResponse, UploadUrlSet
 
@@ -24,26 +25,60 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Indices"])
 
 
-@router.get("", response_model=List[IndexResponse])
-async def get_all_indices(datastore_name: str = Path(...)):
+@router.get(
+    "",
+    summary="Lists all indices of a datastore",
+    description="Returns a list of all indices in a datastore.",
+    responses={
+        200: {
+            "description": "List of all indices found",
+            "model": List[IndexResponse],
+        }
+    },
+)
+async def get_all_indices(datastore_name: str = Path(..., description="Datastore name")):
     indices = await db.get_indices(datastore_name)
-    return indices
+    return [IndexResponse.from_index(index) for index in indices]
 
 
-@router.get("/{index_name}", response_model=IndexResponse)
-async def get_index(datastore_name: str = Path(...), index_name: str = Path(...)):
+@router.get(
+    "/{index_name}",
+    summary="Get an index by its name",
+    description="Returns an index for a datastore given its name.",
+    responses={
+        200: {"model": IndexResponse, "description": "The requested index"},
+        404: {
+            "description": "The requested index does not exist",
+            "model": HTTPError,
+        },
+    },
+)
+async def get_index(
+    datastore_name: str = Path(..., description="Name of the datastore"),
+    index_name: str = Path(..., description="Name of the index"),
+):
     index = await db.get_index(datastore_name, index_name)
     if index is None:
         raise HTTPException(status_code=404, detail="Index not found.")
     else:
-        return index
+        return IndexResponse.from_index(index)
 
 
-@router.put("/{index_name}", response_model=IndexResponse)
+@router.put(
+    "/{index_name}",
+    summary="Creates a new index or updates it if it exists",
+    description="Creates a new index in  the specified datastore of a index with that name allready exists it is updated to the given configuration",
+    responses={
+        200: {"model": IndexResponse, "description": "The configuration of the updated index"},
+        201: {"model": IndexResponse, "description": "The configuration of the created index"},
+        400: {"model": HTTPError, "description": "The creation of the index failed in the API database"},
+        500: {"model": HTTPError, "description": "The update of the index failed in VESPA"},
+    },
+)
 async def put_index(
-    datastore_name: str = Path(...),
-    index_name: str = Path(...),
-    index_request: IndexRequest = Body(...),
+    datastore_name: str = Path(..., description="Name of the datastore"),
+    index_name: str = Path(..., description="Name of the index"),
+    index_request: IndexRequest = Body(..., description="The index configuration as IndexRequest"),
     response: Response = None,
 ):
     index = await db.get_index(datastore_name, index_name)
@@ -59,7 +94,7 @@ async def put_index(
     if success:
         success_upload = await package_generator.generate_and_upload()
         if success_upload:
-            return new_index
+            return IndexResponse.from_index(new_index)
         else:
             return Response(status_code=500)
     else:
@@ -72,12 +107,20 @@ async def put_index(
 #     pass
 
 
-@router.get("/{index_name}/embeddings", response_class=StreamingResponse)
+@router.get(
+    "/{index_name}/embeddings",
+    summary="Get embeddings for all documents in index",
+    description="Returns the embeddings for all documents in a given index",
+    responses={
+        200: {"description": "The embeddings for the documents as a file"},
+        400: {"model": HTTPError, "description": "An error occurred while retrieveing the embeddings"},
+    },
+)
 async def get_document_embeddings(
-    datastore_name: str = Path(...),
-    index_name: str = Path(...),
-    offset: int = Query(0),
-    size: int = Query(1000),
+    datastore_name: str = Path(..., description="Name of the datastore"),
+    index_name: str = Path(..., description="Name of the index"),
+    offset: int = Query(0, description="Offset of the document embedings to retrieve"),
+    size: int = Query(1000, description="Size of retrieved batches"),
 ):
     if size > settings.MAX_RETURN_ITEMS:
         return HTTPException(
@@ -104,7 +147,10 @@ async def get_document_embeddings(
 
 
 def upload_embeddings_file(
-    datastore_name: str, embedding_name: str, file_name: str, file_buffer
+    datastore_name: str = Path(..., description="Name of the datastore"),
+    embedding_name: str = Path(..., description="Name of the embedding field"),
+    file_name: str = Query(..., description="Name of the file containing embeddings to upload"),
+    file_buffer=Body(...),
 ) -> Union[int, UploadResponse]:
     total_docs = 0
 
@@ -150,12 +196,17 @@ def upload_embeddings_file(
     "/{index_name}/embeddings/upload",
     response_model=UploadResponse,
     status_code=201,
-    responses={400: {"model": UploadResponse}},
+    summary="Upload embeddings for documents in an index",
+    description="Uploads a file containing embeddings for documents in the index",
+    responses={
+        400: {"model": UploadResponse, "description": "An error occurred while uploading the embeddings"},
+        201: {"model": UploadResponse, "description": "The number of embeddings uploaded successfully"},
+    },
 )
 def upload_document_embeddings(
-    datastore_name: str,
-    index_name: str,
-    file: UploadFile = File(...),
+    datastore_name: str = Path(..., description="Name of the datastore"),
+    index_name: str = Path(..., description="Name of the index"),
+    file: UploadFile = File(..., description="File containing the embeddings"),
     response: Response = None,
 ):
     embedding_name = Index.get_embedding_field_name(index_name)
@@ -174,7 +225,10 @@ def upload_document_embeddings(
     "/{index_name}/embeddings",
     response_model=UploadResponse,
     status_code=201,
-    responses={400: {"model": UploadResponse}},
+    responses={
+        200: {"model": UploadResponse, "description": "The number of embeddings uploaded successfully"},
+        400: {"model": UploadResponse, "description": "An error occurred while uploading the embeddings"},
+    },
 )
 def upload_document_embeddings_from_urls(
     datastore_name: str,
@@ -210,8 +264,20 @@ def upload_document_embeddings_from_urls(
     return UploadResponse(message=f"Successfully uploaded {total_docs} embeddings.", successful_uploads=total_docs)
 
 
-@router.delete("/{index_name}")
-async def delete_index(datastore_name: str = Path(...), index_name: str = Path(...)):
+@router.delete(
+    "/{index_name}",
+    summary="Delete an index",
+    description="Deletes the index with the corresponding name and all embeddings contained in the index",
+    responses={
+        204: {"description": "Successfully deleted index"},
+        404: {"model": HTTPError, "description": "Failed to delete index in API database"},
+        500: {"model": HTTPError, "description": "Failed to delete index in vespa"},
+    },
+)
+async def delete_index(
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    index_name: str = Path(..., description="The name of the index"),
+):
     success = await db.delete_index(datastore_name, index_name)
     # also delete the corresponding query type field if available
     query_embedding_name = Index.get_query_embedding_field_name(index_name)
@@ -228,9 +294,20 @@ async def delete_index(datastore_name: str = Path(...), index_name: str = Path(.
         return Response(status_code=404)
 
 
-@router.get("/{index_name}/embeddings/{doc_id}", response_model=DocumentEmbedding)
+@router.get(
+    "/{index_name}/embeddings/{doc_id}",
+    summary="Get embedding for a document",
+    description="Returns the embedding for a document in the indexwith the given id",
+    responses={
+        200: {"model": DocumentEmbedding, "description": "The embedding for the document with the given id"},
+        404: {"model": HTTPError, "description": "Failed to find embedding for document with given id"},
+    },
+    response_model=DocumentEmbedding,
+)
 async def get_document_embedding(
-    datastore_name: str = Path(...), index_name: str = Path(...), doc_id: str = Path(...)
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    index_name: str = Path(..., description="The name of the index"),
+    doc_id: str = Path(..., description="The id of the document"),
 ):
     res = vespa_app.get_data(datastore_name, doc_id)
     doc = res.json
@@ -241,12 +318,19 @@ async def get_document_embedding(
     return Response(status_code=404)
 
 
-@router.post("/{index_name}/embeddings/{doc_id}")
+@router.post(
+    "/{index_name}/embeddings/{doc_id}",
+    summary="Set or update embedding for a document",
+    description="Set or updates the embedding for a document in the index with the given id",
+    responses={
+        200: {"description": "Successfully updated embedding for document with given id"},
+    },
+)
 async def set_document_embedding(
-    datastore_name: str = Path(...),
-    index_name: str = Path(...),
-    doc_id: str = Path(...),
-    embedding: List[float] = Body(...),
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    index_name: str = Path(..., description="The name of the index"),
+    doc_id: str = Path(..., description="The id of the document"),
+    embedding: List[float] = Body(..., description="The embedding for the document"),
 ):
     embedding_name = Index.get_embedding_field_name(index_name)
     fields = {embedding_name: {"values": embedding}}

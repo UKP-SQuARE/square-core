@@ -4,13 +4,14 @@ from typing import Iterable, Union
 
 import requests
 from fastapi import APIRouter, File, HTTPException, Request, Response, UploadFile
-from fastapi.param_functions import Query
-from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
+from fastapi.param_functions import Body, Path, Query
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from ..core.config import settings
 from ..core.utils import get_fields
 from ..core.vespa_app import vespa_app
 from ..models.document import Document
+from ..models.httperror import HTTPError
 from ..models.upload import UploadResponse, UploadUrlSet
 
 
@@ -65,11 +66,20 @@ def upload_document_file(datastore_name: str, file_name: str, file_iterator: Ite
 
 @router.post(
     "/upload",
+    summary="Upload documents from a file to the datastore",
+    description="Upload all documents from a  jsonl file to the datastore",
     response_model=UploadResponse,
     status_code=201,
-    responses={400: {"model": UploadResponse}},
+    responses={
+        200: {"description": "Number of successfully uploaded documents to the datastore."},
+        400: {"model": UploadResponse, "description": "Error during Upload"},
+    },
 )
-def upload_documents(datastore_name: str, file: UploadFile = File(...), response: Response = None):
+def upload_documents(
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    file: UploadFile = File(..., description="The filecontaining the documents to upload"),
+    response: Response = None,
+):
     uploaded_docs, upload_response = upload_document_file(datastore_name, file.filename, file.file)
     if upload_response is not None:
         response.status_code = 400
@@ -82,11 +92,18 @@ def upload_documents(datastore_name: str, file: UploadFile = File(...), response
 
 @router.post(
     "",
+    summary="Upload documents from a file at the given url to the datastore",
     response_model=UploadResponse,
-    status_code=201,
-    responses={400: {"model": UploadResponse}},
+    responses={
+        201: {"description": "Number of successfully uploaded documents to the datastore."},
+        400: {"model": UploadResponse, "description": "Error during Upload"},
+    },
 )
-def upload_documents_from_urls(datastore_name: str, urlset: UploadUrlSet, api_response: Response):
+def upload_documents_from_urls(
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    urlset: UploadUrlSet = Body(..., description="The url containing the documents to upload"),
+    api_response: Response = None,
+):
     total_docs = 0  # total uploaded items across all files
 
     for url in urlset.urls:
@@ -112,11 +129,22 @@ def upload_documents_from_urls(datastore_name: str, urlset: UploadUrlSet, api_re
     return UploadResponse(message=f"Successfully uploaded {total_docs} documents.", successful_uploads=total_docs)
 
 
-@router.get("", response_class=StreamingResponse)
+@router.get(
+    "",
+    summary="Get all documents from the datastore",
+    description="Lists all documents from the datastore",
+    response_class=StreamingResponse,
+    responses={
+        200: {
+            "description": "List of all documents in the datastore",
+        },
+        400: {"model": HTTPError, "description": "Exception during retrieval"},
+    },
+)
 async def get_all_documents(
-    datastore_name: str,
-    offset: int = Query(0),
-    size: int = Query(1000),
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    offset: int = Query(0, description="The offset to start the list"),
+    size: int = Query(1000, description="The number of documents in one batch retrieved from vespa"),
 ):
     if size > settings.MAX_RETURN_ITEMS:
         return HTTPException(
@@ -136,9 +164,22 @@ async def get_all_documents(
     return StreamingResponse(yield_documents(), media_type="application/octet-stream")
 
 
-# TODO why can't we set response_model=Document here?
-@router.get("/{doc_id}")
-async def get_document(datastore_name: str, doc_id: int):
+@router.get(
+    "/{doc_id}",
+    summary="Get a document from the datastore",
+    description="Get a document from the datastore by id",
+    responses={
+        200: {
+            "description": "The document",
+            "model": Document,
+        },
+        400: {"model": HTTPError, "description": "Failed to retrieve document"},
+    },
+)
+async def get_document(
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    doc_id: int = Path(..., description="The id of the document to retrieve"),
+):
     response = vespa_app.get_data(datastore_name, doc_id)
     if response.status_code == 200:
         fields = await get_fields(datastore_name)
@@ -147,13 +188,26 @@ async def get_document(datastore_name: str, doc_id: int):
         raise HTTPException(status_code=response.status_code, detail=response.json)
 
 
-@router.post("/{doc_id}")
-async def post_document(request: Request, datastore_name: str, doc_id: int, document: Document):
+@router.post(
+    "/{doc_id}",
+    summary="Upload a document in the datastore",
+    description="Upload a document in the datastore by id",
+    responses={
+        200: {"class": Response, "description": "The location of the uploaded document"},
+        400: {"model": HTTPError, "description": "Failed to upload document"},
+    },
+)
+async def post_document(
+    request: Request,
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    doc_id: int = Path(..., description="The id of the document to upload"),
+    document: Document = Body(..., description="The document to upload"),
+):
     fields = await get_fields(datastore_name)
     if not all([field in fields for field in document]):
-        return PlainTextResponse(
+        raise HTTPException(
             status_code=404,
-            content="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
+            detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
     vespa_response = vespa_app.feed_data_point(
@@ -170,13 +224,26 @@ async def post_document(request: Request, datastore_name: str, doc_id: int, docu
         raise HTTPException(status_code=vespa_response.status_code, detail=vespa_response.json)
 
 
-@router.put("/{doc_id}")
-async def update_document(request: Request, datastore_name: str, doc_id: int, document: Document):
+@router.put(
+    "/{doc_id}",
+    summary="Update a document in the datastore",
+    description="Update a document in the datastore by id",
+    responses={
+        200: {"class": Response, "description": "The location of the updated document"},
+        400: {"model": HTTPError, "description": "Failed to update document"},
+    },
+)
+async def update_document(
+    request: Request,
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    doc_id: int = Path(..., description="The id of the document to update"),
+    document: Document = Body(..., description="The document to update"),
+):
     fields = await get_fields(datastore_name)
     if not all([field in fields for field in document]):
-        return PlainTextResponse(
+        return HTTPException(
             status_code=404,
-            content="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
+            detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
     doc_fields = {**document, "id": doc_id}
@@ -190,8 +257,16 @@ async def update_document(request: Request, datastore_name: str, doc_id: int, do
         raise HTTPException(status_code=vespa_response.status_code, detail=vespa_response.json)
 
 
-@router.delete("/{doc_id}")
-def delete_document(datastore_name: str, doc_id: int):
+@router.delete(
+    "/{doc_id}",
+    summary="Delete a document from the datastore",
+    description="Delete a document from the datastore by id",
+    responses={204: {"description": "The document was deleted"}},
+)
+def delete_document(
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    doc_id: int = Path(..., description="The id of the document to delete"),
+):
     response = vespa_app.delete_data(
         schema="wiki",
         data_id=doc_id,

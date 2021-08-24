@@ -5,6 +5,7 @@ from ..core.db import db
 from ..core.model_api import encode_query
 from ..core.utils import get_fields
 from ..core.vespa_app import vespa_app
+from ..models.httperror import HTTPError
 from ..models.index import Index
 from ..models.query import QueryResult, QueryResultDocument
 
@@ -19,6 +20,23 @@ router = APIRouter(tags=["Query"])
             and if necessery encodes the query with the specified encoder",
     response_description="The top-K documents",
     response_model=QueryResult,
+    responses={
+        200:
+        {
+            "model": QueryResult,
+            "description": "The top-K documents"
+        },
+        404:
+        {
+            "model": HTTPError,
+            "description": "The datastore or index does not exist"
+        },
+        500:
+        {
+            "model": HTTPError,
+            "description": "Model API error"
+        },
+    }
 )
 async def search(
     datastore_name: str = Path(..., description="Name of the datastore."),
@@ -51,7 +69,30 @@ async def search(
         raise HTTPException(status_code=500)
 
 
-@router.get("/{index_name}/score", response_model=QueryResultDocument)
+@router.get(
+    "/{index_name}/score",
+    summary="Score the document with given query",
+    description="Scores the document with the given id and the given query and returns the score.",
+    response_description="The score",
+    response_model=QueryResultDocument,
+    responses={
+        200:
+        {
+            "model": QueryResultDocument,
+            "description": "The score between the query and the documnt wiith the given id",
+        },
+        404:
+        {
+            "model": HTTPError,
+            "description": "The datastore or index does not exist"
+        },
+        500:
+        {
+            "model": HTTPError,
+            "description": "Model API error"
+        },
+    }
+)
 async def score(
     datastore_name: str = Path(..., description="Name of the datastore."),
     index_name: str = Path(..., description="Index name."),
