@@ -56,10 +56,14 @@ class Index(IndexBase):
 
     def get_vespa_embedding_field(self) -> Optional[Field]:
         if self.embedding_type is not None:
+            indexing = ["attribute"]
+            if self.hnsw is not None:
+                indexing += ["index"]
             return Field(
                 name=Index.get_embedding_field_name(self),
                 type=self.embedding_type,
-                indexing=["attribute", "index"],
+                indexing=indexing,
+                attribute=[f"distance-metric: {self.distance_metric}"],
                 ann=HNSW.from_dict(self.hnsw) if self.hnsw is not None else None,
             )
         else:
@@ -79,6 +83,8 @@ class Index(IndexBase):
 class IndexRequest(IndexBase):
     """Models an index as requested by the user."""
 
+    use_hnsw: bool = True
+
     class Config:
         schema_extra = {
             "example": {
@@ -87,6 +93,7 @@ class IndexRequest(IndexBase):
                 "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
                 "embedding_size": 769,
                 "distance_metric": "euclidean",
+                "use_hnsw": True,
             }
         }
 
@@ -94,6 +101,7 @@ class IndexRequest(IndexBase):
 class IndexResponse(IndexBase):
     """Models an index as returned to the user."""
     name: str
+    use_hnsw: bool = True
 
     class Config:
         schema_extra = {
@@ -104,9 +112,12 @@ class IndexResponse(IndexBase):
                 "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
                 "embedding_size": 769,
                 "distance_metric": "euclidean",
+                "use_hnsw": True,
             }
         }
 
     @classmethod
     def from_index(cls, index: Index):
-        return cls(**index.dict())
+        kwargs = index.dict()
+        kwargs["use_hnsw"] = index.hnsw is not None
+        return cls(**kwargs)

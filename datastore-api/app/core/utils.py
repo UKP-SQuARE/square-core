@@ -29,15 +29,18 @@ async def create_index_object(datastore_name: str, index_name: str, index_reques
             + ")) or userQuery()"
         )
         ranking_expression = "closeness({})".format(embedding_name)
-        embedding_type = "tensor<float>(x[{}])".format(index_request.embedding_size)
-        hnsw = {
-            "distance_metric": index_request.distance_metric,
-            "max_links_per_node": 16,
-            "neighbors_to_explore_at_insert": 200,
-        }
+        embedding_type = "tensor<bfloat16>(x[{}])".format(index_request.embedding_size)
+        if index_request.use_hnsw:
+            hnsw = {
+                "distance_metric": index_request.distance_metric,
+                "max_links_per_node": 16,
+                "neighbors_to_explore_at_insert": 200,
+            }
+        else:
+            hnsw = None
         # Every index that uses embeddings requires the type of the query embedding to be defined.
         query_type_field_name = f"ranking.features.query({query_embedding_name})"
-        query_type_field_type = f"tensor<float>(x[{index_request.embedding_size}])"
+        query_type_field_type = f"tensor<bfloat16>(x[{index_request.embedding_size}])"
         await db.add_query_type_field(QueryTypeField(query_type_field_name, query_type_field_type))
 
     return Index(
