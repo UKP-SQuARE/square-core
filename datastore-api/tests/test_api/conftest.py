@@ -1,7 +1,8 @@
 import pytest
+from app.core.auth import verify_api_key
 from app.main import get_app
-from app.models.index import Index
 from app.models.datastore import DatastoreResponse
+from app.models.index import Index
 from fastapi.testclient import TestClient
 from vespa.package import Document, Field, FieldSet, QueryTypeField, Schema
 
@@ -88,5 +89,7 @@ def query_document():
 
 @pytest.fixture(scope="package")
 def client():
-    client = TestClient(get_app())
+    app = get_app()
+    app.dependency_overrides[verify_api_key] = lambda: True
+    client = TestClient(app)
     return client

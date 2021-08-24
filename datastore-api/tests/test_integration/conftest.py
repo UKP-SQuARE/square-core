@@ -2,6 +2,7 @@ import asyncio
 import os
 
 import pytest
+from app.core.auth import verify_api_key
 from app.core.db import db
 from app.core.generate_package import package_generator
 from app.core.vespa_app import vespa_app
@@ -135,5 +136,7 @@ def feed_documents(test_document, query_document, test_document_embedding):
 
 @pytest.fixture(scope="package")
 def client(db_init, feed_documents):
-    client = TestClient(get_app())
+    app = get_app()
+    app.dependency_overrides[verify_api_key] = lambda: True
+    client = TestClient(app)
     return client
