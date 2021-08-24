@@ -8,15 +8,15 @@
         v-bind:key="skillResult.name"
       >
         <template v-slot:title>
-        {{skillResult.name}} <small>{{parseInt(skillResult.score*100)}}% relevant</small>
+        {{skillResult.name}} <small>{{parseInt(skillResult.meta_qa_score*100)}}% relevant</small>
         </template>
-        <h6 class="text-muted mt-2 mb-1 ml-1">{{skillResult.skill_description}}</h6>
+        <h6 class="text-muted mt-2 mb-1 ml-1">{{skillResult.description}}</h6>
         <b-card class="mt-2" v-show="skillResult.error">
           <b-card-text>Error: {{ skillResult.error }}</b-card-text>
         </b-card>
         <b-card
-          v-for="(res, i) in skillResult.predictions"
-          v-bind:key="res.prediction-documents+i"
+          v-for="res in skillResult.results"
+          v-bind:key="res.prediction_id"
           class="mt-2"
           header-bg-variant="primary" 
           header-text-variant="white"

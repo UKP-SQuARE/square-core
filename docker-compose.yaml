@@ -33,7 +33,7 @@ services:
   naturalqa_retrieve_span_skill:
     build: ./skills/naturalqa-retrieve-span-skill/.
     ports:
-      - 8989:8000
+      - 8777:8000
     env_file:
       - ./skills/naturalqa-retrieve-span-skill/.env
     volumes:

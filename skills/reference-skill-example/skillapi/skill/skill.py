@@ -107,6 +107,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
     index_name = DATA_API_URL.split("/")[-2]
     for d, ans in zip(data, output["answers"]):
         ans = ans[0]
+        if not ans["answer"]:
+            continue
+
         prediction_score = ans["score"]
 
         prediction_output = {
@@ -132,5 +135,27 @@ async def predict(request: QueryRequest) -> QueryOutput:
             "prediction_documents": prediction_documents
         }
         query_output.append(prediction)
+
+    # Answer for no answer
+    if len(query_output) == 0:
+        prediction = {
+            "prediction_id": str(uuid.uuid4()),
+            "prediction_score": max(ans[0]["score"] for ans in output["answers"]),
+            "prediction_output": {
+                "output": "No answer found in the searched documents",
+                "output_score": max(ans[0]["score"] for ans in output["answers"])
+            },
+            "prediction_documents": [{
+                "index": index_name,
+                "document_id": d["fields"]["documentid"],
+                "document": d["fields"]["text"],
+                "span": [0, 0],
+                "source": "",
+                "url": ""
+            } for d in data]
+        }
+        query_output.append(prediction)
+
+    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
 
     return QueryOutput(predictions=query_output)
