@@ -29,18 +29,15 @@ services:
     ports:
       - 80:80
 
-### Skills
+  ### Skills
   naturalqa_retrieve_span_skill:
-    build: ./skills/naturalqa-retrieve-span-skill/.
+    build: ./skills/qa-retrieve-span-skill/.
     ports:
       - 8777:8000
     env_file:
-      - ./skills/naturalqa-retrieve-span-skill/.env
-    volumes:
-      - ./skills/naturalqa-retrieve-span-skill/skillapi/:/app/skillapi #for developement
-      - ./skills/naturalqa-retrieve-span-skill/tests/data_api_response.json:/app/tests/data_api_response.json
+      - ./skills/qa-retrieve-span-skill/.env
 
-### MODEL API
+  ### MODEL API
   model_auth:
     image: ukpsquare/square-model-api-auth:latest
     env_file:
@@ -67,7 +64,7 @@ services:
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
 
-### / MODEL API Finished
+  ### / MODEL API Finished
 
   #adminer:
   #  image: adminer
