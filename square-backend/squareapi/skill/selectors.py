@@ -64,26 +64,27 @@ class Selector:
     def request_skill(question, options, skill, score):
         """
         Send a query request to a skill.
-        maxResultsPerSkill is enforced by this method.
+        num_results is enforced by this method.
         :param question: the question for the query
         :param options: the options for the query
         :param skill: the skill to query
         :param score: the relevance score for the skill valued [0;1]
         :return: the answer of the query with additional informations about the skill
         """
-        maxResults = int(options["maxResultsPerSkill"])
+        maxResults = int(options["num_results"])
         try:
             r = requests.post("{}/query".format(skill["url"]), json={
-                "question": question,
-                "options": {
-                    "maxResults": maxResults
-                }
+                "query": question,
+                "num_results": maxResults,
+                "user_id": options["user_id"],
+                "skill_args": options["skill_args"].get(skill["name"], {})
             })
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "results": r.json()[:maxResults]}
+            return {"name": skill["name"], "meta_qa_score": score, "description": skill["description"],
+                    "results": r.json()["predictions"][:maxResults]}
         except requests.Timeout as e:
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
+            return {"name": skill["name"], "meta_qa_score": score, "description": skill["description"], "error": str(e)}
         except requests.ConnectionError as e:
-            return {"name": skill["name"], "score": score, "skill_description": skill["description"], "error": str(e)}
+            return {"name": skill["name"], "meta_qa_score": score, "description": skill["description"], "error": str(e)}
 
     @staticmethod
     def query_skills(question, options, skills, scores):
@@ -101,7 +102,7 @@ class Selector:
         results = []
         count = len(skills)
         if count == 0:
-            return [{"name": "There was a problem", "score": 0,  "error": "No skills were chosen."}]
+            return [{"name": "There was a problem", "meta_qa_score": 0,  "error": "No skills were chosen."}]
         for skill_result in pool.imap(Selector.request_skill, repeat(question, count), repeat(options, count), skills, scores):
             results.append(skill_result)
         return results
@@ -121,7 +122,7 @@ class Selector:
             question, ", ".join(["{} ({:.4f})".format(skill["name"], score) for skill, score in zip(skills, scores)])))
         count = len(skills)
         if count == 0:
-            yield [{"name": "There was a problem", "score": 0,  "error": "No skills were chosen."}]
+            yield [{"name": "There was a problem", "meta_qa_score": 0,  "error": "No skills were chosen."}]
         for skill_result in pool.imap(Selector.request_skill, repeat(question, count), repeat(options, count), skills, scores):
             yield skill_result
 
@@ -137,14 +138,14 @@ class Selector:
 
 class BaseSelector(Selector):
     """
-    A simple base selector that always chooses the first maxQuerriedSkills skills in the options to query.
+    A simple base selector that always chooses the first num_selected_skills skills in the options to query.
     This selector can be used if a developer wants to query specific skills.
     """
     def __init__(self):
         super(BaseSelector, self).__init__()
 
     def query(self, question, options, generator=False):
-        skills = options["selectedSkills"][:int(options["maxQuerriedSkills"])]
+        skills = options["skills"][:int(options["num_selected_skills"])]
         scores = [1]*len(skills)
         if generator:
             return self.query_skills_generator(question, options, skills, scores)
@@ -229,8 +230,8 @@ class ElasticsearchVoteSelector(Selector):
             self.skill_example_count = {b[1]: b[0] for b in res}
 
     def query(self, question, options, generator=False):
-        skills = self._filter_unpublished_skills(options["selectedSkills"])
-        selected_skills, scores = self.scores(question, skills, int(options["maxQuerriedSkills"]))
+        skills = self._filter_unpublished_skills(options["skills"])
+        selected_skills, scores = self.scores(question, skills, int(options["num_selected_skills"]))
         if generator:
             return self.query_skills_generator(question, options, selected_skills, scores)
         else:
@@ -272,7 +273,7 @@ class ElasticsearchVoteSelector(Selector):
         total_weight = sum(votes.values())
         votes = {key: votes[key]/total_weight for key in votes}
         max_score = max(votes.values())
-        # now we reduce to only the selected skills and we only select first maxQuerriedSkills ; if they are not in votes, they get a score of 0
+        # now we reduce to only the selected skills and we only select first num_selected_skills ; if they are not in votes, they get a score of 0
         # we also [0-1]-normalize the scores
         skills_with_score = sorted([(skill, votes[skill["id"]]/max_score if skill["id"] in votes else 0.0)
                                     for skill in skills], key=lambda v: v[1], reverse=True)[:max_querried_skills]
@@ -327,8 +328,8 @@ class TransformerSelector(Selector):
             raise RuntimeError("Cannot connect to Transformer Server at {}".format(transformer_server_url), e)
 
     def query(self, question, options, generator=False):
-        skills = self._filter_unpublished_skills(options["selectedSkills"])
-        selected_skills, scores = self.scores(question, skills, int(options["maxQuerriedSkills"]))
+        skills = self._filter_unpublished_skills(options["skills"])
+        selected_skills, scores = self.scores(question, skills, int(options["num_selected_skills"]))
         if generator:
             return self.query_skills_generator(question, options, selected_skills, scores)
         else:
@@ -336,7 +337,7 @@ class TransformerSelector(Selector):
 
     def scores(self, question, skills, max_querried_skills):
         skill_id_map = {skill["id"]: skill for skill in skills}
-        skillid_score_tuples = requests.get("{}/api/scores".format(self.server_url), params={"question": question}).json()
+        skillid_score_tuples = requests.get("{}/api/scores".format(self.server_url), params={"query": question}).json()
         skills_with_score = sorted([(skill_id_map[skillid], score) for (skillid, score) in skillid_score_tuples],
                                    key=lambda v: v[1], reverse=True)[:max_querried_skills]
 

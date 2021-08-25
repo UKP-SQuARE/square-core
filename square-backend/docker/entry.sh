@@ -5,7 +5,11 @@ set -e
 echo "Waiting 10s for DB to start"
 sleep 10;
 
-python flask-manage.py db init --directory=migration
+if [ -z "$(ls -A migration)" ]; then
+  python flask-manage.py db init --directory=migration
+else
+  echo "Skip migration init because directory is not empty. Assuming this was already done."
+fi
 python flask-manage.py db migrate --directory=migration
 python flask-manage.py db upgrade --directory=migration
 

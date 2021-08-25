@@ -1,4 +1,5 @@
 import logging
+
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import (
     JWTManager, jwt_required, jwt_optional, create_access_token,
@@ -462,82 +463,37 @@ def ask_question():
           required: true
           description: the query
     definitions:
-        QueryOptions:
-            type: object
-            properties:
-                selector:
-                    type: string
-                    description: the skill selector the server should use
-                    minLength: 1
-                selectedSkills:
-                    type: array
-                    description: the list of skills that the selector can choose from
-                    items:
-                        $ref: '#definitions/Skill'
-                    minItems: 1
-                maxQuerriedSkills:
-                    type: integer
-                    description: the maximum number of skills the selector will query
-                    minimum: 1
-                maxResultsPerSkill:
-                    type: integer
-                    description: the maximum number of results from each skill
-                    minimum: 1
-            required: [selector, selectedSkills, maxQuerriedSkills, maxResultsPerSkill]
         Query:
             type: object
             properties:
-                question:
+                query:
                     type: string
                     description: the question
                     minLength: 1
-                options:
+                user_id:
+                    type: string
+                meta_qa_skill_selector:
+                    type: string
+                    description: the skill selector the server should use
+                    minLength: 1
+                skills:
+                    type: array
+                    description: the list of skills that the selector can choose from
+                    items:
+                        type: string
+                    minItems: 1
+                skill_args:
                     type: object
-                    properties:
-                        selector:
-                            type: string
-                            description: the skill selector the server should use
-                            minLength: 1
-                        selectedSkills:
-                            type: array
-                            description: the list of skills that the selector can choose from
-                            items:
-                                description: Skill model from the DB
-                                type: object
-                                properties:
-                                    id:
-                                        type: integer
-                                        description: the id of the skill
-                                    name:
-                                        type: string
-                                        description: the unique name of the skill
-                                    owner_id:
-                                        oneOf:
-                                            - type: string
-                                            - type: integer
-                                        description: the id of the owner of this skill
-                                    is_published:
-                                        type: boolean
-                                        description: indicates whether a skill is visible to all or only to the owner
-                                    url:
-                                        type: string
-                                        description: url to the skill server
-                                    description:
-                                        type: string
-                                        description: a short description of the skill
-                                required: [id, name, is_published, url]
-                            minItems: 1
-                        maxQuerriedSkills:
-                            type: integer
-                            description: the maximum number of skills the selector will query
-                            minimum: 1
-                        maxResultsPerSkill:
-                            type: integer
-                            description: the maximum number of results from each skill
-                            minimum: 1
-                    required: [selector, selectedSkills, maxQuerriedSkills, maxResultsPerSkill]
-                    description: the options for the query
-            required: [question, options]
+                    description: keys are the skills to be used and optional values for specific parameters of the model
+                num_selected_skills:
+                    type: integer
+                    description: the maximum number of skills the selector will query
+                    minimum: 1
+                num_results:
+                    type: integer
+                    description: the maximum number of results from each skill
+                    minimum: 1
+            required: [query, meta_qa_skill_selector, skills, skill_args, num_selected_skills, num_results, user_id]
         SkillResult:
             type: object
             properties:
@@ -547,7 +503,7 @@ def ask_question():
                 description:
                     type: string
                     description: a short description of the skill
-                score:
+                meta_qa_score:
                     type: number
                     description: the relevance score for the skill in the range [0;1]
                 error:
@@ -559,13 +515,6 @@ def ask_question():
                         $ref: '#definitions/ResultEntry'
         ResultEntry:
             type: object
-            properties:
-                type:
-                    type: string
-                    enum: [plain_text, raw_html, key_value]
-                    description: the format type of the result
-                result:
-                    description: format depends on type
 
     responses:
         200:
@@ -575,9 +524,12 @@ def ask_question():
                 items:
                     $ref: '#/definitions/SkillResult'
     """
-    # Bug in flasgger validation with nested $ref so we copy QueryOption and Skill in Query definition
+    # Bug in flasgger validation with nested $ref so we copy Skill in Query definition
     question_data = request.json
     logger.debug("Query request: {}".format(question_data))
-    logger.info("Query with question: '{}'".format(question_data["question"]))
+    logger.info("Query with question: '{}'".format(question_data["query"]))
+    # Add skill info from DB to query
+    skills = Skill.query.filter(Skill.name.in_(question_data["skills"])).all()
+    question_data["skills"] = [skill.to_dict() for skill in skills]
     result = pool.spawn(skillSelector.query, question_data).wait()
     return jsonify(result), 200

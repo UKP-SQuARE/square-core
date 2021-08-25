@@ -98,7 +98,7 @@ export default {
           text: `${skill.name} ${
             skill.description ? "- " + skill.description : ""
           }`,
-          value: skill
+          value: skill.name
         };
       });
     },
