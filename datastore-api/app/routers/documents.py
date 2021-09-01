@@ -246,11 +246,17 @@ async def update_document(
             detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
+    exists = vespa_app.get_data(datastore_name, doc_id).status_code == 200
+
     doc_fields = {**document, "id": doc_id}
     vespa_response = vespa_app.update_data(datastore_name, doc_id, doc_fields, create=True)
-    if vespa_response.status_code == 200:  # TODO Vespa doesn't distinguish between 200 and 201
+    if vespa_response.status_code == 200:
+        if exists:
+            status_code = 200
+        else:
+            status_code = 201
         return Response(
-            status_code=200,
+            status_code=status_code,
             headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
         )
     else:
@@ -267,6 +273,10 @@ def delete_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
     doc_id: int = Path(..., description="The id of the document to delete"),
 ):
+    # check whether document exists, vespa is not returning that information
+    if vespa_app.get_data(datastore_name, doc_id).status_code != 200:
+        raise HTTPException(status_code=404, detail="Document does not exist")
+
     response = vespa_app.delete_data(
         schema="wiki",
         data_id=doc_id,

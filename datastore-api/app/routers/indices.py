@@ -104,7 +104,17 @@ async def put_index(
 # TODO Implement index status method.
 # @router.get("/{index_name}/status")
 # async def get_index_status(datastore_name: str = Path(...), index_name: str = Path(...)):
-#     pass
+#     index = await db.get_index(datastore_name, index_name)
+#     status = {"bm25": index["bm25"]}
+#     yql = "select * from sources {} where  id >= 0;".format(datastore_name)
+#     request = requests.get(settings.VESPA_APP_URL+ "/search/", params={"yql": yql})
+#    if requests.status_codes == 404:
+#         raise HTTPException(status_code=404, detail="Could not get index status")
+#     status["total"] =  request.json()["root"]["fields"]["totalCount"]
+#
+#    if not status["bm25"]:
+#        # get number of documents with embedding
+#     return status
 
 
 @router.get(
@@ -320,10 +330,10 @@ async def get_document_embedding(
 
 @router.post(
     "/{index_name}/embeddings/{doc_id}",
-    summary="Set or update embedding for a document",
-    description="Set or updates the embedding for a document in the index with the given id",
+    summary="Set embedding for a document",
+    description="Set the embedding for a document in the index with the given id",
     responses={
-        200: {"description": "Successfully updated embedding for document with given id"},
+        200: {"description": "Successfully set embedding for document with given id"},
     },
 )
 async def set_document_embedding(
