@@ -37,6 +37,7 @@ class TestDocuments:
         mocker.patch.object(DatastoreDB, "get_schema", return_value=async_return(wiki_schema))
         response = VespaResponse({'pathId': '/document/v1/wiki/wiki/docid/42', 'id': 'id:wiki:wiki::42'}, 200, "", "")
         mocker.patch.object(Vespa, "update_data", return_value=response)
+        mocker.patch.object(Vespa, "get_data", return_value=response)
 
         document = {"title": "a new document", "text": "some content"}
         response = client.put("/datastores/wiki/documents/42", json=document)
