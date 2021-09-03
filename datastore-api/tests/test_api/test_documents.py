@@ -40,13 +40,14 @@ class TestDocuments:
 
         document = {"title": "a new document", "text": "some content"}
         response = client.put("/datastores/wiki/documents/42", json=document)
-        assert response.status_code == 200
+        assert response.status_code == 201
         assert response.headers["Location"].endswith("/datastores/wiki/documents/42")
 
     def test_delete_document(self, mocker: MockerFixture, client, wiki_schema):
         mocker.patch.object(DatastoreDB, "get_schema", return_value=async_return(wiki_schema))
         response = VespaResponse({'pathId': '/document/v1/wiki/wiki/docid/88888', 'id': 'id:wiki:wiki::88888'}, 200, "", "")
         mocker.patch.object(Vespa, "delete_data", return_value=response)
+        mocker.patch.object(Vespa, "get_data", return_value=response)
 
         response = client.delete("/datastores/wiki/documents/88888")
         assert response.status_code == 204
