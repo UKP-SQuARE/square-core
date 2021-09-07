@@ -41,7 +41,7 @@ class TestDocuments:
 
         document = {"title": "a new document", "text": "some content"}
         response = client.put("/datastores/wiki/documents/42", json=document)
-        assert response.status_code == 201
+        assert response.status_code == 200
         assert response.headers["Location"].endswith("/datastores/wiki/documents/42")
 
     def test_delete_document(self, mocker: MockerFixture, client, wiki_schema):
