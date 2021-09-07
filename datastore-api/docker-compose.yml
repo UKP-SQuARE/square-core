@@ -7,7 +7,7 @@ services:
     hostname: vespa-container
     privileged: true
     ports:
-      - "8082:8080"
+      - "7070:8080"
       - "19071:19071"
     volumes:
       - ./storage/vespa/var:/opt/vespa/var
@@ -31,10 +31,10 @@ services:
   #     - vespa
   #     - mongodb
   #   ports:
-  #     - "8002:8000"
+  #     - "7000:7000"
   #   environment:
   #     - VESPA_CONFIG_URL=http://vespa:19071
-  #     - VESPA_APP_URL=http://vespa:8082
+  #     - VESPA_APP_URL=http://vespa:8080
   #     - MONGODB_URL=mongodb://root:root@mongodb:27017/admin?retryWrites=true&w=majority
   #     # Specify Model API
-  #     # - MODEL_API_URL=http://localhost:9000/api
+  #     - MODEL_API_URL=http://localhost:8000/api

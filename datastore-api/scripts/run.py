@@ -71,7 +71,7 @@ def wait_for_vespa_app_server():
     )
 
 
-def run(dev=False, port=8000):
+def run(dev=False, port=7000):
     wait_for_vespa_config_server()
     wait_for_vespa_app_server()
     if dev:
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     parser_run = subparsers.add_parser("run")
     parser_run.add_argument("--dev", action="store_true")
-    parser_run.add_argument("--port", type=int, default=8002)
+    parser_run.add_argument("--port", type=int, default=7000)
 
     args = parser.parse_args()
     if args.command == "wait-vespa":

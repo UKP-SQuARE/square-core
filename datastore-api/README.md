@@ -4,7 +4,7 @@ API for storing, indexing and retrieving document corpora, powered by [Vespa](ht
 
 ## Overview
 
-![SQuARE Datastore API](https://user-images.githubusercontent.com/71278644/123296137-ac33ba00-d516-11eb-9c87-de7203c1e459.png)
+![SQuARE Datastore API](images/overview.png)
 
 ## Requirements
 
@@ -47,7 +47,7 @@ Start the server:
 make run
 ```
 
-Got to **http://localhost:8000/docs** for interactive documentation.
+Got to **http://localhost:7000/docs** for interactive documentation.
 
 ### Tests
 
@@ -86,7 +86,7 @@ You can download some example documents [here](https://public.ukp.informatik.tu-
 Now, the documents file can be uploaded to the Datastore API as follows (uploading embeddings is similar):
 ```
 curl -X 'POST' \
-  'http://localhost:8002/datastores/wiki/documents/upload' \
+  'http://localhost:7000/datastores/wiki/documents/upload' \
   -H 'Authorization: abcdefg' \
   -F 'file=@0.jsonl'
 ```
@@ -103,9 +103,14 @@ Uploading to Vespa can be done using the [Vespa HTTP Client](https://docs.vespa.
 
 3. Prepare data in .jsonl format: Uploaded files should match [Vespa's JSON format](https://docs.vespa.ai/en/reference/document-json-format.html). An example feed can be found [here](https://raw.githubusercontent.com/vespa-engine/sample-apps/master/dense-passage-retrieval-with-ann/sample-feed.jsonl).
 
+  Rename embeddings in the sample file to match the schema:
+  ```
+  sed -i 's/text_embedding/dpr_embedding/g' sample-feed.jsonl
+  ```
+
 2. Upload .jsonl file to Vespa:
     ```
-    java -jar vespa-http-client-jar-with-dependencies.jar --file sample-feed.jsonl --endpoint http://localhost:8082
+    java -jar vespa-http-client-jar-with-dependencies.jar --file sample-feed.jsonl --endpoint http://localhost:7070
     ```
 
 ## References

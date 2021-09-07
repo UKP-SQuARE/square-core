@@ -1,6 +1,6 @@
 FROM python:3.7.6-slim-buster as base
 
-EXPOSE 8000
+EXPOSE 7000
 WORKDIR /app
 
 RUN pip install --upgrade pip
@@ -34,4 +34,4 @@ COPY logging.conf logging.conf
 
 CMD ["python" "run.py", "wait-vespa", "config"]
 CMD ["python" "run.py", "wait-vespa", "app"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "logging.conf"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7000", "--log-config", "logging.conf"]

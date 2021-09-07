@@ -62,6 +62,14 @@ class TestIndices:
         )
         assert response.status_code == 200
 
+    def test_set_document_embedding_not_found(self, client, dpr_index):
+        embedding = [1] * 769
+        response = client.post(
+            "/datastores/wiki/indices/{0}/embeddings/{1}".format(dpr_index.name, 9999),
+            json=embedding,
+        )
+        assert response.status_code == 404
+
     def test_upload_embeddings(self, client, dpr_index, embeddings_file):
         response = client.post(
             "/datastores/wiki/indices/{0}/embeddings/upload".format(dpr_index.name),

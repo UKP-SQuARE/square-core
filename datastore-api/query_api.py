@@ -26,7 +26,7 @@ def query(query_text, index="dpr", hits=10):
         "ranking.profile": index
     }
 
-    r = requests.post('http://localhost:8080/search/', json=json_request)
+    r = requests.post('http://localhost:7070/search/', json=json_request)
     response = r.json()
     return response
 

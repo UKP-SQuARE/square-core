@@ -96,25 +96,25 @@ async def put_index(
         if success_upload:
             return IndexResponse.from_index(new_index)
         else:
-            return Response(status_code=500)
+            raise HTTPException(status_code=500)
     else:
-        return Response(status_code=400)
+        raise HTTPException(status_code=400)
 
 
-# TODO Implement index status method.
-# @router.get("/{index_name}/status")
-# async def get_index_status(datastore_name: str = Path(...), index_name: str = Path(...)):
-#     index = await db.get_index(datastore_name, index_name)
-#     status = {"bm25": index["bm25"]}
-#     yql = "select * from sources {} where  id >= 0;".format(datastore_name)
-#     request = requests.get(settings.VESPA_APP_URL+ "/search/", params={"yql": yql})
-#    if requests.status_codes == 404:
-#         raise HTTPException(status_code=404, detail="Could not get index status")
-#     status["total"] =  request.json()["root"]["fields"]["totalCount"]
-#
-#    if not status["bm25"]:
-#        # get number of documents with embedding
-#     return status
+@router.get("/{index_name}/status")
+async def get_index_status(datastore_name: str = Path(...), index_name: str = Path(...)):
+    index = await db.get_index(datastore_name, index_name)
+    status = {"bm25": index.bm25}
+    yql = "select * from sources {} where  id > 0;".format(datastore_name)
+    request = requests.get(settings.VESPA_APP_URL + "/search/", params={"yql": yql})
+    if requests.status_codes == 404:
+        raise HTTPException(status_code=404, detail="Could not get index status")
+    status["total"] = request.json()["root"]["fields"]["totalCount"]
+
+    if not status["bm25"]:
+        pass
+        # TODO Get number of documents with embedding
+    return status
 
 
 @router.get(
@@ -299,9 +299,9 @@ async def delete_index(
         if success:
             return Response(status_code=204)
         else:
-            return Response(status_code=500)
+            raise HTTPException(status_code=500)
     else:
-        return Response(status_code=404)
+        raise HTTPException(status_code=404)
 
 
 @router.get(
@@ -325,7 +325,7 @@ async def get_document_embedding(
     # read embedding values from Vespa response
     if res.status_code == 200 and embedding_name in doc["fields"]:
         return DocumentEmbedding.from_vespa(doc, embedding_name)
-    return Response(status_code=404)
+    raise HTTPException(status_code=404)
 
 
 @router.post(
@@ -342,9 +342,11 @@ async def set_document_embedding(
     doc_id: str = Path(..., description="The id of the document"),
     embedding: List[float] = Body(..., description="The embedding for the document"),
 ):
+    # check whether document exists, vespa is not returning that information
+    if vespa_app.get_data(datastore_name, doc_id).status_code != 200:
+        raise HTTPException(status_code=404, detail="Document does not exist")
     embedding_name = Index.get_embedding_field_name(index_name)
     fields = {embedding_name: {"values": embedding}}
-    # TODO investigate, why create=False doesn't seem to work
     response = vespa_app.update_data(datastore_name, doc_id, fields)
     return JSONResponse(status_code=response.status_code, content=response.json)
 

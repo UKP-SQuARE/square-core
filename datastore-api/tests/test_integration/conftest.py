@@ -78,7 +78,7 @@ def dpr_index():
         yql_where_clause='([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(dpr_embedding,dpr_query_embedding)) or userQuery()',
         doc_encoder_model="facebook/dpr-ctx_encoder-single-nq-base",
         query_encoder_model="facebook/dpr-question_encoder-single-nq-base",
-        embedding_type="tensor<float>(x[769])",
+        embedding_type="tensor<bfloat16>(x[769])",
         hnsw={"distance_metric": "euclidean", "max_links_per_node": 16, "neighbors_to_explore_at_insert": 500},
         first_phase_ranking="closeness(dpr_embedding)",
         second_phase_ranking=None,

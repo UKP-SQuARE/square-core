@@ -38,10 +38,9 @@ class TestDocuments:
         response = client.delete("/datastores/wiki/documents/88888")
         assert response.status_code == 204
 
-    # TODO currently, 204 is always returned due to Vespa
-    # def test_delete_document_not_found(self, client):
-    #     response = client.delete("/datastores/wiki/documents/99999")
-    #     assert response.status_code == 404
+    def test_delete_document_not_found(self, client):
+        response = client.delete("/datastores/wiki/documents/99999")
+        assert response.status_code == 404
 
     def test_upload_documents(self, client, documents_file):
         response = client.post("/datastores/wiki/documents/upload", files={"file": documents_file})

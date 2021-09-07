@@ -94,6 +94,7 @@ def upload_documents(
     "",
     summary="Upload documents from a file at the given url to the datastore",
     response_model=UploadResponse,
+    status_code=201,
     responses={
         201: {"description": "Number of successfully uploaded documents to the datastore."},
         400: {"model": UploadResponse, "description": "Error during Upload"},
@@ -281,7 +282,7 @@ def delete_document(
         schema="wiki",
         data_id=doc_id,
     )
-    if response.status_code == 200:  # TODO Vespa isn't returning any useful status codes on delete
+    if response.status_code == 200:
         return Response(status_code=204)
     else:
         return JSONResponse(status_code=response.status_code, content=response.json)
