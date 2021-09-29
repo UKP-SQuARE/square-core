@@ -8,3 +8,9 @@ __pycache__/
 .es-data
 .DS_Store
 *.egg-info
+
+*.jar
+*.jsonl
+
+env
+.vscode

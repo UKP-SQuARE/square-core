@@ -1,0 +1,5 @@
+.vespa_application_config
+*.zip
+storage
+*.hdf5
+*.lock

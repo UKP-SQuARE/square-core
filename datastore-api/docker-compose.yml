@@ -1,0 +1,40 @@
+version: "3.1"
+
+services:
+  vespa:
+    image: vespaengine/vespa
+    container_name: vespa
+    hostname: vespa-container
+    privileged: true
+    ports:
+      - "7070:8080"
+      - "19071:19071"
+    volumes:
+      - ./storage/vespa/var:/opt/vespa/var
+      - ./storage/vespa/logs:/opt/vespa/logs
+
+  mongodb:
+    image: mongo:4.0
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./storage/db/data:/data/db
+
+  # datastore_api:
+  #   privileged: true
+  #   build: .
+  #   depends_on:
+  #     - vespa
+  #     - mongodb
+  #   ports:
+  #     - "7000:7000"
+  #   environment:
+  #     - VESPA_CONFIG_URL=http://vespa:19071
+  #     - VESPA_APP_URL=http://vespa:8080
+  #     - MONGODB_URL=mongodb://root:root@mongodb:27017/admin?retryWrites=true&w=majority
+  #     # Specify Model API
+  #     - MODEL_API_URL=http://localhost:8000/api
