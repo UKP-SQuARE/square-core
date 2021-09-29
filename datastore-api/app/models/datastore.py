@@ -59,6 +59,23 @@ class DatastoreFieldSet(BaseModel):
         return FieldSet(name=FIELDSET_NAME, fields=self.fields)
 
 
+class Datastore(BaseModel):
+    """Models one datastore schema."""
+    name: str
+    fields: List[DatastoreField]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "wiki",
+                "fields": [
+                    DatastoreField(name="title", type="string"),
+                    DatastoreField(name="text", type="string"),
+                ]
+            }
+        }
+
+
 class DatastoreRequest(Iterable, BaseModel):
     """Models a datastore as requested by the user."""
     __root__: List[DatastoreField]
