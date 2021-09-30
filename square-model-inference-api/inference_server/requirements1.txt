@@ -5,4 +5,6 @@ python-dotenv==0.17.1           # Required for .env configs
 sentencepiece==0.1.95
 torch==1.8.1
 sentence-transformers==1.2.0
+onnx==1.8.1
+future=0.18.2
 ElkJsonFormatter.tar.gz # Logging Formatter

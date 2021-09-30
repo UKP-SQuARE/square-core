@@ -1,9 +1,9 @@
 import pytest
 
 from fastapi.testclient import TestClient
-from pre_test_setup_for_docker_caching import TRANSFORMERS_TESTING_CACHE, TRANSFORMER_MODEL, SENTENCE_MODEL
+from pre_test_setup_for_docker_caching import TRANSFORMERS_TESTING_CACHE, TRANSFORMER_MODEL, SENTENCE_MODEL, ONNX_MODEL
 import torch
-
+import subprocess
 ## Due to import and config reasons, the environ is set in pre_test_setup_for_docker_caching !
 ## (because we import Transformer, which imports Model, imports PredictionOutput, which imports RETURN_PLAINTEXT_ARRAYS and this creates the starlette config.
 ## The config  is read by this point and starlette forbids overwriting it then)
@@ -23,6 +23,7 @@ from square_model_inference.models.request import PredictionRequest, Task
 from square_model_inference.inference.transformer import Transformer
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
+from square_model_inference.inference.onnx import Onnx
 
 
 @pytest.fixture(scope="session")
@@ -85,6 +86,32 @@ def test_adapter():
 @pytest.fixture(scope="class")
 def test_sentence_transformer():
     return SentenceTransformer(SENTENCE_MODEL, 1, True, 50)
+
+
+@pytest.fixture(scope="class")
+def test_onnx_sequence_classification():
+    onnx_path = "./onnx_models/german-bert/model.onnx"
+    return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+
+@pytest.fixture(scope="class")
+def test_onnx_token_classification():
+    onnx_path = "./onnx_models\\NER-bert\\model.onnx"
+    return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+
+@pytest.fixture(scope="class")
+def test_onnx_embedding():
+    onnx_path = "./onnx_models/bert-base-cased/model.onnx"
+    return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+
+@pytest.fixture(scope="class")
+def test_onnx_question_answering():
+    onnx_path = "./onnx_models/squad2-bert/model.onnx"
+    return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+
+@pytest.fixture(scope="class")
+def test_onnx_generation():
+    onnx_path = "./onnx_models/gpt2-generation/model.onnx"
+    return Onnx(onnx_path, "gpt2", 1, True, 50)
 
 @pytest.fixture()
 def prediction_request():
