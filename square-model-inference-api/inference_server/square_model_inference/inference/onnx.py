@@ -22,7 +22,7 @@ def to_numpy(x):
 class Onnx(Transformer):
     def __init__(self, model_path: str, model_name: str, batch_size: int, disable_gpu: bool,
                  max_input_size: int, **kwargs) -> None:
-        # This assumes that a corresponding huggingface transformer exists
+        # This assumes that a corresponding onnx file exists
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -67,6 +67,11 @@ class Onnx(Transformer):
         return final_prediction
 
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
+        """
+        Embeds the input from the request
+        :param request: The request containing input and optionally task kwargs like embedding method
+        :return: The embedding output
+        """
         embedding_mode = request.task_kwargs.get("embedding_mode", "mean")
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
             raise ValueError(
@@ -106,6 +111,11 @@ class Onnx(Transformer):
         return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
+        """
+        Classifies the given input
+        :param request: The request containing e.g. the input text
+        :return: The prediction output contaiing the predicted labels
+        """
         predictions = self._predict(request)
         task_outputs = {}
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
@@ -118,6 +128,11 @@ class Onnx(Transformer):
         return PredictionOutputForSequenceClassification(model_outputs=predictions, **task_outputs)
 
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
+        """
+        Classifies each token of the input text
+        :param request: The request containing e.g. the input text
+        :return: the classification output containing the labels
+        """
         predictions, features = self._predict(request, output_features=True)
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
@@ -132,7 +147,11 @@ class Onnx(Transformer):
         return PredictionOutputForTokenClassification(model_outputs=predictions, **task_outputs)
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
-        #ToDo
+        """
+        Generates a continuation for the given input sequence
+        :param request: The request with e.g. the input sequence
+        :return: The output containing the generated text
+        """
         max_length = request.task_kwargs.get("max_length", 20)
         eos_token_id = self.tokenizer.eos_token_id if self.tokenizer.eos_token_id is not None else self.tokenizer.pad_token_id
         task_outputs = {"generated_texts": []}
@@ -148,7 +167,7 @@ class Onnx(Transformer):
             unfinished_sequences = input_ids.new(input_ids.shape[0]).fill_(1)
             scores = ()
 
-            # greedy generation
+            # greedy generation (adapted from transformers/generation_utils.py)
             while cur_len < max_length:
                 features = {"input_ids": input_ids, "attention_mask": attention_mask}
 
@@ -156,8 +175,6 @@ class Onnx(Transformer):
 
                 next_token_logits = predictions["logits"][:, -1, :]
                 scores += (next_token_logits,)
-                # pre-process distribution
-                # next_tokens_scores = logits_processor(input_ids, next_token_logits)
 
                 # argmax
                 next_tokens = torch.argmax(next_token_logits, dim=-1)
