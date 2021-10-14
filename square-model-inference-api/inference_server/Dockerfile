@@ -22,6 +22,7 @@ COPY . ./
 RUN pip install pytest pytest-cov pytest-asyncio
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
+    --ignore ./test/test_onnx.py \
     --junitxml=test-reports/junit.xml \
     --cov \
     --cov-report=xml:test-reports/coverage.xml \
