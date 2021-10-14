@@ -12,6 +12,8 @@ class TestOnnxSequenceClassification:
                                        (["this is a test", "this is a test with a longer sentence"])],
                              ids=["single", "batch"])
     async def test_sequence_classification(self, prediction_request, test_onnx_sequence_classification, input):
+        if test_onnx_sequence_classification is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs["embedding_mode"] = "pooler"
 
@@ -28,6 +30,8 @@ class TestOnnxSequenceClassification:
                              ids=["single", "batch"])
     async def test_sequence_classification_regression(self, prediction_request,
                                                       test_onnx_sequence_classification, input):
+        if test_onnx_sequence_classification is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
 
@@ -47,6 +51,8 @@ class TestOnnxTokenClassification:
                                                [[None, 0, 1, 2, 3, None, None, None, None, None], [None, 0, 1, 2, 3, 4, 5, 6, 7, None]])],
                              ids=["single", "batch"])
     async def test_token_classification(self, prediction_request, test_onnx_token_classification, input, word_ids):
+        if test_onnx_token_classification is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
 
         prediction = await test_onnx_token_classification.predict(prediction_request, Task.token_classification)
@@ -63,6 +69,8 @@ class TestOnnxTokenClassification:
                                                         [[None, 0, 1, 2, 3, None, None, None, None, None], [None, 0, 1, 2, 3, 4, 5, 6, 7, None]])],
                              ids=["single", "batch"])
     async def test_token_classification_regression(self, prediction_request, test_onnx_token_classification, input, word_ids):
+        if test_onnx_token_classification is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
 
@@ -84,6 +92,8 @@ class TestOnnxEmbedding:
                                             (["this is a test", "this is a test with a longer sentence"], "pooler")],
                              )
     async def test_embedding(self, prediction_request, test_onnx_embedding, input, mode):
+        if test_onnx_embedding is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs = {"embedding_mode": mode}
 
@@ -95,6 +105,8 @@ class TestOnnxEmbedding:
 
     @pytest.mark.asyncio
     async def test_embedding_unknown_mode(self, prediction_request, test_onnx_embedding):
+        if test_onnx_embedding is None:
+            pytest.skip("No model found.")
         prediction_request.task_kwargs = {"embedding_mode": "this mode does not exist"}
 
         with pytest.raises(ValueError):
@@ -102,6 +114,8 @@ class TestOnnxEmbedding:
 
     @pytest.mark.asyncio
     async def test_forbid_is_preprocessed(self, prediction_request, test_onnx_embedding):
+        if test_onnx_embedding is None:
+            pytest.skip("No model found.")
         prediction_request.is_preprocessed = True
 
         with pytest.raises(ValueError):
@@ -109,6 +123,8 @@ class TestOnnxEmbedding:
 
     @pytest.mark.asyncio
     async def test_input_too_big(self, prediction_request, test_onnx_embedding):
+        if test_onnx_embedding is None:
+            pytest.skip("No model found.")
         prediction_request.input = ["test"]*1000
 
         with pytest.raises(ValueError):
@@ -123,6 +139,8 @@ class TestOnnxQuestionAnswering:
                                          ["What is a longer test?", "A test is a thing where you test. If it is longer you call it longer"]])],
                              )
     async def test_question_answering(self, prediction_request, test_onnx_question_answering, input):
+        if test_onnx_question_answering is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 1}
 
@@ -134,6 +152,8 @@ class TestOnnxQuestionAnswering:
 
     @pytest.mark.asyncio
     async def test_question_answering_topk(self, prediction_request, test_onnx_question_answering):
+        if test_onnx_question_answering is None:
+            pytest.skip("No model found.")
         input = [["What is a test?", "A test is a thing where you test."]]
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 2}
@@ -153,6 +173,8 @@ class TestOnnxGeneration:
                                        (["Generate text", "And a lot more text"])],
                              )
     async def test_generation(self, prediction_request, test_onnx_generation, input):
+        if test_onnx_generation is None:
+            pytest.skip("No model found.")
         prediction_request.input = input
 
         prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
@@ -160,6 +182,8 @@ class TestOnnxGeneration:
 
     @pytest.mark.asyncio
     async def test_generation_output_attention_and_scores(self, prediction_request, test_onnx_generation):
+        if test_onnx_generation is None:
+            pytest.skip("No model found.")
         prediction_request.model_kwargs = {
             "output_attentions": True,
             "output_scores": True
@@ -171,6 +195,8 @@ class TestOnnxGeneration:
     @pytest.mark.skip("No beam search implemented")
     @pytest.mark.asyncio
     async def test_generation_beam_sample_multiple_seqs(self, prediction_request, test_onnx_generation):
+        if test_onnx_generation is None:
+            pytest.skip("No model found.")
         prediction_request.task_kwargs = {
             "num_beams": 2,
             "do_sample": True,
