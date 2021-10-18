@@ -3,16 +3,16 @@ import logging
 from typing import Iterable, Union
 
 import requests
-from fastapi import APIRouter, File, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.param_functions import Body, Path, Query
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 
 from ..core.config import settings
 from ..core.utils import get_fields
-from ..core.vespa_app import vespa_app
 from ..models.document import Document
 from ..models.httperror import HTTPError
 from ..models.upload import UploadResponse, UploadUrlSet
+from .dependencies import get_storage_connector
 
 
 logger = logging.getLogger(__name__)
@@ -20,15 +20,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Documents"])
 
 
-def upload_document_file(datastore_name: str, file_name: str, file_iterator: Iterable) -> Union[int, UploadResponse]:
+async def upload_document_file(conn, datastore_name: str, file_name: str, file_iterator: Iterable) -> Union[int, UploadResponse]:
     total_docs = 0
     upload_batch = []
     for i, line in enumerate(file_iterator):
         try:
             doc_data = json.loads(line)
-            # get doc id
-            doc_id = doc_data.get("id")
-            upload_batch.append({"id": doc_id, "fields": doc_data})
+            upload_batch.append(Document(__root__=doc_data))
         except Exception:
             return total_docs, UploadResponse(
                 message=f"Unable to correctly decode document {i} in {file_name}.",
@@ -36,30 +34,24 @@ def upload_document_file(datastore_name: str, file_name: str, file_iterator: Ite
             )
         # if batch is full, upload and reset
         if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
-            vespa_responses = vespa_app.feed_batch(datastore_name, upload_batch)
-            for i, vespa_response in enumerate(vespa_responses):
-                logger.info(f"Upload of document {total_docs}: " + str(vespa_response.json))
-                if vespa_response.status_code != 200:
-                    errored_doc_id = upload_batch[i][1]
-                    return total_docs, UploadResponse(
-                        message=f"Unable to upload document with id {errored_doc_id} to datastore.",
-                        successful_uploads=total_docs,
-                    )
-                total_docs += 1
+            successes, errors = await conn.add_document_batch(datastore_name, upload_batch)
+            if errors > 0:
+                return total_docs, UploadResponse(
+                    message=f"Unable to upload {errors} documents from {file_name}.",
+                    successful_uploads=total_docs,
+                )
+            total_docs += successes
             upload_batch = []
 
     # upload remaining
     if len(upload_batch) > 0:
-        vespa_responses = vespa_app.feed_batch(datastore_name, upload_batch)
-        for i, vespa_response in enumerate(vespa_responses):
-            logger.info(f"Upload of document {total_docs}: " + str(vespa_response.json))
-            if vespa_response.status_code != 200:
-                errored_doc_id = upload_batch[i][1]
-                return total_docs, UploadResponse(
-                    message=f"Unable to upload document with id {errored_doc_id} to datastore.",
-                    successful_uploads=total_docs,
-                )
-            total_docs += 1
+        successes, errors = await conn.add_document_batch(datastore_name, upload_batch)
+        if errors > 0:
+            return total_docs, UploadResponse(
+                message=f"Unable to upload {errors} documents from {file_name}.",
+                successful_uploads=total_docs,
+            )
+        total_docs += successes
 
     return total_docs, None
 
@@ -75,12 +67,13 @@ def upload_document_file(datastore_name: str, file_name: str, file_iterator: Ite
         400: {"model": UploadResponse, "description": "Error during Upload"},
     },
 )
-def upload_documents(
+async def upload_documents(
     datastore_name: str = Path(..., description="The name of the datastore"),
     file: UploadFile = File(..., description="The filecontaining the documents to upload"),
+    conn=Depends(get_storage_connector),
     response: Response = None,
 ):
-    uploaded_docs, upload_response = upload_document_file(datastore_name, file.filename, file.file)
+    uploaded_docs, upload_response = await upload_document_file(conn, datastore_name, file.filename, file.file)
     if upload_response is not None:
         response.status_code = 400
         return upload_response
@@ -100,9 +93,10 @@ def upload_documents(
         400: {"model": UploadResponse, "description": "Error during Upload"},
     },
 )
-def upload_documents_from_urls(
+async def upload_documents_from_urls(
     datastore_name: str = Path(..., description="The name of the datastore"),
     urlset: UploadUrlSet = Body(..., description="The url containing the documents to upload"),
+    conn=Depends(get_storage_connector),
     api_response: Response = None,
 ):
     total_docs = 0  # total uploaded items across all files
@@ -117,7 +111,7 @@ def upload_documents_from_urls(
                     successful_uploads=total_docs,
                 )
 
-            uploaded_docs, upload_response = upload_document_file(datastore_name, url, r.iter_lines())
+            uploaded_docs, upload_response = await upload_document_file(conn, datastore_name, url, r.iter_lines())
             if upload_response is not None:
                 api_response.status_code = 400
                 return upload_response
@@ -146,23 +140,14 @@ async def get_all_documents(
     datastore_name: str = Path(..., description="The name of the datastore"),
     offset: int = Query(0, description="The offset to start the list"),
     size: int = Query(1000, description="The number of documents in one batch retrieved from vespa"),
+    conn=Depends(get_storage_connector),
 ):
     if size > settings.MAX_RETURN_ITEMS:
         return HTTPException(
             status_code=400, detail="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS)
         )
 
-    fields = await get_fields(datastore_name)
-    # TODO This assumes id is always numeric
-    batch = [(datastore_name, i) for i in range(offset, offset + size)]
-    vespa_responses = vespa_app.get_batch(batch)
-
-    def yield_documents():
-        for response in vespa_responses:
-            if response.status_code == 200:
-                yield Document.from_vespa(response.json, fields).json() + "\n"
-
-    return StreamingResponse(yield_documents(), media_type="application/octet-stream")
+    return StreamingResponse(conn.get_documents(datastore_name), media_type="application/octet-stream")
 
 
 @router.get(
@@ -180,21 +165,21 @@ async def get_all_documents(
 async def get_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
     doc_id: int = Path(..., description="The id of the document to retrieve"),
+    conn=Depends(get_storage_connector),
 ):
-    response = vespa_app.get_data(datastore_name, doc_id)
-    if response.status_code == 200:
-        fields = await get_fields(datastore_name)
-        return Document.from_vespa(response.json, fields)
+    result = await conn.get_document(datastore_name, doc_id)
+    if result is not None:
+        return result
     else:
-        raise HTTPException(status_code=response.status_code, detail=response.json)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find document.")
 
 
 @router.post(
     "/{doc_id}",
-    summary="Upload a document in the datastore",
+    summary="Upload a document to the datastore",
     description="Upload a document in the datastore by id",
     responses={
-        200: {"class": Response, "description": "The location of the uploaded document"},
+        201: {"description": "The document has been created successfully."},
         400: {"model": HTTPError, "description": "Failed to upload document"},
     },
 )
@@ -203,26 +188,24 @@ async def post_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
     doc_id: int = Path(..., description="The id of the document to upload"),
     document: Document = Body(..., description="The document to upload"),
+    conn=Depends(get_storage_connector),
 ):
+    # First, check if all fields in the uploaded document are valid.
     fields = await get_fields(datastore_name)
     if not all([field in fields for field in document]):
         raise HTTPException(
-            status_code=404,
+            status_code=400,
             detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
-    vespa_response = vespa_app.feed_data_point(
-        schema=datastore_name,
-        data_id=doc_id,
-        fields={**document, "id": doc_id},
-    )
-    if vespa_response.status_code == 200:
+    success = await conn.add_document(datastore_name, doc_id, document)
+    if success:
         return Response(
             status_code=201,
             headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
         )
     else:
-        raise HTTPException(status_code=vespa_response.status_code, detail=vespa_response.json)
+        raise HTTPException(status_code=500)
 
 
 @router.put(
@@ -230,7 +213,8 @@ async def post_document(
     summary="Update a document in the datastore",
     description="Update a document in the datastore by id",
     responses={
-        200: {"class": Response, "description": "The location of the updated document"},
+        200: {"description": "The document has been created successfully."},
+        201: {"description": "The document has been created successfully."},
         400: {"model": HTTPError, "description": "Failed to update document"},
     },
 )
@@ -239,20 +223,19 @@ async def update_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
     doc_id: int = Path(..., description="The id of the document to update"),
     document: Document = Body(..., description="The document to update"),
+    conn=Depends(get_storage_connector),
 ):
+    # First, check if all fields in the uploaded document are valid.
     fields = await get_fields(datastore_name)
     if not all([field in fields for field in document]):
         return HTTPException(
-            status_code=404,
+            status_code=400,
             detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
-    exists = vespa_app.get_data(datastore_name, doc_id).status_code == 200
-
-    doc_fields = {**document, "id": doc_id}
-    vespa_response = vespa_app.update_data(datastore_name, doc_id, doc_fields, create=True)
-    if vespa_response.status_code == 200:
-        if exists:
+    success, created = conn.update_document(datastore_name, doc_id, document)
+    if success:
+        if not created:
             status_code = 200
         else:
             status_code = 201
@@ -261,7 +244,7 @@ async def update_document(
             headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
         )
     else:
-        raise HTTPException(status_code=vespa_response.status_code, detail=vespa_response.json)
+        raise HTTPException(status_code=500)
 
 
 @router.delete(
@@ -273,16 +256,10 @@ async def update_document(
 def delete_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
     doc_id: int = Path(..., description="The id of the document to delete"),
+    conn=Depends(get_storage_connector),
 ):
-    # check whether document exists, vespa is not returning that information
-    if vespa_app.get_data(datastore_name, doc_id).status_code != 200:
-        raise HTTPException(status_code=404, detail="Document does not exist")
-
-    response = vespa_app.delete_data(
-        schema="wiki",
-        data_id=doc_id,
-    )
-    if response.status_code == 200:
+    success = conn.delete_document(datastore_name, doc_id)
+    if success:
         return Response(status_code=204)
     else:
-        return JSONResponse(status_code=response.status_code, content=response.json)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find document to delete.")

@@ -15,7 +15,7 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         index = {
             "mappings": {
-                "properties": {}
+                "properties": {},
             }
         }
         for field in datastore.fields:
@@ -48,10 +48,10 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         Converts a document object to a backend-specific object.
         """
-        return document.dict()
+        return document.__root__
 
     def convert_to_document(self, obj: object) -> Document:
         """
         Converts a backend-specific object to a document object.
         """
-        return Document(**obj)
+        return Document(__root__=obj)

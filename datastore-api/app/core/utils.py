@@ -1,13 +1,10 @@
-from vespa.package import QueryTypeField
-
-from ..models.datastore import FIELDSET_NAME
 from ..models.index import Index, IndexRequest
-from .db import db
+from ..routers.dependencies import get_storage_connector
 
 
 async def get_fields(datastore_name: str):
-    schema = await db.get_schema(datastore_name)
-    fields = schema.fieldsets[FIELDSET_NAME].fields
+    datastore = await get_storage_connector().get_datastore(datastore_name)
+    fields = [field.name for field in datastore.fields]
     return fields
 
 
@@ -38,10 +35,6 @@ async def create_index_object(datastore_name: str, index_name: str, index_reques
             }
         else:
             hnsw = None
-        # Every index that uses embeddings requires the type of the query embedding to be defined.
-        query_type_field_name = f"ranking.features.query({query_embedding_name})"
-        query_type_field_type = f"tensor<bfloat16>(x[{index_request.embedding_size}])"
-        await db.add_query_type_field(QueryTypeField(query_type_field_name, query_type_field_type))
 
     return Index(
         datastore_name=datastore_name,

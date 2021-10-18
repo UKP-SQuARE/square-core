@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from ..models.datastore import Datastore
 from ..models.document import Document
@@ -30,7 +30,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def add_datastore(self, datastore: Datastore):
+    async def add_datastore(self, datastore: Datastore) -> bool:
         """Adds a new datastore.
 
         Args:
@@ -74,7 +74,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def add_index(self, index: Index):
+    async def add_index(self, index: Index) -> bool:
         """Adds a new index.
 
         Args:
@@ -83,11 +83,14 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def update_index(self, index: Index) -> bool:
+    async def update_index(self, index: Index) -> Tuple[bool, bool]:
         """Updates an index.
 
         Args:
             index (Index): Index to update.
+
+        Returns:
+            Tuple[bool, bool]: A tuple containing the success of the update and a flag indicating whether an item was newly created.
         """
         pass
 
@@ -104,7 +107,7 @@ class BaseConnector(ABC):
     # --- Documents ---
 
     @abstractmethod
-    async def get_documents(self, datastore_name: str) -> List[Document]:
+    async def get_documents(self, datastore_name: str) -> Iterable[Document]:
         """Returns a list of all documents."""
         pass
 
@@ -119,7 +122,7 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def add_document(self, datastore_name: str, document_id: int, document: Document):
+    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> bool:
         """Adds a new document.
 
         Args:
@@ -130,13 +133,29 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def update_document(self, datastore_name: str, document_id: int, document: Document) -> bool:
+    async def add_document_batch(self, datastore_name: str, documents: Iterable[Document]) -> Tuple[int, int]:
+        """Adds a batch of documents.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+            documents (Iterable[Document]): Documents to add.
+
+        Returns:
+            Tuple[int, int]: A tuple containing the number of documents added and the number of error.
+        """
+        pass
+
+    @abstractmethod
+    async def update_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
         """Updates a document.
 
         Args:
             datastore_name (str): Name of the datastore.
             document_id (int): Id of the document.
             document (Document): Document to update.
+
+        Returns:
+            Tuple[bool, bool]: A tuple containing the success of the update and a flag indicating whether an item was newly created.
         """
         pass
 
@@ -156,6 +175,30 @@ class BaseConnector(ABC):
 
         Args:
             datastore_name (str): Name of the datastore.
+            document_id (int): Id of the document.
+        """
+        pass
+
+    # --- Search ---
+
+    @abstractmethod
+    async def search(self, datastore_name: str, query: str, n_hits=10):
+        """Searches for documents.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+            query (str): Query to search for.
+            n_hits (int): Number of hits to return.
+        """
+        pass
+
+    @abstractmethod
+    async def search_for_id(self, datastore_name: str, query: str, document_id: int):
+        """Searches for documents and selects the document with the given id from the results.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+            query (str): Query to search for.
             document_id (int): Id of the document.
         """
         pass

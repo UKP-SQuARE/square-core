@@ -1,11 +1,10 @@
 from typing import List
 
-from fastapi import APIRouter, Response, status
-from fastapi.param_functions import Body, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.param_functions import Body, Path
 
-from ..core.db import db
-from ..core.generate_package import package_generator
-from ..models.datastore import DatastoreRequest, DatastoreResponse
+from ..models.datastore import Datastore, DatastoreRequest
+from .dependencies import get_storage_connector
 
 
 router = APIRouter(tags=["Datastores"])
@@ -17,15 +16,16 @@ router = APIRouter(tags=["Datastores"])
     description="Get all datastores from the datastore API",
     responses={
         200: {
-            "model": List[DatastoreResponse],
+            "model": List[Datastore],
             "description": "List of all datastores",
         }
     },
-    response_model=List[DatastoreResponse],
+    response_model=List[Datastore],
 )
-async def get_all_datastores(limit: int = Query(200, description="Maximal number of datastores to retrieve.")):
-    schemas = await db.get_schemas(limit=limit)
-    return [DatastoreResponse.from_vespa(schema) for schema in schemas]
+async def get_all_datastores(
+    conn=Depends(get_storage_connector),
+):
+    return await conn.get_datastores()
 
 
 @router.get(
@@ -34,17 +34,20 @@ async def get_all_datastores(limit: int = Query(200, description="Maximal number
     description="Get a datastore by its name from the datastore API",
     responses={
         200: {
-            "model": DatastoreResponse,
+            "model": Datastore,
             "description": "The datastore information",
         }
     },
-    response_model=DatastoreResponse,
+    response_model=Datastore,
 )
-async def get_datastore(datastore_name: str = Path(..., description="The datastore name")):
-    schema = await db.get_schema(datastore_name)
+async def get_datastore(
+    datastore_name: str = Path(..., description="The datastore name"),
+    conn=Depends(get_storage_connector),
+):
+    schema = await conn.get_datastore(datastore_name)
     if schema is None:
         return Response(status_code=404)
-    return DatastoreResponse.from_vespa(schema)
+    return schema
 
 
 @router.put(
@@ -53,7 +56,7 @@ async def get_datastore(datastore_name: str = Path(..., description="The datasto
     description="Create a new datastore",
     responses={
         200: {
-            "model": DatastoreResponse,
+            "model": Datastore,
             "description": "The datastore information",
         },
         400: {
@@ -63,33 +66,31 @@ async def get_datastore(datastore_name: str = Path(..., description="The datasto
             "description": "Failed to create the datastore in vespa",
         },
     },
-    response_model=DatastoreResponse,
+    response_model=Datastore,
 )
 async def put_datastore(
     datastore_name: str = Path(..., description="The datastore name"),
     fields: DatastoreRequest = Body(..., description="The datastore fields"),
+    conn=Depends(get_storage_connector),
     response: Response = None,
 ):
     # Update if existing, otherwise add new
-    schema = await db.get_schema(datastore_name)
+    schema = await conn.get_datastore(datastore_name)
     success = False
     if schema is None:
-        schema = fields.to_vespa(datastore_name)
-        success = await db.add_schema(schema) is not None
+        schema = fields.to_datastore(datastore_name)
+        success = await conn.add_datastore(schema)
         response.status_code = status.HTTP_201_CREATED
     else:
-        schema = fields.to_vespa(datastore_name)
-        success = await db.update_schema(schema)
+        schema = fields.to_datastore(datastore_name)
+        success = await conn.update_datastore(schema)
         response.status_code = status.HTTP_200_OK
 
     if success:
-        success_upload = await package_generator.generate_and_upload()
-        if success_upload:
-            return DatastoreResponse.from_vespa(schema)
-        else:
-            return Response(status_code=500)
+        await conn.commit_changes()
+        return schema
     else:
-        return Response(status_code=400)
+        raise HTTPException(status_code=400)
 
 
 @router.delete(
@@ -106,13 +107,13 @@ async def put_datastore(
         },
     },
 )
-async def delete_datastore(datastore_name: str = Path(..., description="The datastore name")):
-    success = await db.delete_schema(datastore_name)
+async def delete_datastore(
+    datastore_name: str = Path(..., description="The datastore name"),
+    conn=Depends(get_storage_connector),
+):
+    success = await conn.delete_datastore(datastore_name)
     if success:
-        success_upload = await package_generator.generate_and_upload(allow_content_removal=True)
-        if success_upload:
-            return Response(status_code=204)
-        else:
-            return Response(status_code=500)
+        conn.commit_changes()
+        return Response(status_code=204)
     else:
         return Response(status_code=404)

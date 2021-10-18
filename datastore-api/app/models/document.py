@@ -24,11 +24,3 @@ class Document(Mapping, BaseModel):
                 "text": "Some text of the document."
             }
         }
-
-    @classmethod
-    def from_vespa(cls, doc: Dict, fields: List):
-        data = {"id": int(doc["id"].split(":")[-1])}
-        for field in doc["fields"]:
-            if field in fields:
-                data[field] = doc["fields"][field]
-        return cls(__root__=data)

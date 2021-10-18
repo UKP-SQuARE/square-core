@@ -5,19 +5,17 @@ from typing import List, Union
 import h5py
 import numpy as np
 import requests
-from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from ..core.config import settings
-from ..core.db import db
-from ..core.generate_package import package_generator
 from ..core.utils import create_index_object
-from ..core.vespa_app import vespa_app
 from ..models.embedding import DocumentEmbedding
 from ..models.httperror import HTTPError
 from ..models.index import Index, IndexRequest, IndexResponse
 from ..models.upload import UploadResponse, UploadUrlSet
+from .dependencies import get_storage_connector
 
 
 logger = logging.getLogger(__name__)
@@ -36,8 +34,11 @@ router = APIRouter(tags=["Indices"])
         }
     },
 )
-async def get_all_indices(datastore_name: str = Path(..., description="Datastore name")):
-    indices = await db.get_indices(datastore_name)
+async def get_all_indices(
+    datastore_name: str = Path(..., description="Datastore name"),
+    conn=Depends(get_storage_connector),
+):
+    indices = await conn.get_indices(datastore_name)
     return [IndexResponse.from_index(index) for index in indices]
 
 
@@ -56,8 +57,9 @@ async def get_all_indices(datastore_name: str = Path(..., description="Datastore
 async def get_index(
     datastore_name: str = Path(..., description="Name of the datastore"),
     index_name: str = Path(..., description="Name of the index"),
+    conn=Depends(get_storage_connector),
 ):
-    index = await db.get_index(datastore_name, index_name)
+    index = await conn.get_index(datastore_name, index_name)
     if index is None:
         raise HTTPException(status_code=404, detail="Index not found.")
     else:
@@ -79,31 +81,33 @@ async def put_index(
     datastore_name: str = Path(..., description="Name of the datastore"),
     index_name: str = Path(..., description="Name of the index"),
     index_request: IndexRequest = Body(..., description="The index configuration as IndexRequest"),
+    conn=Depends(get_storage_connector),
     response: Response = None,
 ):
-    index = await db.get_index(datastore_name, index_name)
+    index = await conn.get_index(datastore_name, index_name)
     if index is None:
         new_index = await create_index_object(datastore_name, index_name, index_request)
-        success = await db.add_index(new_index) is not None
+        success = await conn.add_index(new_index) is not None
         response.status_code = status.HTTP_201_CREATED
     else:
         new_index = await create_index_object(datastore_name, index_name, index_request)
-        success = await db.update_index(new_index)
+        success = await conn.update_index(new_index)
         response.status_code = status.HTTP_200_OK
 
     if success:
-        success_upload = await package_generator.generate_and_upload()
-        if success_upload:
-            return IndexResponse.from_index(new_index)
-        else:
-            raise HTTPException(status_code=500)
+        await conn.commit_changes()
+        return IndexResponse.from_index(new_index)
     else:
         raise HTTPException(status_code=400)
 
 
 @router.get("/{index_name}/status")
-async def get_index_status(datastore_name: str = Path(...), index_name: str = Path(...)):
-    index = await db.get_index(datastore_name, index_name)
+async def get_index_status(
+    datastore_name: str = Path(...),
+    index_name: str = Path(...),
+    conn=Depends(get_storage_connector),
+):
+    index = await conn.get_index(datastore_name, index_name)
     status = {"bm25": index.bm25}
     yql = "select * from sources {} where  id > 0;".format(datastore_name)
     request = requests.get(settings.VESPA_APP_URL + "/search/", params={"yql": yql})
@@ -137,23 +141,25 @@ async def get_document_embeddings(
             status_code=400, detail="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS)
         )
 
-    embedding_name = Index.get_embedding_field_name(index_name)
-    # TODO This assumes id is always numeric
-    batch = [(datastore_name, i) for i in range(offset, offset + size)]
-    vespa_responses = vespa_app.get_batch(batch)
-    ids, embs = [], []
-    for response in vespa_responses:
-        if response.status_code == 200 and embedding_name in response.json["fields"]:
-            doc_embedding = DocumentEmbedding.from_vespa(response.json, embedding_name)
-            ids.append(doc_embedding.id)
-            embs.append(doc_embedding.embedding)
+    # TODO implement GET all embeddings
+    raise NotImplementedError()
+    # embedding_name = Index.get_embedding_field_name(index_name)
+    # # TODO This assumes id is always numeric
+    # batch = [(datastore_name, i) for i in range(offset, offset + size)]
+    # vespa_responses = vespa_app.get_batch(batch)
+    # ids, embs = [], []
+    # for response in vespa_responses:
+    #     if response.status_code == 200 and embedding_name in response.json["fields"]:
+    #         doc_embedding = DocumentEmbedding.from_vespa(response.json, embedding_name)
+    #         ids.append(doc_embedding.id)
+    #         embs.append(doc_embedding.embedding)
 
-    buffer = BytesIO()
-    with h5py.File(buffer, "w") as f:
-        f.create_dataset("ids", data=np.array(ids, dtype="S"), compression="gzip")
-        f.create_dataset("embeddings", data=np.array(embs), compression="gzip")
-    buffer.seek(0)
-    return StreamingResponse(buffer, media_type="application/octet-stream")
+    # buffer = BytesIO()
+    # with h5py.File(buffer, "w") as f:
+    #     f.create_dataset("ids", data=np.array(ids, dtype="S"), compression="gzip")
+    #     f.create_dataset("embeddings", data=np.array(embs), compression="gzip")
+    # buffer.seek(0)
+    # return StreamingResponse(buffer, media_type="application/octet-stream")
 
 
 def upload_embeddings_file(
@@ -162,44 +168,46 @@ def upload_embeddings_file(
     file_name: str = Query(..., description="Name of the file containing embeddings to upload"),
     file_buffer=Body(...),
 ) -> Union[int, UploadResponse]:
-    total_docs = 0
+    # TODO: implement embedding upload
+    raise NotImplementedError()
+    # total_docs = 0
 
-    with h5py.File(file_buffer, "r") as f:
-        ids = f["ids"]
-        embs = f["embeddings"]
-        upload_batch = []
-        for doc_id_str, embedding in zip(ids, embs):
-            doc_id = doc_id_str.astype(str)
-            fields = {embedding_name: {"values": embedding[:].tolist()}}
-            upload_batch.append((datastore_name, doc_id, fields, False))
-            # if batch is full, upload and reset
-            if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
-                vespa_responses = vespa_app.update_batch(upload_batch)
-                for i, vespa_response in enumerate(vespa_responses):
-                    logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
-                    if vespa_response.status_code != 200:
-                        errored_doc_id = upload_batch[i][1]
-                        return total_docs, UploadResponse(
-                            message=f"Unable to find document with id {errored_doc_id} in datastore.",
-                            successful_uploads=total_docs,
-                        )
-                    total_docs += 1
-                upload_batch = []
+    # with h5py.File(file_buffer, "r") as f:
+    #     ids = f["ids"]
+    #     embs = f["embeddings"]
+    #     upload_batch = []
+    #     for doc_id_str, embedding in zip(ids, embs):
+    #         doc_id = doc_id_str.astype(str)
+    #         fields = {embedding_name: {"values": embedding[:].tolist()}}
+    #         upload_batch.append((datastore_name, doc_id, fields, False))
+    #         # if batch is full, upload and reset
+    #         if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
+    #             vespa_responses = vespa_app.update_batch(upload_batch)
+    #             for i, vespa_response in enumerate(vespa_responses):
+    #                 logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
+    #                 if vespa_response.status_code != 200:
+    #                     errored_doc_id = upload_batch[i][1]
+    #                     return total_docs, UploadResponse(
+    #                         message=f"Unable to find document with id {errored_doc_id} in datastore.",
+    #                         successful_uploads=total_docs,
+    #                     )
+    #                 total_docs += 1
+    #             upload_batch = []
 
-        # upload remaining
-        if len(upload_batch) > 0:
-            vespa_responses = vespa_app.update_batch(upload_batch)
-            for i, vespa_response in enumerate(vespa_responses):
-                logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
-                if vespa_response.status_code != 200:
-                    errored_doc_id = upload_batch[i][1]
-                    return total_docs, UploadResponse(
-                        message=f"Unable to find document with id {errored_doc_id} in datastore.",
-                        successful_uploads=total_docs,
-                    )
-                total_docs += 1
+    #     # upload remaining
+    #     if len(upload_batch) > 0:
+    #         vespa_responses = vespa_app.update_batch(upload_batch)
+    #         for i, vespa_response in enumerate(vespa_responses):
+    #             logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
+    #             if vespa_response.status_code != 200:
+    #                 errored_doc_id = upload_batch[i][1]
+    #                 return total_docs, UploadResponse(
+    #                     message=f"Unable to find document with id {errored_doc_id} in datastore.",
+    #                     successful_uploads=total_docs,
+    #                 )
+    #             total_docs += 1
 
-    return total_docs, None
+    # return total_docs, None
 
 
 @router.post(
@@ -287,19 +295,13 @@ def upload_document_embeddings_from_urls(
 async def delete_index(
     datastore_name: str = Path(..., description="The name of the datastore"),
     index_name: str = Path(..., description="The name of the index"),
+    conn=Depends(get_storage_connector),
 ):
-    success = await db.delete_index(datastore_name, index_name)
-    # also delete the corresponding query type field if available
-    query_embedding_name = Index.get_query_embedding_field_name(index_name)
-    query_type_field_name = f"ranking.features.query({query_embedding_name})"
-    await db.delete_query_type_field(query_type_field_name)
+    success = await conn.delete_index(datastore_name, index_name)
 
     if success:
-        success &= await package_generator.generate_and_upload(allow_content_removal=True)
-        if success:
-            return Response(status_code=204)
-        else:
-            raise HTTPException(status_code=500)
+        await conn.commit_changes()
+        return Response(status_code=204)
     else:
         raise HTTPException(status_code=404)
 
@@ -319,13 +321,15 @@ async def get_document_embedding(
     index_name: str = Path(..., description="The name of the index"),
     doc_id: str = Path(..., description="The id of the document"),
 ):
-    res = vespa_app.get_data(datastore_name, doc_id)
-    doc = res.json
-    embedding_name = Index.get_embedding_field_name(index_name)
-    # read embedding values from Vespa response
-    if res.status_code == 200 and embedding_name in doc["fields"]:
-        return DocumentEmbedding.from_vespa(doc, embedding_name)
-    raise HTTPException(status_code=404)
+    # TODO implement GET embedding
+    raise NotImplementedError()
+    # res = vespa_app.get_data(datastore_name, doc_id)
+    # doc = res.json
+    # embedding_name = Index.get_embedding_field_name(index_name)
+    # # read embedding values from Vespa response
+    # if res.status_code == 200 and embedding_name in doc["fields"]:
+    #     return DocumentEmbedding.from_vespa(doc, embedding_name)
+    # raise HTTPException(status_code=404)
 
 
 @router.post(
@@ -342,13 +346,15 @@ async def set_document_embedding(
     doc_id: str = Path(..., description="The id of the document"),
     embedding: List[float] = Body(..., description="The embedding for the document"),
 ):
-    # check whether document exists, vespa is not returning that information
-    if vespa_app.get_data(datastore_name, doc_id).status_code != 200:
-        raise HTTPException(status_code=404, detail="Document does not exist")
-    embedding_name = Index.get_embedding_field_name(index_name)
-    fields = {embedding_name: {"values": embedding}}
-    response = vespa_app.update_data(datastore_name, doc_id, fields)
-    return JSONResponse(status_code=response.status_code, content=response.json)
+    # TODO implement POST embedding
+    raise NotImplementedError()
+    # # check whether document exists, vespa is not returning that information
+    # if vespa_app.get_data(datastore_name, doc_id).status_code != 200:
+    #     raise HTTPException(status_code=404, detail="Document does not exist")
+    # embedding_name = Index.get_embedding_field_name(index_name)
+    # fields = {embedding_name: {"values": embedding}}
+    # response = vespa_app.update_data(datastore_name, doc_id, fields)
+    # return JSONResponse(status_code=response.status_code, content=response.json)
 
 
 # TODO
