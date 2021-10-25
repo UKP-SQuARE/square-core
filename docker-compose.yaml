@@ -36,6 +36,12 @@ services:
       - 8003:8003
     env_file:
       - ./skills/qa-boolq-skill/.env
+  commonsense_qa_skill:
+    build: ./skills/qa-commonsense-qa-skill/.
+    ports:
+      - 8005:8005
+    env_file:
+      - ./skills/qa-commonsense-qa-skill/.env
   naturalqa_retrieve_span_skill:
     build: ./skills/qa-retrieve-span-skill/.
     ports:
