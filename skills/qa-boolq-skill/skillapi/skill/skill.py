@@ -88,6 +88,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     # Call Model API
     prepared_input = [request.query]  # Change as needed
+    if request.skill_args.get("context", None) is not None:
+        prepared_input = [prepared_input[0] + " " + request.skill_args["context"]]
     model_request = {  # Fill as needed
         "input": prepared_input,
         "preprocessing_kwargs": {},
