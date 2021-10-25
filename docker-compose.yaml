@@ -30,6 +30,12 @@ services:
       - 80:80
 
   ### Skills
+  boolq_skill:
+    build: ./skills/qa-boolq-skill/.
+    ports:
+      - 8003:8003
+    env_file:
+      - ./skills/qa-boolq-skill/.env
   naturalqa_retrieve_span_skill:
     build: ./skills/qa-retrieve-span-skill/.
     ports:
