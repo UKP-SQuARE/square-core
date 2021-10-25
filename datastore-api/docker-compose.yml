@@ -11,6 +11,14 @@ services:
     ports:
       - 9200:9200
 
+  faiss-rest:
+    image: kwang2049/faiss-instant
+    container_name: faiss-rest
+    volumes:
+      - ./resources:/opt/faiss-instant/resources
+    ports:
+      - 7010:5000
+
   # datastore_api:
   #   privileged: true
   #   build: .

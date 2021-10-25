@@ -4,6 +4,7 @@ from typing import Iterable, List, Optional, Tuple
 from ..models.datastore import Datastore
 from ..models.document import Document
 from ..models.index import Index
+from ..models.query import QueryResult
 from .base_class_converter import BaseClassConverter
 
 
@@ -122,6 +123,16 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
+    async def get_document_batch(self, datastore_name: str, document_ids: List[int]) -> List[Document]:
+        """Returns a batch of documents by id.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+            document_ids (List[int]): Ids of the documents.
+        """
+        pass
+
+    @abstractmethod
     async def add_document(self, datastore_name: str, document_id: int, document: Document) -> bool:
         """Adds a new document.
 
@@ -182,7 +193,7 @@ class BaseConnector(ABC):
     # --- Search ---
 
     @abstractmethod
-    async def search(self, datastore_name: str, query: str, n_hits=10):
+    async def search(self, datastore_name: str, query: str, n_hits=10) -> List[QueryResult]:
         """Searches for documents.
 
         Args:

@@ -10,10 +10,9 @@ from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from ..core.config import settings
-from ..core.utils import create_index_object
 from ..models.embedding import DocumentEmbedding
 from ..models.httperror import HTTPError
-from ..models.index import Index, IndexRequest, IndexResponse
+from ..models.index import Index, IndexRequest
 from ..models.upload import UploadResponse, UploadUrlSet
 from .dependencies import get_storage_connector
 
@@ -30,7 +29,7 @@ router = APIRouter(tags=["Indices"])
     responses={
         200: {
             "description": "List of all indices found",
-            "model": List[IndexResponse],
+            "model": List[Index],
         }
     },
 )
@@ -39,7 +38,7 @@ async def get_all_indices(
     conn=Depends(get_storage_connector),
 ):
     indices = await conn.get_indices(datastore_name)
-    return [IndexResponse.from_index(index) for index in indices]
+    return indices
 
 
 @router.get(
@@ -47,7 +46,7 @@ async def get_all_indices(
     summary="Get an index by its name",
     description="Returns an index for a datastore given its name.",
     responses={
-        200: {"model": IndexResponse, "description": "The requested index"},
+        200: {"model": Index, "description": "The requested index"},
         404: {
             "description": "The requested index does not exist",
             "model": HTTPError,
@@ -63,7 +62,7 @@ async def get_index(
     if index is None:
         raise HTTPException(status_code=404, detail="Index not found.")
     else:
-        return IndexResponse.from_index(index)
+        return index
 
 
 @router.put(
@@ -71,8 +70,8 @@ async def get_index(
     summary="Creates a new index or updates it if it exists",
     description="Creates a new index in  the specified datastore of a index with that name allready exists it is updated to the given configuration",
     responses={
-        200: {"model": IndexResponse, "description": "The configuration of the updated index"},
-        201: {"model": IndexResponse, "description": "The configuration of the created index"},
+        200: {"model": Index, "description": "The configuration of the updated index"},
+        201: {"model": Index, "description": "The configuration of the created index"},
         400: {"model": HTTPError, "description": "The creation of the index failed in the API database"},
         500: {"model": HTTPError, "description": "The update of the index failed in VESPA"},
     },
@@ -86,17 +85,17 @@ async def put_index(
 ):
     index = await conn.get_index(datastore_name, index_name)
     if index is None:
-        new_index = await create_index_object(datastore_name, index_name, index_request)
+        new_index = index_request.to_index(datastore_name, index_name)
         success = await conn.add_index(new_index) is not None
         response.status_code = status.HTTP_201_CREATED
     else:
-        new_index = await create_index_object(datastore_name, index_name, index_request)
+        new_index = index_request.to_index(datastore_name, index_name)
         success = await conn.update_index(new_index)
         response.status_code = status.HTTP_200_OK
 
     if success:
         await conn.commit_changes()
-        return IndexResponse.from_index(new_index)
+        return new_index
     else:
         raise HTTPException(status_code=400)
 

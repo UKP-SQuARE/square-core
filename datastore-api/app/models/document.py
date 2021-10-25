@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from pydantic import BaseModel
 

@@ -1,6 +1,9 @@
+from typing import List
+
 from ...models.datastore import Datastore, DatastoreField
 from ...models.document import Document
 from ...models.index import Index
+from ...models.query import QueryResult
 from ..base_class_converter import BaseClassConverter
 
 
@@ -55,3 +58,14 @@ class ElasticsearchClassConverter(BaseClassConverter):
         Converts a backend-specific object to a document object.
         """
         return Document(__root__=obj)
+
+    def convert_to_query_results(self, obj: object) -> List[QueryResult]:
+        """
+        Converts a backend-specific object to a list of query results.
+        """
+        results = []
+        for hit in obj["hits"]["hits"]:
+            doc = self.convert_to_document(hit["_source"])
+            results.append(QueryResult(document=doc, score=hit["_score"]))
+
+        return results

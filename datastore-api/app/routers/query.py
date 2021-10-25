@@ -1,14 +1,13 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.param_functions import Path, Query
 
 from ..core.model_api import encode_query
-from ..core.utils import get_fields
 from ..models.httperror import HTTPError
-from ..models.index import Index
-from ..models.query import QueryResult, QueryResultDocument
-from .dependencies import get_storage_connector
+from ..models.query import QueryResult
+from .dependencies import get_search_client, get_storage_connector
+from .utils import get_fields
 
 
 router = APIRouter(tags=["Query"])
@@ -20,9 +19,9 @@ router = APIRouter(tags=["Query"])
     description="Searches the given datastore with the search strategy specified by the given index \
             and if necessery encodes the query with the specified encoder",
     response_description="The top-K documents",
-    # response_model=QueryResult,  # TODO
+    response_model=List[QueryResult],
     responses={
-        200: {"model": QueryResult, "description": "The top-K documents"},
+        200: {"model": List[QueryResult], "description": "The top-K documents"},
         404: {"model": HTTPError, "description": "The datastore or index does not exist"},
         500: {"model": HTTPError, "description": "Model API error"},
     },
@@ -33,9 +32,9 @@ async def search(
     query: str = Query(..., description="The query string."),
     top_k: int = Query(40, description="Number of documents to retrieve."),
     conn=Depends(get_storage_connector),
+    search_client=Depends(get_search_client),
 ):
     if index_name:
-        # TODO do dense retrieval stuff
         index = await conn.get_index(datastore_name, index_name)
         if index is None:
             raise HTTPException(status_code=404, detail="Datastore or index not found.")
@@ -44,16 +43,10 @@ async def search(
         except Exception:
             raise HTTPException(status_code=500, detail="Model API error.")
 
-    return await conn.search(datastore_name, query, n_hits=top_k)
-    # query_embedding_name = Index.get_query_embedding_field_name(index)
-    # body = {
-    #     "query": query,
-    #     "type": "any",
-    #     "yql": f"select * from sources {datastore_name} where {index.yql_where_clause};",
-    #     "ranking.profile": index_name,
-    #     f"ranking.features.query({query_embedding_name})": query_embedding,
-    #     "hits": top_k,
-    # }
+        return await search_client.search(datastore_name, index_name, query_embedding, top_k)
+
+    else:
+        return await conn.search(datastore_name, query, n_hits=top_k)
 
     # TODO convert to model object
     # vespa_response = vespa_app.query(body=body)
@@ -72,7 +65,7 @@ async def search(
     # response_model=QueryResultDocument,  # TODO
     responses={
         200: {
-            "model": QueryResultDocument,
+            "model": QueryResult,
             "description": "The score between the query and the documnt wiith the given id",
         },
         404: {"model": HTTPError, "description": "The datastore or index does not exist"},

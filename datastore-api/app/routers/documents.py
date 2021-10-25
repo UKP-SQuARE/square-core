@@ -8,11 +8,11 @@ from fastapi.param_functions import Body, Path, Query
 from fastapi.responses import StreamingResponse
 
 from ..core.config import settings
-from ..core.utils import get_fields
 from ..models.document import Document
 from ..models.httperror import HTTPError
 from ..models.upload import UploadResponse, UploadUrlSet
 from .dependencies import get_storage_connector
+from .utils import get_fields
 
 
 logger = logging.getLogger(__name__)

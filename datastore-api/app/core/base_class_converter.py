@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 from ..models.datastore import Datastore
 from ..models.document import Document
 from ..models.index import Index
+from ..models.query import QueryResult
 
 
 class BaseClassConverter(ABC):
@@ -49,5 +51,12 @@ class BaseClassConverter(ABC):
     def convert_to_document(self, obj: object) -> Document:
         """
         Converts a backend-specific object to a document object.
+        """
+        pass
+
+    @abstractmethod
+    def convert_to_query_results(self, obj: object) -> List[QueryResult]:
+        """
+        Converts a backend-specific object to a list of query results.
         """
         pass

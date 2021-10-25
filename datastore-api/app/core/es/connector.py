@@ -8,6 +8,7 @@ from elasticsearch.helpers import async_bulk, async_scan
 from ...models.datastore import Datastore
 from ...models.document import Document
 from ...models.index import Index
+from ...models.query import QueryResult
 from ..base_connector import BaseConnector
 from .class_converter import ElasticsearchClassConverter
 
@@ -43,7 +44,8 @@ class ElasticsearchConnector(BaseConnector):
         datastores = []
         indices = await self.es.indices.get(index="*-docs")
         for name, obj in indices.items():
-            datastores.append(self.converter.convert_to_datastore(name, obj))
+            display_name = name[: -len("-docs")]  # remove the "-docs" suffix
+            datastores.append(self.converter.convert_to_datastore(display_name, obj))
 
         return datastores
 
@@ -213,6 +215,17 @@ class ElasticsearchConnector(BaseConnector):
         except elasticsearch.exceptions.NotFoundError:
             return None
 
+    async def get_document_batch(self, datastore_name: str, document_ids: List[int]) -> List[Document]:
+        """Returns a batch of documents by id.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+            document_ids (List[int]): Ids of the documents.
+        """
+        docs_index = self._datastore_docs_index_name(datastore_name)
+        results = await self.es.mget(index=docs_index, body={"ids": document_ids})
+        return [self.converter.convert_to_document(doc["_source"]) for doc in results["docs"]]
+
     async def add_document(self, datastore_name: str, document_id: int, document: Document) -> bool:
         """Adds a new document.
 
@@ -297,7 +310,7 @@ class ElasticsearchConnector(BaseConnector):
 
     # --- Search ---
 
-    async def search(self, datastore_name: str, query: str, n_hits=10):
+    async def search(self, datastore_name: str, query: str, n_hits=10) -> List[QueryResult]:
         """Searches for documents.
 
         Args:
@@ -314,7 +327,8 @@ class ElasticsearchConnector(BaseConnector):
             },
             "size": n_hits,
         }
-        return await self.es.search(index=docs_index, body=search_body)
+        result = await self.es.search(index=docs_index, body=search_body)
+        return self.converter.convert_to_query_results(result)
 
     async def search_for_id(self, datastore_name: str, query: str, document_id: int):
         """Searches for documents and selects the document with the given id from the results.
