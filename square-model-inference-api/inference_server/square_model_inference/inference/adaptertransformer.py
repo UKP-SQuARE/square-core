@@ -35,17 +35,27 @@ class AdapterTransformer(Transformer):
         We parse the hub index to extract all names and then load each model.
         """
         logger.info("Loading all available adapters")
-        adapter_infos = [info for info in list_adapters(source="ah") if info.model_name==model_name]
-        adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in adapter_infos)
-        for adapter in adapters:
-            logger.debug(f"Loading adapter {adapter}")
-            try:
-                self.model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=transformers_cache)
-            except RuntimeError as e:
-                if "Error(s) in loading state_dict" in e.args[0]:
-                    logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
-                else:
-                    raise e
+        adapter_infos = []
+        for source in ["ah", "hf"]:
+            adapter_infos = [info for info in list_adapters(source=source) if info.model_name==model_name]
+            if source == "ah":
+                adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in adapter_infos)
+            elif source == "hf":
+                adapters = set(f"{adapter_info.adapter_id}" for adapter_info in adapter_infos if adapter_info.adapter_id.startswith("AdapterHub"))
+            for adapter in adapters:
+                logger.debug(f"Loading adapter {adapter}")
+                try:
+                    self.model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=transformers_cache, source=source)
+                except RuntimeError as e:
+                    if "Error(s) in loading state_dict" in e.args[0]:
+                        logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
+                    else:
+                        raise e
+                except AttributeError as e:
+                    if "Given head type " in e.args[0]:
+                        logger.debug(f"Could not load {adapter} due to unknown head type:\n{e.args[0]}")
+                    else:
+                        raise e
         # Move all freshly loaded adapter weights to the same device as the model
         self.model.to(self.model.device)
 
@@ -70,12 +80,14 @@ class AdapterTransformer(Transformer):
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         # We only have to change the label2id mapping from config.label2id (what super() uses) to the mapping
         # of the chosen head
+        logger.info(f"sequence classification request:\n{request.json()}")
         prediction = super()._sequence_classification(request)
 
         label2id = self.model.config.prediction_heads[request.adapter_name]["label2id"]
         id2label = {v:k for k,v in label2id.items()}
         prediction.id2label = id2label
 
+        logger.info(f"sequence classification prediction:\n{prediction}")
         return prediction
 
     async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
