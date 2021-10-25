@@ -100,6 +100,7 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+  
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -229,6 +230,370 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./square-model-inference-api/inference_server
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  qa-boolq-skill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="ukpsquare/square-skills-boolq"
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-boolq_skill-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-boolq_skill-
+            ${{ runner.os }}-buildx-
+
+      - name: Build test image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-boolq-skill
+          target: test
+          load: true
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+        # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Retrieve Test Reports
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          path: /app/test-reports
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: boolq-skill-test-reports
+          path: ${{ steps.extract.outputs.destination }}/test-reports
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          check_name: BoolQ Skill Test Report
+          fail_on_failure: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-boolq-skill
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  qa-commonsense-qa-skill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="ukpsquare/square-skills-commonsense-qa"
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-commonsense_qa_skill-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-commonsense_qa_skill-
+            ${{ runner.os }}-buildx-
+
+      - name: Build test image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-commonsense-qa-skill
+          target: test
+          load: true
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+        # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Retrieve Test Reports
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          path: /app/test-reports
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: commonsense-qa-skill-test-reports
+          path: ${{ steps.extract.outputs.destination }}/test-reports
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          check_name: CommonsenseQA Skill Test Report
+          fail_on_failure: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-commonsense-qa-skill
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  squad-v2-skill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="ukpsquare/square-skills-squad-v2"
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-squad_v2_skill-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-squad_v2_skill-
+            ${{ runner.os }}-buildx-
+
+      - name: Build test image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-squad-v2-skill
+          target: test
+          load: true
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+        # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Retrieve Test Reports
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          path: /app/test-reports
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: model_api-test-reports
+          path: ${{ steps.extract.outputs.destination }}/test-reports
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          check_name: Squad V2 Skill Test Report
+          fail_on_failure: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-squad-v2-skill
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  retrieve-span-skill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="ukpsquare/square-skills-retrieve-span"
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-retrieve_span_skill-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-retrieve_span_skill-
+            ${{ runner.os }}-buildx-
+
+      - name: Build test image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-retrieve-span-skill
+          target: test
+          load: true
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+        # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Retrieve Test Reports
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          path: /app/test-reports
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: model_api-test-reports
+          path: ${{ steps.extract.outputs.destination }}/test-reports
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          check_name: Retrieve Span Test Report
+          fail_on_failure: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-retrieve-span-skill
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
