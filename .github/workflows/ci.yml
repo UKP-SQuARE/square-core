@@ -336,7 +336,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   qa-commonsense-qa-skill:
-    rruns-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
