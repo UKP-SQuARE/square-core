@@ -31,24 +31,28 @@ services:
 
   ### Skills
   boolq_skill:
+    image: ukpsquare/square-skills-boolq:latest
     build: ./skills/qa-boolq-skill/.
     ports:
       - 8003:8003
     env_file:
       - ./skills/qa-boolq-skill/.env
   squad_v2_skill:
+    image: ukpsquare/square-skills-squad-v2:latest
     build: ./skills/qa-squad-v2-skill/.
     ports:
       - 8004:8004
     env_file:
       - ./skills/qa-squad-v2-skill/.env
   commonsense_qa_skill:
+    image: ukpsquare/square-skills-commonsense-qa:latest
     build: ./skills/qa-commonsense-qa-skill/.
     ports:
       - 8005:8005
     env_file:
       - ./skills/qa-commonsense-qa-skill/.env
   naturalqa_retrieve_span_skill:
+    image: ukpsquare/square-skills-retrieve-span:latest
     build: ./skills/qa-retrieve-span-skill/.
     ports:
       - 8777:8000
