@@ -36,6 +36,12 @@ services:
       - 8003:8003
     env_file:
       - ./skills/qa-boolq-skill/.env
+  squad_v2_skill:
+    build: ./skills/qa-squad-v2-skill/.
+    ports:
+      - 8004:8004
+    env_file:
+      - ./skills/qa-squad-v2-skill/.env
   commonsense_qa_skill:
     build: ./skills/qa-commonsense-qa-skill/.
     ports:
