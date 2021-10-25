@@ -489,7 +489,7 @@ jobs:
         uses: mikepenz/action-junit-report@v2
         with:
           report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
-          check_name: Model API Test Report
+          check_name: Squad V2 Skill Test Report
           fail_on_failure: true
 
       - name: Login to Docker Hub
@@ -580,7 +580,7 @@ jobs:
         uses: mikepenz/action-junit-report@v2
         with:
           report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
-          check_name: Model API Test Report
+          check_name: Retrieve Span Test Report
           fail_on_failure: true
 
       - name: Login to Docker Hub
