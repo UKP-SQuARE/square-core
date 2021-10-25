@@ -12,7 +12,7 @@ environ["DATA_API_URL"] = DATA_API_URL
 
 from main import app
 
-model_api_response_json = json.load(open("tests/model_api_question_answering_response.json"))
+model_api_response_json = json.load(open("tests/model_api_response.json.json"))
 
 @pytest.fixture()
 def test_app():
