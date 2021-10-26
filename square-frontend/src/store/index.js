@@ -144,21 +144,6 @@ export default new Vuex.Store({
     deleteSkill(context, { skillId }) {
       return deleteSkill(skillId, context.state.jwt)
         .then(() => context.dispatch("updateSkills"))
-    },
-    //WebSocket actions
-    SOCKET_query(context, { question, options }) {
-      // we get these as strings; parse them back to int
-      options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
-      options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      context.commit("setAnsweredQuestion", { results: [], question: question })
-      context.commit("setQueryOptions", { queryOptions: options })
-      this._vm.$socket.client.emit("query", { question: question, options: options })
-    },
-    SOCKET_train(context, { id, train_file, dev_file }) {
-      this._vm.$socket.client.emit("train", { id: id, train_file: train_file, dev_file: dev_file, jwt: context.state.jwt });
-    },
-    SOCKET_unpublish(context, { id }) {
-      this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });
     }
   },
 
