@@ -119,34 +119,22 @@ export default {
   methods: {
     askQuestion() {
       if (this.inputQuestion.length > 0) {
-        this.showEmptyWarning = false;
-        this.waitingQuery = true;
-        var action = this.options.action;
-        if (action === "query") {
-          this.$store
-            .dispatch(action, {
-              question: this.inputQuestion,
-              options: this.options
-            })
-            .catch(error => {
-              this.failure = true;
-              this.failureMessage = error.data.msg;
-            })
-            .finally(() => {
-              this.waitingQuery = false;
-              // Collapse the options once results are here to save space. This is due to query and results residing in one view.
-              this.showOptions = false;
-            });
-        } else if (action === "SOCKET_query") {
-          this.$store
-            .dispatch(action, {
-              question: this.inputQuestion,
-              options: this.options
-            })
-        }
-        
+        this.showEmptyWarning = false
+        this.waitingQuery = true
+        this.$store.dispatch('query', {
+          question: this.inputQuestion,
+          inputContext: this.inputContext,
+          options: this.options
+        }).catch(error => {
+          this.failure = true
+          this.failureMessage = error.data.msg
+        }).finally(() => {
+          this.waitingQuery = false
+          // Collapse the options once results are here to save space. This is due to query and results residing in one view.
+          this.showOptions = false
+        })
       } else {
-        this.showEmptyWarning = true;
+        this.showEmptyWarning = true
       }
     }
   },
