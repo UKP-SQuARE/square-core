@@ -46,7 +46,7 @@ export default new Vuex.Store({
       state.currentResults = payload.results
     },
     initQueryOptions(state, payload) {
-      var forceSkillInit = payload.forceSkillInit;
+      var forceSkillInit = payload.forceSkillInit
       // Default value for selected skills should be all available skills
       if (!state.flags.initialisedSelectedSkills || forceSkillInit) {
         state.queryOptions.selectedSkills = state.availableSkills
@@ -95,16 +95,16 @@ export default new Vuex.Store({
   },
 
   /**
-   * Mostly wrappers around API calls that manage commiting the received results
+   * Mostly wrappers around API calls that manage committing the received results
    */
   actions: {
-    query(context, { question, options }) {
+    query(context, { question, inputContext, options }) {
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      return fetchResults(question, options)
+      return fetchResults(question, inputContext, options, )
         .then((response) => {
-          context.commit("setAnsweredQuestion", { results: response.data, question: question })
+          context.commit("setAnsweredQuestion", { results: response.data, question: question, context: inputContext })
           context.commit("setQueryOptions", { queryOptions: options })
         })
     },
@@ -122,9 +122,9 @@ export default new Vuex.Store({
       context.commit("setJWT", { jwt: jwt })
     },
     updateSkills(context) {
-      var jwt = "";
+      var jwt = ""
       if (context.getters.isAuthenticated()) {
-        jwt = context.state.jwt;
+        jwt = context.state.jwt
       }
       return fetchSkills(jwt)
         .then((response) => context.commit("setSkills", { skills: response.data }))

@@ -1,19 +1,20 @@
 <!-- The Home Page. Questions are asked and the results are displayed here. -->
 <template>
-    <b-container>
-        <Query></Query>
-        <Results></Results>
-    </b-container>
+  <div>
+    <Query />
+    <Results />
+  </div>
 </template>
 
 <script>
+import Vue from 'vue'
 import Query from '@/components/Query.vue'
 import Results from '@/components/Results.vue'
-export default {
-  name: "home",
+
+export default Vue.component('home', {
   components: {
-      Query, 
-      Results
+    Query,
+    Results
   }
-}
+})
 </script>
