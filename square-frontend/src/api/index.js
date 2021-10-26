@@ -11,10 +11,15 @@ var API_URL = process.env.VUE_APP_BACKEND_URL
 /**
  * Sends a question to the backend and receives the resulting answers
  * @param {String} question the asked question
+ * @param {String} context the provided context
  * @param {Object} options the options for the request
  */
-export function fetchResults(question, options) {
-    return axios.post(`${API_URL}/question`, { question: question, options: options })
+export function fetchResults(question, context, options) {
+    let data = { question: question, options: options }
+    if (context.length > 0) {
+        data.skill_args = { context: context }
+    }
+    return axios.post(`${API_URL}/question`, data)
 }
 
 /**
@@ -28,7 +33,7 @@ export function registerUser(username, password) {
 
 /**
  * Login the user with the given credentials.
- * Success will result in a JWT for further authentication.
+ * Success will results in a JWT for further authentication.
  * @param {String} username the username     
  * @param {String} password the password of the user 
  */
