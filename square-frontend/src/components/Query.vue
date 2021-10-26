@@ -1,80 +1,99 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
-  <b-container>
-    <b-form-row class="mt-5">
-      <b-form class="offset-md-1 col-md-10" v-on:submit.prevent="askQuestion">
-        <b-alert
-          v-model="showEmptyWarning"
-          variant="danger"
-          dismissible
-        >You need to enter a question!</b-alert>
-        <b-alert
-          v-model="failure"
-          variant="danger"
-          dismissible
-        >There was a problem: {{failureMessage}}</b-alert>
-
+  <b-form v-on:submit.prevent="askQuestion">
+    <b-alert v-model="showEmptyWarning" variant="danger" dismissible>You need to enter a question!</b-alert>
+    <b-alert v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
+    <b-tabs content-class="m-3" align="center">
+      <b-tab title="Question" active>
         <b-input-group>
-          <b-form-input v-model="inputQuestion" required placeholder="Enter your question"></b-form-input>
+          <b-form-input v-model="inputQuestion" required placeholder="Enter your question" />
           <b-input-group-append>
             <b-button type="submit" variant="primary" :disabled="waitingQuery">
               Ask your question
-              <b-spinner v-show="waitingQuery" small label="Spinning"></b-spinner>
+              <b-spinner v-show="waitingQuery" small label="Spinning" />
             </b-button>
           </b-input-group-append>
         </b-input-group>
-        <b-form-checkbox v-model="showOptions" switch class="mt-2 ml-1 mb-2">Show expert options</b-form-checkbox>
-
-        <div v-show="showOptions">
-          <b-form-group label="Query Mode:">
-            <b-form-radio-group v-model="options.action" name="radio-sub-component">
-              <b-form-radio
-                value="SOCKET_query"
-              >WebSocket - receive results as soon as each is available</b-form-radio>
-              <b-form-radio value="query">AJAX - receive results once all are available</b-form-radio>
-            </b-form-radio-group>
-          </b-form-group>
-          <b-form-group label="Skill Selector:" label-for="skill-selector">
+      </b-tab>
+      <b-tab title="Context QA" lazy>
+        <b-form-row>
+          <b-col>
+            <b-form-input
+                v-model="inputQuestion"
+                required
+                placeholder="Enter your question"
+                class="rounded-top"
+                style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-style: dashed" />
+            <b-form-textarea
+                v-model="inputContext"
+                required
+                placeholder="Provide context seperated by line breaks"
+                rows="5"
+                no-resize
+                class="rounded-bottom border-top-0"
+                style="border-top-left-radius: 0; border-top-right-radius: 0" />
+          </b-col>
+        </b-form-row>
+        <b-form-row>
+          <b-col class="text-right mt-3">
+            <b-button type="submit" variant="primary" :disabled="waitingQuery">
+              Ask your question
+              <b-spinner v-show="waitingQuery" small label="Spinning" />
+            </b-button>
+          </b-col>
+        </b-form-row>
+      </b-tab>
+    </b-tabs>
+    <div class="m-3">
+      <b-form-checkbox v-model="showOptions" switch>Show expert options</b-form-checkbox>
+      <div class="mt-3" v-show="showOptions">
+        <b-form-row>
+          <b-form-group class="col" label="Skill Selector:" label-for="skill-selector">
             <b-form-select
-              id="skill-selector"
-              v-model="options.selector"
-              :options="availableSkillSelectors"
+                id="skill-selector"
+                v-model="options.selector"
+                :options="availableSkillSelectors"
             ></b-form-select>
           </b-form-group>
-          <b-form-group label="Only use these skills:" label-for="skill-select">
+        </b-form-row>
+        <b-form-row>
+          <b-form-group class="col" label="Only use these skills:" label-for="skill-select">
             <b-form-select
-              id="skill-select"
-              v-model="options.selectedSkills"
-              :options="availableSkills"
-              multiple
-              :select-size="Math.min(4, availableSkills.length)"
+                id="skill-select"
+                v-model="options.selectedSkills"
+                :options="availableSkills"
+                multiple
+                :select-size="Math.min(4, availableSkills.length)"
             ></b-form-select>
           </b-form-group>
-          <b-form-group label="Maximum number of querried skills:" label-for="max-querried-skills">
+        </b-form-row>
+        <b-form-row>
+          <b-form-group class="col-6" label="Maximum number of querried skills:" label-for="max-querried-skills">
             <b-form-input
-              id="max-querried-skills"
-              v-model="options.maxQuerriedSkills"
-              required
-              type="number"
+                id="max-querried-skills"
+                v-model="options.maxQuerriedSkills"
+                required
+                type="number"
             ></b-form-input>
           </b-form-group>
-          <b-form-group label="Maximum number of results per skill:" label-for="max-results-skill">
+          <b-form-group class="col-6" label="Maximum number of results per skill:" label-for="max-results-skill">
             <b-form-input
-              id="max-results-skill"
-              v-model="options.maxResultsPerSkill"
-              required
-              type="number"
+                id="max-results-skill"
+                v-model="options.maxResultsPerSkill"
+                required
+                type="number"
             ></b-form-input>
           </b-form-group>
-        </div>
-      </b-form>
-    </b-form-row>
-  </b-container>
+        </b-form-row>
+      </div>
+    </div>
+  </b-form>
 </template>
 
 <script>
-export default {
-  name: "query",
+import Vue from 'vue'
+
+export default Vue.component('query', {
   data() {
     return {
       showOptions: false,
@@ -83,10 +102,11 @@ export default {
         selectedSkills: []
       },
       showEmptyWarning: false,
-      inputQuestion: "",
+      inputQuestion: '',
+      inputContext: '',
       failure: false,
-      failureMessage: ""
-    };
+      failureMessage: ''
+    }
   },
   computed: {
     /**
@@ -96,24 +116,24 @@ export default {
       return this.$store.state.availableSkills.map(skill => {
         return {
           text: `${skill.name} ${
-            skill.description ? "- " + skill.description : ""
+              skill.description ? '- ' + skill.description : ''
           }`,
           value: skill
-        };
-      });
+        }
+      })
     },
     availableSkillSelectors() {
       return this.$store.state.availableSkillSelectors.map(selector => {
         return {
           text: `${selector.name} ${
-            selector.description ? "- " + selector.description : ""
+              selector.description ? '- ' + selector.description : ''
           }`,
           value: selector.name
-        };
-      });
+        }
+      })
     },
     queryOptions() {
-      return this.$store.state.queryOptions;
+      return this.$store.state.queryOptions
     }
   },
   methods: {
@@ -145,31 +165,29 @@ export default {
   beforeMount() {
     var self = this
     this.$store.subscribe(mutation => {
-      if (mutation.type === "SOCKET_SKILLRESULT") {
-        this.showOptions = false;
+      if (mutation.type === 'SOCKET_SKILLRESULT') {
+        this.showOptions = false
         if (mutation.payload.error_msg) {
-          self.failure = true;
-          self.failureMessage = mutation.payload.error_msg;
-          self.waitingQuery = false;
+          self.failure = true
+          self.failureMessage = mutation.payload.error_msg
+          self.waitingQuery = false
         }
         if (mutation.payload.finished) {
-          self.waitingQuery = false;
+          self.waitingQuery = false
         }
       }
     })
-
-    this.$store
-      .dispatch("updateSkills")
-      .then(() => this.$store.dispatch("updateSelectors"))
-      .then(() => {
-        this.$store.commit("initQueryOptions", {});
-      })
-      .then(() => {
-        // Copy the object so we do not change the state before a query is issued
-        this.options = JSON.parse(
-          JSON.stringify(this.$store.state.queryOptions)
-        );
-      });
+    this.$store.dispatch('updateSkills')
+        .then(() => this.$store.dispatch('updateSelectors'))
+        .then(() => {
+          this.$store.commit('initQueryOptions', {})
+        })
+        .then(() => {
+          // Copy the object so we do not change the state before a query is issued
+          this.options = JSON.parse(
+              JSON.stringify(this.$store.state.queryOptions)
+          )
+        })
   }
-};
+})
 </script>
