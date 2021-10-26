@@ -4,6 +4,8 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
+RUN pip install --upgrade pip
+
 COPY ElkJsonFormatter.tar.gz ./ElkJsonFormatter.tar.gz
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt

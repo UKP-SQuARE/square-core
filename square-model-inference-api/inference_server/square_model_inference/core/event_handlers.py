@@ -4,9 +4,10 @@ from fastapi import FastAPI
 
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.core.config import MODEL_TYPE, MODEL_NAME, MODEL_CLASS, DISABLE_GPU, BATCH_SIZE, \
-    TRANSFORMERS_CACHE, MAX_INPUT_SIZE
+    TRANSFORMERS_CACHE, MAX_INPUT_SIZE, MODEL_PATH
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
 from square_model_inference.inference.transformer import Transformer
+from square_model_inference.inference.onnx import Onnx
 
 import logging
 
@@ -15,11 +16,13 @@ logger = logging.getLogger(__name__)
 MODEL_MAPPING = {
     "adapter": AdapterTransformer,
     "transformer": Transformer,
-    "sentence-transformer": SentenceTransformer
+    "sentence-transformer": SentenceTransformer,
+    "onnx": Onnx,
 }
 
 MODEL_KWARGS = {
     "model_name": MODEL_NAME,
+    "model_path": MODEL_PATH,
     "model_class": MODEL_CLASS,
     "disable_gpu": DISABLE_GPU,
     "batch_size": BATCH_SIZE,

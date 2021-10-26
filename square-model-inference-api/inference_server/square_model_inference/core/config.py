@@ -12,6 +12,9 @@ MODEL_NAME: str = config("MODEL_NAME")
 # See square_model_inference.core.event_handlers.MODEL_MAPPING for all available names with corresponding model
 MODEL_TYPE: str = config("MODEL_TYPE")
 
+# Path to the onnx file of the model (this is necessary for onnx models)
+MODEL_PATH: str = config("MODEL_PATH", default=None)
+
 # Disable CUDA even if available
 DISABLE_GPU: bool = config("DISABLE_GPU", cast=bool, default=False)
 # Batch size used for many inputs

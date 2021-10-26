@@ -31,6 +31,7 @@ export default new Vuex.Store({
       selectedSkills: [],
       maxQuerriedSkills: 3,
       maxResultsPerSkill: 10,
+      skillArgs: {},
       action: "SOCKET_query"
     },
     // Control flags
@@ -49,7 +50,7 @@ export default new Vuex.Store({
       var forceSkillInit = payload.forceSkillInit
       // Default value for selected skills should be all available skills
       if (!state.flags.initialisedSelectedSkills || forceSkillInit) {
-        state.queryOptions.selectedSkills = state.availableSkills
+        state.queryOptions.selectedSkills = state.availableSkills.map(skill => {return skill.name})
         state.flags.initialisedSelectedSkills = true
       }
       // Value for selector should be set to a selector.
@@ -102,8 +103,9 @@ export default new Vuex.Store({
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      return fetchResults(question, inputContext, options, )
-        .then((response) => {
+      let user_id = context.state.user ? context.state.user.id : ''
+      return fetchResults(question, inputContext, options, user_id)
+          .then((response) => {
           context.commit("setAnsweredQuestion", { results: response.data, question: question, context: inputContext })
           context.commit("setQueryOptions", { queryOptions: options })
         })

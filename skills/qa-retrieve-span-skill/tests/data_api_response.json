@@ -1,0 +1,129 @@
+{
+  "root": {
+    "id": "toplevel",
+    "relevance": 1,
+    "fields": {
+      "totalCount": 100
+    },
+    "coverage": {
+      "coverage": 100,
+      "documents": 100,
+      "full": true,
+      "nodes": 1,
+      "results": 1,
+      "resultsFull": 1
+    },
+    "children": [
+      {
+        "id": "id:wiki:wiki::62",
+        "relevance": 0.06525433930831698,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::62",
+          "title": "Achill Island",
+          "text": "Achill Island Achill Island (; ) in County Mayo is the largest of the Irish isles, and is situated off the west coast of Ireland. It has a population of 2,700. Its area is . Achill is attached to the mainland by Michael Davitt Bridge, between the villages of Gob an Choire (Achill Sound) and Poll Raithní (Polranny). A bridge was first completed here in 1887, replaced by another structure in 1949, and subsequently replaced with the current bridge which was completed in 2008. Other centres of population include the villages of Keel, Dooagh, Dumha Éige (Dooega), Dún Ibhir (Dooniver),"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::93",
+        "relevance": 0.06465944474167351,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::93",
+          "title": "Achill Island",
+          "text": "Yellow lady\", 1986 POOLBEG Hugo Hamilton: The Island of Talking, 2007 Kevin Barry: \"Beatlebone\", 2015 Achill Island Achill Island (; ) in County Mayo is the largest of the Irish isles, and is situated off the west coast of Ireland. It has a population of 2,700. Its area is . Achill is attached to the mainland by Michael Davitt Bridge, between the villages of Gob an Choire (Achill Sound) and Poll Raithní (Polranny). A bridge was first completed here in 1887, replaced by another structure in 1949, and subsequently replaced with the current bridge which was completed in 2008. Other"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::81",
+        "relevance": 0.06442496501834807,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::81",
+          "title": "Achill Island",
+          "text": "traditional vernacular watercraft including a possibly 100-year-old Achill yawl, and the remains of four historic shipwrecks. The cliffs of Croaghaun on the western end of the island are the third highest sea cliffs in Europe but are inaccessible by road. Near the westernmost point of Achill, Achill Head, is Keem Bay. Keel Beach is quite popular with tourists and some locals as a surfing location. South of Keem beach is Moytoge Head, which with its rounded appearance drops dramatically down to the ocean. An old British observation post, built during World War I to prevent the Germans from landing arms"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::63",
+        "relevance": 0.06432762718047659,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::63",
+          "title": "Achill Island",
+          "text": "The Valley and Dugort. The parish's main Gaelic football pitch and secondary school are on the mainland at Poll Raithní. Early human settlements are believed to have been established on Achill around 3000 BC. A paddle dating from this period was found at the crannóg near Dookinella. The island is 87% peat bog. It is believed that at the end of the Neolithic Period (around 4000 BC), Achill had a population of 500–1,000 people. The island would have been mostly forest until the Neolithic people began crop cultivation. Settlement increased during the Iron Age, and the dispersal of small promontory"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::89",
+        "relevance": 0.06387738736173564,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::89",
+          "title": "Achill Island",
+          "text": "for outdoor adventure activities, like surfing, kite-surfing and sea kayaking. Fishing and watersports are also popular. Sailing regattas featuring a local vessel type, the Achill Yawl, have been popular since the 19th century, though most present-day yawls, unlike their traditional working boat ancestors, have been structurally modified to promote greater speed under sail. The island's waters and underwater sites are occasionally visited by scuba divers, though Achill's unpredictable weather generally has precluded a commercially successful recreational diving industry. In 2011, the population was 2,569. The island's population has declined from around 6,000 before the Great Hunger. The table below reports"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::65",
+        "relevance": 0.06378055636287241,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::65",
+          "title": "Achill Island",
+          "text": "taken over by the Butlers and later by the de Burgos. The Butler Lordship of Burrishoole continued into the late 14th century when Thomas le Botiller was recorded as being in possession of Akkyll & Owyll. In the 17th and 18th centuries, there was much migration to Achill from other parts of Ireland, particularly Ulster, due to the political and religious turmoil of the time. For a while there were two different dialects of Irish being spoken on Achill. This led to many townlands being recorded as having two names during the 1824 Ordnance Survey, and some maps today give"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::64",
+        "relevance": 0.0637453222860072,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::64",
+          "title": "Achill Island",
+          "text": "forts around the coast indicate the warlike nature of the times. Megalithic tombs and forts can be seen at Slievemore, along the Atlantic Drive and on Achillbeg. Achill Island lies in the Barony of Burrishoole, in the territory of ancient Umhall (Umhall Uactarach and Umhall Ioctarach), that originally encompassed an area extending from the County Galway/Mayo border to Achill Head. The hereditary chieftains of Umhall were the O'Malleys, recorded in the area in 814 AD when they successfully repelled an onslaught by the Vikings in Clew Bay. The Anglo-Norman invasion of Connacht in 1235 AD saw the territory of Umhall"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::71",
+        "relevance": 0.06362891342617155,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::71",
+          "title": "Achill Island",
+          "text": "provided an education for local children. The ruins of this monastery are still to be seen in Bunnacurry today. The historic Valley House is located in The Valley, near Dugort in the north-east of Achill Island. The present building sits on the site of a hunting lodge built by the Earl of Cavan in the 19th century. Its notoriety arises from an incident in 1894 in which the then owner, an English landlady named Agnes McDonnell, was savagely beaten and the house set alight, allegedly by a local man, James Lynchehaun. Lynchehaun had been employed by McDonnell as her land"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::84",
+        "relevance": 0.06348154463802369,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::84",
+          "title": "Achill Island",
+          "text": "tourists. Caisleán Ghráinne, also known as Kildownet Castle, is a small tower house built in the early 1400s. It is located in Cloughmore, on the south of Achill Island. It is noted for its associations with Grace O'Malley, along with the larger Rockfleet Castle in Newport. While a number of attempts at setting up small industrial units on the island have been made, the economy of the island is largely dependent on tourism. Subventions from Achill people working abroad, in particular in the United Kingdom, the United States and Africa allowed many families to remain living in Achill throughout the"
+        }
+      },
+      {
+        "id": "id:wiki:wiki::70",
+        "relevance": 0.06334718130117747,
+        "source": "square_datastore_content",
+        "fields": {
+          "sddocname": "wiki",
+          "documentid": "id:wiki:wiki::70",
+          "title": "Achill Island",
+          "text": "been established in the early nineteenth century. Kildamhnait on the south-east coast of Achill is named after St. Damhnait, or Dymphna, who founded a church there in the 16th century. There is also a holy well just outside the graveyard. The present church was built in the 1700s and the graveyard contains memorials to the victims of two of Achill's greatest tragedies, the Kirchintilloch Fire (1937) and the Clew Bay Drowning (1894). In 1852, Dr. John McHale, Archbishop of Tuam set aside land in Bunnacurry for the building of a monastery. A Franciscan Monastery was built which, for many years"
+        }
+      }
+    ]
+  }
+}

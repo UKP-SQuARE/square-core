@@ -1,0 +1,4 @@
+<query-profile id="bm25" type="root">
+    <field name="rankings.profile">bm25</field>
+    <field name="yql">select * from sources %{datastore_name} where userQuery();</field>
+</query-profile>

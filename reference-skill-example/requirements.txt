@@ -1,4 +1,0 @@
-Flask
-Flask-CORS
-requests
-pyyaml

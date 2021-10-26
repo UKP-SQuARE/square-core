@@ -20,6 +20,7 @@ environ["MAX_INPUT_SIZE"] = "100"
 # Downloaded models:
 TRANSFORMER_MODEL = "bert-base-uncased"
 SENTENCE_MODEL = "paraphrase-albert-small-v2"
+ONNX_MODEL = "bert-base-uncased"
 
 if __name__ == "__main__":
     # We pre-download all models needed for the tests.

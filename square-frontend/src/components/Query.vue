@@ -118,7 +118,7 @@ export default Vue.component('query', {
           text: `${skill.name} ${
               skill.description ? '- ' + skill.description : ''
           }`,
-          value: skill
+          value: skill.name
         }
       })
     },
