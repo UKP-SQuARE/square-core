@@ -73,12 +73,14 @@ class Selector:
         """
         maxResults = int(options["num_results"])
         try:
-            r = requests.post("{}/query".format(skill["url"]), json={
+            payload = {
                 "query": question,
                 "num_results": maxResults,
                 "user_id": options["user_id"],
-                "skill_args": options["skill_args"].get(skill["name"], {})
-            })
+                "skill_args": options.get("skill_args", {})
+            }
+            logger.debug(f"sending request to skill: {payload}")
+            r = requests.post("{}/query".format(skill["url"]), json=payload)
             return {"name": skill["name"], "meta_qa_score": score, "description": skill["description"],
                     "results": r.json()["predictions"][:maxResults]}
         except requests.Timeout as e:
