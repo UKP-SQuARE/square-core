@@ -1,93 +1,95 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
-  <b-form v-on:submit.prevent="askQuestion">
-    <b-alert v-model="showEmptyWarning" variant="danger" dismissible>You need to enter a question!</b-alert>
-    <b-alert v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
-    <b-tabs content-class="m-3" align="center">
-      <b-tab title="Question" active>
-        <b-input-group>
-          <b-form-input v-model="inputQuestion" required placeholder="Enter your question" />
-          <b-input-group-append>
-            <b-button type="submit" variant="primary" :disabled="waitingQuery">
-              Ask your question
-              <b-spinner v-show="waitingQuery" small label="Spinning" />
-            </b-button>
-          </b-input-group-append>
-        </b-input-group>
-      </b-tab>
-      <b-tab title="Context QA" lazy>
-        <b-form-row>
-          <b-col>
-            <b-form-input
-                v-model="inputQuestion"
-                required
-                placeholder="Enter your question"
-                class="rounded-top"
-                style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-style: dashed" />
-            <b-form-textarea
-                v-model="inputContext"
-                required
-                placeholder="Provide context seperated by line breaks"
-                rows="5"
-                no-resize
-                class="rounded-bottom border-top-0"
-                style="border-top-left-radius: 0; border-top-right-radius: 0" />
-          </b-col>
-        </b-form-row>
-        <b-form-row>
-          <b-col class="text-right mt-3">
-            <b-button type="submit" variant="primary" :disabled="waitingQuery">
-              Ask your question
-              <b-spinner v-show="waitingQuery" small label="Spinning" />
-            </b-button>
-          </b-col>
-        </b-form-row>
-      </b-tab>
-    </b-tabs>
-    <div class="m-3">
-      <b-form-checkbox v-model="showOptions" switch>Show expert options</b-form-checkbox>
-      <div class="mt-3" v-show="showOptions">
-        <b-form-row>
-          <b-form-group class="col" label="Skill Selector:" label-for="skill-selector">
-            <b-form-select
-                id="skill-selector"
-                v-model="options.selector"
-                :options="availableSkillSelectors"
-            ></b-form-select>
-          </b-form-group>
-        </b-form-row>
-        <b-form-row>
-          <b-form-group class="col" label="Only use these skills:" label-for="skill-select">
-            <b-form-select
-                id="skill-select"
-                v-model="options.selectedSkills"
-                :options="availableSkills"
-                multiple
-                :select-size="Math.min(4, availableSkills.length)"
-            ></b-form-select>
-          </b-form-group>
-        </b-form-row>
-        <b-form-row>
-          <b-form-group class="col-6" label="Maximum number of querried skills:" label-for="max-querried-skills">
-            <b-form-input
-                id="max-querried-skills"
-                v-model="options.maxQuerriedSkills"
-                required
-                type="number"
-            ></b-form-input>
-          </b-form-group>
-          <b-form-group class="col-6" label="Maximum number of results per skill:" label-for="max-results-skill">
-            <b-form-input
-                id="max-results-skill"
-                v-model="options.maxResultsPerSkill"
-                required
-                type="number"
-            ></b-form-input>
-          </b-form-group>
-        </b-form-row>
+  <div>
+    <b-alert class="mt-3" v-model="showEmptyWarning" variant="danger" dismissible>You need to enter a question!</b-alert>
+    <b-alert class="mt-3" v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
+    <b-form v-on:submit.prevent="askQuestion" class="border rounded shadow my-3 py-3">
+      <b-tabs content-class="m-3" align="center">
+        <b-tab title="Question" active>
+          <b-input-group>
+            <b-form-input v-model="inputQuestion" required placeholder="Enter your question" />
+            <b-input-group-append>
+              <b-button type="submit" variant="primary" :disabled="waitingQuery">
+                Ask your question
+                <b-spinner v-show="waitingQuery" small label="Spinning" />
+              </b-button>
+            </b-input-group-append>
+          </b-input-group>
+        </b-tab>
+        <b-tab title="Context QA" lazy>
+          <b-form-row>
+            <b-col>
+              <b-form-input
+                  v-model="inputQuestion"
+                  required
+                  placeholder="Enter your question"
+                  class="rounded-top"
+                  style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-style: dashed" />
+              <b-form-textarea
+                  v-model="inputContext"
+                  required
+                  placeholder="Provide context seperated by line breaks"
+                  rows="5"
+                  no-resize
+                  class="rounded-bottom border-top-0"
+                  style="border-top-left-radius: 0; border-top-right-radius: 0" />
+            </b-col>
+          </b-form-row>
+          <b-form-row>
+            <b-col class="text-right mt-3">
+              <b-button type="submit" variant="primary" :disabled="waitingQuery">
+                Ask your question
+                <b-spinner v-show="waitingQuery" small label="Spinning" />
+              </b-button>
+            </b-col>
+          </b-form-row>
+        </b-tab>
+      </b-tabs>
+      <div class="m-3">
+        <b-form-checkbox v-model="showOptions" switch>Show expert options</b-form-checkbox>
+        <div class="mt-3" v-show="showOptions">
+          <b-form-row>
+            <b-form-group class="col" label="Skill Selector:" label-for="skill-selector">
+              <b-form-select
+                  id="skill-selector"
+                  v-model="options.selector"
+                  :options="availableSkillSelectors"
+              ></b-form-select>
+            </b-form-group>
+          </b-form-row>
+          <b-form-row>
+            <b-form-group class="col" label="Only use these skills:" label-for="skill-select">
+              <b-form-select
+                  id="skill-select"
+                  v-model="options.selectedSkills"
+                  :options="availableSkills"
+                  multiple
+                  :select-size="Math.min(4, availableSkills.length)"
+              ></b-form-select>
+            </b-form-group>
+          </b-form-row>
+          <b-form-row>
+            <b-form-group class="col-6" label="Maximum number of querried skills:" label-for="max-querried-skills">
+              <b-form-input
+                  id="max-querried-skills"
+                  v-model="options.maxQuerriedSkills"
+                  required
+                  type="number"
+              ></b-form-input>
+            </b-form-group>
+            <b-form-group class="col-6" label="Maximum number of results per skill:" label-for="max-results-skill">
+              <b-form-input
+                  id="max-results-skill"
+                  v-model="options.maxResultsPerSkill"
+                  required
+                  type="number"
+              ></b-form-input>
+            </b-form-group>
+          </b-form-row>
+        </div>
       </div>
-    </div>
-  </b-form>
+    </b-form>
+  </div>
 </template>
 
 <script>

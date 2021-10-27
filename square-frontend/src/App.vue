@@ -9,7 +9,7 @@
       </b-jumbotron>
     </header>
     <main class="flex-fill">
-      <router-view class="container border-left border-right shadow py-3 h-100" />
+      <router-view class="container h-100" />
     </main>
     <Footer />
   </div>

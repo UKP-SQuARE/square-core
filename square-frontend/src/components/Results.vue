@@ -1,8 +1,8 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-    <b-row v-if="currentResults.length" class="mt-4">
+    <b-row v-if="currentResults.length" class="border rounded shadow mx-0 my-3 py-3 no-gutters">
       <b-col>
-        <b-tabs>
+        <b-tabs content-class="m-3" align="center">
           <b-tab v-for="skillResult in currentResults" v-bind:key="skillResult.name">
             <template v-slot:title>
               {{ skillResult.name }} <small>{{ parseInt(skillResult.meta_qa_score * 100) }}% relevant</small>
