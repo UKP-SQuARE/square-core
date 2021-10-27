@@ -4,6 +4,7 @@
 FROM tiangolo/node-frontend:10 as base
 WORKDIR /app
 COPY package*.json /app/
+RUN npm install -g npm@latest
 RUN npm ci
 COPY ./ /app/
 RUN npm run build
