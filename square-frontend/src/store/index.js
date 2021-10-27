@@ -47,7 +47,7 @@ export default new Vuex.Store({
       state.currentResults = payload.results
     },
     initQueryOptions(state, payload) {
-      var forceSkillInit = payload.forceSkillInit;
+      var forceSkillInit = payload.forceSkillInit
       // Default value for selected skills should be all available skills
       if (!state.flags.initialisedSelectedSkills || forceSkillInit) {
         state.queryOptions.selectedSkills = state.availableSkills.map(skill => {return skill.name})
@@ -96,20 +96,17 @@ export default new Vuex.Store({
   },
 
   /**
-   * Mostly wrappers around API calls that manage commiting the received results
+   * Mostly wrappers around API calls that manage committing the received results
    */
   actions: {
-    query(context, { question, options }) {
+    query(context, { question, inputContext, options }) {
       // we get these as strings; parse them back to int
       options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      var user_id = ""
-      if (context.state.user) {
-        user_id = "" + context.state.user.id
-      }
-      return fetchResults(question, options, user_id)
-        .then((response) => {
-          context.commit("setAnsweredQuestion", { results: response.data, question: question })
+      let user_id = context.state.user ? context.state.user.id : ''
+      return fetchResults(question, inputContext, options, user_id)
+          .then((response) => {
+          context.commit("setAnsweredQuestion", { results: response.data, question: question, context: inputContext })
           context.commit("setQueryOptions", { queryOptions: options })
         })
     },
@@ -127,9 +124,9 @@ export default new Vuex.Store({
       context.commit("setJWT", { jwt: jwt })
     },
     updateSkills(context) {
-      var jwt = "";
+      var jwt = ""
       if (context.getters.isAuthenticated()) {
-        jwt = context.state.jwt;
+        jwt = context.state.jwt
       }
       return fetchSkills(jwt)
         .then((response) => context.commit("setSkills", { skills: response.data }))
@@ -149,25 +146,6 @@ export default new Vuex.Store({
     deleteSkill(context, { skillId }) {
       return deleteSkill(skillId, context.state.jwt)
         .then(() => context.dispatch("updateSkills"))
-    },
-    //WebSocket actions
-    SOCKET_query(context, { question, options }) {
-      // we get these as strings; parse them back to int
-      options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
-      options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      var user_id = ""
-      if (context.state.user) {
-          user_id = "" + context.state.user.id
-      }
-      context.commit("setAnsweredQuestion", { results: [], question: question })
-      context.commit("setQueryOptions", { queryOptions: options })
-      this._vm.$socket.client.emit("query", { query: question, meta_qa_skill_selector: options.selector , skills: options.selectedSkills, skill_args: options.skillArgs, num_selected_skills: options.maxQuerriedSkills, num_results: options.maxResultsPerSkill, user_id: user_id })
-    },
-    SOCKET_train(context, { id, train_file, dev_file }) {
-      this._vm.$socket.client.emit("train", { id: id, train_file: train_file, dev_file: dev_file, jwt: context.state.jwt });
-    },
-    SOCKET_unpublish(context, { id }) {
-      this._vm.$socket.client.emit("unpublish", { id: id, jwt: context.state.jwt });
     }
   },
 
