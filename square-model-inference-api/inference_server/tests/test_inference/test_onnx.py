@@ -47,8 +47,9 @@ class TestOnnxTokenClassification:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("input,word_ids", [(["this is a test"], [[None, 0, 1, 2, 3, None]]),
-                                              (["this is a test", "this is a test with a longer sentence"],
-                                               [[None, 0, 1, 2, 3, None, None, None, None, None], [None, 0, 1, 2, 3, 4, 5, 6, 7, None]])],
+                                                (["this is a test", "this is a test with a longer sentence"],
+                                                 [[None, 0, 1, 2, 3, None, None, None, None, None],
+                                                  [None, 0, 1, 2, 3, 4, 5, 6, 7, None]])],
                              ids=["single", "batch"])
     async def test_token_classification(self, prediction_request, test_onnx_token_classification, input, word_ids):
         if test_onnx_token_classification is None:
@@ -56,34 +57,39 @@ class TestOnnxTokenClassification:
         prediction_request.input = input
 
         prediction = await test_onnx_token_classification.predict(prediction_request, Task.token_classification)
-        np.testing.assert_allclose(np.sum(prediction.model_outputs["logits"], axis=-1), np.ones(shape=(len(input), len(word_ids[0]))), rtol=1e-6, err_msg="logits are softmax")
+        np.testing.assert_allclose(np.sum(prediction.model_outputs["logits"], axis=-1),
+                                   np.ones(shape=(len(input), len(word_ids[0]))), rtol=1e-6,
+                                   err_msg="logits are softmax")
         assert all(len(prediction.labels[i]) == len(word_ids[i]) for i in range(len(input)))
         assert "logits" in prediction.model_outputs
         assert prediction.word_ids == word_ids
 
-
     @pytest.mark.asyncio
     @pytest.mark.parametrize("input,word_ids", [(["this is a test"],
-                                                        [[None, 0, 1, 2, 3, None]]),
-                                                       (["this is a test", "this is a test with a longer sentence"],
-                                                        [[None, 0, 1, 2, 3, None, None, None, None, None], [None, 0, 1, 2, 3, 4, 5, 6, 7, None]])],
+                                                 [[None, 0, 1, 2, 3, None]]),
+                                                (["this is a test", "this is a test with a longer sentence"],
+                                                 [[None, 0, 1, 2, 3, None, None, None, None, None],
+                                                  [None, 0, 1, 2, 3, 4, 5, 6, 7, None]])],
                              ids=["single", "batch"])
-    async def test_token_classification_regression(self, prediction_request, test_onnx_token_classification, input, word_ids):
+    async def test_token_classification_regression(self, prediction_request, test_onnx_token_classification, input,
+                                                   word_ids):
         if test_onnx_token_classification is None:
             pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
 
         prediction = await test_onnx_token_classification.predict(prediction_request, Task.token_classification)
-        assert not np.array_equal((np.sum(prediction.model_outputs["logits"], axis=-1), np.ones_like(word_ids)), "logits are not softmax")
+        assert not np.array_equal((np.sum(prediction.model_outputs["logits"], axis=-1), np.ones_like(word_ids)),
+                                  "logits are not softmax")
         assert "logits" in prediction.model_outputs
         assert prediction.word_ids == word_ids
+
 
 @pytest.mark.usefixtures("test_onnx_embedding")
 class TestOnnxEmbedding:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("input,mode", [(["this is a test"], "mean"),
-                                              (["this is a test", "this is a test with a longer sentence"], "mean"),
+                                            (["this is a test", "this is a test with a longer sentence"], "mean"),
                                             (["this is a test"], "max"),
                                             (["this is a test", "this is a test with a longer sentence"], "max"),
                                             (["this is a test"], "cls"),
@@ -125,10 +131,11 @@ class TestOnnxEmbedding:
     async def test_input_too_big(self, prediction_request, test_onnx_embedding):
         if test_onnx_embedding is None:
             pytest.skip("No model found.")
-        prediction_request.input = ["test"]*1000
+        prediction_request.input = ["test"] * 1000
 
         with pytest.raises(ValueError):
             prediction = await test_onnx_embedding.predict(prediction_request, Task.embedding)
+
 
 @pytest.mark.usefixtures("test_onnx_question_answering")
 class TestOnnxQuestionAnswering:
@@ -136,7 +143,8 @@ class TestOnnxQuestionAnswering:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("input", [([["What is a test?", "A test is a thing where you test."]]),
                                        ([["What is a test?", "A test is a thing where you test."],
-                                         ["What is a longer test?", "A test is a thing where you test. If it is longer you call it longer"]])],
+                                         ["What is a longer test?",
+                                          "A test is a thing where you test. If it is longer you call it longer"]])],
                              )
     async def test_question_answering(self, prediction_request, test_onnx_question_answering, input):
         if test_onnx_question_answering is None:
@@ -192,19 +200,26 @@ class TestOnnxGeneration:
         prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
         assert "scores" in prediction.model_outputs
 
-    @pytest.mark.skip("No beam search implemented")
+    @pytest.mark.parametrize("input", [(["Generate text"]),
+                                       (["Generate text", "And a lot more text"])],
+                             )
     @pytest.mark.asyncio
-    async def test_generation_beam_sample_multiple_seqs(self, prediction_request, test_onnx_generation):
+    async def test_generation_beam_sample_multiple_seqs(self, prediction_request, test_onnx_generation, input):
         if test_onnx_generation is None:
             pytest.skip("No model found.")
+        prediction_request.input = input
         prediction_request.task_kwargs = {
-            "num_beams": 2,
+            "generation_mode": "beam_search",
+            "num_beams": 4,
             "do_sample": True,
             "top_k": 10,
             "top_p": 0.5,
             "no_repeat_ngram_size": 2,
-            "num_return_sequences": 2
+            "num_return_sequences": 4
         }
 
         prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
-        assert len(prediction.generated_texts[0]) == 2
+        assert len(prediction.generated_texts[0]) == 4
+
+
+
