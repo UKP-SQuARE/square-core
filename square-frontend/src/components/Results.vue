@@ -1,35 +1,35 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-    <b-row v-if="currentResults.length" class="mt-4">
+    <b-row v-if="currentResults.length" class="border rounded shadow mx-0 my-3 py-3 no-gutters">
       <b-col>
-        <b-tabs>
+        <b-tabs content-class="m-3" align="center">
           <b-tab v-for="skillResult in currentResults" v-bind:key="skillResult.name">
             <template v-slot:title>
-              {{ skillResult.name }} <small>{{ parseInt(skillResult.score * 100) }}% relevant</small>
+              {{ skillResult.name }} <small>{{ parseInt(skillResult.meta_qa_score * 100) }}% relevant</small>
             </template>
-            <h6 class="text-muted mt-2 mb-1 ml-1">{{ skillResult["skill-description"] }}</h6>
+            <h6 class="text-muted mt-2 mb-1 ml-1">{{ skillResult.description }}</h6>
             <b-card class="mt-2" v-show="skillResult.error">
               <b-card-text>Error: {{ skillResult.error }}</b-card-text>
             </b-card>
             <b-card
-                v-for="(res, i) in skillResult.predictions"
-                v-bind:key="res['prediction-documents'] + i"
+                v-for="(res, i) in skillResult.results"
+                v-bind:key="res.prediction_documents + i"
                 class="mt-2"
                 header-bg-variant="primary"
                 header-text-variant="white"
                 footer-tag="footer">
               <template #header>
                 <h6 class="mb-0">
-                  <span style="float: left">{{ res["prediction-output"].output }}</span>
-                  <span style="float: right">{{ res["prediction-output"]["output-score"] }}</span>
+                  <span style="float: left">{{ res.prediction_output.output }}</span>
+                  <span style="float: right">{{ res.prediction_output.output_score }}</span>
                 </h6>
               </template>
-              <b-card-text v-html="highlight(res['prediction-documents'][0].document, res['prediction-documents'][0].span)" />
+              <b-card-text v-html="highlight(res.prediction_documents[0].document, res.prediction_documents[0].span)" />
               <component :is="res.type" v-bind:result="res" />
               <template #footer>
                 <div>
                   <b-button v-b-toggle.collapse-2 class="mt-1">
-                    See similar documents ({{ res['prediction-documents'].length - 1 }})
+                    See similar documents ({{ res.prediction_documents.length - 1 }})
                   </b-button>
                   <b-collapse id="collapse-2" class="mt-2">
                     <b-card>I should start open!</b-card>
@@ -74,7 +74,7 @@ export default Vue.component('results', {
   },
   methods: {
     highlight(text, span) {
-      return `${text.substring(0, span[0])}<span class="highlightText">${text.substring(span[0], span[1])}</span>${text.substring(span[1], text.length)}`
+      return span ? `${text.substring(0, span[0])}<span class="highlightText">${text.substring(span[0], span[1])}</span>${text.substring(span[1], text.length)}` : text
     }
   }
 })
