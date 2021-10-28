@@ -1,8 +1,8 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
   <div>
-    <b-alert class="mt-3" v-model="showEmptyWarning" variant="danger" dismissible>You need to enter a question!</b-alert>
-    <b-alert class="mt-3" v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
+    <Alert v-if="showEmptyWarning" class="alert-warning" dismissible>You need to enter a question!</Alert>
+    <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
     <b-form v-on:submit.prevent="askQuestion" class="border rounded shadow my-3 py-3">
       <b-tabs content-class="m-3" align="center">
         <b-tab title="Question" active>
@@ -94,6 +94,7 @@
 
 <script>
 import Vue from 'vue'
+import Alert from '@/components/Alert.vue'
 
 export default Vue.component('query', {
   data() {
@@ -109,6 +110,9 @@ export default Vue.component('query', {
       failure: false,
       failureMessage: ''
     }
+  },
+  components: {
+    Alert
   },
   computed: {
     /**
