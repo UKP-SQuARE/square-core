@@ -4,7 +4,7 @@ from typing import Iterable, Union
 
 import requests
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
-from fastapi.param_functions import Body, Path, Query
+from fastapi.param_functions import Body, Path
 from fastapi.responses import StreamingResponse
 
 from ..core.config import settings
@@ -138,16 +138,13 @@ async def upload_documents_from_urls(
 )
 async def get_all_documents(
     datastore_name: str = Path(..., description="The name of the datastore"),
-    offset: int = Query(0, description="The offset to start the list"),
-    size: int = Query(1000, description="The number of documents in one batch retrieved from vespa"),
     conn=Depends(get_storage_connector),
 ):
-    if size > settings.MAX_RETURN_ITEMS:
-        return HTTPException(
-            status_code=400, detail="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS)
-        )
+    async def yield_documents():
+        async for doc in conn.get_documents(datastore_name):
+            yield doc.json() + "\n"
 
-    return StreamingResponse(conn.get_documents(datastore_name), media_type="application/octet-stream")
+    return StreamingResponse(yield_documents(), media_type="application/octet-stream")
 
 
 @router.get(
@@ -198,7 +195,7 @@ async def post_document(
             detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
-    success = await conn.add_document(datastore_name, doc_id, document)
+    success, _ = await conn.add_document(datastore_name, doc_id, document)
     if success:
         return Response(
             status_code=201,
@@ -233,7 +230,7 @@ async def update_document(
             detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
         )
 
-    success, created = conn.update_document(datastore_name, doc_id, document)
+    success, created = await conn.add_document(datastore_name, doc_id, document)
     if success:
         if not created:
             status_code = 200
@@ -253,12 +250,12 @@ async def update_document(
     description="Delete a document from the datastore by id",
     responses={204: {"description": "The document was deleted"}},
 )
-def delete_document(
+async def delete_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
     doc_id: int = Path(..., description="The id of the document to delete"),
     conn=Depends(get_storage_connector),
 ):
-    success = conn.delete_document(datastore_name, doc_id)
+    success = await conn.delete_document(datastore_name, doc_id)
     if success:
         return Response(status_code=204)
     else:

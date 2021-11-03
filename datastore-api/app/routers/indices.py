@@ -288,7 +288,7 @@ def upload_document_embeddings_from_urls(
     responses={
         204: {"description": "Successfully deleted index"},
         404: {"model": HTTPError, "description": "Failed to delete index in API database"},
-        500: {"model": HTTPError, "description": "Failed to delete index in vespa"},
+        500: {"model": HTTPError, "description": "Failed to delete index in the storage backend."},
     },
 )
 async def delete_index(

@@ -63,7 +63,7 @@ async def get_datastore(
             "description": "Failed to create the datastore in the API database",
         },
         500: {
-            "description": "Failed to create the datastore in vespa",
+            "description": "Failed to create the datastore in the storage backend.",
         },
     },
     response_model=Datastore,
@@ -103,7 +103,7 @@ async def put_datastore(
         },
         404: {"description": "The datastore could not be deleted from the API database"},
         500: {
-            "description": "Failed to delete the datastore from vespa",
+            "description": "Failed to delete the datastore from the storage backend.",
         },
     },
 )

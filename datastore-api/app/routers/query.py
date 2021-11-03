@@ -3,7 +3,6 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.param_functions import Path, Query
 
-from ..core.model_api import encode_query
 from ..models.httperror import HTTPError
 from ..models.query import QueryResult
 from .dependencies import get_search_client, get_storage_connector
@@ -32,19 +31,17 @@ async def search(
     query: str = Query(..., description="The query string."),
     top_k: int = Query(40, description="Number of documents to retrieve."),
     conn=Depends(get_storage_connector),
-    search_client=Depends(get_search_client),
+    dense_retrieval=Depends(get_search_client),
 ):
+    # do dense retrieval
     if index_name:
-        index = await conn.get_index(datastore_name, index_name)
-        if index is None:
-            raise HTTPException(status_code=404, detail="Datastore or index not found.")
         try:
-            query_embedding = encode_query(query, index)
-        except Exception:
-            raise HTTPException(status_code=500, detail="Model API error.")
-
-        return await search_client.search(datastore_name, index_name, query_embedding, top_k)
-
+            return await dense_retrieval.search(datastore_name, index_name, query, top_k)
+        except ValueError as ex:
+            raise HTTPException(status_code=404, detail=str(ex))
+        except Exception as other_ex:
+            raise HTTPException(status_code=500, detail=str(other_ex))
+    # do sparse retrieval
     else:
         return await conn.search(datastore_name, query, n_hits=top_k)
 
@@ -80,16 +77,21 @@ async def score(
     conn=Depends(get_storage_connector),
 ):
     if index_name:
+        raise NotImplementedError()
         # TODO do dense retrieval stuff
-        index = await conn.get_index(datastore_name, index_name)
-        if index is None:
-            raise HTTPException(status_code=404, detail="Datastore or index not found.")
-        try:
-            query_embedding = encode_query(query, index)
-        except Exception:
-            raise HTTPException(status_code=500, detail="Model API error.")
+        # index = await conn.get_index(datastore_name, index_name)
+        # if index is None:
+        #     raise HTTPException(status_code=404, detail="Datastore or index not found.")
+        # try:
+        #     query_embedding = encode_query(query, index)
+        # except Exception:
+        #     raise HTTPException(status_code=500, detail="Model API error.")
 
-    return await conn.search_for_id(datastore_name, query, doc_id)
+    result = await conn.search_for_id(datastore_name, query, doc_id)
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    return result
     # query_embedding_name = Index.get_query_embedding_field_name(index)
     # body = {
     #     "query": query,

@@ -133,13 +133,16 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> bool:
+    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
         """Adds a new document.
 
         Args:
             datastore_name (str): Name of the datastore.
             document_id (int): Id of the document.
             document (Document): Document to add.
+
+        Returns:
+            Tuple[bool, bool]: A tuple containing the success of the update and a flag indicating whether an item was newly created.
         """
         pass
 

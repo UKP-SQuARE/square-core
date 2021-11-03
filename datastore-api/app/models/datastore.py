@@ -4,9 +4,6 @@ from typing import List
 from pydantic import BaseModel, validator
 
 
-FIELDSET_NAME = "default"
-
-
 class DatastoreField(BaseModel):
     name: str
     type: str

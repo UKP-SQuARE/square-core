@@ -226,13 +226,16 @@ class ElasticsearchConnector(BaseConnector):
         results = await self.es.mget(index=docs_index, body={"ids": document_ids})
         return [self.converter.convert_to_document(doc["_source"]) for doc in results["docs"]]
 
-    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> bool:
+    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
         """Adds a new document.
 
         Args:
             datastore_name (str): Name of the datastore.
             document_id (int): Id of the document.
             document (Document): Document to add.
+
+        Returns:
+            Tuple[bool, bool]: A tuple containing the success of the update and a flag indicating whether an item was newly created.
         """
         docs_index = self._datastore_docs_index_name(datastore_name)
         result = await self.es.index(
@@ -241,7 +244,7 @@ class ElasticsearchConnector(BaseConnector):
             body=self.converter.convert_from_document(document),
         )
 
-        return result["_shards"]["successful"] > 0
+        return result["_shards"]["successful"] > 0, result["result"] == "created"
 
     async def add_document_batch(self, datastore_name: str, documents: Iterable[Document]) -> Tuple[int, int]:
         """Adds a batch of documents.
@@ -349,7 +352,12 @@ class ElasticsearchConnector(BaseConnector):
                 "term": {"id": document_id},
             },
         }
-        return await self.es.search(index=docs_index, body=search_body)
+        result = await self.es.search(index=docs_index, body=search_body)
+        query_results = self.converter.convert_to_query_results(result)
+        
+        if len(query_results) == 0:
+            return None
+        return query_results[0]
 
     # --- Management methods ---
 

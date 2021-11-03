@@ -32,6 +32,4 @@ FROM base as build
 
 COPY logging.conf logging.conf
 
-CMD ["python" "run.py", "wait-vespa", "config"]
-CMD ["python" "run.py", "wait-vespa", "app"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7000", "--log-config", "logging.conf"]
