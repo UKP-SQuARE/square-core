@@ -1,6 +1,6 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
-  <div class="card shadow">
+  <div class="card shadow p-3">
     <nav>
       <div class="nav nav-tabs justify-content-center mt-3" id="nav-tab" role="tablist">
         <button
@@ -32,22 +32,17 @@
             <div class="row mb-3">
               <div class="col">
                 <div class="input-group">
-                  <span class="input-group-text">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-lg" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14Z"/>
-                    </svg>
-                  </span>
                   <div class="form-floating flex-grow-1">
                     <input
+                        v-model="inputQuestion"
                         type="text"
-                        class="form-control rounded-0"
+                        class="form-control rounded-0 rounded-start"
                         id="floatingQuestion"
                         placeholder="Enter your question"
-                        aria-label="Enter your question"
-                        aria-describedby="button-addon2">
+                        aria-label="Enter your question">
                     <label for="floatingQuestion">Enter your question</label>
                   </div>
-                  <button class="btn btn-outline-primary" type="button" id="button-addon2">
+                  <button class="btn btn-outline-primary" type="submit" :disabled="waitingQuery">
                     <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
                     Ask your question
                   </button>
@@ -71,10 +66,10 @@
               <div class="col">
                 <div class="form-floating">
                   <input
+                      v-model="inputQuestion"
                       type="text"
-                      class="form-control rounded-0 rounded-top "
+                      class="form-control rounded-0 rounded-top"
                       id="floatingContextQuestion"
-                      style="border-bottom-style: dashed;"
                       placeholder="Enter your question"
                       aria-label="Enter your question"
                       aria-describedby="button-addon2">
@@ -82,6 +77,7 @@
                 </div>
                 <div class="form-floating">
                   <textarea
+                      v-model="inputContext"
                       class="form-control rounded-0 rounded-bottom border-top-0"
                       placeholder="Context seperated by line breaks"
                       id="floatingContext"
@@ -101,7 +97,7 @@
                 </label>
               </div>
               <div class="col-6 text-end">
-                <button class="btn btn-outline-primary" type="button">
+                <button class="btn btn-outline-primary" type="submit" :disabled="waitingQuery">
                   <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
                   Ask your question
                 </button>
@@ -109,45 +105,45 @@
             </div>
           </div>
         </div>
-      </form>
-      <div class="collapse" id="collapseExample">
-        <div class="row mt-3">
-          <div class="col">
-            <div class="form-floating">
-              <select v-model="options.selector" class="form-select" id="skillSelector">
-                <option v-for="skill in selector" v-bind:value="skill.value" v-bind:key="skill.value">
+        <div class="collapse" id="collapseExample">
+          <div class="row mt-3">
+            <div class="col">
+              <div class="form-floating">
+                <select v-model="options.selector" class="form-select" id="skillSelector">
+                  <option v-for="skill in availableSkillSelectors" v-bind:value="skill.value" v-bind:key="skill.value">
+                    {{ skill.text }}
+                  </option>
+                </select>
+                <label for="skillSelector">Skill selector</label>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col">
+              <label for="skillSelect" class="form-label col-form-label-sm text-muted">Only use these skills</label>
+              <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
+                <option v-for="skill in availableSkills" v-bind:value="skill.value" v-bind:key="skill.value">
                   {{ skill.text }}
                 </option>
               </select>
-              <label for="skillSelector">Skill selector</label>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-6">
+              <div class="form-floating mb-3">
+                <input v-model="options.maxQuerriedSkills" type="number" class="form-control" id="maxQuerriedSkills" required>
+                <label for="maxQuerriedSkills">Max querried skills</label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-floating mb-3">
+                <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
+                <label for="maxResultsSkill">Max results per skill</label>
+              </div>
             </div>
           </div>
         </div>
-        <div class="row mt-3">
-          <div class="col">
-            <label for="skillSelect" class="form-label col-form-label-sm text-muted">Only use these skills</label>
-            <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
-              <option v-for="skill in selector" v-bind:value="skill.value" v-bind:key="skill.value">
-                {{ skill.text }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="row mt-3">
-          <div class="col-6">
-            <div class="form-floating mb-3">
-              <input v-model="options.maxQuerriedSkills" type="number" class="form-control" id="maxQuerriedSkills" required>
-              <label for="maxQuerriedSkills">Max querried skills</label>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="form-floating mb-3">
-              <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
-              <label for="maxResultsSkill">Max results per skill</label>
-            </div>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   </div>
 </template>
@@ -159,7 +155,6 @@ import Alert from '@/components/Alert.vue'
 export default Vue.component('query', {
   data() {
     return {
-      showOptions: false,
       waitingQuery: false,
       options: {
         selectedSkills: []
@@ -216,8 +211,6 @@ export default Vue.component('query', {
           this.failureMessage = error.data.msg
         }).finally(() => {
           this.waitingQuery = false
-          // Collapse the options once results are here to save space. This is due to query and results residing in one view.
-          this.showOptions = false
         })
       } else {
         this.showEmptyWarning = true
@@ -232,7 +225,6 @@ export default Vue.component('query', {
     var self = this
     this.$store.subscribe(mutation => {
       if (mutation.type === 'SOCKET_SKILLRESULT') {
-        this.showOptions = false
         if (mutation.payload.error_msg) {
           self.failure = true
           self.failureMessage = mutation.payload.error_msg
