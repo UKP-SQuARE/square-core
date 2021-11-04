@@ -14,6 +14,7 @@ MODEL_TYPE: str = config("MODEL_TYPE")
 
 # Path to the onnx file of the model (this is necessary for onnx models)
 MODEL_PATH: str = config("MODEL_PATH", default=None)
+DECODER_PATH: str = config("DECODER_PATH", default=None)
 
 # Disable CUDA even if available
 DISABLE_GPU: bool = config("DISABLE_GPU", cast=bool, default=False)

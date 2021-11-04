@@ -177,8 +177,8 @@ class TestOnnxQuestionAnswering:
 @pytest.mark.usefixtures("test_onnx_generation")
 class TestOnnxGeneration:
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("input", [(["Generate text"]),
-                                       (["Generate text", "And a lot more text"])],
+    @pytest.mark.parametrize("input", [(["Today is a good day"]),
+                                       (["Today is a good day", "And a lot more text"])],
                              )
     async def test_generation(self, prediction_request, test_onnx_generation, input):
         if test_onnx_generation is None:
@@ -188,20 +188,9 @@ class TestOnnxGeneration:
         prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
         assert all(isinstance(prediction.generated_texts[i][0], str) for i in range(len(input)))
 
-    @pytest.mark.asyncio
-    async def test_generation_output_attention_and_scores(self, prediction_request, test_onnx_generation):
-        if test_onnx_generation is None:
-            pytest.skip("No model found.")
-        prediction_request.model_kwargs = {
-            "output_attentions": True,
-            "output_scores": True
-        }
 
-        prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
-        assert "scores" in prediction.model_outputs
-
-    @pytest.mark.parametrize("input", [(["Generate text"]),
-                                       (["Generate text", "And a lot more text"])],
+    @pytest.mark.parametrize("input", [(["Today is a good day"]),
+                                       (["Today is a good day", "And a lot more text"])],
                              )
     @pytest.mark.asyncio
     async def test_generation_beam_sample_multiple_seqs(self, prediction_request, test_onnx_generation, input):
@@ -209,7 +198,6 @@ class TestOnnxGeneration:
             pytest.skip("No model found.")
         prediction_request.input = input
         prediction_request.task_kwargs = {
-            "generation_mode": "beam_search",
             "num_beams": 4,
             "do_sample": True,
             "top_k": 10,
