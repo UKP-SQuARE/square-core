@@ -4,22 +4,22 @@
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">SQuARE</a>
+          <router-link class="navbar-brand" to="/">SQuARE</router-link>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon" />
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">Home</a>
+                <router-link class="nav-link active" aria-current="page" to="/">Home</router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/about">About</a>
+                <router-link class="nav-link" to="/about">About</router-link>
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <button href="/login" type="button" class="btn btn-outline-light me-2">Sign in</button>
-              <button href="/register" type="button" class="btn btn-light">Sign up</button>
+              <router-link to="/login" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
+              <router-link to="/register" role="button" class="btn btn-light">Sign up</router-link>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="d-block text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
