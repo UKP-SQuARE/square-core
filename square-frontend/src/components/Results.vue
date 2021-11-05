@@ -1,60 +1,51 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-    <b-row v-if="currentResults.length" class="border rounded shadow mx-0 my-3 py-3 no-gutters">
-      <b-col>
-        <b-tabs content-class="m-3" align="center">
-          <b-tab v-for="skillResult in currentResults" v-bind:key="skillResult.name">
-            <template v-slot:title>
-              {{ skillResult.name }} <small>{{ parseInt(skillResult.meta_qa_score * 100) }}% relevant</small>
-            </template>
-            <h6 class="text-muted mt-2 mb-1 ml-1">{{ skillResult.description }}</h6>
-            <b-card class="mt-2" v-show="skillResult.error">
-              <b-card-text>Error: {{ skillResult.error }}</b-card-text>
-            </b-card>
-            <b-card
-                v-for="(res, i) in skillResult.results"
-                v-bind:key="res.prediction_documents + i"
-                class="mt-2"
-                header-bg-variant="primary"
-                header-text-variant="white"
-                footer-tag="footer">
-              <template #header>
-                <h6 class="mb-0">
-                  <span style="float: left">{{ res.prediction_output.output }}</span>
-                  <span style="float: right">{{ res.prediction_output.output_score }}</span>
-                </h6>
-              </template>
-              <b-card-text v-html="highlight(res.prediction_documents[0].document, res.prediction_documents[0].span)" />
-              <component :is="res.type" v-bind:result="res" />
-              <template #footer>
-                <div>
-                  <b-button v-b-toggle.collapse-2 class="mt-1">
-                    See similar documents ({{ res.prediction_documents.length - 1 }})
-                  </b-button>
-                  <b-collapse id="collapse-2" class="mt-2">
-                    <b-card>I should start open!</b-card>
-                  </b-collapse>
-                </div>
-              </template>
-            </b-card>
-          </b-tab>
-        </b-tabs>
-      </b-col>
-    </b-row>
+  <div v-if="this.currentResults.length" class="card shadow p-3 mt-3">
+    <nav>
+      <div class="nav nav-tabs justify-content-center mt-3" id="skill-tab" role="tablist">
+        <button
+            v-for="(skillResult, index) in this.currentResults"
+            :key="skillResult.name"
+            class="nav-link"
+            :class="{ 'active': activeTab === index }"
+            :id="`skill-${skillResult.name}-tab`"
+            data-bs-toggle="tab"
+            :data-bs-target="`#skill-${skillResult.name}`"
+            type="button"
+            role="tab"
+            v-on:click="activeTab = index">{{ skillResult.name }}</button>
+      </div>
+    </nav>
+    <div class="card-body">
+        <div class="tab-content" id="skill-tabContent">
+          <div
+              v-for="(skillResult, index) in this.currentResults"
+              :key="skillResult.name"
+              class="tab-pane fade"
+              :class="{ 'show': activeTab === index, 'active': activeTab === index }"
+              :id="`#skill-${skillResult.name}`">
+            <Alert v-if="skillResult.error" class="alert-danger" dismissible>There was a problem: {{ skillResult.error }}</Alert>
+            <component :is="skillResult.name.replace('-', '')" :skillResult="skillResult" />
+          </div>
+        </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import PlainText from '@/components/results/PlainText.vue'
-import KeyValue from '@/components/results/KeyValue.vue'
-import RawHTML from '@/components/results/HTML.vue'
+import Alert from '@/components/Alert.vue'
+import boolq from '@/components/results/boolq.vue'
 
 export default Vue.component('results', {
+  data() {
+    return {
+      activeTab: 0
+    }
+  },
   components: {
-    // Be careful that the name does not overlap with an existing HTML component (e.g. text, html)
-    PlainText,
-    KeyValue,
-    RawHTML
+    Alert,
+    boolq,
   },
   computed: {
     currentQuestion() {
