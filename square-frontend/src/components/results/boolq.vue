@@ -34,14 +34,16 @@
 
 <script>
 import Vue from 'vue'
+import mixin from '@/components/results/mixin.vue'
 
 export default Vue.component('boolq', {
   props: ['skillResult'],
+  mixins: [mixin],
   computed: {
     currentResults() {
       let result = {}
       this.skillResult.results.forEach(res => {
-        result[res.prediction_output.output] = Math.round(res.prediction_output.output_score * 100_000) / 1_000
+        result[res.prediction_output.output] = this.roundScore(res.prediction_output.output_score)
       })
       return result
     }
