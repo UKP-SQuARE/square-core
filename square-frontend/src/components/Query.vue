@@ -1,29 +1,31 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
-  <div class="card shadow p-3">
-    <nav>
-      <div class="nav nav-tabs justify-content-center mt-3" id="nav-tab" role="tablist">
-        <button
-            class="nav-link active"
-            id="nav-question-tab"
-            data-bs-toggle="tab"
-            data-bs-target="#nav-question"
-            type="button"
-            role="tab"
-            aria-controls="nav-question"
-            aria-selected="true">Question</button>
-        <button
-            class="nav-link"
-            id="nav-context-tab"
-            data-bs-toggle="tab"
-            data-bs-target="#nav-context"
-            type="button"
-            role="tab"
-            aria-controls="nav-context"
-            aria-selected="true">Context QA</button>
-      </div>
-    </nav>
-    <div class="card-body">
+  <div class="card border-primary shadow">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs justify-content-center">
+        <li class="nav-item">
+          <a class="nav-link active"
+             id="nav-question-tab"
+             data-bs-toggle="tab"
+             data-bs-target="#nav-question"
+             type="button"
+             role="tab"
+             aria-controls="nav-question"
+             aria-selected="true">Question</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             id="nav-context-tab"
+             data-bs-toggle="tab"
+             data-bs-target="#nav-context"
+             type="button"
+             role="tab"
+             aria-controls="nav-context"
+             aria-selected="true">Context QA</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body p-4">
       <Alert v-if="showEmptyWarning" class="alert-warning" dismissible>You need to enter a question!</Alert>
       <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
       <form v-on:submit.prevent="askQuestion">
@@ -222,7 +224,7 @@ export default Vue.component('query', {
    * Subscribe to mutation changes for the websocket
    */
   beforeMount() {
-    var self = this
+    let self = this
     this.$store.subscribe(mutation => {
       if (mutation.type === 'SOCKET_SKILLRESULT') {
         if (mutation.payload.error_msg) {
