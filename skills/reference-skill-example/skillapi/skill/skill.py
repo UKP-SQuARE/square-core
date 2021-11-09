@@ -40,7 +40,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     # or square-core/square-model-inference-api/inference_server/square_model_inference/models/prediction.py
     output = await model_api(
         model_name="bert-base-uncased", 
-        pipline="question-answering", 
+        pipeline="question-answering", 
         model_request=model_request
     )
     logger.info(f"Model API output:\n{output}")

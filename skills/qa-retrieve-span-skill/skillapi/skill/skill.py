@@ -39,7 +39,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     output = await model_api(
         model_name="bert-base-uncased", 
-        pipline="question-answering", 
+        pipeline="question-answering", 
         model_request=model_request
     )
     logger.info(f"Model API output:\n{output}")
