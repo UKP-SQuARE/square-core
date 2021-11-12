@@ -67,14 +67,13 @@
             <div class="row mb-3">
               <div class="col">
                 <div class="form-floating">
-                  <input
-                      v-model="inputQuestion"
-                      type="text"
+                  <textarea
+                      v-model="currentQuestion"
                       class="form-control rounded-0 rounded-top"
-                      id="floatingContextQuestion"
                       placeholder="Enter your question"
-                      aria-label="Enter your question"
-                      aria-describedby="button-addon2">
+                      id="floatingContextQuestion"
+                      rows="1"
+                      style="resize: none; white-space: nowrap; overflow: scroll" />
                   <label for="floatingContextQuestion">Enter your question</label>
                 </div>
                 <div class="form-floating">
@@ -197,6 +196,18 @@ export default Vue.component('query', {
     },
     queryOptions() {
       return this.$store.state.queryOptions
+    },
+    currentQuestion: {
+      get: function () {
+        return this.inputQuestion
+      },
+      set: function (newValue) {
+        let tmp = newValue.trimEnd().split('\n')
+        this.inputQuestion = tmp.splice(0, 1)[0]
+        if (tmp.length > 0) {
+          this.inputContext = tmp.join('\n')
+        }
+      }
     }
   },
   methods: {
