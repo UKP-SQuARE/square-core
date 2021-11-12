@@ -4,7 +4,7 @@
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs justify-content-center">
         <li class="nav-item">
-          <a class="nav-link active"
+          <a class="nav-link h5 fw-light active"
              id="nav-question-tab"
              data-bs-toggle="tab"
              data-bs-target="#nav-question"
@@ -14,7 +14,7 @@
              aria-selected="true">Question</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link"
+          <a class="nav-link h5 fw-light"
              id="nav-context-tab"
              data-bs-toggle="tab"
              data-bs-target="#nav-context"

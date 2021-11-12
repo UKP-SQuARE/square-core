@@ -7,7 +7,7 @@
             v-for="(skillResult, index) in this.currentResults"
             :key="skillResult.name"
             class="nav-item">
-          <a class="nav-link"
+          <a class="nav-link h5 fw-light"
              :class="{ 'active': activeTab === index }"
              :id="`skill-${skillResult.name}-tab`"
              data-bs-toggle="tab"

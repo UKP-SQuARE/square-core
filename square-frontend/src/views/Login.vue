@@ -1,8 +1,9 @@
 <!-- The Login Page. The user can login here. -->
 <template>
   <div class="d-flex justify-content-center">
-    <div class="card border-primary shadow align-self-center p-3" style="width: 362px;">
-      <div class="card-body text-center">
+    <div class="card border-primary shadow align-self-center text-center" style="width: 362px;">
+      <h5 class="card-header fw-light py-2">Sign in</h5>
+      <div class="card-body p-4">
         <Alert v-if="sessionExpired" class="alert-warning" dismissible>Session expired. Please sign in again.</Alert>
         <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
         <h3 class="card-title mb-3">Please sign in</h3>
