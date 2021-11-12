@@ -63,10 +63,11 @@ services:
   model_auth:
     image: ukpsquare/square-model-api-auth:latest
     env_file:
-      - ./square-model-inference-api/auth_server/.env
+      - square-model-inference-api/auth_server/.env
 
   model_nginx:
     image: nginx
+    restart: always
     ports:
       - 8989:8080
     volumes:
@@ -85,6 +86,13 @@ services:
       - ./square-model-inference-api/inference_server/.env.dpr
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
+
+  model_distilbert_st:
+    image: ukpsquare/square-model-api:latest
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
+    volumes:
+      - ./.cache/:/etc/sentence-transformers/.cache/
 
   ### / MODEL API Finished
 
