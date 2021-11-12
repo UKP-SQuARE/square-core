@@ -19,7 +19,7 @@
       </ul>
     </div>
     <div class="card-body p-4">
-      <h1 class="card-title display-6 text-center mt-2 mb-5">{{ this.currentQuestion }}</h1>
+      <p class="lead text-center my-3">{{ this.currentQuestion }}</p>
       <div class="tab-content" id="skill-tabContent">
         <div
             v-for="(skillResult, index) in this.currentResults"

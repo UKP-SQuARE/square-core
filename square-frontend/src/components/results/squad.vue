@@ -1,17 +1,26 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-  <ol class="list-group list-group-numbered list-group-flush">
+  <ul class="list-group list-group-flush">
     <li
         v-for="(res, index) in skillResult.results"
         :key="index"
-        class="list-group-item d-flex justify-content-between align-items-start">
-      <div class="ms-2 me-auto">
-        <div class="fw-bold">Answer: {{ res.prediction_output.output }}</div>
-        <small v-html="highlightSpan(res.prediction_documents[0].document, res.prediction_documents[0].span)" />
+        class="list-group-item">
+      <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+        <div>{{ index + 1 }}. Answer: <span class="fw-bold">{{ res.prediction_output.output }}</span></div>
+        <span class="badge bg-primary p-2">{{ roundScore(res.prediction_score) }}%</span>
       </div>
-      <span class="badge bg-primary rounded-pill">{{ roundScore(res.prediction_score) }}%</span>
+      <small v-html="highlightSpan(res.prediction_documents[0].document, res.prediction_documents[0].span)" />
+      <div class="progress mt-2">
+        <div
+            class="progress-bar progress-bar-striped bg-primary"
+            role="progressbar"
+            :style="{ width: `${roundScore(res.prediction_score)}%` }"
+            :aria-valuenow="roundScore(res.prediction_score)"
+            aria-valuemin="0"
+            aria-valuemax="100" />
+      </div>
     </li>
-  </ol>
+  </ul>
 </template>
 
 <script>

@@ -5,7 +5,7 @@
       <div
           class="d-inline-flex align-items-center justify-content-center fs-2 bg-danger rounded-circle"
           style="width: 3.5rem; height: 3.5rem;">👎</div>
-      <span class="badge rounded-pill bg-danger mt-2">{{ currentResults.no }}%</span>
+      <span class="badge bg-danger mt-2 p-2">{{ currentResults.no }}%</span>
     </div>
     <div class="progress flex-grow-1 align-self-center mx-2">
       <div
@@ -27,7 +27,7 @@
       <div
           class="d-inline-flex align-items-center justify-content-center fs-2 bg-success rounded-circle"
           style="width: 3.5rem; height: 3.5rem;">👍</div>
-      <span class="badge rounded-pill bg-success mt-2">{{ currentResults.yes }}%</span>
+      <span class="badge bg-success mt-2 p-2">{{ currentResults.yes }}%</span>
     </div>
   </div>
 </template>

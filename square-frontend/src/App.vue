@@ -9,7 +9,7 @@
       </div>
     </div>
     <main class="flex-fill">
-      <router-view class="container h-100" />
+      <router-view class="container-xl h-100" />
     </main>
     <Footer />
   </div>
