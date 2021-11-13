@@ -31,16 +31,6 @@ class TestDatastores:
         assert response.json()["fields"] == new_datastore_fields
         assert "fieldsets" not in response.json()
 
-    def test_cannot_override_id_field(self, client):
-        new_datastore_name = "datastore-test-new_datastore"
-        new_datastore_fields = [
-            DatastoreField(name="id", type="int").dict(),
-            DatastoreField(name="field1", type="text").dict(),
-        ]
-        response = client.put("/datastores/{}".format(new_datastore_name), json=new_datastore_fields)
-        assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "Cannot use reserved field 'id'."
-
     def test_delete_datastore(self, client):
         datastore_name = "datastore-test-for_delete"
         response = client.put("/datastores/{}".format(datastore_name), json=[{"name": "text", "type": "text"}])

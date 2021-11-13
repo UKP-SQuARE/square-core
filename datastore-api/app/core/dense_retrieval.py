@@ -33,7 +33,7 @@ class DenseRetrieval:
         # 1. Get the query embedding from the model api
         query_embedding = self.model_api.encode_query(query, index)
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
-        queried = self.faiss.search(datastore_name, index_name, query_embedding, top_k)
+        queried = await self.faiss.search(datastore_name, index_name, query_embedding, top_k)
         # 3. Lookup the retrieved doc ids in the ES index.
         docs = await self.conn.get_document_batch(datastore_name, list(queried.keys()))
         results = []

@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Iterable, Union
+from typing import Iterable, List, Union
 
 import requests
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
@@ -84,7 +84,7 @@ async def upload_documents(
 
 
 @router.post(
-    "",
+    "/fromurls",
     summary="Upload documents from a file at the given url to the datastore",
     response_model=UploadResponse,
     status_code=201,
@@ -122,6 +122,34 @@ async def upload_documents_from_urls(
             return UploadResponse(message=f"Failed to connect to {url}.", successful_uploads=total_docs)
 
     return UploadResponse(message=f"Successfully uploaded {total_docs} documents.", successful_uploads=total_docs)
+
+
+@router.post(
+    "",
+    summary="Upload a batch of documents",
+    response_model=UploadResponse,
+    status_code=201,
+    responses={
+        200: {"description": "Number of successfully uploaded documents to the datastore."},
+        400: {"model": UploadResponse, "description": "Error during Upload"},
+    },
+)
+async def post_documents(
+    datastore_name: str = Path(..., description="The name of the datastore"),
+    documents: List[Document] = Body(..., description="Batch of documents to be uploaded."),
+    conn=Depends(get_storage_connector),
+    response: Response = None,
+):
+    successes, errors = await conn.add_document_batch(datastore_name, documents)
+    if errors > 0:
+        response.status_code = 400
+        return UploadResponse(
+            message=f"Unable to upload {errors} documents.", successful_uploads=successes
+        )
+    else:
+        return UploadResponse(
+            message=f"Successfully uploaded {successes} documents.", successful_uploads=successes
+        )
 
 
 @router.get(
@@ -169,40 +197,6 @@ async def get_document(
         return result
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find document.")
-
-
-@router.post(
-    "/{doc_id}",
-    summary="Upload a document to the datastore",
-    description="Upload a document in the datastore by id",
-    responses={
-        201: {"description": "The document has been created successfully."},
-        400: {"model": HTTPError, "description": "Failed to upload document"},
-    },
-)
-async def post_document(
-    request: Request,
-    datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to upload"),
-    document: Document = Body(..., description="The document to upload"),
-    conn=Depends(get_storage_connector),
-):
-    # First, check if all fields in the uploaded document are valid.
-    fields = await get_fields(datastore_name)
-    if not all([field in fields for field in document]):
-        raise HTTPException(
-            status_code=400,
-            detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
-        )
-
-    success, _ = await conn.add_document(datastore_name, doc_id, document)
-    if success:
-        return Response(
-            status_code=201,
-            headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
-        )
-    else:
-        raise HTTPException(status_code=500)
 
 
 @router.put(

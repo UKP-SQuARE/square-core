@@ -13,7 +13,7 @@ class FaissClient:
 
     async def search(self, datastore_name, index_name, query_embedding, top_k=10) -> List[QueryResult]:
         # TODO: currently always accesses the same faiss storage
-        url = self.base_url + "/search"
+        url = f"{self.base_url}/{datastore_name}/search"
         data = {"k": top_k, "vectors": [query_embedding]}
         response = requests.post(url, json=data)
         if response.status_code != 200:

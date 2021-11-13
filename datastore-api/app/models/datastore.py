@@ -1,14 +1,12 @@
 from collections.abc import Iterable
 from typing import List
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 
 class DatastoreField(BaseModel):
     name: str
     type: str
-    use_for_ranking: bool = True
-    return_with_document: bool = True
 
     class Config:
         schema_extra = {
@@ -29,6 +27,7 @@ class Datastore(BaseModel):
             "example": {
                 "name": "wiki",
                 "fields": [
+                    DatastoreField(name="id", type="long"),
                     DatastoreField(name="title", type="text"),
                     DatastoreField(name="text", type="text"),
                 ]
@@ -43,16 +42,10 @@ class DatastoreRequest(Iterable, BaseModel):
     def __iter__(self):
         return self.__root__.__iter__()
 
-    @validator("__root__")
-    def cannot_contain_id(cls, v):
-        for field in v:
-            if field.name == "id":
-                raise ValueError("Cannot use reserved field 'id'.")
-        return v
-
     class Config:
         schema_extra = {
             "example": [
+                DatastoreField(name="id", type="long"),
                 DatastoreField(name="title", type="text"),
                 DatastoreField(name="text", type="text"),
             ]
