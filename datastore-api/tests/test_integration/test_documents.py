@@ -23,7 +23,7 @@ class TestDocuments:
         assert response.status_code == 200
 
     def test_delete_document(self, client, datastore_name):
-        document = {"title": "a new document", "text": "some content"}
+        document = {"id": 88888, "title": "a new document", "text": "some content"}
         response = client.put(f"/datastores/{datastore_name}/documents/88888", json=document)
         assert response.status_code == 201
         response = client.delete(f"/datastores/{datastore_name}/documents/88888")
@@ -47,6 +47,14 @@ class TestDocuments:
         response = client.get(f"/datastores/{datastore_name}/documents/4141")
         assert response.status_code == 200
 
+    def test_post_documents_invalid_datastore(self, client):
+        document = [
+            {"id": 41, "title": "a new document", "text": "some content"},
+            {"id": 4141, "title": "another new document", "text": "some content"},
+        ]
+        response = client.post("/datastores/datastore-test-invalid_datastore_name/documents", json=document)
+        assert response.status_code == 404
+
     def test_upload_documents_from_file(self, client, datastore_name, documents_file):
         response = client.post(f"/datastores/{datastore_name}/documents/upload", files={"file": documents_file})
         assert response.status_code == 201
@@ -56,7 +64,7 @@ class TestDocuments:
         requests_mock.real_http = True
         requests_mock.get(upload_urlset.urls[0], body=documents_file)
 
-        response = client.post(f"/datastores/{datastore_name}/documents/fromurls", json=upload_urlset.dict())
+        response = client.post(f"/datastores/{datastore_name}/documents/from_urls", json=upload_urlset.dict())
         assert response.status_code == 201
         assert response.json()["successful_uploads"] == 10
 
@@ -64,7 +72,7 @@ class TestDocuments:
         requests_mock.real_http = True
         requests_mock.get(upload_urlset.urls[0], status_code=404)
 
-        response = client.post(f"/datastores/{datastore_name}/documents/fromurls", json=upload_urlset.dict())
+        response = client.post(f"/datastores/{datastore_name}/documents/from_urls", json=upload_urlset.dict())
         assert response.status_code == 400
         assert response.json()["successful_uploads"] == 0
 

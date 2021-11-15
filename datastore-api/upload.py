@@ -1,3 +1,6 @@
+"""
+A simple CLI script to upload documents to the SQuARE Datastore API.
+"""
 import argparse
 import json
 
@@ -17,13 +20,16 @@ class DatastoreAPIClient:
         response.raise_for_status()
         return response.json()
 
-    def upload_tsv(self, datastore_name, tsv_file, max_documents=None):
+    def upload_tsv(self, datastore_name, tsv_file, max_documents=None, field_mappings=None):
         batch = []
 
         if not max_documents:
             max_documents = sum(1 for line in open(tsv_file, "r"))
         with open(tsv_file, "r") as f:
             header = f.readline().strip().split("\t")
+            if field_mappings:
+                header = [field_mappings[h] if h in field_mappings else h for h in header]
+
             for i, line in enumerate(tqdm.tqdm(f, total=max_documents)):
                 if i == max_documents:
                     break

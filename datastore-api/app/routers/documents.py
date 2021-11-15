@@ -65,6 +65,7 @@ async def upload_document_file(conn, datastore_name: str, file_name: str, file_i
     responses={
         200: {"description": "Number of successfully uploaded documents to the datastore."},
         400: {"model": UploadResponse, "description": "Error during Upload"},
+        404: {"model": HTTPError, "description": "The datastore does not exist."},
     },
 )
 async def upload_documents(
@@ -73,6 +74,10 @@ async def upload_documents(
     conn=Depends(get_storage_connector),
     response: Response = None,
 ):
+    datastore = await conn.get_datastore(datastore_name)
+    if datastore is None:
+        raise HTTPException(status_code=404, detail="Datastore not found.")
+
     uploaded_docs, upload_response = await upload_document_file(conn, datastore_name, file.filename, file.file)
     if upload_response is not None:
         response.status_code = 400
@@ -84,13 +89,14 @@ async def upload_documents(
 
 
 @router.post(
-    "/fromurls",
+    "/from_urls",
     summary="Upload documents from a file at the given url to the datastore",
     response_model=UploadResponse,
     status_code=201,
     responses={
         201: {"description": "Number of successfully uploaded documents to the datastore."},
         400: {"model": UploadResponse, "description": "Error during Upload"},
+        404: {"model": HTTPError, "description": "The datastore does not exist."},
     },
 )
 async def upload_documents_from_urls(
@@ -99,6 +105,10 @@ async def upload_documents_from_urls(
     conn=Depends(get_storage_connector),
     api_response: Response = None,
 ):
+    datastore = await conn.get_datastore(datastore_name)
+    if datastore is None:
+        raise HTTPException(status_code=404, detail="Datastore not found.")
+
     total_docs = 0  # total uploaded items across all files
 
     for url in urlset.urls:
@@ -132,6 +142,7 @@ async def upload_documents_from_urls(
     responses={
         200: {"description": "Number of successfully uploaded documents to the datastore."},
         400: {"model": UploadResponse, "description": "Error during Upload"},
+        404: {"model": HTTPError, "description": "The datastore does not exist."},
     },
 )
 async def post_documents(
@@ -140,6 +151,10 @@ async def post_documents(
     conn=Depends(get_storage_connector),
     response: Response = None,
 ):
+    datastore = await conn.get_datastore(datastore_name)
+    if datastore is None:
+        raise HTTPException(status_code=404, detail="Datastore not found.")
+
     successes, errors = await conn.add_document_batch(datastore_name, documents)
     if errors > 0:
         response.status_code = 400
@@ -217,7 +232,7 @@ async def update_document(
     conn=Depends(get_storage_connector),
 ):
     # First, check if all fields in the uploaded document are valid.
-    fields = await get_fields(datastore_name)
+    fields = await get_fields(conn, datastore_name)
     if not all([field in fields for field in document]):
         return HTTPException(
             status_code=400,

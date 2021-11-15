@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.param_functions import Path, Query
+from fastapi.param_functions import Body, Path, Query
 
 from ..models.httperror import HTTPError
 from ..models.query import QueryResult
@@ -45,13 +45,34 @@ async def search(
     else:
         return await conn.search(datastore_name, query, n_hits=top_k)
 
-    # TODO convert to model object
-    # vespa_response = vespa_app.query(body=body)
-    # if vespa_response.status_code == 200:
-    #     fields = await get_fields(datastore_name)
-    #     return QueryResult.from_vespa(vespa_response.json, fields)
-    # else:
-    #     raise HTTPException(status_code=500)
+
+@router.post(
+    "/search_by_vector",
+    summary="Search a datastore with the given query vector and return top-k documents",
+    description="Searches the given datastore with the search strategy specified by the given index",
+    response_description="The top-K documents",
+    response_model=List[QueryResult],
+    responses={
+        200: {"model": List[QueryResult], "description": "The top-K documents"},
+        404: {"model": HTTPError, "description": "The datastore or index does not exist"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def search_by_vector(
+    datastore_name: str = Path(..., description="Name of the datastore."),
+    index_name: str = Body(..., description="Index name."),
+    query_vector: List[float] = Body(..., description="Query vector."),
+    top_k: int = Body(40, description="Number of documents to retrieve."),
+    conn=Depends(get_storage_connector),
+    dense_retrieval=Depends(get_search_client),
+):
+    # do dense retrieval
+    try:
+        return await dense_retrieval.search_by_vector(datastore_name, index_name, query_vector, top_k)
+    except ValueError as ex:
+        raise HTTPException(status_code=404, detail=str(ex))
+    except Exception as other_ex:
+        raise HTTPException(status_code=500, detail=str(other_ex))
 
 
 @router.get(

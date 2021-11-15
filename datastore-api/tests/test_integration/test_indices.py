@@ -70,6 +70,8 @@ class TestIndices:
         )
         assert response.status_code == 404
 
+    # TODO currently not supported
+    @pytest.mark.skip
     def test_upload_embeddings(self, client, datastore_name, dpr_index, embeddings_file):
         response = client.post(
             "/datastores/{0}/indices/{1}/embeddings/upload".format(datastore_name, dpr_index.name),
@@ -78,6 +80,8 @@ class TestIndices:
         assert response.status_code == 201
         assert response.json()["successful_uploads"] == 10
 
+    # TODO currently not supported
+    @pytest.mark.skip
     def test_upload_embeddings_from_urls(
         self, requests_mock: Mocker, client, datastore_name, dpr_index, embeddings_file, upload_urlset
     ):
