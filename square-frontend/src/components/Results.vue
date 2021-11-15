@@ -1,60 +1,58 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-    <b-row v-if="currentResults.length" class="border rounded shadow mx-0 my-3 py-3 no-gutters">
-      <b-col>
-        <b-tabs content-class="m-3" align="center">
-          <b-tab v-for="skillResult in currentResults" v-bind:key="skillResult.name">
-            <template v-slot:title>
-              {{ skillResult.name }} <small>{{ parseInt(skillResult.meta_qa_score * 100) }}% relevant</small>
-            </template>
-            <h6 class="text-muted mt-2 mb-1 ml-1">{{ skillResult.description }}</h6>
-            <b-card class="mt-2" v-show="skillResult.error">
-              <b-card-text>Error: {{ skillResult.error }}</b-card-text>
-            </b-card>
-            <b-card
-                v-for="(res, i) in skillResult.results"
-                v-bind:key="res.prediction_documents + i"
-                class="mt-2"
-                header-bg-variant="primary"
-                header-text-variant="white"
-                footer-tag="footer">
-              <template #header>
-                <h6 class="mb-0">
-                  <span style="float: left">{{ res.prediction_output.output }}</span>
-                  <span style="float: right">{{ res.prediction_output.output_score }}</span>
-                </h6>
-              </template>
-              <b-card-text v-html="highlight(res.prediction_documents[0].document, res.prediction_documents[0].span)" />
-              <component :is="res.type" v-bind:result="res" />
-              <template #footer>
-                <div>
-                  <b-button v-b-toggle.collapse-2 class="mt-1">
-                    See similar documents ({{ res.prediction_documents.length - 1 }})
-                  </b-button>
-                  <b-collapse id="collapse-2" class="mt-2">
-                    <b-card>I should start open!</b-card>
-                  </b-collapse>
-                </div>
-              </template>
-            </b-card>
-          </b-tab>
-        </b-tabs>
-      </b-col>
-    </b-row>
+  <div v-if="currentResults.length" class="card border-primary shadow mt-3">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs justify-content-center">
+        <li
+            v-for="(skillResult, index) in currentResults"
+            :key="skillResult.name"
+            class="nav-item">
+          <a class="nav-link h5 fw-light"
+             :class="{ 'active': activeTab === index }"
+             :id="`skill-${skillResult.name}-tab`"
+             data-bs-toggle="tab"
+             :data-bs-target="`#skill-${skillResult.name}`"
+             type="button"
+             role="tab"
+             v-on:click="activeTab = index">{{ skillResult.name }}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body p-4">
+      <p class="lead text-center my-3">{{ currentQuestion }}</p>
+      <div class="tab-content" id="skill-tabContent">
+        <div
+            v-for="(skillResult, index) in currentResults"
+            :key="skillResult.name"
+            class="tab-pane fade"
+            :class="{ 'show': activeTab === index, 'active': activeTab === index }"
+            :id="`#skill-${skillResult.name}`">
+          <Alert v-if="skillResult.error" class="alert-danger" dismissible>There was a problem: {{ skillResult.error }}</Alert>
+          <component :is="skillResult.name.replace('-', '')" :skillResult="skillResult" />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import PlainText from '@/components/results/PlainText.vue'
-import KeyValue from '@/components/results/KeyValue.vue'
-import RawHTML from '@/components/results/HTML.vue'
+import Alert from '@/components/Alert.vue'
+import boolq from '@/components/results/boolq.vue'
+import commonsenseqa from '@/components/results/commonsenseqa.vue'
+import squad from '@/components/results/squad.vue'
 
 export default Vue.component('results', {
+  data() {
+    return {
+      activeTab: 0
+    }
+  },
   components: {
-    // Be careful that the name does not overlap with an existing HTML component (e.g. text, html)
-    PlainText,
-    KeyValue,
-    RawHTML
+    Alert,
+    boolq,
+    commonsenseqa,
+    squad
   },
   computed: {
     currentQuestion() {
@@ -70,11 +68,6 @@ export default Vue.component('results', {
           return -1
         }
       })
-    }
-  },
-  methods: {
-    highlight(text, span) {
-      return span ? `${text.substring(0, span[0])}<span class="highlightText">${text.substring(span[0], span[1])}</span>${text.substring(span[1], text.length)}` : text
     }
   }
 })

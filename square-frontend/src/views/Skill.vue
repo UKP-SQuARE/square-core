@@ -1,195 +1,142 @@
 <!-- The Page of a Skill. The user can edit an existing skill or create a new skill here. -->
 <template>
-  <b-container>
-    <h2 class="text-center">{{originalName}}</h2>
-    <hr />
-
-    <b-alert v-model="success" variant="success" dismissible>Skill was updated successfully.</b-alert>
-    <b-alert v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
-
-    <b-button to="/skills" variant="outline-secondary" class="float-left">◁ Back to My Skills</b-button>
-
-    <b-form class="offset-md-2 col-md-8" @submit="onSubmit">
-      <b-form-group label="Name:" label-for="name">
-        <b-form-input
-          id="name"
-          v-model="skill.name"
-          type="text"
-          required
-          v-bind:placeholder="skill.name"
-        ></b-form-input>
-      </b-form-group>
-
-      <b-form-group description="{scheme}://{host[:port]}/{base_path}">
-        <label for="url" class="w-100">
-          URL:
-          <!-- Button and badges to display the availability status of the skill -->
-          <!-- Button for testing
-          <b-button
-            @click="testSkillUrl"
-            size="sm"
-            variant="outline-primary"
-            class="float-right"
-          >Test URL</b-button>
-          -->
-          <b-badge
-            variant="secondary"
-            v-if="availableStatus==='checking'"
-            class="float-right mr-2 mt-2"
-          >
-            Checking...
-            <b-spinner type="grow" small></b-spinner>
-          </b-badge>
-          <b-badge
-            variant="success"
-            v-else-if="availableStatus==='available'"
-            class="float-right mr-2 mt-2"
-          >Available</b-badge>
-          <b-badge
-            variant="danger"
-            v-else-if="availableStatus==='unavailable'"
-            class="float-right mr-2 mt-2"
-          >Unavailable</b-badge>
-          <b-badge variant="secondary" v-else class="float-right mr-2 mt-2">Unknown</b-badge>
-        </label>
-
-        <b-form-input
-          v-model="skill.url"
-          required
-          v-bind:placeholder="skill.url"
-          v-on:change="testSkillUrl"
-        ></b-form-input>
-      </b-form-group>
-
-      <b-form-group
-        label="Description:"
-        label-for="description"
-        description="Short description of the skill"
-      >
-        <b-form-input
-          id="description"
-          v-model="skill.description"
-          type="text"
-          v-bind:placeholder="skill.description"
-        ></b-form-input>
-      </b-form-group>
-
-      <b-button v-if="isCreateSkill" type="submit" variant="outline-success" class="mr-2">Create</b-button>
-      <b-button v-else type="submit" variant="outline-primary" class="mr-2">Save Changes</b-button>
-
-      <b-button @click="resetSkill" variant="outline-danger" class="float-right">Reset Changes</b-button>
-    </b-form>
-  </b-container>
+  <form v-on:submit.prevent="onSubmit">
+    <Card :title="originalName ? originalName : 'New skill'">
+      <template #leftItem>
+        <router-link to="/skills" class="btn btn-outline-primary d-inline-flex align-items-center" role="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-square" viewBox="0 0 16 16">
+            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+            <path d="M10.205 12.456A.5.5 0 0 0 10.5 12V4a.5.5 0 0 0-.832-.374l-4.5 4a.5.5 0 0 0 0 .748l4.5 4a.5.5 0 0 0 .537.082z"/>
+          </svg>
+          &nbsp;My skills
+        </router-link>
+      </template>
+      <template #rightItem>
+        <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
+            <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
+          </svg>
+          &nbsp;Save
+        </button>
+      </template>
+      <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
+      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+      <div class="row mt-3">
+        <div class="col">
+          <div class="form-floating">
+            <input v-model="skill.name" type="text" class="form-control rounded-0 rounded-top" id="name" placeholder="Skill name">
+            <label for="name">Skill name</label>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col">
+          <div class="form-floating">
+            <input v-model="skill.description" type="text" class="form-control rounded-0 rounded-top" id="description" placeholder="Description">
+            <label for="description">Description</label>
+            <small class="text-muted">Short description of the skill</small>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col">
+          <Status :url="skill.url" class="mb-2" />
+          <div class="form-floating">
+            <input v-model="skill.url" type="url" class="form-control rounded-0 rounded-top" id="url" placeholder="URL">
+            <label for="url">URL</label>
+            <small class="text-muted"><span class="text-info">scheme</span>://<span class="text-info">host</span>:<span class="text-info">port</span>/<span class="text-info">base_path</span></small>
+          </div>
+        </div>
+      </div>
+    </Card>
+  </form>
 </template>
 
 
 <script>
-import { pingSkill } from "@/api";
-export default {
-  name: "skill",
+import Vue from 'vue'
+import Alert from '@/components/Alert.vue'
+import Card from '@/components/Card.vue'
+import Status from '@/components/Status.vue'
+
+export default Vue.component('skill', {
   data() {
     return {
       skill: {
-        name: "",
-        url: "",
-        description: ""
+        name: '',
+        url: '',
+        description: ''
       },
       /**
        * The name for the title.
-       * We do not use skill.name for this so that the title is only changed wenn the user updates the skill.
+       * We do not use skill.name for this so that the title is only changed when the user updates the skill.
        */
-      originalName: "",
+      originalName: '',
       success: false,
       failure: false,
-      failureMessage: "",
-      /**
-       * Values: "", "checking", "available", "unavailable"
-       */
-      availableStatus: ""
-    };
+      failureMessage: ''
+    }
+  },
+  components: {
+    Alert,
+    Card,
+    Status
   },
   computed: {
     /**
      * Decides if we want to create a new skill or edit an existing skill
      */
     isCreateSkill() {
-      return this.$route.params.id === "new_skill";
+      return this.$route.params.id === 'new_skill'
     }
   },
   methods: {
-    testSkillUrl() {
-      this.availableStatus = "checking";
-      pingSkill(this.skill.url)
-        .then(() => {
-          this.availableStatus = "available";
-        })
-        .catch(() => {
-          this.availableStatus = "unavailable";
-        });
-    },
     onSubmit() {
       if (this.isCreateSkill) {
-        this.createSkill();
+        this.createSkill()
       } else {
-        this.updateSkill();
+        this.updateSkill()
       }
     },
     updateSkill() {
-      this.success = false;
+      this.success = false
       this.$store
-        .dispatch("updateSkill", { skill: this.skill })
-        .then(() => {
-          this.originalName = this.skill.name;
-          this.success = true;
-          this.failure = false;
-        })
-        .then(() => {
-          this.$store.commit("initQueryOptions", {forceSkillInit: true});
-        })
-        .catch(failureMessage => {
-          this.failure = true;
-          this.failureMessage = failureMessage;
-        });
+          .dispatch('updateSkill', { skill: this.skill })
+          .then(() => {
+            this.originalName = this.skill.name
+            this.success = true
+            this.failure = false
+          })
+          .then(() => {
+            this.$store.commit('initQueryOptions', {forceSkillInit: true})
+          })
+          .catch(failureMessage => {
+            this.failure = true
+            this.failureMessage = failureMessage
+          })
     },
     createSkill() {
       this.$store
-        .dispatch("createSkill", { skill: this.skill })
-        .then(() => this.$router.push("/skills"))
-        .catch(error => {
-          this.failure = true;
-          this.failureMessage = error.data.msg;
-        });
-    },
-    /**
-     * Resets skill to the original values (empty values for new skill or the values in the state for existing skill)
-     */
-    resetSkill() {
-      var oldURL = this.skill.url;
-      if (this.isCreateSkill) {
-        this.skill = {};
-      } else {
-        var skills = this.$store.state.mySkills;
-        // Create a copy of the skill so we do not change the state
-        this.skill = JSON.parse(
-          JSON.stringify(skills.find(sk => sk.id === this.$route.params.id))
-        );
-      }
-      // JS changes do not trigger change event, so we have to do it manually
-      if (oldURL != this.skill.url) {
-        this.testSkillUrl();
-      }
+          .dispatch('createSkill', { skill: this.skill })
+          .then(() => this.$router.push('/skills'))
+          .catch(error => {
+            this.failure = true
+            this.failureMessage = error.data.msg
+          })
     }
   },
   /**
-   * Set original name and check availability of skill server for existing skill
+   * Set original name
    */
   beforeMount() {
     if (!this.isCreateSkill) {
-      this.resetSkill();
-      this.originalName = this.skill.name;
-      this.testSkillUrl();
-      console.log(this.skill)
+      let skills = this.$store.state.mySkills
+      // Create a copy of the skill so we do not change the state
+      this.skill = JSON.parse(
+          JSON.stringify(skills.find(skill => skill.id === this.$route.params.id))
+      )
+      this.originalName = this.skill.name
     }
   }
-};
+})
 </script>
