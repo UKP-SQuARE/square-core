@@ -39,10 +39,10 @@
                         v-model="inputQuestion"
                         type="text"
                         class="form-control rounded-0 rounded-start"
-                        id="floatingQuestion"
+                        id="question"
                         placeholder="Enter your question"
                         aria-label="Enter your question">
-                    <label for="floatingQuestion">Enter your question</label>
+                    <label for="question">Enter your question</label>
                   </div>
                   <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
                     <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
@@ -60,19 +60,19 @@
                       v-model="currentQuestion"
                       class="form-control rounded-0 rounded-top"
                       placeholder="Enter your question"
-                      id="floatingContextQuestion"
+                      id="contextQuestion"
                       rows="1"
                       style="resize: none; white-space: nowrap; overflow: scroll" />
-                  <label for="floatingContextQuestion">Enter your question</label>
+                  <label for="contextQuestion">Enter your question</label>
                 </div>
                 <div class="form-floating">
                   <textarea
                       v-model="inputContext"
                       class="form-control rounded-0 rounded-bottom border-top-0"
                       placeholder="Context seperated by line breaks"
-                      id="floatingContext"
+                      id="context"
                       style="height: 120px; resize: none" />
-                  <label for="floatingContext">Context seperated by line breaks</label>
+                  <label for="context">Context seperated by line breaks</label>
                 </div>
               </div>
             </div>

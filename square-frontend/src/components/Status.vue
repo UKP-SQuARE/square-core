@@ -1,8 +1,8 @@
 <!-- The Navigation Bar at the top of the page. Most views should be reachable through this. -->
 <template>
-  <span class="badge py-2" :class="this.bgColor">
-    <span v-if="this.status === 'checking'" class="spinner-grow spinner-grow-sm" role="status" />
-    {{ this.label }}
+  <span class="badge d-inline-flex align-items-center py-2" :class="bgColor">
+    <span v-if="status === 'checking'" class="spinner-grow spinner-grow-sm" role="status" />
+    &nbsp;{{ label }}
   </span>
 </template>
 

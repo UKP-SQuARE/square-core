@@ -1,10 +1,10 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-  <div v-if="this.currentResults.length" class="card border-primary shadow mt-3">
+  <div v-if="currentResults.length" class="card border-primary shadow mt-3">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs justify-content-center">
         <li
-            v-for="(skillResult, index) in this.currentResults"
+            v-for="(skillResult, index) in currentResults"
             :key="skillResult.name"
             class="nav-item">
           <a class="nav-link h5 fw-light"
@@ -19,10 +19,10 @@
       </ul>
     </div>
     <div class="card-body p-4">
-      <p class="lead text-center my-3">{{ this.currentQuestion }}</p>
+      <p class="lead text-center my-3">{{ currentQuestion }}</p>
       <div class="tab-content" id="skill-tabContent">
         <div
-            v-for="(skillResult, index) in this.currentResults"
+            v-for="(skillResult, index) in currentResults"
             :key="skillResult.name"
             class="tab-pane fade"
             :class="{ 'show': activeTab === index, 'active': activeTab === index }"
