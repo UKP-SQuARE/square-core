@@ -44,9 +44,9 @@
                         aria-label="Enter your question">
                     <label for="floatingQuestion">Enter your question</label>
                   </div>
-                  <button class="btn btn-outline-primary" type="submit" :disabled="waitingQuery">
+                  <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
                     <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                    Ask your question
+                    &nbsp;Ask your question
                   </button>
                 </div>
               </div>
