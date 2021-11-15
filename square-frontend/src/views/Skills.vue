@@ -29,16 +29,8 @@
               <h5 class="mb-1">{{ skill.name }}</h5>
               <small>{{ skill.url }}</small>
             </div>
-            <span v-if="skillStatuses[skill.name] === 'checking'" class="badge bg-secondary p-2">
-              <span class="spinner-grow spinner-grow-sm" role="status" />
-              Checking ...
-            </span>
-            <span v-if="skillStatuses[skill.name] === 'available'" class="badge bg-success p-2">
-              Available
-            </span>
-            <span v-if="skillStatuses[skill.name] === 'unavailable'" class="badge bg-danger p-2">
-              Unavailable
-            </span>
+            <p class="mb-3">{{ skill.description }}</p>
+            <Status :url="skill.url" />
             <span v-if="skill.is_published" class="badge bg-info ms-1 p-2">
               Published
             </span>
@@ -85,17 +77,11 @@
 
 <script>
 import Vue from 'vue'
-import { pingSkill } from '@/api'
+import Status from '@/components/Status.vue'
 
 export default Vue.component('skills', {
-  data() {
-    return {
-      /**
-       * Dictionary with skill names and their status.
-       * Status is "checking", "available", "unavailable"
-       */
-      skillStatuses: {}
-    }
+  components: {
+    Status
   },
   computed: {
     mySkills() {
@@ -109,29 +95,6 @@ export default Vue.component('skills', {
     deleteSkill(skillId) {
       this.$store.dispatch('deleteSkill', { skillId: skillId })
     }
-  },
-  /**
-   * Check availability status of all  skills
-   */
-  beforeMount() {
-    let self = this
-    this.$store.dispatch('updateSkills').then(() => {
-      for (let i = 0; i < self.mySkills.length; i++) {
-        let skill = self.mySkills[i]
-        let skillName = skill.name
-        self.$set(self.skillStatuses, skillName, 'checking');
-        // Needed for correct variable values in the callback because loops
-        (function(skillName) {
-          pingSkill(skill.url)
-              .then(() => {
-                self.skillStatuses[skillName] = 'available'
-              })
-              .catch(() => {
-                self.skillStatuses[skillName] = 'unavailable'
-              })
-        })(skillName)
-      }
-    })
   }
 })
 </script>
