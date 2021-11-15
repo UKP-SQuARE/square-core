@@ -1,6 +1,6 @@
 <!-- The Page of a Skill. The user can edit an existing skill or create a new skill here. -->
 <template>
-  <form v-on:submit.prevent="this.trainSkill">
+  <form v-on:submit.prevent="trainSkill">
     <Card>
       <template #leftItem>
         <router-link to="/skills" class="btn btn-outline-primary d-inline-flex align-items-center" role="button">
@@ -11,12 +11,12 @@
           &nbsp;My skills
         </router-link>
       </template>
-      <template #topItem :skill="this.skill">
+      <template #topItem :skill="skill">
         <h5 class="fw-light mb-0">{{ skill.name }}</h5>
         <span v-if="skill.is_published" class="badge bg-info ms-1 p-2">Published</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
       </template>
-      <template #rightItem :waitingTraining="this.waitingTraining" :skill="this.skill">
+      <template #rightItem :waitingTraining="waitingTraining" :skill="skill">
         <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit" :disabled="waitingTraining">
           <span v-if="waitingTraining" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
           <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
@@ -26,9 +26,9 @@
           &nbsp;{{ skill.is_published ? 'Overwrite' : 'Publish' }}
         </button>
       </template>
-      <Alert v-if="success" class="alert-success" dismissible>{{ this.successMessage }}</Alert>
-      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ this.failureMessage }}</Alert>
-      <Alert v-if="this.skill.is_published" class="alert-warning">This skill has already been published. Uploading new data will overwrite and retrain the model.</Alert>
+      <Alert v-if="success" class="alert-success" dismissible>{{ successMessage }}</Alert>
+      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+      <Alert v-if="skill.is_published" class="alert-warning">This skill has already been published. Uploading new data will overwrite and retrain the model.</Alert>
       <div class="row mt-3">
         <div class="col">
           <label for="train_file" class="form-label">Training data</label>
@@ -54,33 +54,14 @@
           Text files are expected to contain example questions seperated by line breaks. All file should be UTF-8 encoded and &lt; 5MB.
         </div>
       </div>
-      <div v-if='this.skill.is_published || this.waitingUnpublishing' class="row mt-3">
+      <div v-if='!skill.is_published || waitingUnpublishing' class="row mt-3">
         <div class="col">
-          <button
-              class="btn btn-outline-danger d-inline-flex align-items-center"
-              data-bs-toggle="modal"
-              data-bs-target="#unpublishModal"
-              :disabled="this.waitingUnpublishing">
-            <span v-if="this.waitingUnpublishing" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-            &nbsp;Unpublish
-          </button>
-          <div class="modal fade" id="unpublishModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">Are you sure?</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  Please confirm that you want to unpublish <strong>{{ this.skill.name }}</strong>.
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="button" class="btn btn-danger" @click="this.unpublishSkill()">Unpublish</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Modal
+              :waiting="waitingUnpublishing"
+              :skill="skill.name"
+              destructive-action="unpublish"
+              v-on:callback="unpublishSkill"
+              :callbackValue="skill.id" />
         </div>
       </div>
     </Card>
@@ -92,6 +73,7 @@
 import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
+import Modal from '@/components/Modal.vue'
 
 export default Vue.component('train', {
   data() {
@@ -108,7 +90,8 @@ export default Vue.component('train', {
   },
   components: {
     Alert,
-    Card
+    Card,
+    Modal
   },
   computed: {
     skill() {
