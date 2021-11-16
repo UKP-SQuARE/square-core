@@ -54,7 +54,7 @@
           Text files are expected to contain example questions seperated by line breaks. All file should be UTF-8 encoded and &lt; 5MB.
         </div>
       </div>
-      <div v-if='!skill.is_published || waitingUnpublishing' class="row mt-3">
+      <div v-if='skill.is_published || waitingUnpublishing' class="row mt-3">
         <div class="col">
           <Modal
               :waiting="waitingUnpublishing"
