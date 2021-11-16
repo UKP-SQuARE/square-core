@@ -29,33 +29,35 @@
       <Alert v-if="showEmptyWarning" class="alert-warning" dismissible>You need to enter a question!</Alert>
       <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
       <form v-on:submit.prevent="askQuestion">
-        <div class="tab-content" id="nav-tabContent">
-          <div class="tab-pane fade show active" id="nav-question" role="tabpanel" aria-labelledby="nav-question-tab">
-            <div class="row mb-3">
-              <div class="col">
-                <div class="input-group">
-                  <div class="form-floating flex-grow-1">
-                    <input
-                        v-model="inputQuestion"
-                        type="text"
-                        class="form-control rounded-0 rounded-start"
-                        id="question"
-                        placeholder="Enter your question"
-                        aria-label="Enter your question">
-                    <label for="question">Enter your question</label>
+        <div class="row">
+          <div class="col-lg">
+            <div class="tab-content" id="nav-tabContent">
+              <div class="tab-pane fade show active" id="nav-question" role="tabpanel" aria-labelledby="nav-question-tab">
+                <div class="row mb-3">
+                  <div class="col">
+                    <div class="input-group">
+                      <div class="form-floating flex-grow-1">
+                        <input
+                            v-model="inputQuestion"
+                            type="text"
+                            class="form-control rounded-0 rounded-start"
+                            id="question"
+                            placeholder="Enter your question"
+                            aria-label="Enter your question">
+                        <label for="question">Enter your question</label>
+                      </div>
+                      <button class="btn btn-lg btn-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
+                        <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                        &nbsp;Ask your question
+                      </button>
+                    </div>
                   </div>
-                  <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
-                    <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                    &nbsp;Ask your question
-                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="tab-pane fade" id="nav-context" role="tabpanel" aria-labelledby="nav-context-tab">
-            <div class="row mb-3">
-              <div class="col">
-                <div class="form-floating">
+              <div class="tab-pane fade" id="nav-context" role="tabpanel" aria-labelledby="nav-context-tab">
+                <div class="row mb-3">
+                  <div class="col">
+                    <div class="form-floating">
                   <textarea
                       v-model="currentQuestion"
                       class="form-control rounded-0 rounded-top"
@@ -63,79 +65,82 @@
                       id="contextQuestion"
                       rows="1"
                       style="resize: none; white-space: nowrap; overflow: scroll" />
-                  <label for="contextQuestion">Enter your question</label>
-                </div>
-                <div class="form-floating">
+                      <label for="contextQuestion">Enter your question</label>
+                    </div>
+                    <div class="form-floating">
                   <textarea
                       v-model="inputContext"
                       class="form-control rounded-0 rounded-bottom border-top-0"
                       placeholder="Context seperated by line breaks"
                       id="context"
                       style="height: 120px; resize: none" />
-                  <label for="context">Context seperated by line breaks</label>
+                      <label for="context">Context seperated by line breaks</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col text-end">
+                    <button class="btn btn-lg btn-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
+                      <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                      &nbsp;Ask your question
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+          <div v-if="showOptions" class="col-lg mt-3 mt-lg-0">
             <div class="row">
-              <div class="col text-end">
-                <button class="btn btn-outline-primary" type="submit" :disabled="waitingQuery">
-                  <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                  Ask your question
-                </button>
+              <div class="col">
+                <div class="form-floating">
+                  <select v-model="options.selector" class="form-select" id="skillSelector">
+                    <option v-for="skill in availableSkillSelectors" v-bind:value="skill.value" v-bind:key="skill.value">
+                      {{ skill.text }}
+                    </option>
+                  </select>
+                  <label for="skillSelector">Skill selector</label>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <input type="checkbox" data-bs-toggle="collapse" data-bs-target="#collapseExample" class="btn-check" id="btn-check" autocomplete="off">
-            <label class="btn btn-outline-secondary d-inline-flex align-items-center" for="btn-check">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
-              </svg>
-              &nbsp;Show expert options
-            </label>
-          </div>
-        </div>
-        <div class="collapse" id="collapseExample">
-          <div class="row mt-3">
-            <div class="col">
-              <div class="form-floating">
-                <select v-model="options.selector" class="form-select" id="skillSelector">
-                  <option v-for="skill in availableSkillSelectors" v-bind:value="skill.value" v-bind:key="skill.value">
+            <div class="row mt-3">
+              <div class="col">
+                <label for="skillSelect" class="form-label col-form-label-sm text-muted">Only use these skills</label>
+                <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
+                  <option v-for="skill in availableSkills" v-bind:value="skill.value" v-bind:key="skill.value">
                     {{ skill.text }}
                   </option>
                 </select>
-                <label for="skillSelector">Skill selector</label>
               </div>
             </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col">
-              <label for="skillSelect" class="form-label col-form-label-sm text-muted">Only use these skills</label>
-              <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
-                <option v-for="skill in availableSkills" v-bind:value="skill.value" v-bind:key="skill.value">
-                  {{ skill.text }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <div class="row mt-3">
-            <div class="col-6">
-              <div class="form-floating mb-3">
-                <input v-model="options.maxQuerriedSkills" type="number" class="form-control" id="maxQuerriedSkills" required>
-                <label for="maxQuerriedSkills">Max querried skills</label>
+            <div class="row mt-3">
+              <div class="col-6">
+                <div class="form-floating">
+                  <input v-model="options.maxQuerriedSkills" type="number" class="form-control" id="maxQuerriedSkills" required>
+                  <label for="maxQuerriedSkills">Max querried skills</label>
+                </div>
               </div>
-            </div>
-            <div class="col-6">
-              <div class="form-floating mb-3">
-                <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
-                <label for="maxResultsSkill">Max results per skill</label>
+              <div class="col-6">
+                <div class="form-floating">
+                  <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
+                  <label for="maxResultsSkill">Max results per skill</label>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </form>
+    </div>
+    <div class="card-footer bg-white d-flex p-2">
+      <a
+          class="btn btn-outline-secondary d-inline-flex align-items-center ms-auto"
+          :class="{ 'active': showOptions }"
+          role="button"
+          v-on:click="showOptions = !showOptions">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
+        </svg>
+        &nbsp;{{ showOptions ? 'Hide' : 'Show' }} expert options
+      </a>
     </div>
   </div>
 </template>
@@ -155,7 +160,8 @@ export default Vue.component('query', {
       inputQuestion: '',
       inputContext: '',
       failure: false,
-      failureMessage: ''
+      failureMessage: '',
+      showOptions: false
     }
   },
   components: {
@@ -210,6 +216,9 @@ export default Vue.component('query', {
           question: this.inputQuestion,
           inputContext: this.inputContext,
           options: this.options
+        }).then(() => {
+          this.failure = false
+          this.failureMessage = ''
         }).catch(error => {
           this.failure = true
           this.failureMessage = error.data.msg
@@ -226,19 +235,6 @@ export default Vue.component('query', {
    * Subscribe to mutation changes for the websocket
    */
   beforeMount() {
-    let self = this
-    this.$store.subscribe(mutation => {
-      if (mutation.type === 'SOCKET_SKILLRESULT') {
-        if (mutation.payload.error_msg) {
-          self.failure = true
-          self.failureMessage = mutation.payload.error_msg
-          self.waitingQuery = false
-        }
-        if (mutation.payload.finished) {
-          self.waitingQuery = false
-        }
-      }
-    })
     this.$store.dispatch('updateSkills')
         .then(() => this.$store.dispatch('updateSelectors'))
         .then(() => {
