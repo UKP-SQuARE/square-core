@@ -226,19 +226,6 @@ export default Vue.component('query', {
    * Subscribe to mutation changes for the websocket
    */
   beforeMount() {
-    let self = this
-    this.$store.subscribe(mutation => {
-      if (mutation.type === 'SOCKET_SKILLRESULT') {
-        if (mutation.payload.error_msg) {
-          self.failure = true
-          self.failureMessage = mutation.payload.error_msg
-          self.waitingQuery = false
-        }
-        if (mutation.payload.finished) {
-          self.waitingQuery = false
-        }
-      }
-    })
     this.$store.dispatch('updateSkills')
         .then(() => this.$store.dispatch('updateSelectors'))
         .then(() => {

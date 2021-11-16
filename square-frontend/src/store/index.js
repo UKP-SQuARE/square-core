@@ -8,31 +8,31 @@ import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createS
 
 Vue.use(Vuex)
 
-const LOCALSTORAGE_KEY_JWT = "jwt"
+const LOCALSTORAGE_KEY_JWT = 'jwt'
 
 export default new Vuex.Store({
   /**
-   * State contains all variables that 
+   * State contains all variables that
    * 1) are accessed and changed in multiple components
    * 2) should be restored when a view is changed and later returned to
    */
   state: {
-    user: "",
+    user: '',
     // JWT is also stored in LocalStorage 
-    jwt: "",
+    jwt: '',
     currentResults: [],
-    currentQuestion: "Ask a question to get an answer.",
+    currentQuestion: '',
+    currentContext: '',
     availableSkills: [],
     // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
     availableSkillSelectors: [],
     queryOptions: {
-      selector: "",
+      selector: '',
       selectedSkills: [],
       maxQuerriedSkills: 3,
       maxResultsPerSkill: 10,
-      skillArgs: {},
-      action: "SOCKET_query"
+      skillArgs: {}
     },
     // Control flags
     flags: {
@@ -40,17 +40,17 @@ export default new Vuex.Store({
       initialisedSelector: false
     }
   },
-
   mutations: {
     setAnsweredQuestion(state, payload) {
       state.currentQuestion = payload.question
+      state.currentContext = payload.context
       state.currentResults = payload.results
     },
     initQueryOptions(state, payload) {
-      var forceSkillInit = payload.forceSkillInit
+      let forceSkillInit = payload.forceSkillInit
       // Default value for selected skills should be all available skills
       if (!state.flags.initialisedSelectedSkills || forceSkillInit) {
-        state.queryOptions.selectedSkills = state.availableSkills.map(skill => {return skill.name})
+        state.queryOptions.selectedSkills = state.availableSkills.map(skill => { return skill.name })
         state.flags.initialisedSelectedSkills = true
       }
       // Value for selector should be set to a selector.
@@ -63,10 +63,10 @@ export default new Vuex.Store({
       const lenSkills = state.availableSkills.length
       state.availableSkills = payload.skills
       if (state.user) {
-        state.mySkills = payload.skills.filter(sk => sk.owner_id === state.user.id)
+        state.mySkills = payload.skills.filter(skill => skill.owner_id === state.user.id)
       }
       // We want to reset selected skills if more skills are available (due to login mostly)
-      if (lenSkills != state.availableSkills.length) {
+      if (lenSkills !== state.availableSkills.length) {
         state.flags.initialisedSelectedSkills = false
       }
     },
@@ -76,7 +76,7 @@ export default new Vuex.Store({
     setJWT(state, payload) {
       localStorage.setItem(LOCALSTORAGE_KEY_JWT, payload.jwt)
       state.jwt = payload.jwt
-      if (payload.jwt && payload.jwt.split('.').length == 3) {
+      if (payload.jwt && payload.jwt.split('.').length === 3) {
         const data = JSON.parse(atob(payload.jwt.split('.')[1]))
         state.user = data.sub
       }
@@ -86,15 +86,8 @@ export default new Vuex.Store({
     },
     setSelectors(state, payload) {
       state.availableSkillSelectors = payload.selectors
-    },
-    //WebSocket mutations
-    SOCKET_SKILLRESULT(state, payload) {
-      if (!payload.finished) {
-        state.currentResults.push(payload)
-      }
     }
   },
-
   /**
    * Mostly wrappers around API calls that manage committing the received results
    */
@@ -106,49 +99,48 @@ export default new Vuex.Store({
       let user_id = context.state.user ? context.state.user.id : ''
       return fetchResults(question, inputContext, options, user_id)
           .then((response) => {
-          context.commit("setAnsweredQuestion", { results: response.data, question: question, context: inputContext })
-          context.commit("setQueryOptions", { queryOptions: options })
-        })
+            context.commit('setAnsweredQuestion', { results: response.data, question: question, context: inputContext })
+            context.commit('setQueryOptions', { queryOptions: options })
+          })
     },
     login(context, { username, password }) {
       return loginUser(username, password)
-        .then((response) => {
-          context.commit("setJWT", { jwt: response.data.token })
-        })
+          .then((response) => {
+            context.commit('setJWT', { jwt: response.data.token })
+          })
     },
     signout(context) {
-      context.commit("setJWT", { jwt: "" })
+      context.commit('setJWT', { jwt: '' })
     },
     initJWTfromLocalStorage(context) {
-      var jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ""
-      context.commit("setJWT", { jwt: jwt })
+      var jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
+      context.commit('setJWT', { jwt: jwt })
     },
     updateSkills(context) {
-      var jwt = ""
+      var jwt = ''
       if (context.getters.isAuthenticated()) {
         jwt = context.state.jwt
       }
       return fetchSkills(jwt)
-        .then((response) => context.commit("setSkills", { skills: response.data }))
+          .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSelectors(context) {
       return fetchSelectors()
-        .then((response) => context.commit("setSelectors", { selectors: response.data }))
+          .then((response) => context.commit('setSelectors', { selectors: response.data }))
     },
     updateSkill(context, { skill }) {
       return updateSkill(skill.id, skill, context.state.jwt)
-        .then(() => context.dispatch("updateSkills"))
+          .then(() => context.dispatch('updateSkills'))
     },
     createSkill(context, { skill }) {
       return createSkill(skill, context.state.jwt)
-        .then(() => context.dispatch("updateSkills"))
+          .then(() => context.dispatch('updateSkills'))
     },
     deleteSkill(context, { skillId }) {
       return deleteSkill(skillId, context.state.jwt)
-        .then(() => context.dispatch("updateSkills"))
+          .then(() => context.dispatch('updateSkills'))
     }
   },
-
   /**
    * Getters for information not stored as state variables
    */
