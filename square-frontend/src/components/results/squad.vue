@@ -2,19 +2,18 @@
 <template>
   <div>
     <div class="row">
-      <div class="col-xl-6 col-md-5 mb-4 mb-md-0">
+      <div class="col-xl col-lg-5 mb-4 mb-lg-0">
         <div class="border rounded bg-light p-4" v-html="currentContext" />
       </div>
-      <div class="col-xl-6 col-md-7">
-        <div class="list-group list-group-flush">
-          <a
+      <div class="col-xl col-lg-7">
+        <ul class="list-group list-group-flush">
+          <li
               v-for="(res, index) in skillResult.results"
               :key="index"
               v-on:mouseover="setActive(index, res.prediction_documents[0].span)"
               class="list-group-item list-group-item-action"
-              :class="{ 'border-primary': index === activeResult }"
-              :aria-current="index === activeResult"
-              style="cursor: pointer">
+              :class="{ 'border-primary': index === activeResult, 'bg-light': index === activeResult }"
+              :aria-current="index === activeResult">
             <div class="d-flex w-100 justify-content-between align-items-start">
               <div class="d-flex align-items-baseline">
                 <h5
@@ -24,8 +23,8 @@
               </div>
               <span class="badge bg-transparent text-dark border border-primary p-2">{{ roundScore(res.prediction_score) }}%</span>
             </div>
-          </a>
-        </div>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
