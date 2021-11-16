@@ -5,18 +5,18 @@
       <div
           class="d-inline-flex align-items-center justify-content-center fs-2 bg-danger rounded-circle"
           style="width: 3.5rem; height: 3.5rem;">👎</div>
-      <span class="badge bg-danger mt-2 p-2">{{ currentResults.no }}%</span>
+      <span class="badge bg-transparent text-dark border border-danger mt-2 p-2">{{ currentResults.no }}%</span>
     </div>
     <div class="progress flex-grow-1 align-self-center mx-2">
       <div
-          class="progress-bar progress-bar-striped bg-danger"
+          class="progress-bar bg-danger"
           role="progressbar"
           :style="{ width: `${currentResults.no}%` }"
           :aria-valuenow="currentResults.no"
           aria-valuemin="0"
           aria-valuemax="100" />
       <div
-          class="progress-bar progress-bar-striped bg-success"
+          class="progress-bar bg-success"
           role="progressbar"
           :style="{ width: `${currentResults.yes}%` }"
           :aria-valuenow="currentResults.yes"
@@ -27,7 +27,7 @@
       <div
           class="d-inline-flex align-items-center justify-content-center fs-2 bg-success rounded-circle"
           style="width: 3.5rem; height: 3.5rem;">👍</div>
-      <span class="badge bg-success mt-2 p-2">{{ currentResults.yes }}%</span>
+      <span class="badge bg-transparent text-dark border border-success mt-2 p-2">{{ currentResults.yes }}%</span>
     </div>
   </div>
 </template>

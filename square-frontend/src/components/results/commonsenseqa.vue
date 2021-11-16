@@ -7,11 +7,11 @@
         class="list-group-item">
       <div class="d-flex w-100 justify-content-between">
         <div>{{ index + 1 }}. <span class="fw-bold">{{ res.prediction_output.output }}</span></div>
-        <span class="badge bg-primary p-2">{{ roundScore(res.prediction_score) }}%</span>
+        <span class="badge bg-transparent text-dark border border-primary p-2">{{ roundScore(res.prediction_score) }}%</span>
       </div>
       <div class="progress mt-2">
         <div
-            class="progress-bar progress-bar-striped bg-primary"
+            class="progress-bar bg-primary"
             role="progressbar"
             :style="{ width: `${roundScore(res.prediction_score)}%` }"
             :aria-valuenow="roundScore(res.prediction_score)"
