@@ -12,6 +12,7 @@ When running the project locally, provide any api key e.g. `1234-abcd-5678-efgh`
 Next, create an `.env` file for the auth_server under `square-model-inference-api/auth_server/.env` with the following content:
 ```
 MODEL_API_KEY=your-api-key-goes-here
+API_KEY_HEADER_NAME=Authorization
 ```
 Make sure the two api keys match.
 
