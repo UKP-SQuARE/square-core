@@ -69,3 +69,45 @@ class DenseRetrieval:
             results.append(QueryResult(document=doc, score=queried[str(doc["id"])]))
 
         return sorted(results, key=lambda x: x.score, reverse=True)
+
+    async def score(self, datastore_name: str, index_name: str, query: str, document_id: int) -> QueryResult:
+        """Scores a document by the given query string.
+
+        Args:
+            datastore_name (str): The datastore in which to search.
+            index_name (str): The index to be used.
+            query (str): The query string.
+            document_id (int): The id of the document to be scored.
+
+        Returns:
+            QueryResult: The scored document.
+        """
+        index = await self.conn.get_index(datastore_name, index_name)
+        if index is None:
+            raise ValueError("Datastore or index not found.")
+
+        # 1. Get the query embedding from the model api
+        query_vector = self.model_api.encode_query(query, index)
+        # 2. Search for the query in the FAISS store. This will return ids of matched docs.
+        queried = await self.faiss.explain(datastore_name, index_name, query_vector, document_id)
+        # 3. Lookup the retrieved doc ids in the ES index.
+        doc = await self.conn.get_document(datastore_name, document_id)
+        return QueryResult(document=doc, score=queried["score"])
+
+    async def get_document_embedding(self, datastore_name: str, index_name: str, document_id: int) -> List[float]:
+        """Gets the embedding of a document.
+
+        Args:
+            datastore_name (str): The datastore in which to search.
+            index_name (str): The index to be used.
+            document_id (int): The id of the document.
+
+        Returns:
+            list: The embedding of the document.
+        """
+        index = await self.conn.get_index(datastore_name, index_name)
+        if index is None:
+            raise ValueError("Datastore or index not found.")
+
+        result = await self.faiss.reconstruct(datastore_name, index_name, document_id)
+        return result["vector"]

@@ -9,15 +9,49 @@ services:
     volumes:
       - ./storage/es/data:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
+      - 7200:9200
 
-  faiss-rest:
-    image: kwang2049/faiss-instant
-    container_name: faiss-rest
+  reverse-proxy:
+      image: traefik:v2.5
+      # Enables the web UI and tells Traefik to listen to docker
+      command:
+        - "--api.insecure=true"
+        - "--providers.docker"
+        - "--providers.docker.exposedbydefault=false"
+        - "--entrypoints.web.address=:7010"
+      ports:
+        # The HTTP port
+        - "7010:7010"
+        # The Web UI (enabled by --api.insecure=true)
+        - "7070:8080"
+      volumes:
+        # So that Traefik can listen to the Docker events
+        - /var/run/docker.sock:/var/run/docker.sock
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.middlewares.prefix-strip.stripprefixregex.regex=(/[^/]+){2}"
+
+  faiss-rest-1:
+    image: kwang2049/faiss-instant:latest
+    container_name: faiss-rest-1
     volumes:
-      - ./resources:/opt/faiss-instant/resources
-    ports:
-      - 7010:5000
+      - ./resources/wiki:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=5000"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=PathPrefix(`/wiki/dpr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=prefix-strip"
+
+  faiss-rest-2:
+    image: kwang2049/faiss-instant:latest
+    container_name: faiss-rest-2
+    volumes:
+      - ./resources/wiki2:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=5000"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=PathPrefix(`/wiki2/dpr`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=prefix-strip"
 
   # datastore_api:
   #   privileged: true

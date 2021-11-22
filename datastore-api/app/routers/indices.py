@@ -1,20 +1,15 @@
 import logging
-from io import BytesIO
-from typing import List, Union
+from typing import List
 
-import h5py
-import numpy as np
 import requests
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
-from fastapi.param_functions import Body, Path, Query
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.param_functions import Body, Path
 
 from ..core.config import settings
 from ..models.embedding import DocumentEmbedding
 from ..models.httperror import HTTPError
 from ..models.index import Index, IndexRequest
-from ..models.upload import UploadResponse, UploadUrlSet
-from .dependencies import get_storage_connector
+from .dependencies import get_search_client, get_storage_connector
 
 
 logger = logging.getLogger(__name__)
@@ -120,167 +115,6 @@ async def get_index_status(
     return status
 
 
-@router.get(
-    "/{index_name}/embeddings",
-    summary="Get embeddings for all documents in index",
-    description="Returns the embeddings for all documents in a given index",
-    responses={
-        200: {"description": "The embeddings for the documents as a file"},
-        400: {"model": HTTPError, "description": "An error occurred while retrieveing the embeddings"},
-    },
-)
-async def get_document_embeddings(
-    datastore_name: str = Path(..., description="Name of the datastore"),
-    index_name: str = Path(..., description="Name of the index"),
-    offset: int = Query(0, description="Offset of the document embedings to retrieve"),
-    size: int = Query(1000, description="Size of retrieved batches"),
-):
-    if size > settings.MAX_RETURN_ITEMS:
-        return HTTPException(
-            status_code=400, detail="Size cannot be greater than {}".format(settings.MAX_RETURN_ITEMS)
-        )
-
-    # TODO implement GET all embeddings
-    raise NotImplementedError()
-    # embedding_name = Index.get_embedding_field_name(index_name)
-    # # TODO This assumes id is always numeric
-    # batch = [(datastore_name, i) for i in range(offset, offset + size)]
-    # vespa_responses = vespa_app.get_batch(batch)
-    # ids, embs = [], []
-    # for response in vespa_responses:
-    #     if response.status_code == 200 and embedding_name in response.json["fields"]:
-    #         doc_embedding = DocumentEmbedding.from_vespa(response.json, embedding_name)
-    #         ids.append(doc_embedding.id)
-    #         embs.append(doc_embedding.embedding)
-
-    # buffer = BytesIO()
-    # with h5py.File(buffer, "w") as f:
-    #     f.create_dataset("ids", data=np.array(ids, dtype="S"), compression="gzip")
-    #     f.create_dataset("embeddings", data=np.array(embs), compression="gzip")
-    # buffer.seek(0)
-    # return StreamingResponse(buffer, media_type="application/octet-stream")
-
-
-def upload_embeddings_file(
-    datastore_name: str = Path(..., description="Name of the datastore"),
-    embedding_name: str = Path(..., description="Name of the embedding field"),
-    file_name: str = Query(..., description="Name of the file containing embeddings to upload"),
-    file_buffer=Body(...),
-) -> Union[int, UploadResponse]:
-    # TODO: implement embedding upload
-    raise NotImplementedError()
-    # total_docs = 0
-
-    # with h5py.File(file_buffer, "r") as f:
-    #     ids = f["ids"]
-    #     embs = f["embeddings"]
-    #     upload_batch = []
-    #     for doc_id_str, embedding in zip(ids, embs):
-    #         doc_id = doc_id_str.astype(str)
-    #         fields = {embedding_name: {"values": embedding[:].tolist()}}
-    #         upload_batch.append((datastore_name, doc_id, fields, False))
-    #         # if batch is full, upload and reset
-    #         if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
-    #             vespa_responses = vespa_app.update_batch(upload_batch)
-    #             for i, vespa_response in enumerate(vespa_responses):
-    #                 logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
-    #                 if vespa_response.status_code != 200:
-    #                     errored_doc_id = upload_batch[i][1]
-    #                     return total_docs, UploadResponse(
-    #                         message=f"Unable to find document with id {errored_doc_id} in datastore.",
-    #                         successful_uploads=total_docs,
-    #                     )
-    #                 total_docs += 1
-    #             upload_batch = []
-
-    #     # upload remaining
-    #     if len(upload_batch) > 0:
-    #         vespa_responses = vespa_app.update_batch(upload_batch)
-    #         for i, vespa_response in enumerate(vespa_responses):
-    #             logger.info(f"Upload of embedding {total_docs}: " + str(vespa_response.json))
-    #             if vespa_response.status_code != 200:
-    #                 errored_doc_id = upload_batch[i][1]
-    #                 return total_docs, UploadResponse(
-    #                     message=f"Unable to find document with id {errored_doc_id} in datastore.",
-    #                     successful_uploads=total_docs,
-    #                 )
-    #             total_docs += 1
-
-    # return total_docs, None
-
-
-@router.post(
-    "/{index_name}/embeddings/upload",
-    response_model=UploadResponse,
-    status_code=201,
-    summary="Upload embeddings for documents in an index",
-    description="Uploads a file containing embeddings for documents in the index",
-    responses={
-        400: {"model": UploadResponse, "description": "An error occurred while uploading the embeddings"},
-        201: {"model": UploadResponse, "description": "The number of embeddings uploaded successfully"},
-    },
-)
-def upload_document_embeddings(
-    datastore_name: str = Path(..., description="Name of the datastore"),
-    index_name: str = Path(..., description="Name of the index"),
-    file: UploadFile = File(..., description="File containing the embeddings"),
-    response: Response = None,
-):
-    embedding_name = Index.get_embedding_field_name(index_name)
-
-    uploaded_docs, upload_response = upload_embeddings_file(datastore_name, embedding_name, file.filename, file.file)
-    if upload_response is not None:
-        response.status_code = 400
-        return upload_response
-    else:
-        return UploadResponse(
-            message=f"Successfully uploaded {uploaded_docs} embeddings.", successful_uploads=uploaded_docs
-        )
-
-
-@router.post(
-    "/{index_name}/embeddings",
-    response_model=UploadResponse,
-    status_code=201,
-    responses={
-        200: {"model": UploadResponse, "description": "The number of embeddings uploaded successfully"},
-        400: {"model": UploadResponse, "description": "An error occurred while uploading the embeddings"},
-    },
-)
-def upload_document_embeddings_from_urls(
-    datastore_name: str,
-    index_name: str,
-    urlset: UploadUrlSet,
-    api_response: Response,
-):
-    total_docs = 0  # total uploaded items across all files
-    embedding_name = Index.get_embedding_field_name(index_name)
-
-    for url in urlset.urls:
-        try:
-            r = requests.get(url)
-            if r.status_code != 200:
-                api_response.status_code = 400
-                return UploadResponse(
-                    message=f"Failed to retrieve embeddings from {url}.",
-                    successful_uploads=total_docs,
-                )
-
-            # TODO how to handle files that are too big?
-            buffer = BytesIO(r.content)
-            uploaded_docs, upload_response = upload_embeddings_file(datastore_name, embedding_name, url, buffer)
-            buffer.close()
-            if upload_response is not None:
-                api_response.status_code = 400
-                return upload_response
-            total_docs += uploaded_docs
-        except requests.exceptions.RequestException:
-            api_response.status_code = 400
-            return UploadResponse(message=f"Failed to connect to {url}.", successful_uploads=total_docs)
-
-    return UploadResponse(message=f"Successfully uploaded {total_docs} embeddings.", successful_uploads=total_docs)
-
-
 @router.delete(
     "/{index_name}",
     summary="Delete an index",
@@ -319,41 +153,15 @@ async def get_document_embedding(
     datastore_name: str = Path(..., description="The name of the datastore"),
     index_name: str = Path(..., description="The name of the index"),
     doc_id: str = Path(..., description="The id of the document"),
+    dense_retrieval=Depends(get_search_client),
 ):
-    # TODO implement GET embedding
-    raise NotImplementedError()
-    # res = vespa_app.get_data(datastore_name, doc_id)
-    # doc = res.json
-    # embedding_name = Index.get_embedding_field_name(index_name)
-    # # read embedding values from Vespa response
-    # if res.status_code == 200 and embedding_name in doc["fields"]:
-    #     return DocumentEmbedding.from_vespa(doc, embedding_name)
-    # raise HTTPException(status_code=404)
-
-
-@router.post(
-    "/{index_name}/embeddings/{doc_id}",
-    summary="Set embedding for a document",
-    description="Set the embedding for a document in the index with the given id",
-    responses={
-        200: {"description": "Successfully set embedding for document with given id"},
-    },
-)
-async def set_document_embedding(
-    datastore_name: str = Path(..., description="The name of the datastore"),
-    index_name: str = Path(..., description="The name of the index"),
-    doc_id: str = Path(..., description="The id of the document"),
-    embedding: List[float] = Body(..., description="The embedding for the document"),
-):
-    # TODO implement POST embedding
-    raise NotImplementedError()
-    # # check whether document exists, vespa is not returning that information
-    # if vespa_app.get_data(datastore_name, doc_id).status_code != 200:
-    #     raise HTTPException(status_code=404, detail="Document does not exist")
-    # embedding_name = Index.get_embedding_field_name(index_name)
-    # fields = {embedding_name: {"values": embedding}}
-    # response = vespa_app.update_data(datastore_name, doc_id, fields)
-    # return JSONResponse(status_code=response.status_code, content=response.json)
+    try:
+        embedding = await dense_retrieval.get_document_embedding(datastore_name, index_name, doc_id)
+        return DocumentEmbedding(id=doc_id, embedding=embedding)
+    except ValueError as ex:
+        raise HTTPException(status_code=404, detail=str(ex))
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
 
 
 # TODO
