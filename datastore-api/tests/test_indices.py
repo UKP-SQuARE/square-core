@@ -106,6 +106,8 @@ class TestIndices:
         assert response.status_code == 201
         assert response.json()["successful_uploads"] == 10
 
+    # TODO currently not supported
+    @pytest.mark.skip
     def test_upload_embeddings_from_urls_invalid(self, requests_mock: Mocker, client, datastore_name, dpr_index, upload_urlset):
         requests_mock.real_http = True
         requests_mock.get(upload_urlset.urls[0], status_code=404)
