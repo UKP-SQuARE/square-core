@@ -14,7 +14,7 @@ COPY ./app ./app
 # -- Test stage --
 FROM base as test
 
-RUN pip install pytest pytest-cov pytest-mock
+RUN pip install pytest pytest-cov pytest-mock requests-mock
 COPY ./tests ./tests
 COPY ./.env ./.env
 RUN mkdir test-reports
