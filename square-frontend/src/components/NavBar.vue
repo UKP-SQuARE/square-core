@@ -44,7 +44,7 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('nav_bar', {
+export default Vue.component('nav-bar', {
   computed: {
     user() {
       return this.$store.state.user

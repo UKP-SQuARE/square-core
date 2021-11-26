@@ -43,7 +43,7 @@
 import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 
-export default Vue.component('login', {
+export default Vue.component('sign-in', {
   data() {
     return {
       form: {

@@ -26,7 +26,7 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('commonsenseqa', {
+export default Vue.component('commonsenseqa-results', {
   props: ['skillResult'],
   mixins: [mixin]
 })

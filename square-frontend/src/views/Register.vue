@@ -36,7 +36,7 @@ import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import { registerUser } from '@/api'
 
-export default Vue.component('register', {
+export default Vue.component('sign-up', {
   data() {
     return {
       form: {

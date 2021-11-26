@@ -10,7 +10,7 @@
 import Vue from 'vue'
 import { pingSkill } from '@/api'
 
-export default Vue.component('status', {
+export default Vue.component('skill-status', {
   props: ['url'],
   data() {
     return {

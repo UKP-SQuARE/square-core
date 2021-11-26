@@ -53,7 +53,7 @@ import Card from '@/components/Card.vue'
 import Modal from '@/components/Modal.vue'
 import Status from '@/components/Status.vue'
 
-export default Vue.component('skills', {
+export default Vue.component('list-skills', {
   components: {
     Card,
     Modal,

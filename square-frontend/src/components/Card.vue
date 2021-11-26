@@ -24,7 +24,7 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('card', {
+export default Vue.component('card-view', {
   props: ['title']
 })
 </script>

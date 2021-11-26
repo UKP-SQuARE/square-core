@@ -1,5 +1,7 @@
 <script>
-export default {
+import Vue from 'vue'
+
+export default Vue.component('results-mixin', {
   methods: {
     highlightSpan: function (doc, span) {
       if (span) {
@@ -12,5 +14,5 @@ export default {
       return Math.round(score * 100_000) / 1_000
     }
   }
-}
+})
 </script>
