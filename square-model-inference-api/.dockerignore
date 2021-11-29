@@ -132,3 +132,6 @@ ml_model/*.joblib
 venv/
 
 .idea/
+
+# model cache
+.cache

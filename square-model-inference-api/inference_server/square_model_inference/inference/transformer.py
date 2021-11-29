@@ -102,7 +102,7 @@ class Transformer(Model):
             # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
             # Generation should NOT use this function
             if isinstance(all_predictions[0][key], tuple):
-                tuple_of_lists = list(zip(*[[p.cpu() for p in tpl[key]] for tpl in all_predictions]))
+                tuple_of_lists = list(zip(*[[torch.stack(p).cpu() if isinstance(p, tuple) else p.cpu() for p in tpl[key]] for tpl in all_predictions]))
                 final_prediction[key] = tuple(torch.cat(l) for l in tuple_of_lists)
             else:
                 final_prediction[key] = torch.cat([p[key].cpu() for p in all_predictions])
@@ -113,8 +113,15 @@ class Transformer(Model):
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
         request.model_kwargs["output_hidden_states"] = True
         predictions, features = self._predict(request, output_features=True)
-        # We remove hidden_states from predictions!
-        hidden_state = predictions.pop("hidden_states")[-1]
+        # We remove hidden_states from predictions!0
+        if "hidden_states" in predictions:
+            hidden_state = predictions.pop("hidden_states")[-1]
+        elif "last_hidden_state" in predictions:
+            hidden_state = predictions.get("last_hidden_state")
+        elif "decoder_hidden_states" in predictions:
+            hidden_state = predictions.get("decoder_hidden_states")[-1]
+        else:
+            raise ValueError("No hidden state available in keys: {}".format(predictions.keys()))
         attention_mask = features["attention_mask"]
 
         embedding_mode = request.task_kwargs.get("embedding_mode", "mean")
