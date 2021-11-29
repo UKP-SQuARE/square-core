@@ -86,7 +86,9 @@ def assert_skills_equal_from_response(skill, response):
                 tzinfo=None, microsecond=skill[k].microsecond // 1000 * 1000
             )
 
-        assert added_skill[k] == skill[k], f"{added_skill[k]=} {skill[k]=}"
+        assert (
+            added_skill[k] == skill[k]
+        ), f"added_skill={added_skill[k]} skill={skill[k]}"
 
 
 def test_skill_types(client):
