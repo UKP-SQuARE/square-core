@@ -1,18 +1,13 @@
-import json
-from bson import ObjectId
 from datetime import datetime
-from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
 import responses
 from fastapi.testclient import TestClient
 from testcontainers.mongodb import MongoDbContainer
-from testcontainers.postgres import PostgresContainer
 
-from skill_manager.api import app, publish_skill
+from skill_manager.api import app
 from skill_manager.models import Skill, SkillSettings
-from skill_manager.mongo_settings import MongoSettings
 
 client = TestClient(app)
 
