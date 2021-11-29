@@ -38,10 +38,10 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     # Prepare prediction
     query_output = []
-    id2label = output["id2label"]
+    id2label = output["id2label"] # {'0': 'False', '1': 'True'}
     label2human_label = {
-        "LABEL_0": "no",
-        "LABEL_1": "yes",
+        "False": "no",
+        "True": "yes",
     }
     for i in range(2):
         logit = output["model_outputs"]["logits"][0][i]
