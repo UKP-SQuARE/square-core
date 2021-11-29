@@ -189,7 +189,7 @@ def test_delete_skill(pers_client, skill_factory):
     assert response.json() == None
 
 
-def test_publish_unpblish(pers_client, skill_factory):
+def test_publish_unpublish(pers_client, skill_factory):
 
     test_skill = skill_factory()
     response = pers_client.post("/skill", data=test_skill.json())
