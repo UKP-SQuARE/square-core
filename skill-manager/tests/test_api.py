@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
+import responses
 from fastapi.testclient import TestClient
 from testcontainers.mongodb import MongoDbContainer
 from testcontainers.postgres import PostgresContainer
@@ -205,6 +206,7 @@ def test_publish_unpblish(pers_client, skill_factory):
     assert published_skill["published"], published_skill
 
 
+@responses.activate
 def test_query_skill(pers_client, skill_factory):
     test_skill = skill_factory()
     response = pers_client.post("/skill", data=test_skill.json())
@@ -218,11 +220,15 @@ def test_query_skill(pers_client, skill_factory):
             "prediction_documents": None,
         }
     ]
-    with patch("requests.post") as requests_post:
-        requests_post.side_effect = lambda *args, **kwargs: prediction
-        query = {"question": "hello world"}
-        response = pers_client.post(f"/skill/{skill_id}/query", json=query)
+    responses.add(
+        responses.POST,
+        url=f"{test_skill.url}/query",
+        json=prediction,
+        status=200,
+    )
 
-        assert response.status_code == 200, response.status_code
-        assert response.json() == prediction, response.json()
-        requests_post.assert_called_once_with(f"{test_skill.url}/query", json=query)
+    query = {"question": "hello world"}
+    response = pers_client.post(f"/skill/{skill_id}/query", json=query)
+
+    assert response.status_code == 200, response.status_code
+    assert response.json() == prediction, response.json()
