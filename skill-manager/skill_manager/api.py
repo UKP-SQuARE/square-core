@@ -27,6 +27,7 @@ async def get_skill_types():
     skill_types = [skill_type.value for skill_type in SkillType]
 
     logger.debug("get_skill_types {skill_types}".format(skill_types=skill_types))
+    return skill_types
 
 
 @app.get("/skill/{id}", response_model=Skill)
