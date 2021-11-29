@@ -114,12 +114,12 @@ class Transformer(Model):
         request.model_kwargs["output_hidden_states"] = True
         predictions, features = self._predict(request, output_features=True)
         # We remove hidden_states from predictions!0
-        if "last_hidden_state" in predictions:
-            hidden_state = predictions.pop("last_hidden_state")
-        elif "hidden_states" in predictions:
+        if "hidden_states" in predictions:
             hidden_state = predictions.pop("hidden_states")[-1]
+        elif "last_hidden_state" in predictions:
+            hidden_state = predictions.get("last_hidden_state")
         elif "decoder_hidden_states" in predictions:
-            hidden_state = predictions.pop("decoder_hidden_states")[-1]
+            hidden_state = predictions.get("decoder_hidden_states")[-1]
         else:
             raise ValueError("No hidden state available in keys: {}".format(predictions.keys()))
         attention_mask = features["attention_mask"]

@@ -64,8 +64,8 @@ class Onnx(Transformer):
             res = self.session.run([], ort_inputs)
             if self.is_encoder_decoder:
                 if self.decoder_session:
-                    # prepare decoder input
-                    # ToDo check whether this generalizes for other encoder decoder models
+                    # Prepare decoder input
+                    # This works with encoder decoder models exported similarirly to the FastT5 onnx model
                     ort_inputs = {
                         "input_ids": features["decoder_input_ids"] if "decoder_input_ids" in features else np.array(
                             [[self.get_bos_token()] for _ in range(features["input_ids"].shape[0])],
