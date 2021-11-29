@@ -89,9 +89,14 @@ class MockConnector(BaseConnector):
         return (True, True)
 
     async def add_document_batch(self, datastore_name: str, documents: Iterable[Document]) -> Tuple[int, int]:
+        successes, errors = 0, 0
         for document in documents:
-            self.documents.append(document)
-        return (len(documents), 0)
+            if "id" in document:
+                self.documents.append(document)
+                successes += 1
+            else:
+                errors += 1
+        return successes, errors
 
     async def update_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
         to_update = [d for d in self.documents if d["id"] == document_id]

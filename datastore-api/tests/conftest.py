@@ -53,7 +53,7 @@ def wiki_datastore(datastore_name):
     return Datastore(
         name=datastore_name,
         fields=[
-            DatastoreField(name="id", type="long"),
+            DatastoreField(name="id", type="long", is_id=True),
             DatastoreField(name="text", type="text"),
             DatastoreField(name="title", type="text"),
         ],

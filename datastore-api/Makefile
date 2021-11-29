@@ -5,3 +5,6 @@ run:
 
 test:
 	PYTHONPATH="." python -m pytest -s -v tests/
+
+test-api:
+	PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest -s -v tests/

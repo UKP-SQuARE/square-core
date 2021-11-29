@@ -22,6 +22,11 @@ class TestDocuments:
         response = client.get(f"/datastores/{datastore_name}/documents/42")
         assert response.status_code == 200
 
+    def test_put_document_invalid(self, client, datastore_name):
+        document = {"title": "a new document", "text": "some content"}
+        response = client.put(f"/datastores/{datastore_name}/documents/42", json=document)
+        assert response.status_code == 400
+
     def test_delete_document(self, client, datastore_name):
         document = {"id": 88888, "title": "a new document", "text": "some content"}
         response = client.put(f"/datastores/{datastore_name}/documents/88888", json=document)
@@ -46,6 +51,16 @@ class TestDocuments:
         assert response.status_code == 200
         response = client.get(f"/datastores/{datastore_name}/documents/4141")
         assert response.status_code == 200
+
+    def test_post_documents_one_invalid(self, client, datastore_name):
+        document = [
+            {"id": 414141, "title": "a new document", "text": "some content"},
+            {"_wrong_id": 41414141, "title": "another new document", "text": "some content"},
+        ]
+        response = client.post(f"/datastores/{datastore_name}/documents", json=document)
+        assert response.status_code == 400
+        assert response.json()["successful_uploads"] == 1
+        assert response.json()["errors"] == 1
 
     def test_post_documents_invalid_datastore(self, client):
         document = [

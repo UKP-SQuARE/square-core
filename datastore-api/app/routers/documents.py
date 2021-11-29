@@ -12,7 +12,6 @@ from ..models.document import Document
 from ..models.httperror import HTTPError
 from ..models.upload import UploadResponse, UploadUrlSet
 from .dependencies import get_storage_connector
-from .utils import get_fields
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Documents"])
 
 
-async def upload_document_file(conn, datastore_name: str, file_name: str, file_iterator: Iterable) -> Union[int, UploadResponse]:
+async def upload_document_file(
+    conn, datastore_name: str, file_name: str, file_iterator: Iterable
+) -> Union[int, UploadResponse]:
     total_docs = 0
     upload_batch = []
     for i, line in enumerate(file_iterator):
@@ -50,6 +51,7 @@ async def upload_document_file(conn, datastore_name: str, file_name: str, file_i
             return total_docs, UploadResponse(
                 message=f"Unable to upload {errors} documents from {file_name}.",
                 successful_uploads=total_docs,
+                errors=errors,
             )
         total_docs += successes
 
@@ -159,12 +161,10 @@ async def post_documents(
     if errors > 0:
         response.status_code = 400
         return UploadResponse(
-            message=f"Unable to upload {errors} documents.", successful_uploads=successes
+            message=f"Unable to upload {errors} documents.", successful_uploads=successes, errors=errors
         )
     else:
-        return UploadResponse(
-            message=f"Successfully uploaded {successes} documents.", successful_uploads=successes
-        )
+        return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
 @router.get(
@@ -231,12 +231,21 @@ async def update_document(
     document: Document = Body(..., description="The document to update"),
     conn=Depends(get_storage_connector),
 ):
+    datastore = await conn.get_datastore(datastore_name)
+    if datastore is None:
+        raise HTTPException(status_code=404, detail="Datastore not found.")
+
     # First, check if all fields in the uploaded document are valid.
-    fields = await get_fields(conn, datastore_name)
-    if not all([field in fields for field in document]):
-        return HTTPException(
+    if not datastore.is_valid_document(document):
+        raise HTTPException(
             status_code=400,
-            detail="The datastore does not contain at least one of the fields {}".format(" ".join(document.keys())),
+            detail="The given document does not have the correct format.",
+        )
+    # also check if the doc id in the body matches the path
+    if doc_id != document[datastore.id_field.name]:
+        raise HTTPException(
+            status_code=400,
+            detail="The document ID specified in the path and in the request body must match.",
         )
 
     success, created = await conn.add_document(datastore_name, doc_id, document)

@@ -256,17 +256,25 @@ class ElasticsearchConnector(BaseConnector):
         Returns:
             Tuple[int, int]: A tuple containing the number of documents added and the number of error.
         """
+        datastore = await self.get_datastore(datastore_name)
         docs_index = self._datastore_docs_index_name(datastore_name)
         actions = []
+        additional_errors = 0  # Number of document format errors
         for document in documents:
-            actions.append(
-                {
-                    "_index": docs_index,
-                    "_id": document["id"],
-                    "_source": self.converter.convert_from_document(document),
-                }
-            )
-        return await async_bulk(self.es, actions, stats_only=True, raise_on_error=False)
+            if not datastore.is_valid_document(document):
+                additional_errors += 1
+            else:
+                actions.append(
+                    {
+                        "_index": docs_index,
+                        "_id": document[datastore.id_field.name],
+                        "_source": self.converter.convert_from_document(document),
+                    }
+                )
+
+        sucesses, errors = await async_bulk(self.es, actions, stats_only=True, raise_on_error=False)
+        errors += additional_errors
+        return sucesses, errors
 
     async def update_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
         """Updates a document.
@@ -341,6 +349,7 @@ class ElasticsearchConnector(BaseConnector):
             query (str): Query to search for.
             document_id (int): Id of the document.
         """
+        datastore = await self.get_datastore(datastore_name)
         docs_index = self._datastore_docs_index_name(datastore_name)
         search_body = {
             "query": {
@@ -349,12 +358,12 @@ class ElasticsearchConnector(BaseConnector):
                 }
             },
             "post_filter": {
-                "term": {"id": document_id},
+                "term": {datastore.id_field.name: document_id},
             },
         }
         result = await self.es.search(index=docs_index, body=search_body)
         query_results = self.converter.convert_to_query_results(result)
-        
+
         if len(query_results) == 0:
             return None
         return query_results[0]

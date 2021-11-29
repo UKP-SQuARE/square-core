@@ -22,7 +22,11 @@ class ElasticsearchClassConverter(BaseClassConverter):
             }
         }
         for field in datastore.fields:
-            index["mappings"]["properties"][field.name] = {"type": field.type}
+            index["mappings"]["properties"][field.name] = {
+                "type": field.type,
+                # We store additional datastore information in the meta mapping of ES.
+                "meta": {"is_id": "1" if field.is_id else "0"},
+            }
 
         return index
 
@@ -32,7 +36,12 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         fields = []
         for prop_name, prop_kwargs in obj["mappings"]["properties"].items():
-            fields.append(DatastoreField(name=prop_name, type=prop_kwargs["type"]))
+            is_id = False
+            if "meta" in prop_kwargs:
+                is_id = prop_kwargs["meta"].get("is_id", None) == "1"
+            fields.append(
+                DatastoreField(name=prop_name, type=prop_kwargs["type"], is_id=is_id)
+            )
         return Datastore(name=datastore_name, fields=fields)
 
     def convert_from_index(self, index: Index) -> object:
