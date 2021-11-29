@@ -64,16 +64,15 @@ async def create_skill(skill: Skill):
 
 
 @app.put("/skill/{id}", response_model=Skill)
-async def update_skill(id: str, request: Request):
-    request = await request.json()
+async def update_skill(id: str, data: dict):
     skill = await get_skill_by_id(id)
 
-    for k, v in request.items():
+    for k, v in data.items():
         if hasattr(skill, k):
             setattr(skill, k, v)
-    
+
     _ = app.state.skill_manager_db.skills.find_one_and_update(
-        {"_id": ObjectId(id)}, {"$set": skill.mongo()}
+        {"_id": ObjectId(id)}, {"$set": data}
     )
     updated_skill = await get_skill_by_id(id)
 
@@ -99,7 +98,7 @@ async def delete_skill(id: str):
 async def publish_skill(id: str):
     skill = await get_skill_by_id(id)
     skill.published = True
-    skill = await update_skill(id, skill)
+    skill = await update_skill(id, skill.dict())
 
     logger.debug("publish_skill: {skill}".format(skill=skill))
     return skill
@@ -109,7 +108,7 @@ async def publish_skill(id: str):
 async def unpublish_skill(id: str):
     skill = await get_skill_by_id(id)
     skill.published = False
-    skill = await update_skill(id, skill)
+    skill = await update_skill(id, skill.dict())
 
     logger.debug("unpublish_skill: {skill}".format(skill=skill))
     return skill
