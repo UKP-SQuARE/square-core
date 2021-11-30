@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from unittest.mock import patch
 
@@ -27,7 +28,21 @@ def init_mongo_db():
 @pytest.fixture(scope="module")
 def pers_client(init_mongo_db):
     with patch("skill_manager.api.MongoSettings") as mongo_settings:
-        mongo_settings.return_value.connection_url = init_mongo_db.get_connection_url()
+        connection_url = init_mongo_db.get_connection_url()
+
+        # HACK: host detection does not work properly when running inside docker
+        # therefore, we set an env variable in the Dockerfile and manually replace
+        # the host. Once the issue below is fixed in testcontainers, this could be removed.
+        # https://github.com/testcontainers/testcontainers-python/issues/43
+        if os.getenv("INSIDE_DOCKER", False):
+            lindex = connection_url.index("@") + 1
+            rindex = max(i for i, v in enumerate(connection_url) if v == ":")
+            connection_url = (
+                connection_url[:lindex]
+                + "host.docker.internal"
+                + connection_url[rindex:]
+            )
+        mongo_settings.return_value.connection_url = connection_url
         with TestClient(app) as client:
             yield client
 
