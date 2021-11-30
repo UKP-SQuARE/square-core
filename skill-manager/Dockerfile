@@ -15,6 +15,18 @@ COPY ./skill_manager skill_manager
 
 COPY logging.conf logging.conf
 
+FROM base as test
+RUN apt -y install docker.io
+
+COPY requirements.dev.txt requirements.dev.txt 
+RUN pip install -r requirements.dev.txt
+
+COPY tests tests
+ENV INSIDE_DOCKER 1
+# RUN python -m pytest
+CMD ["python", "-m", "pytest"]
+
+FROM base as build
 EXPOSE 8008
 
 CMD ["uvicorn", "skill_manager.api:app", "--host", "0.0.0.0", "--port", "8008", "--log-config", "logging.conf"]
