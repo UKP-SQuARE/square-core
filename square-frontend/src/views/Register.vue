@@ -4,7 +4,7 @@
     <div class="card border-primary shadow align-self-center text-center" style="width: 362px;">
       <h5 class="card-header fw-light py-2">Sign up</h5>
       <div class="card-body p-4">
-        <Alert v-if="sucess" class="alert-success" dismissible>Your account was created successfully! You can sign in now.</Alert>
+        <Alert v-if="success" class="alert-success" dismissible>Your account was created successfully! You can sign in now.</Alert>
         <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
         <h3 class="card-title mb-3">Sign up now</h3>
         <form v-on:submit.prevent="onSubmit">

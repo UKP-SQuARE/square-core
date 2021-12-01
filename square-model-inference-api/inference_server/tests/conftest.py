@@ -123,9 +123,10 @@ def test_onnx_question_answering():
 
 @pytest.fixture(scope="class")
 def test_onnx_generation():
-    onnx_path = "./onnx_models/gpt2-generation/model.onnx"
+    onnx_path = "./onnx_models/t5_encoder_decoder/t5-small-encoder.onnx"
+    decoder_init_path = "./onnx_models/t5_encoder_decoder/t5-small-init-decoder.onnx"
     if os.path.isfile(onnx_path):
-        return Onnx(onnx_path, "gpt2", 1, True, 50)
+        return Onnx(onnx_path, "t5-base", 1, True, 50, decoder_path=decoder_init_path)
     else:
         return None
 
