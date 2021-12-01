@@ -135,7 +135,7 @@ async def query_skill(query_request: QueryRequest, id: str):
         skill_name=skill.name,
         query=query,
         user_id=user_id,
-        predictions=predictions,
+        predictions=predictions["predictions"],
     )
     _ = app.state.skill_manager_db.predictions.insert_one(mongo_prediction.mongo()).inserted_id
 
@@ -144,4 +144,4 @@ async def query_skill(query_request: QueryRequest, id: str):
             query_request=query_request.json(), predictions=predictions
         )
     )
-    return QueryOutput(predictions=predictions)
+    return predictions
