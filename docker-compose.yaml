@@ -96,6 +96,26 @@ services:
 
   ### / MODEL API Finished
 
+  skill_manager:
+    image: ukpsquare/skill-manager:latest
+    build: ./skill-manager
+    ports:
+      - 8008:8008
+    env_file:
+      - ./skill-manager/.env
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+      - skill-manager-mongo-data:/data/db
+    ports:
+      - 27017:27017
+    env_file:
+      - ./skill-manager/.env
+
   #adminer:
   #  image: adminer
   #  restart: always
@@ -163,4 +183,6 @@ volumes:
   migrations-data:
     driver: local
   es01:
+    driver: local
+  skill-manager-mongo-data:
     driver: local
