@@ -33,9 +33,10 @@ if __name__ == "__main__":
     model = AutoModelWithHeads.from_pretrained(TRANSFORMER_MODEL).to(device)
 
     # Pre-download adapters
-    logger.info("Loading all available adapters")
-    adapter_infos = [info for info in list_adapters(source="ah") if info.model_name==TRANSFORMER_MODEL]
-    adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in adapter_infos)
+    # logger.info("Loading all available adapters")
+    # adapter_infos = [info for info in list_adapters(source="ah") if info.model_name==TRANSFORMER_MODEL]
+    # adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in adapter_infos)
+    adapters = set(["nli/rte@ukp", "ner/conll2003@ukp", "sts/sts-b@ukp", "qa/squad2@ukp"])
     for adapter in adapters:
         logger.debug(f"Loading adapter {adapter}")
         try:
