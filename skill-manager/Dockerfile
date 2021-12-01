@@ -22,7 +22,6 @@ COPY requirements.dev.txt requirements.dev.txt
 RUN pip install -r requirements.dev.txt
 
 COPY tests tests
-CMD ["python", "-m", "pytest"]
 
 FROM base as build
 EXPOSE 8008
