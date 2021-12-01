@@ -11,8 +11,8 @@ from skill_manager.py_object_id import PyObjectId
 
 class SkillType(str, Enum):
     abstractive = "abstractive"
-    span_extraction = "span extraction"
-    multiple_choiche = "mulitple-choice"
+    span_extraction = "span-extraction"
+    multiple_choiche = "multiple-choice"
     categorical = "categorical"
     open_domain = "open-domain"
 
