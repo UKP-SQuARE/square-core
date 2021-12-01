@@ -119,15 +119,23 @@ async def unpublish_skill(id: str):
 
 @app.post("/skill/{id}/query", response_model=QueryOutput)
 async def query_skill(query_request: QueryRequest, id: str):
+    logger.info(
+        "received query: {query} for skill {id}".format(
+            query=query_request.json(), id=id
+        )
+    )
 
     query = query_request.query
     user_id = query_request.user_id
 
     skill = await get_skill_by_id(id)
 
-    response = requests.post(f"{skill.url}/query", json=query_request.json())
-    response.raise_for_status()
+    response = requests.post(f"{skill.url}/query", json=query_request.dict())
+    if response.status_code > 201:
+        logger.exception(response.content)
+        response.raise_for_status()
     predictions = response.json()
+    logger.debug("predictions from skill: {predictions}".format(predictions=predictions))
 
     # save prediction to mongodb
     mongo_prediction = Prediction(
@@ -137,7 +145,15 @@ async def query_skill(query_request: QueryRequest, id: str):
         user_id=user_id,
         predictions=predictions["predictions"],
     )
-    _ = app.state.skill_manager_db.predictions.insert_one(mongo_prediction.mongo()).inserted_id
+    mongo_prediction_id = app.state.skill_manager_db.predictions.insert_one(
+        mongo_prediction.mongo()
+    ).inserted_id
+    logger.debug(
+        "prediction {mongo_prediction_id} saved {mongo_prediction}".format(
+            mongo_prediction_id=mongo_prediction_id,
+            mongo_prediction=mongo_prediction.json(),
+        )
+    )
 
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(
