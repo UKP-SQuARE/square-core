@@ -30,11 +30,11 @@ def pers_client(init_mongo_db):
     with patch("skill_manager.api.MongoSettings") as mongo_settings:
         connection_url = init_mongo_db.get_connection_url()
 
-        # HACK: host detection does not work properly when running inside docker
+        # HACK: *for MAC* host detection does not work properly when running inside docker
         # therefore, we set an env variable in the Dockerfile and manually replace
         # the host. Once the issue below is fixed in testcontainers, this could be removed.
         # https://github.com/testcontainers/testcontainers-python/issues/43
-        if os.getenv("INSIDE_DOCKER", False):
+        if os.getenv("INSIDE_DOCKER", False) == 1:
             lindex = connection_url.index("@") + 1
             rindex = max(i for i, v in enumerate(connection_url) if v == ":")
             connection_url = (
