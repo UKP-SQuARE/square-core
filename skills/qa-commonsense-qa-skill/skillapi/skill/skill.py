@@ -39,15 +39,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     # Prepare prediction
     query_output = []
-    id2label = output["id2label"]
-    label2human_label = {f"LABEL_{i}": c for i, c in enumerate(choices)}
+    id2label = output["id2label"] # {'0': '', '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E'}
+    label2human_label = {id2label[str(i+1)]: c for i, c in enumerate(choices)}
 
     for i in range(len(choices)):
         logit = output["model_outputs"]["logits"][0][i]
         prediction_score = logit
 
         prediction_output = {
-            "output": label2human_label[id2label[str(i)]],  # Set based on output
+            "output": label2human_label[id2label[str(i+1)]],  # Set based on output
             "output_score": logit
         }
 
