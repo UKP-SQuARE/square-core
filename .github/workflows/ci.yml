@@ -685,9 +685,14 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-testing
-          options: -v /var/run/docker.sock:/var/run/docker.sock
+          options: -v /var/run/docker.sock:/var/run/docker.sock -v ${{ github.workspace }}/skill-manager/test-reports:/app/test-reports
           run: |
-            python -m pytest
+            python -m pytest --junitxml=test-reports/junit.xml --cov --cov-report=xml:test-reports/coverage.xml --cov-report=html:test-reports/coverage.html
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: skill-manager-test-reports
+          path: ${{ github.workspace }}/skill-manager/test-reports
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
