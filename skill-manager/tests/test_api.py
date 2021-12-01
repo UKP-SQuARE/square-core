@@ -226,7 +226,7 @@ def test_query_skill(pers_client, skill_factory):
     skill_id = response.json()["id"]
 
     prediction_id = str(uuid.uuid1())
-    prediction = [
+    prediction = {"predictions": [
         {
             "prediction_id": prediction_id,
             "prediction_score": 1,
@@ -242,7 +242,7 @@ def test_query_skill(pers_client, skill_factory):
                 }
             ],
         }
-    ]
+    ]}
     responses.add(
         responses.POST,
         url=f"{test_skill.url}/query",
@@ -250,7 +250,12 @@ def test_query_skill(pers_client, skill_factory):
         status=200,
     )
 
-    query_request = QueryRequest(query="query", user_id="test-user")
+    query_request = QueryRequest(
+        query="query",
+        user_id="test-user",
+        skill_args={"context": "hello"},
+        num_results=1,
+    )
     response = pers_client.post(f"/skill/{skill_id}/query", json=query_request.dict())
 
     assert response.status_code == 200
@@ -258,5 +263,7 @@ def test_query_skill(pers_client, skill_factory):
     saved_prediction = pers_client.app.state.skill_manager_db.predictions.find_one(
         {"predictions": {"$elemMatch": {"prediction_id": prediction_id}}}
     )
-    
-    TestCase().assertDictEqual(response.json(), {"predictions": saved_prediction["predictions"]})
+
+    TestCase().assertDictEqual(
+        response.json(), {"predictions": saved_prediction["predictions"]}
+    )
