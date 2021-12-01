@@ -22,8 +22,6 @@ COPY requirements.dev.txt requirements.dev.txt
 RUN pip install -r requirements.dev.txt
 
 COPY tests tests
-ENV INSIDE_DOCKER 0
-# RUN python -m pytest
 CMD ["python", "-m", "pytest"]
 
 FROM base as build
