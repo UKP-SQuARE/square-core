@@ -99,7 +99,7 @@ services:
       - mongo
 
   mongo:
-    image: mongo
+    image: mongo:5.0.4
     restart: always
     volumes:
       - skill-manager-mongo-data:/data/db
