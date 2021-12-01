@@ -250,7 +250,12 @@ def test_query_skill(pers_client, skill_factory):
         status=200,
     )
 
-    query_request = QueryRequest(query="query", user_id="test-user")
+    query_request = QueryRequest(
+        query="query",
+        user_id="test-user",
+        skill_args={"context": "hello"},
+        num_results=1,
+    )
     response = pers_client.post(f"/skill/{skill_id}/query", json=query_request.dict())
 
     assert response.status_code == 200
