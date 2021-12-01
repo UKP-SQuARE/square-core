@@ -93,11 +93,8 @@ services:
     build: ./skill-manager
     ports:
       - 8008:8008
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_HOST: mongo
-      MONGO_PORT: 27017
+    env_file:
+      - ./skill-manager/.env
     depends_on:
       - mongo
 
@@ -108,9 +105,8 @@ services:
       - skill-manager-mongo-data:/data/db
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+    env_file:
+      - ./skill-manager/.env
 
   #adminer:
   #  image: adminer
