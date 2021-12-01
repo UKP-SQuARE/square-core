@@ -104,6 +104,8 @@ services:
   mongo:
     image: mongo
     restart: always
+    volumes:
+      - skill-manager-mongo-data:/data/db
     ports:
       - 27017:27017
     environment:
@@ -177,4 +179,6 @@ volumes:
   migrations-data:
     driver: local
   es01:
+    driver: local
+  skill-manager-mongo-data:
     driver: local
