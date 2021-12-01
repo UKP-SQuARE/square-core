@@ -34,7 +34,7 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('squad', {
+export default Vue.component('squad-results', {
   props: ['skillResult'],
   mixins: [mixin],
   data() {

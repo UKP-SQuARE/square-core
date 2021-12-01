@@ -149,7 +149,7 @@
 import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 
-export default Vue.component('query', {
+export default Vue.component('query-skills', {
   data() {
     return {
       waitingQuery: false,

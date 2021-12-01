@@ -11,7 +11,7 @@ import Vue from 'vue'
 import Query from '@/components/Query.vue'
 import Results from '@/components/Results.vue'
 
-export default Vue.component('home', {
+export default Vue.component('square-home', {
   components: {
     Query,
     Results

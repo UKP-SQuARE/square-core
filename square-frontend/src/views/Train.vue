@@ -11,12 +11,12 @@
           &nbsp;My skills
         </router-link>
       </template>
-      <template #topItem :skill="skill">
+      <template #topItem>
         <h5 class="fw-light mb-0">{{ skill.name }}</h5>
         <span v-if="skill.is_published" class="badge bg-info ms-1 p-2">Published</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
       </template>
-      <template #rightItem :waitingTraining="waitingTraining" :skill="skill">
+      <template #rightItem>
         <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit" :disabled="waitingTraining">
           <span v-if="waitingTraining" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
           <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
@@ -75,7 +75,7 @@ import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Modal from '@/components/Modal.vue'
 
-export default Vue.component('train', {
+export default Vue.component('train-skill', {
   data() {
     return {
       train_file: null,
