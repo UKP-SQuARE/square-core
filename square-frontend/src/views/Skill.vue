@@ -59,7 +59,7 @@ import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
 
-export default Vue.component('skill', {
+export default Vue.component('edit-skill', {
   data() {
     return {
       skill: {

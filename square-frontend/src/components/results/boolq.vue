@@ -36,7 +36,7 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('boolq', {
+export default Vue.component('boolq-results', {
   props: ['skillResult'],
   mixins: [mixin],
   computed: {

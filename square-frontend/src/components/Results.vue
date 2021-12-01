@@ -12,8 +12,6 @@
              :id="`skill-${skillResult.name}-tab`"
              data-bs-toggle="tab"
              :data-bs-target="`#skill-${skillResult.name}`"
-             type="button"
-             role="tab"
              v-on:click="activeTab = index">{{ skillResult.name }}</a>
         </li>
       </ul>
@@ -42,7 +40,7 @@ import boolq from '@/components/results/boolq.vue'
 import commonsenseqa from '@/components/results/commonsenseqa.vue'
 import squad from '@/components/results/squad.vue'
 
-export default Vue.component('results', {
+export default Vue.component('skill-results', {
   data() {
     return {
       activeTab: 0

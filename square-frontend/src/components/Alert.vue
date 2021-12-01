@@ -12,7 +12,7 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('alert', {
+export default Vue.component('alert-view', {
   props: {
     dismissible: Boolean
   }

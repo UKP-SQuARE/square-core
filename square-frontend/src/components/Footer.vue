@@ -14,6 +14,6 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('square_footer', {
+export default Vue.component('square-footer', {
 })
 </script>
