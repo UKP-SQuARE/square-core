@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
+from square_skill_api.models.prediction import Prediction as SkillPrediction
 
 from skill_manager.mongo_model import MongoModel
 from skill_manager.py_object_id import PyObjectId
@@ -53,3 +54,11 @@ class Skill(MongoModel):
             }
         }
 
+class Prediction(MongoModel):
+    id: Optional[PyObjectId]
+    skill_id: PyObjectId
+    skill_name: str
+    query: str
+    query_time: datetime = Field(default_factory=datetime.now)
+    user_id: str
+    predictions: List[SkillPrediction]

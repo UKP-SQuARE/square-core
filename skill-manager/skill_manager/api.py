@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from bson import ObjectId
 from itertools import chain
@@ -5,9 +6,11 @@ from typing import List, Optional
 
 import pymongo
 import requests
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from square_skill_api.models.prediction import QueryOutput
+from square_skill_api.models.request import QueryRequest
 
-from skill_manager.models import Skill, SkillType
+from skill_manager.models import Skill, SkillType, Prediction
 from skill_manager.mongo_settings import MongoSettings
 
 logger = logging.getLogger(__name__)
@@ -114,17 +117,31 @@ async def unpublish_skill(id: str):
     return skill
 
 
-@app.post("/skill/{id}/query")
-async def query_skill(request: Request, id: str):
-    request = await request.json()
-    skill = await get_skill_by_id(id)
-    response = requests.post(f"{skill.url}/query", json=request)
-    response.raise_for_status()
+@app.post("/skill/{id}/query", response_model=QueryOutput)
+async def query_skill(query_request: QueryRequest, id: str):
 
-    prediction = response.json()
+    query = query_request.query
+    user_id = query_request.user_id
+
+    skill = await get_skill_by_id(id)
+
+    response = requests.post(f"{skill.url}/query", json=query_request.json())
+    response.raise_for_status()
+    predictions = response.json()
+
+    # save prediction to mongodb
+    mongo_prediction = Prediction(
+        skill_id=skill.id,
+        skill_name=skill.name,
+        query=query,
+        user_id=user_id,
+        predictions=predictions,
+    )
+    _ = app.state.skill_manager_db.predictions.insert_one(mongo_prediction.mongo()).inserted_id
+
     logger.debug(
-        "query_skill: request: {request} prediction: {prediction}".format(
-            request=request, prediction=prediction
+        "query_skill: query_request: {query_request} predictions: {predictions}".format(
+            query_request=query_request.json(), predictions=predictions
         )
     )
-    return prediction
+    return QueryOutput(predictions=predictions)

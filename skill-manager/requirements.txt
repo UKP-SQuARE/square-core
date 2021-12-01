@@ -1,4 +1,5 @@
 git+https://github.com/UKP-SQuARE/elk-json-formatter
+git+https://github.com/UKP-SQuARE/square-skill-api
 uvicorn>=0.15.0
 fastapi>=0.70.0
 pydantic>=1.8.2
