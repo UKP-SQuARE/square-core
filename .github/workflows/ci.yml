@@ -699,7 +699,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./skill_manager
+          context: ./skill-manager
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
