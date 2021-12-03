@@ -1,0 +1,3 @@
+git+https://github.com/UKP-SQuARE/elk-json-formatter
+git+https://github.com/UKP-SQuARE/square-skill-helpers
+git+https://github.com/UKP-SQuARE/square-skill-api

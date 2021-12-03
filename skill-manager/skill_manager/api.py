@@ -128,14 +128,31 @@ async def query_skill(query_request: QueryRequest, id: str):
     query = query_request.query
     user_id = query_request.user_id
 
-    skill = await get_skill_by_id(id)
+    skill: Skill = await get_skill_by_id(id)
+
+    default_skill_args = skill.default_skill_args
+    if default_skill_args is not None:
+        # add default skill args, potentially overwrite with query.skill_args
+        query_request.skill_args = {**default_skill_args, **query_request.skill_args}
+
+    # FIXME: Once UI sends context and answers seperatly, this code block can be deleted
+    if (
+        skill.skill_settings.requires_multiple_choices > 0
+        and "answers" not in query_request.skill_args
+    ):
+        answers = query_request.skill_args["context"].split("\n")
+        if skill.skill_settings.requires_context:
+            query_request.skill_args["context"], *answers = answers
+        query_request.skill_args["answers"] = answers
 
     response = requests.post(f"{skill.url}/query", json=query_request.dict())
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
     predictions = response.json()
-    logger.debug("predictions from skill: {predictions}".format(predictions=predictions))
+    logger.debug(
+        "predictions from skill: {predictions}".format(predictions=predictions)
+    )
 
     # save prediction to mongodb
     mongo_prediction = Prediction(

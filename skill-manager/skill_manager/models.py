@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
 from square_skill_api.models.prediction import Prediction as SkillPrediction
@@ -29,6 +29,7 @@ class Skill(MongoModel):
     user_id: str
     created_at: datetime = Field(default_factory=datetime.now)
     description: str = None
+    default_skill_args: Dict = None
     published: bool = False
 
     @validator("url")
@@ -48,6 +49,7 @@ class Skill(MongoModel):
                     "requires_context": False,
                     "requires_multiple_choices": 0
                 },
+                "default_skill_args": {},
                 "user_id": "Dave",
                 "created_at": "1992-01-12T09:00:00.000000",
                 "published": False
