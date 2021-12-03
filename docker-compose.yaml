@@ -118,9 +118,9 @@ services:
     env_file:
       - ./skill-manager/.env
     depends_on:
-      - skill-manager-mongo
+      - skill_manager_mongo
 
-  skill-manager-mongo:
+  skill_manager_mongo:
     image: mongo:5.0.4
     restart: always
     volumes:
