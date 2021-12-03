@@ -128,7 +128,12 @@ async def query_skill(query_request: QueryRequest, id: str):
     query = query_request.query
     user_id = query_request.user_id
 
-    skill = await get_skill_by_id(id)
+    skill: Skill = await get_skill_by_id(id)
+
+    default_skill_args = skill.default_skill_args
+    if default_skill_args is not None:
+        # add default skill args, potentially overwrite with query.skill_args
+        query_request.skill_args = {**default_skill_args, **query_request.skill_args}
 
     response = requests.post(f"{skill.url}/query", json=query_request.dict())
     if response.status_code > 201:
