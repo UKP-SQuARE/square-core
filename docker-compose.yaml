@@ -52,14 +52,14 @@ services:
     env_file:
       - ./skills/qa-commonsense-qa-skill/.env
   extractive_qa_skill:
-    image: ukpsquare/square-extractive-qa-skill:latest
+    image: ukpsquare/square-skills-extractive:latest
     build: ./skills/qa-extractive-qa-skill/.
     ports:
       - 8006:8006
     env_file:
       - ./skills/qa-extractive-qa-skill/.env
   multiple_choice_qa_skill:
-    image: ukpsquare/square-multiple-choice-qa-skill:latest
+    image: ukpsquare/square-skills-multiple-choice:latest
     build: ./skills/qa-extractive-qa-skill/.
     ports:
       - 8007:8007
