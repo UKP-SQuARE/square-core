@@ -150,7 +150,9 @@ async def query_skill(query_request: QueryRequest, id: str):
         logger.exception(response.content)
         response.raise_for_status()
     predictions = response.json()
-    logger.debug("predictions from skill: {predictions}".format(predictions=predictions))
+    logger.debug(
+        "predictions from skill: {predictions}".format(predictions=predictions)
+    )
 
     # save prediction to mongodb
     mongo_prediction = Prediction(
