@@ -58,7 +58,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         prediction = {
             "prediction_score": prediction_score,
             "prediction_output": prediction_output,
-            "prediction_documents": [{"document": context}]
+            "prediction_documents": [{"document": context}] if context is not None else []
         }
         query_output.append(prediction)
 
