@@ -70,9 +70,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         }]  # Change as needed
 
         # Return
-        prediction_id = str(uuid.uuid4())
         prediction = {
-            "prediction_id": prediction_id,
             "prediction_score": prediction_score,
             "prediction_output": prediction_output,
             "prediction_documents": prediction_documents
@@ -82,7 +80,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
     # Answer for no answer
     if len(query_output) == 0:
         prediction = {
-            "prediction_id": str(uuid.uuid4()),
             "prediction_score": max(ans[0]["score"] for ans in output["answers"]),
             "prediction_output": {
                 "output": "No answer found in the searched documents",
@@ -98,7 +95,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
             } for d in data]
         }
         query_output.append(prediction)
-
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
 
     return QueryOutput(predictions=query_output)

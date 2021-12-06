@@ -47,34 +47,19 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     # Prepare prediction
     query_output = []
-    for i in range(len(answers)):
-        logit = output["model_outputs"]["logits"][0][i]
-        prediction_score = logit
+    predictions_scores = output["model_outputs"]["logits"][0]
+    for prediction_score, answer in zip(predictions_scores, answers):
 
         prediction_output = {
-            "output": answers[i], 
-            "output_score": logit
+            "output": answer, 
+            "output_score": prediction_score
         }
 
-        prediction_documents = [{
-            "index": "",
-            "document_id": "",
-            "document": "",
-            # "span": ["", ""],
-            "source": "",
-            "url": ""
-        }]  # Change as needed
-
-        # Return
-        prediction_id = str(uuid.uuid4())
         prediction = {
-            "prediction_id": prediction_id,
             "prediction_score": prediction_score,
             "prediction_output": prediction_output,
-            "prediction_documents": prediction_documents
+            "prediction_documents": [{"document": context}] if context is not None else []
         }
         query_output.append(prediction)
-
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
 
     return QueryOutput(predictions=query_output)

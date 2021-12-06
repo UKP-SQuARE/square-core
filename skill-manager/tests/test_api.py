@@ -53,11 +53,10 @@ def pers_client(init_mongo_db):
 
 @pytest.fixture
 def skill_prediction_factory():
-    def skill_prediction(prediction_id):
+    def skill_prediction():
         return {
             "predictions": [
                 {
-                    "prediction_id": prediction_id,
                     "prediction_score": 1,
                     "prediction_output": {"output": "answer", "output_score": "1"},
                     "prediction_documents": [
@@ -254,16 +253,16 @@ def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
     response = pers_client.post("/skill", data=test_skill.json())
     skill_id = response.json()["id"]
 
-    prediction_id = str(uuid.uuid1())
     responses.add(
         responses.POST,
         url=f"{test_skill.url}/query",
-        json=skill_prediction_factory(prediction_id),
+        json=skill_prediction_factory(),
         status=200,
     )
 
+    query = "a unique query form test_query_skill"
     query_request = QueryRequest(
-        query="query",
+        query=query,
         user_id="test-user",
         skill_args={"context": "hello"},
         num_results=1,
@@ -271,32 +270,29 @@ def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
     response = pers_client.post(f"/skill/{skill_id}/query", json=query_request.dict())
 
     assert response.status_code == 200
-
     saved_prediction = pers_client.app.state.skill_manager_db.predictions.find_one(
-        {"predictions": {"$elemMatch": {"prediction_id": prediction_id}}}
+        {"query": query}
     )
 
     TestCase().assertDictEqual(
         response.json(), {"predictions": saved_prediction["predictions"]}
     )
 
+
 @responses.activate
 def test_query_skill_with_default_skill_args(
     pers_client, skill_factory, skill_prediction_factory
 ):
-    default_skill_args={"adapter": "my-adapter", "context": "default context"}
-    test_skill = skill_factory(
-        default_skill_args=default_skill_args
-    )
+    default_skill_args = {"adapter": "my-adapter", "context": "default context"}
+    test_skill = skill_factory(default_skill_args=default_skill_args)
 
     response = pers_client.post("/skill", data=test_skill.json())
     skill_id = response.json()["id"]
 
-    prediction_id = str(uuid.uuid1())
     responses.add(
         responses.POST,
         url=f"{test_skill.url}/query",
-        json=skill_prediction_factory(prediction_id),
+        json=skill_prediction_factory(),
         status=200,
     )
 
