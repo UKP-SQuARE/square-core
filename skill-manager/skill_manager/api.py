@@ -149,7 +149,7 @@ async def query_skill(query_request: QueryRequest, id: str):
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
-    predictions = response.json()
+    predictions  = QueryOutput.parse_obj(response.json())
     logger.debug(
         "predictions from skill: {predictions}".format(predictions=predictions)
     )
@@ -160,7 +160,7 @@ async def query_skill(query_request: QueryRequest, id: str):
         skill_name=skill.name,
         query=query,
         user_id=user_id,
-        predictions=predictions["predictions"],
+        predictions=predictions.predictions,
     )
     _ = app.state.skill_manager_db.predictions.insert_one(
         mongo_prediction.mongo()
