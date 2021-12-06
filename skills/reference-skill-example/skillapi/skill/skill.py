@@ -96,6 +96,4 @@ async def predict(request: QueryRequest) -> QueryOutput:
         }
         query_output.append(prediction)
 
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
-
     return QueryOutput(predictions=query_output)

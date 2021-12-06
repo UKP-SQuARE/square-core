@@ -49,20 +49,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
         prediction_score = ans["score"]
 
         prediction_output = {
-            "output": ans["answer"],  # Set based on output
+            "output": ans["answer"], 
             "output_score": prediction_score
         }
 
         prediction_documents = [{
-            "index": "",
-            "document_id": "",
             "document": context,
             "span": [ans["start"], ans["end"]],
-            "source": "",
-            "url": ""
-        }]  # Change as needed
+        }]  
 
-        # Return
         prediction = {
             "prediction_score": prediction_score,
             "prediction_output": prediction_output,
@@ -79,16 +74,10 @@ async def predict(request: QueryRequest) -> QueryOutput:
                 "output_score": max(ans[0]["score"] for ans in output["answers"])
             },
             "prediction_documents": [{
-                "index": "",
-                "document_id": "",
                 "document": context,
                 "span": [0, 0],
-                "source": "",
-                "url": ""
             }]
         }
         query_output.append(prediction)
-
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
 
     return QueryOutput(predictions=query_output)
