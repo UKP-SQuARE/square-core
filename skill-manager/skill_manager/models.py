@@ -20,12 +20,17 @@ class SkillSettings(BaseModel):
     requires_context: bool = False
     requires_multiple_choices: int = Field(0, ge=0)
 
+class SkillInputExample(BaseModel):
+    query: str
+    context: Optional[str]
+    answers: Optional[List[str]]
 class Skill(MongoModel):
     id: Optional[PyObjectId]
     name: str
     url: str
     skill_type: SkillType
     skill_settings: SkillSettings
+    skill_input_examples: Optional[List[SkillInputExample]]
     user_id: str
     created_at: datetime = Field(default_factory=datetime.now)
     description: str = None
@@ -51,8 +56,11 @@ class Skill(MongoModel):
                 },
                 "default_skill_args": {},
                 "user_id": "Dave",
-                "created_at": "1992-01-12T09:00:00.000000",
-                "published": False
+                "published": False,
+                "skill_input_examples": {
+                    "query": "What arms did Moonwatchers band carry?",
+                    "context": "At the water's edge, Moonwatcher and his band stop. They carry their bone clubs and bone knives. Led by One-ear, the Others half-heartly resume the battle-chant. But they are suddenly confrunted with a vision that cuts the sound from their throats, and strikes terror into their hearts."
+                }
             }
         }
 
