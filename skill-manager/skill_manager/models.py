@@ -16,14 +16,18 @@ class SkillType(str, Enum):
     categorical = "categorical"
     open_domain = "open-domain"
 
+
 class SkillSettings(BaseModel):
     requires_context: bool = False
     requires_multiple_choices: int = Field(0, ge=0)
+
 
 class SkillInputExample(BaseModel):
     query: str
     context: Optional[str]
     answers: Optional[List[str]]
+
+
 class Skill(MongoModel):
     id: Optional[PyObjectId]
     name: str
@@ -39,8 +43,10 @@ class Skill(MongoModel):
 
     @validator("url")
     def validate_url(cls, url):
-        if not url.startswith("http"): raise ValueError(url)
-        if url.endswith("/"): url = url[:-1]
+        if not url.startswith("http"):
+            raise ValueError(url)
+        if url.endswith("/"):
+            url = url[:-1]
         return url
 
     class Config:
@@ -52,17 +58,20 @@ class Skill(MongoModel):
                 "skill_type": "abstractive",
                 "skill_settings": {
                     "requires_context": False,
-                    "requires_multiple_choices": 0
+                    "requires_multiple_choices": 0,
                 },
                 "default_skill_args": {},
                 "user_id": "Dave",
                 "published": False,
-                "skill_input_examples": {
-                    "query": "What arms did Moonwatchers band carry?",
-                    "context": "At the water's edge, Moonwatcher and his band stop. They carry their bone clubs and bone knives. Led by One-ear, the Others half-heartly resume the battle-chant. But they are suddenly confrunted with a vision that cuts the sound from their throats, and strikes terror into their hearts."
-                }
+                "skill_input_examples": [
+                    {
+                        "query": "What arms did Moonwatchers band carry?",
+                        "context": "At the water's edge, Moonwatcher and his band stop. They carry their bone clubs and bone knives. Led by One-ear, the Others half-heartly resume the battle-chant. But they are suddenly confrunted with a vision that cuts the sound from their throats, and strikes terror into their hearts.",
+                    }
+                ],
             }
         }
+
 
 class Prediction(MongoModel):
     id: Optional[PyObjectId]
