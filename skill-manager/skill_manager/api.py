@@ -162,12 +162,11 @@ async def query_skill(query_request: QueryRequest, id: str):
         user_id=user_id,
         predictions=predictions["predictions"],
     )
-    mongo_prediction_id = app.state.skill_manager_db.predictions.insert_one(
+    _ = app.state.skill_manager_db.predictions.insert_one(
         mongo_prediction.mongo()
     ).inserted_id
     logger.debug(
-        "prediction {mongo_prediction_id} saved {mongo_prediction}".format(
-            mongo_prediction_id=mongo_prediction_id,
+        "prediction saved {mongo_prediction}".format(
             mongo_prediction=mongo_prediction.json(),
         )
     )

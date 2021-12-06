@@ -61,9 +61,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         }]  # Change as needed
 
         # Return
-        prediction_id = str(uuid.uuid4())
         prediction = {
-            "prediction_id": prediction_id,
             "prediction_score": prediction_score,
             "prediction_output": prediction_output,
             "prediction_documents": prediction_documents
