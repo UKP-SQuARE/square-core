@@ -19,9 +19,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
     :return: The prediction produced by the skill
     """
 
-    answers = request.skill_args.get(
-        "answers", request.skill_args["context"].split("\n")
-    )
+    answers = request.skill_args.get("answers")
+    if answers is None:
+        answers = request.skill_args["context"].split("\n")
 
     # Call Model API
     prepared_input = [[request.query, c] for c in answers] 
