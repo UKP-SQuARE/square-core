@@ -66,3 +66,14 @@ class IndexRequest(BaseModel):
 
     def to_index(self, datastore_name, index_name):
         return Index(datastore_name=datastore_name, name=index_name, **self.dict())
+
+
+class IndexStatus(BaseModel):
+    """Models the status of an index."""
+
+    is_available: bool
+
+    class Config:
+        schema_extra = {
+            "example": {"is_available": True}
+        }

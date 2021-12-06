@@ -1,14 +1,12 @@
 import logging
 from typing import List
 
-import requests
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.param_functions import Body, Path
 
-from ..core.config import settings
 from ..models.embedding import DocumentEmbedding
 from ..models.httperror import HTTPError
-from ..models.index import Index, IndexRequest
+from ..models.index import Index, IndexRequest, IndexStatus
 from .dependencies import get_search_client, get_storage_connector
 
 
@@ -95,24 +93,30 @@ async def put_index(
         raise HTTPException(status_code=400)
 
 
-@router.get("/{index_name}/status")
+@router.get(
+    "/{index_name}/status",
+    summary="Gets the status of an index",
+    description="Returns whether an index is currently available for search.",
+    responses={
+        200: {"model": IndexStatus, "description": "Index status information."},
+        404: {
+            "description": "The requested index does not exist",
+            "model": HTTPError,
+        },
+    },
+)
 async def get_index_status(
-    datastore_name: str = Path(...),
-    index_name: str = Path(...),
+    datastore_name: str = Path(..., description="Name of the datastore"),
+    index_name: str = Path(..., description="Name of the index"),
     conn=Depends(get_storage_connector),
+    dense_retrieval=Depends(get_search_client),
 ):
     index = await conn.get_index(datastore_name, index_name)
-    status = {"bm25": index.bm25}
-    yql = "select * from sources {} where  id > 0;".format(datastore_name)
-    request = requests.get(settings.VESPA_APP_URL + "/search/", params={"yql": yql})
-    if requests.status_codes == 404:
-        raise HTTPException(status_code=404, detail="Could not get index status")
-    status["total"] = request.json()["root"]["fields"]["totalCount"]
-
-    if not status["bm25"]:
-        pass
-        # TODO Get number of documents with embedding
-    return status
+    if index is None:
+        raise HTTPException(status_code=404, detail="Index not found.")
+    else:
+        is_available = await dense_retrieval.status(datastore_name, index_name)
+        return IndexStatus(is_available=is_available)
 
 
 @router.delete(

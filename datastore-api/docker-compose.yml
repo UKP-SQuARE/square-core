@@ -38,6 +38,7 @@ services:
   #     - <local_path>:/opt/faiss-instant/resources
   #   labels:
   #     - "traefik.enable=true"
+  #     - "traefik.http.services.faiss-<index_name>.loadbalancer.server.port=5000"
   #     - "square.datastore=<index_name>"
 
 ##### END FAISS Service Containers #####

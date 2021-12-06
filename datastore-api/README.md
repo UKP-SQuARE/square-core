@@ -198,6 +198,7 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
         - /local/path/to/index:/opt/faiss-instant/resources
       labels:
         - "traefik.enable=true"
+        - "traefik.http.services.faiss-wiki-dpr.loadbalancer.server.port=5000"
         - "square.datastore=/wiki/dpr"
     ```
 

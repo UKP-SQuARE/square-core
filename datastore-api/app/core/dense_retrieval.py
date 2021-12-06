@@ -14,6 +14,26 @@ class DenseRetrieval:
         self.model_api = model_api
         self.faiss = faiss
 
+    async def status(self, datastore_name: str, index_name: str) -> bool:
+        """Checks the availability of the given index.
+        This method queries both the FAISS web service and the Model API server as both are required for retrieval.
+
+        Args:
+            datastore_name (str): The datastore in which to search.
+            index_name (str): The index to be used.
+
+        Returns:
+            bool: True if the index is available, False otherwise.
+        """
+        index = await self.conn.get_index(datastore_name, index_name)
+        if index is None:
+            return False
+
+        status = await self.faiss.status(datastore_name, index_name) is not None
+        if status:
+            status &= self.model_api.is_alive(index)
+        return status
+
     async def search(self, datastore_name: str, index_name: str, query: str, top_k: int = 10) -> List[QueryResult]:
         """Searches for documents matching the given query string.
 

@@ -14,6 +14,23 @@ class ModelAPIClient:
         self.base_url = base_url
         self.api_key = api_key
 
+    def is_alive(self, index: Index) -> bool:
+        if not self.base_url:
+            raise EnvironmentError("Model API not available.")
+        if index.query_encoder_model is None:
+            return False
+
+        request_url = f"{self.base_url}/{index.query_encoder_model}/health/heartbeat"
+        headers = {"Authorization": self.api_key}
+        try:
+            response = requests.get(request_url, headers=headers)
+            if response.status_code != 200:
+                return False
+            else:
+                return response.json().get("is_alive", False)
+        except Exception:
+            return False
+
     def _decode_embeddings(self, encoded_string: str):
         encoded_string = encoded_string.encode()
         arr_binary = base64.decodebytes(encoded_string)

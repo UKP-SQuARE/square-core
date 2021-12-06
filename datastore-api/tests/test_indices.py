@@ -21,11 +21,20 @@ class TestIndices:
         response = client.get(f"/datastores/{datastore_name}/indices/not_found")
         assert response.status_code == 404
 
-    # TODO API method not implemented yet
-    @pytest.mark.skip
-    def test_get_index_status(self, client, datastore_name, dpr_index):
+    def test_get_index_status(self, requests_mock: Mocker, client, datastore_name, dpr_index):
+        requests_mock.real_http = True
+        requests_mock.get(
+            f"{settings.MODEL_API_URL}/{dpr_index.query_encoder_model}/health/heartbeat",
+            json={"is_alive": True},
+        )
+        requests_mock.get(
+            f"{settings.FAISS_URL}/{datastore_name}/{dpr_index.name}/index_list",
+            json={"device": "cpu", "index list": ["samples"], "index loaded": "samples"},
+        )
+
         response = client.get(f"/datastores/{datastore_name}/indices/{dpr_index.name}/status")
         assert response.status_code == 200
+        assert response.json() == {"is_available": True}
 
     def test_put_index(self, client, datastore_name):
         index_name = "test_index"
@@ -47,7 +56,9 @@ class TestIndices:
         response = client.delete(f"/datastores/{datastore_name}/indices/not_found")
         assert response.status_code == 404
 
-    def test_get_document_embedding(self, requests_mock: Mocker, client, datastore_name, dpr_index, test_document, test_document_embedding):
+    def test_get_document_embedding(
+        self, requests_mock: Mocker, client, datastore_name, dpr_index, test_document, test_document_embedding
+    ):
         requests_mock.real_http = True
         requests_mock.get(
             f"{settings.FAISS_URL}/{datastore_name}/{dpr_index.name}/reconstruct",
@@ -108,7 +119,9 @@ class TestIndices:
 
     # TODO currently not supported
     @pytest.mark.skip
-    def test_upload_embeddings_from_urls_invalid(self, requests_mock: Mocker, client, datastore_name, dpr_index, upload_urlset):
+    def test_upload_embeddings_from_urls_invalid(
+        self, requests_mock: Mocker, client, datastore_name, dpr_index, upload_urlset
+    ):
         requests_mock.real_http = True
         requests_mock.get(upload_urlset.urls[0], status_code=404)
 
