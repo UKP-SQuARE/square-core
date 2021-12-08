@@ -19,65 +19,22 @@ async def predict(request: QueryRequest) -> QueryOutput:
     :return: The prediction produced by the skill
     """
 
-    # Call Model API
     query = request.query
     context = request.skill_args["context"]
-    adapter = request.skill_args["adapter"]
-    base_model = request.skill_args["base_model"]
 
     prepared_input = [[query, context]]
-
     model_request = { 
         "input": prepared_input,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
-        "adapter_name": adapter
+        "adapter_name": request.skill_args["adapter"]
     }
-    output = await model_api(
-        model_name=base_model, 
+    model_api_output = await model_api(
+        model_name=request.skill_args["base_model"], 
         pipeline="question-answering", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    for ans in output["answers"][0]:
-        if not ans["answer"]:
-            continue
-
-        prediction_score = ans["score"]
-
-        prediction_output = {
-            "output": ans["answer"], 
-            "output_score": prediction_score
-        }
-
-        prediction_documents = [{
-            "document": context,
-            "span": [ans["start"], ans["end"]],
-        }]  
-
-        prediction = {
-            "prediction_score": prediction_score,
-            "prediction_output": prediction_output,
-            "prediction_documents": prediction_documents
-        }
-        query_output.append(prediction)
-
-    # Answer for no answer
-    if len(query_output) == 0:
-        prediction = {
-            "prediction_score": max(ans[0]["score"] for ans in output["answers"]),
-            "prediction_output": {
-                "output": "No answer found in the searched documents",
-                "output_score": max(ans[0]["score"] for ans in output["answers"])
-            },
-            "prediction_documents": [{
-                "document": context,
-                "span": [0, 0],
-            }]
-        }
-        query_output.append(prediction)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_question_answering(
+        model_api_output=model_api_output,
+        context=context
+    )

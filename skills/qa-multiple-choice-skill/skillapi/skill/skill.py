@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 config = SquareSkillHelpersConfig.from_dotenv()
 model_api = ModelAPI(config)
 
+
 async def predict(request: QueryRequest) -> QueryOutput:
     """
     Process a given query and create the predictions for it.
@@ -22,44 +23,25 @@ async def predict(request: QueryRequest) -> QueryOutput:
     context = request.skill_args.get("context")
     answers = request.skill_args["answers"]
 
-    adapter = request.skill_args["adapter"]
-    base_model = request.skill_args["base_model"]
-
+    # BUG: for categorical skills, answers do not need to be appended
     if context is not None:
         prepared_input = [[context, query + " " + answer] for answer in answers]
     else:
         prepared_input = [[query, answer] for answer in answers]
 
     # Call Model API
-    model_request = {  # Fill as needed
+    model_request = {
         "input": prepared_input,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
-        "adapter_name": adapter
+        "adapter_name": request.skill_args["adapter"],
     }
 
-    output = await model_api(
-        model_name=base_model, 
-        pipeline="sequence-classification", 
-        model_request=model_request
+    model_api_output = await model_api(
+        model_name=request.skill_args["base_model"],
+        pipeline="sequence-classification",
+        model_request=model_request,
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    predictions_scores = output["model_outputs"]["logits"][0]
-    for prediction_score, answer in zip(predictions_scores, answers):
-
-        prediction_output = {
-            "output": answer, 
-            "output_score": prediction_score
-        }
-
-        prediction = {
-            "prediction_score": prediction_score,
-            "prediction_output": prediction_output,
-            "prediction_documents": [{"document": context}] if context is not None else []
-        }
-        query_output.append(prediction)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_sequence_classification(
+        answers=answers, model_api_output=model_api_output, context=context
+    )

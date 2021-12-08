@@ -19,7 +19,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
     :return: The prediction produced by the skill
     """
 
-    # Call Model API
     query = request.query
     context = request.skill_args.context
     prepared_input = [context, query] 
@@ -30,26 +29,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
     }
-    output = await model_api(
+    model_api_output = await model_api(
         model_name="bert-base-uncased", 
         pipeline="sequence-classification", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    answers = ["No", "Yes"]
-    predictions_scores = output["model_outputs"]["logits"][0]
-    for prediction_score, answer in zip(predictions_scores, answers):
-        prediction = {
-            "prediction_score": prediction_score,
-            "prediction_output": {
-                "output": answer,
-                "output_score": prediction_score
-            },
-            "prediction_documents": [{"document": context,}] 
-        }
-        query_output.append(prediction)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_sequence_classification(
+        answers=request.skill_args["answers"], 
+        model_api_output=model_api_output, 
+        context=context
+    )
