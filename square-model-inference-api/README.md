@@ -7,7 +7,7 @@ The 'true' path of the API for the model server is of the form `/api/$endpoint` 
 is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
 
 However, to run and distinguish multiple models, we use an API gateway with traefik so we extend 
-the path to `/$model-prefix/api/$endpoint` which is then resolved by traefik to the correct model server and forwarded
+the path to `/api/$model-prefix/$endpoint` which is then resolved by traefik to the correct model server and forwarded
 to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
 This requires you to setup the docker-compose and treafik config as described below.
 
@@ -71,6 +71,12 @@ uninstall `transformers`, and finally install `adapter-transformers`.
    See [here](inference_server/.env.example) for an example.
 2. Configure `docker-compose.yaml` by adding services for the treafik reverse proxy, and the
    model servers (each with their .env file). See [example_docker-compose.yml](docker-compose.yml) for an example.
+
+To test whether the api is running you can execute:
+```bash
+curl -X GET http://localhost/api/bert/health/heartbeat  -H 'accept:application/json' --user admin:example_key
+```
+
 ### Local
 Create `inference_server/.env` and configure it as needed for your local model server.
 
@@ -112,7 +118,7 @@ inference_<model>:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.<model>.rule=PathPrefix(`/<model-prefix>`)"
+      - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
 ```
 
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 

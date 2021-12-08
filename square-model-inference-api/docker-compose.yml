@@ -18,7 +18,7 @@ services:
       - --providers.docker=true
       - --providers.file.filename=/config/traefik.yaml
       - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.http.middlewares=prefix-strip@file, auth@file
+      - --entrypoints.web.http.middlewares=prefix-strip@file, auth@file, api-prefix@file
       - --entrypoints.web.address=:80
     ports:
       - 80:80
@@ -41,7 +41,7 @@ services:
       #- ./inference_server/:/app/ #for developement
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bert.rule=PathPrefix(`/bert`)"
+      - "traefik.http.routers.bert.rule=PathPrefix(`/api/bert`)"
 
     # Example config for another model server
   inference_roberta:
@@ -58,4 +58,4 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.roberta.rule=PathPrefix(`/roberta`)"
+      - "traefik.http.routers.roberta.rule=PathPrefix(`/api/roberta`)"
