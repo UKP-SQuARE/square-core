@@ -20,7 +20,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
-    context = request.skill_args.context
+    context = request.skill_args["context"]
     prepared_input = [context, query] 
     
     model_request = { 
