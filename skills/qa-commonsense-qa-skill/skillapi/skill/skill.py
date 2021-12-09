@@ -23,33 +23,20 @@ async def predict(request: QueryRequest) -> QueryOutput:
     if answers is None:
         answers = request.skill_args["context"].split("\n")
 
-    # Call Model API
     prepared_input = [[request.query, c] for c in answers] 
-    model_request = {  # Fill as needed
+    model_request = { 
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-commonsense_qa"
     }
-
-    output = await model_api(
+    model_api_output = await model_api(
         model_name="bert-base-uncased", 
         pipeline="sequence-classification", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    predictions_scores = output["model_outputs"]["logits"][0]
-    for prediction_score, answer in zip(predictions_scores, answers):
-        prediction = {
-            "prediction_score": prediction_score,
-            "prediction_output": {
-                "output": answer, 
-                "output_score": prediction_score
-            },
-        }
-        query_output.append(prediction)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_sequence_classification(
+        answers=answers, model_api_output=model_api_output
+    )

@@ -25,11 +25,12 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "top_k": request.num_results
     }
     data = await DataAPI(datastore="wiki", index_name="dpr", data_request=data_request)
+    context = [d["fields"]["text"] for d in data]
     logger.info(f"Data API output:\n{data}")
 
     # Call Model API
-    prepared_input = [[request.query, d["fields"]["text"]] for d in data]  # Change as needed
-    model_request = {  # Fill as needed
+    prepared_input = [[request.query, c] for c in context]  # Change as needed
+    model_request = {
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
@@ -37,62 +38,14 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "adapter_name": "qa/squad2@ukp"
     }
 
-    output = await model_api(
+    model_api_output = await model_api(
         model_name="bert-base-uncased", 
         pipeline="question-answering", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    index_name = "wiki/dpr"
-    for d, ans in zip(data, output["answers"]):
-        ans = ans[0]
-        if not ans["answer"]:
-            continue
-
-        prediction_score = ans["score"]
-
-        prediction_output = {
-            "output": ans["answer"],  # Set based on output
-            "output_score": prediction_score
-        }
-
-        prediction_documents = [{
-            "index": index_name,
-            "document_id": d["fields"]["documentid"],
-            "document": d["fields"]["text"],
-            "span": [ans["start"], ans["end"]],
-            "source": "",
-            "url": ""
-        }]  # Change as needed
-
-        # Return
-        prediction = {
-            "prediction_score": prediction_score,
-            "prediction_output": prediction_output,
-            "prediction_documents": prediction_documents
-        }
-        query_output.append(prediction)
-
-    # Answer for no answer
-    if len(query_output) == 0:
-        prediction = {
-            "prediction_score": max(ans[0]["score"] for ans in output["answers"]),
-            "prediction_output": {
-                "output": "No answer found in the searched documents",
-                "output_score": max(ans[0]["score"] for ans in output["answers"])
-            },
-            "prediction_documents": [{
-                "index": index_name,
-                "document_id": d["fields"]["documentid"],
-                "document": d["fields"]["text"],
-                "span": [0, 0],
-                "source": "",
-                "url": ""
-            } for d in data]
-        }
-        query_output.append(prediction)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_question_answering(
+        model_api_output=model_api_output,
+        context=context
+    )
