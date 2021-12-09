@@ -7,6 +7,7 @@ from typing import List, Optional
 import pymongo
 import requests
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
@@ -16,6 +17,14 @@ from skill_manager.mongo_settings import MongoSettings
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -149,7 +158,7 @@ async def query_skill(query_request: QueryRequest, id: str):
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
-    predictions  = QueryOutput.parse_obj(response.json())
+    predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
         "predictions from skill: {predictions}".format(predictions=predictions)
     )
