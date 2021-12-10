@@ -92,33 +92,15 @@
           <div v-if="showOptions" class="col-lg mt-3 mt-lg-0">
             <div class="row">
               <div class="col">
-                <div class="form-floating">
-                  <select v-model="options.selector" class="form-select" id="skillSelector">
-                    <option v-for="skill in availableSkillSelectors" v-bind:value="skill.value" v-bind:key="skill.value">
-                      {{ skill.text }}
-                    </option>
-                  </select>
-                  <label for="skillSelector">Skill selector</label>
-                </div>
-              </div>
-            </div>
-            <div class="row mt-3">
-              <div class="col">
-                <label for="skillSelect" class="form-label col-form-label-sm text-muted">Only use these skills</label>
+                <label for="skillSelect" class="form-label col-form-label-sm text-muted">Skill selector</label>
                 <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
-                  <option v-for="skill in availableSkills" v-bind:value="skill.value" v-bind:key="skill.value">
-                    {{ skill.text }}
+                  <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">
+                    {{ skill.name }} — {{ skill.description }}
                   </option>
                 </select>
               </div>
             </div>
             <div class="row mt-3">
-              <div class="col-6">
-                <div class="form-floating">
-                  <input v-model="options.maxQuerriedSkills" type="number" class="form-control" id="maxQuerriedSkills" required>
-                  <label for="maxQuerriedSkills">Max querried skills</label>
-                </div>
-              </div>
               <div class="col-6">
                 <div class="form-floating">
                   <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
@@ -168,28 +150,8 @@ export default Vue.component('query-skills', {
     Alert
   },
   computed: {
-    /**
-     * Map state.availableSkills in the format for Vue Bootstrap
-     */
     availableSkills() {
-      return this.$store.state.availableSkills.map(skill => {
-        return {
-          text: `${skill.name} ${
-              skill.description ? '- ' + skill.description : ''
-          }`,
-          value: skill.name
-        }
-      })
-    },
-    availableSkillSelectors() {
-      return this.$store.state.availableSkillSelectors.map(selector => {
-        return {
-          text: `${selector.name} ${
-              selector.description ? '- ' + selector.description : ''
-          }`,
-          value: selector.name
-        }
-      })
+      return this.$store.state.availableSkills
     },
     queryOptions() {
       return this.$store.state.queryOptions
@@ -236,7 +198,6 @@ export default Vue.component('query-skills', {
    */
   beforeMount() {
     this.$store.dispatch('updateSkills')
-        .then(() => this.$store.dispatch('updateSelectors'))
         .then(() => {
           this.$store.commit('initQueryOptions', {})
         })
