@@ -60,7 +60,7 @@ export default Vue.component('sign-in', {
   },
   methods: {
     onSubmit() {
-      this.$store.dispatch('login', {
+      this.$store.dispatch('signIn', {
         username: this.form.username,
         password: this.form.password
       }).then(() => {

@@ -48,7 +48,7 @@ export default Vue.component('destructive-action-modal', {
     destructiveAction: String,
     skill: String,
     callback: Function,
-    callbackValue: Number
+    callbackValue: String
   },
   computed: {
     destructiveActionUpper() {
