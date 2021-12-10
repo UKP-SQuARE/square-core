@@ -1,91 +1,45 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
   <div class="card border-primary shadow">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs justify-content-center">
-        <li class="nav-item">
-          <a class="nav-link h5 fw-light active"
-             id="nav-question-tab"
-             data-bs-toggle="tab"
-             data-bs-target="#nav-question"
-             type="button"
-             role="tab"
-             aria-controls="nav-question"
-             aria-selected="true">Question</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link h5 fw-light"
-             id="nav-context-tab"
-             data-bs-toggle="tab"
-             data-bs-target="#nav-context"
-             type="button"
-             role="tab"
-             aria-controls="nav-context"
-             aria-selected="true">Context QA</a>
-        </li>
-      </ul>
-    </div>
     <div class="card-body p-4">
       <Alert v-if="showEmptyWarning" class="alert-warning" dismissible>You need to enter a question!</Alert>
       <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
       <form v-on:submit.prevent="askQuestion">
         <div class="row">
           <div class="col-lg">
-            <div class="tab-content" id="nav-tabContent">
-              <div class="tab-pane fade show active" id="nav-question" role="tabpanel" aria-labelledby="nav-question-tab">
-                <div class="row mb-3">
-                  <div class="col">
-                    <div class="input-group">
-                      <div class="form-floating flex-grow-1">
-                        <input
-                            v-model="inputQuestion"
-                            type="text"
-                            class="form-control rounded-0 rounded-start"
-                            id="question"
-                            placeholder="Enter your question"
-                            aria-label="Enter your question">
-                        <label for="question">Enter your question</label>
-                      </div>
-                      <button class="btn btn-lg btn-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
-                        <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                        &nbsp;Ask your question
-                      </button>
-                    </div>
+            <div class="row">
+              <div class="col">
+                <div class="input-group">
+                  <div class="form-floating flex-grow-1">
+                    <textarea
+                        v-model="currentQuestion"
+                        class="form-control rounded-0"
+                        style="resize: none; white-space: nowrap; overflow: scroll; border-top-left-radius: 0.25rem !important"
+                        id="question"
+                        rows="1"
+                        placeholder="Enter your question" />
+                    <label for="question">Enter your question</label>
                   </div>
+                  <button
+                      class="btn btn-lg btn-primary rounded-0 d-inline-flex align-items-center"
+                      style="border-top-right-radius: 0.25rem !important"
+                      type="submit"
+                      :disabled="waitingQuery">
+                    <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                    &nbsp;Ask your question
+                  </button>
                 </div>
-              </div>
-              <div class="tab-pane fade" id="nav-context" role="tabpanel" aria-labelledby="nav-context-tab">
-                <div class="row mb-3">
-                  <div class="col">
-                    <div class="form-floating">
-                  <textarea
-                      v-model="currentQuestion"
-                      class="form-control rounded-0 rounded-top"
-                      placeholder="Enter your question"
-                      id="contextQuestion"
-                      rows="1"
-                      style="resize: none; white-space: nowrap; overflow: scroll" />
-                      <label for="contextQuestion">Enter your question</label>
-                    </div>
-                    <div class="form-floating">
+                <div class="form-floating mb-2">
                   <textarea
                       v-model="inputContext"
                       class="form-control rounded-0 rounded-bottom border-top-0"
-                      placeholder="Context seperated by line breaks"
+                      style="resize: none"
+                      :style="{ height: inputContextHeight + 'px'}"
                       id="context"
-                      style="height: 120px; resize: none" />
-                      <label for="context">Context seperated by line breaks</label>
-                    </div>
-                  </div>
+                      placeholder="Context seperated by line breaks" />
+                  <label for="context">Context seperated by line breaks (Optional)</label>
                 </div>
-                <div class="row">
-                  <div class="col text-end">
-                    <button class="btn btn-lg btn-primary d-inline-flex align-items-center" type="submit" :disabled="waitingQuery">
-                      <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                      &nbsp;Ask your question
-                    </button>
-                  </div>
-                </div>
+                <small class="text-muted">Some skills require context</small>
               </div>
             </div>
           </div>
@@ -167,6 +121,9 @@ export default Vue.component('query-skills', {
           this.inputContext = tmp.join('\n')
         }
       }
+    },
+    inputContextHeight() {
+      return 58 + (this.inputContext ? 21 * 7 : 0)
     }
   },
   methods: {
