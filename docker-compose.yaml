@@ -51,6 +51,20 @@ services:
       - 8005:8005
     env_file:
       - ./skills/qa-commonsense-qa-skill/.env
+  extractive_qa_skill:
+    image: ukpsquare/square-skills-extractive:latest
+    build: ./skills/qa-extractive-qa-skill/.
+    ports:
+      - 8006:8006
+    env_file:
+      - ./skills/qa-extractive-qa-skill/.env
+  multiple_choice_qa_skill:
+    image: ukpsquare/square-skills-multiple-choice:latest
+    build: ./skills/qa-extractive-qa-skill/.
+    ports:
+      - 8007:8007
+    env_file:
+      - ./skills/qa-multiple-choice-skill/.env
   naturalqa_retrieve_span_skill:
     image: ukpsquare/square-skills-retrieve-span:latest
     build: ./skills/qa-retrieve-span-skill/.
@@ -104,9 +118,9 @@ services:
     env_file:
       - ./skill-manager/.env
     depends_on:
-      - mongo
+      - skill_manager_mongo
 
-  mongo:
+  skill_manager_mongo:
     image: mongo:5.0.4
     restart: always
     volumes:

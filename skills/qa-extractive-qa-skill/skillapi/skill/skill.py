@@ -21,23 +21,20 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     context = request.skill_args["context"]
-    prepared_input = [context, query] 
-    
+
+    prepared_input = [[query, context]]
     model_request = { 
         "input": prepared_input,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
-        "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
+        "adapter_name": request.skill_args["adapter"]
     }
     model_api_output = await model_api(
-        model_name="bert-base-uncased", 
-        pipeline="sequence-classification", 
+        model_name=request.skill_args["base_model"], 
+        pipeline="question-answering", 
         model_request=model_request
     )
     logger.info(f"Model API output:\n{model_api_output}")
 
-    return QueryOutput.from_sequence_classification(
-        answers=["No", "Yes"], 
-        model_api_output=model_api_output, 
+    return QueryOutput.from_question_answering(
+        model_api_output=model_api_output,
         context=context
     )

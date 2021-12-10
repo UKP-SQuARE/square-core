@@ -19,7 +19,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     :return: The prediction produced by the skill
     """
     context = request.skill_args["context"]
-    # Call Model API
+
     prepared_input = [[request.query, context]]  # Change as needed
     model_request = {  # Fill as needed
         "input": prepared_input,
@@ -29,64 +29,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "adapter_name": "qa/squad2@ukp"
     }
 
-    output = await model_api(
+    model_api_output = await model_api(
         model_name="bert-base-uncased", 
         pipeline="question-answering", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
-    # Prepare prediction
-    query_output = []
-    for ans in output["answers"][0]:
-        if not ans["answer"]:
-            continue
+    logger.info(f"Model API output:\n{model_api_output}")
 
-        prediction_score = ans["score"]
+    return QueryOutput.from_question_answering(
+        model_api_output=model_api_output,
+        context=context
+    )
 
-        prediction_output = {
-            "output": ans["answer"],  # Set based on output
-            "output_score": prediction_score
-        }
-
-        prediction_documents = [{
-            "index": "",
-            "document_id": "",
-            "document": context,
-            "span": [ans["start"], ans["end"]],
-            "source": "",
-            "url": ""
-        }]  # Change as needed
-
-        # Return
-        prediction_id = str(uuid.uuid4())
-        prediction = {
-            "prediction_id": prediction_id,
-            "prediction_score": prediction_score,
-            "prediction_output": prediction_output,
-            "prediction_documents": prediction_documents
-        }
-        query_output.append(prediction)
-
-    # Answer for no answer
-    if len(query_output) == 0:
-        prediction = {
-            "prediction_id": str(uuid.uuid4()),
-            "prediction_score": max(ans[0]["score"] for ans in output["answers"]),
-            "prediction_output": {
-                "output": "No answer found in the searched documents",
-                "output_score": max(ans[0]["score"] for ans in output["answers"])
-            },
-            "prediction_documents": [{
-                "index": "",
-                "document_id": "",
-                "document": context,
-                "span": [0, 0],
-                "source": "",
-                "url": ""
-            }]
-        }
-        query_output.append(prediction)
-
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
-
-    return QueryOutput(predictions=query_output)
