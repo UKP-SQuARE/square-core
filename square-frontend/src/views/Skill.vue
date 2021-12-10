@@ -44,7 +44,6 @@
           <div class="form-floating">
             <input v-model="skill.description" type="text" class="form-control rounded-0 rounded-top" id="description" placeholder="Description">
             <label for="description">Description</label>
-            <small class="text-muted">Short description of the skill</small>
           </div>
         </div>
       </div>
@@ -171,8 +170,8 @@ export default Vue.component('edit-skill', {
       getSkill(this.$route.params.id)
           .then((response) => {
             this.skill = response.data
+            this.originalName = this.skill.name
           })
-      this.originalName = this.skill.name
     }
     this.skill.user_id = this.$store.state.user.name
   }
