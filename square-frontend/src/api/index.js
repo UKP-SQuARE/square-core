@@ -2,41 +2,20 @@
  * Contains all API calls
  * Endpoint documentation is found in the documentation of the backend and skill server
  */
-import axios from "axios"
+import axios from 'axios'
 
 /**
- * URL to the SQuARE backend server
+ * URLs to the SQuARE backend servers
  */
-var API_URL = process.env.VUE_APP_BACKEND_URL
-/**
- * Sends a question to the backend and receives the resulting answers
- * @param {String} question the asked question
- * @param {String} context the provided context
- * @param {Object} options the options for the request
- * @param {String} user_id the user id (if available)
- */
-export function fetchResults(question, context, options, user_id) {
-    let data = {
-        query: question,
-        meta_qa_skill_selector: options.selector,
-        skills: options.selectedSkills,
-        skill_args: options.skillArgs,
-        num_selected_skills: options.maxQuerriedSkills,
-        num_results: options.maxResultsPerSkill,
-        user_id: user_id
-    }
-    if (context.length > 0) {
-        data.skill_args.context = context
-    }
-    return axios.post(`${API_URL}/question`, data)
-}
+let API_URL = process.env.VUE_APP_BACKEND_URL
+let SKILL_URL = process.env.VUE_APP_SKILL_MANAGER_URL
 
 /**
  * Register a new user 
  * @param {String} username the username for the new user
  * @param {String} password the password for the new user
  */
-export function registerUser(username, password) {
+export function postSignUp(username, password) {
     return axios.post(`${API_URL}/register`, { username: username, password: password })
 }
 
@@ -46,57 +25,79 @@ export function registerUser(username, password) {
  * @param {String} username the username     
  * @param {String} password the password of the user 
  */
-export function loginUser(username, password) {
+export function postSignIn(username, password) {
     return axios.post(`${API_URL}/login`, { username: username, password: password })
 }
 
 /**
- * Get a list of possible skill selectors that the backend supports
+ * Get a list of available skill types.
  */
-export function fetchSelectors() {
-    return axios.get(`${API_URL}/selectors`)
+export function getSkillTypes() {
+    return axios.get(`${SKILL_URL}/skill-types`)
 }
 
 /**
  * Get a list of available skills. 
- * The JWT is only required for unpublished skills of the user. Published skills are available without token.
- * @param {String} jwt optional JWT for authentication
+ * The user name is only required for unpublished skills of the user. Published skills are available without.
+ * @param {String} user_name optional user_name for skill selection
  */
-export function fetchSkills(jwt) {
-    if (jwt) {
-        return axios.get(`${API_URL}/skills`, { headers: { Authorization: `Bearer ${jwt}` } })
-    } else {
-        return axios.get(`${API_URL}/skills`)
-    }
+export function getSkills(user_name) {
+    return axios.get(`${SKILL_URL}/skill?user_id=${user_name}`)
 }
 
 /**
- * Permanently deletes the skill with the given ID. Only skills with owner ID as specified in JWT can be deleted.
- * @param {String} skillId ID of the skill that will be deleted
- * @param {String} jwt JWT for authentication of skill ownership
+ * Get a single skill.
+ * @param {String} skillId ID of the skill
  */
-export function deleteSkill(skillId, jwt) {
-    return axios.delete(`${API_URL}/skill/${skillId}`, { headers: { Authorization: `Bearer ${jwt}` } })
+export function getSkill(skillId) {
+    return axios.get(`${SKILL_URL}/skill/${skillId}`)
+}
+
+/**
+ * Permanently deletes the skill with the given ID.
+ * @param {String} skillId ID of the skill that will be deleted
+ */
+export function deleteSkill(skillId) {
+    return axios.delete(`${SKILL_URL}/skill/${skillId}`)
 }
 
 /**
  * Updates the skill with the given ID with the new values. 
  * Only skills with owner ID as specified in JWT can be updated.
- * @param {String} skillId ID of the skill that will be deleted
+ * @param {String} skillId ID of the skill that will be updated
  * @param {Object} newSkill the new values for the skill. All fields need to be present. If a value should not be updated, then set the old value there.
- * @param {String} jwt JWT for authentication of skill ownership
  */
-export function updateSkill(skillId, newSkill, jwt) {
-    return axios.post(`${API_URL}/skill/${skillId}`, newSkill, { headers: { Authorization: `Bearer ${jwt}` } })
+export function putSkill(skillId, newSkill) {
+    return axios.put(`${SKILL_URL}/skill/${skillId}`, newSkill)
+}
+
+/**
+ * Sends a question to the backend and receives the resulting answers
+ * @param {String} skillId ID of the skill that will be queried
+ * @param {String} question the asked question
+ * @param {String} context the provided context
+ * @param {Object} options the options for the request
+ * @param {String} user_id the user id (if available)
+ */
+export function postQuery(skillId, question, context, options, user_id) {
+    let data = {
+        query: question,
+        skill_args: options.skillArgs,
+        num_results: options.maxResultsPerSkill,
+        user_id: user_id
+    }
+    if (context.length > 0) {
+        data.skill_args.context = context
+    }
+    return axios.post(`${SKILL_URL}/question/${skillId}/query`, data)
 }
 
 /**
  * Creates a new skill for the owner as specified in JWT.
  * @param {Object} newSkill the values for the new skill
- * @param {String} jwt JWT for authentication
  */
-export function createSkill(newSkill, jwt) {
-    return axios.post(`${API_URL}/skill`, newSkill, { headers: { Authorization: `Bearer ${jwt}` } })
+export function postSkill(newSkill) {
+    return axios.post(`${SKILL_URL}/skill`, newSkill)
 }
 
 /**
