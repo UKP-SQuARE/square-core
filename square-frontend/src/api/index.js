@@ -73,13 +73,12 @@ export function putSkill(skillId, newSkill) {
 
 /**
  * Sends a question to the backend and receives the resulting answers
- * @param {String} skillId ID of the skill that will be queried
  * @param {String} question the asked question
  * @param {String} context the provided context
  * @param {Object} options the options for the request
  * @param {String} user_id the user id (if available)
  */
-export function postQuery(skillId, question, context, options, user_id) {
+export function postQuery(question, context, options, user_id) {
     let data = {
         query: question,
         skill_args: options.skillArgs,
@@ -89,7 +88,8 @@ export function postQuery(skillId, question, context, options, user_id) {
     if (context.length > 0) {
         data.skill_args.context = context
     }
-    return axios.post(`${SKILL_URL}/question/${skillId}/query`, data)
+    let results = options.selectedSkills.map(skillId => axios.post(`${SKILL_URL}/skill/${skillId}/query`, data))
+    return axios.all(results)
 }
 
 /**

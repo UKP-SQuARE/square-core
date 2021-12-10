@@ -1,6 +1,7 @@
 /**
  * Vuex Store. Global state of the application is managed here.
  */
+import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -82,11 +83,16 @@ export default new Vuex.Store({
     query(context, { question, inputContext, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
       let user_id = context.state.user.name ? context.state.user.name : ''
-      return postQuery(options.skillId, question, inputContext, options, user_id)
-          .then((response) => {
-            context.commit('setAnsweredQuestion', { results: response.data, question: question, context: inputContext })
+      return postQuery(question, inputContext, options, user_id)
+          .then(axios.spread((...responses) => {
+            // Map responses to a list with the skill metadata and predictions combined
+            let results = responses.map((response, index) => ({
+              skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
+              predictions: response.data.predictions
+            }))
+            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
             context.commit('setQueryOptions', { queryOptions: options })
-          })
+          }))
     },
     signIn(context, { username, password }) {
       return postSignIn(username, password)

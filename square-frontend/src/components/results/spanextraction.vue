@@ -8,7 +8,7 @@
       <div class="col-xl col-lg-7">
         <ul class="list-group list-group-flush">
           <li
-              v-for="(res, index) in skillResult.results"
+              v-for="(res, index) in skillResult.predictions"
               :key="index"
               v-on:mouseover="setActive(index, res.prediction_documents[0].span)"
               class="list-group-item list-group-item-action"
@@ -34,7 +34,7 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('squad-results', {
+export default Vue.component('span-extraction-results', {
   props: ['skillResult'],
   mixins: [mixin],
   data() {

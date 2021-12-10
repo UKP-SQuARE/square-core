@@ -5,14 +5,14 @@
       <ul class="nav nav-tabs card-header-tabs justify-content-center">
         <li
             v-for="(skillResult, index) in currentResults"
-            :key="skillResult.name"
+            :key="skillResult.skill.name"
             class="nav-item">
           <a class="nav-link h5 fw-light"
              :class="{ 'active': activeTab === index }"
-             :id="`skill-${skillResult.name}-tab`"
+             :id="`skill-${skillResult.skill.name}-tab`"
              data-bs-toggle="tab"
-             :data-bs-target="`#skill-${skillResult.name}`"
-             v-on:click="activeTab = index">{{ skillResult.name }}</a>
+             :data-bs-target="`#skill-${skillResult.skill.name}`"
+             v-on:click="activeTab = index">{{ skillResult.skill.name }}</a>
         </li>
       </ul>
     </div>
@@ -21,12 +21,12 @@
       <div class="tab-content" id="skill-tabContent">
         <div
             v-for="(skillResult, index) in currentResults"
-            :key="skillResult.name"
+            :key="skillResult.skill.name"
             class="tab-pane fade"
             :class="{ 'show': activeTab === index, 'active': activeTab === index }"
-            :id="`#skill-${skillResult.name}`">
+            :id="`#skill-${skillResult.skill.name}`">
           <Alert v-if="skillResult.error" class="alert-danger" dismissible>There was a problem: {{ skillResult.error }}</Alert>
-          <component :is="skillResult.name.replace('-', '')" :skillResult="skillResult" />
+          <component :is="skillResult.skill.skill_type.replace('-', '')" :skillResult="skillResult" />
         </div>
       </div>
     </div>
@@ -36,9 +36,9 @@
 <script>
 import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
-import boolq from '@/components/results/boolq.vue'
-import commonsenseqa from '@/components/results/commonsenseqa.vue'
-import squad from '@/components/results/squad.vue'
+import categorical from '@/components/results/categorical.vue'
+import multiplechoice from '@/components/results/multiplechoice.vue'
+import spanextraction from '@/components/results/spanextraction.vue'
 
 export default Vue.component('skill-results', {
   data() {
@@ -48,24 +48,16 @@ export default Vue.component('skill-results', {
   },
   components: {
     Alert,
-    boolq,
-    commonsenseqa,
-    squad
+    categorical,
+    multiplechoice,
+    spanextraction
   },
   computed: {
     currentQuestion() {
       return this.$store.state.currentQuestion
     },
     currentResults() {
-      return this.$store.state.currentResults.slice(0).sort((a, b) => {
-        if (a['score'] < b['score']) {
-          return 1
-        } else if(a['score'] === b['score']) {
-          return 0
-        } else if(a['score'] > b['score']) {
-          return -1
-        }
-      })
+      return this.$store.state.currentResults
     }
   }
 })
