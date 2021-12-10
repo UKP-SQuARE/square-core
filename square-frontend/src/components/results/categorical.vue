@@ -36,14 +36,14 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('boolq-results', {
+export default Vue.component('categorical-results', {
   props: ['skillResult'],
   mixins: [mixin],
   computed: {
     currentResults() {
       let result = {}
-      this.skillResult.results.forEach(res => {
-        result[res.prediction_output.output] = this.roundScore(res.prediction_output.output_score)
+      this.skillResult.predictions.forEach(res => {
+        result[res.prediction_output.output.toLowerCase()] = this.roundScore(res.prediction_output.output_score)
       })
       return result
     }

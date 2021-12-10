@@ -2,7 +2,7 @@
 <template>
   <ul class="list-group list-group-flush">
     <li
-        v-for="(res, index) in skillResult.results"
+        v-for="(res, index) in skillResult.predictions"
         :key="index"
         class="list-group-item">
       <div class="d-flex w-100 justify-content-between">
@@ -26,7 +26,7 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('commonsenseqa-results', {
+export default Vue.component('multiple-choice-results', {
   props: ['skillResult'],
   mixins: [mixin]
 })

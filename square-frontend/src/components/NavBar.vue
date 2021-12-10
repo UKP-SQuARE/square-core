@@ -55,7 +55,7 @@ export default Vue.component('nav-bar', {
   },
   methods: {
     signout() {
-      this.$store.dispatch('signout')
+      this.$store.dispatch('signOut')
           .then(() => this.$router.push('/'))
     }
   }

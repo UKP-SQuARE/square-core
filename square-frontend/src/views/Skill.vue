@@ -21,25 +21,50 @@
       </template>
       <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
       <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
-      <div class="row mt-3">
-        <div class="col">
+      <div class="row">
+        <div class="col-md-6 mt-3">
           <div class="form-floating">
             <input v-model="skill.name" type="text" class="form-control rounded-0 rounded-top" id="name" placeholder="Skill name">
             <label for="name">Skill name</label>
           </div>
         </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col">
+        <div class="col-md-6 mt-3">
           <div class="form-floating">
-            <input v-model="skill.description" type="text" class="form-control rounded-0 rounded-top" id="description" placeholder="Description">
-            <label for="description">Description</label>
-            <small class="text-muted">Short description of the skill</small>
+            <select v-model="skill.skill_type" class="form-select" id="skillType">
+              <option v-for="skillType in skillTypes" v-bind:value="skillType" v-bind:key="skillType">
+                {{ skillType }}
+              </option>
+            </select>
+            <label for="skillType">Skill type</label>
           </div>
         </div>
       </div>
-      <div class="row mt-3">
-        <div class="col">
+      <div class="row">
+        <div class="col mt-3">
+          <div class="form-floating">
+            <input v-model="skill.description" type="text" class="form-control rounded-0 rounded-top" id="description" placeholder="Description">
+            <label for="description">Description</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mt-3">
+          <div class="form-floating">
+            <input v-model="skill.skill_settings.requires_multiple_choices" type="number" class="form-control" id="maxResultsSkill" required>
+            <label for="maxResultsSkill">Min multiple choice options</label>
+          </div>
+        </div>
+        <div class="col-md-6 mt-3 d-flex align-items-center">
+          <div class="form-check">
+            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context" class="form-check-input" type="checkbox" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+              Requires context
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col mt-3">
           <Status :url="skill.url" class="mb-2" />
           <div class="form-floating">
             <input v-model="skill.url" type="url" class="form-control rounded-0 rounded-top" id="url" placeholder="URL">
@@ -58,14 +83,25 @@ import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
+import { getSkill, getSkillTypes } from '@/api'
 
 export default Vue.component('edit-skill', {
   data() {
     return {
+      skillTypes: [],
       skill: {
         name: '',
+        skill_type: '',
+        description: '',
+        skill_settings: {
+          requires_context: false,
+          requires_multiple_choices: 0
+        },
         url: '',
-        description: ''
+        default_skill_args : null,
+        user_id: '',
+        published: false,
+        skill_input_examples: null
       },
       /**
        * The name for the title.
@@ -108,7 +144,7 @@ export default Vue.component('edit-skill', {
             this.failure = false
           })
           .then(() => {
-            this.$store.commit('initQueryOptions', {forceSkillInit: true})
+            this.$store.commit('initQueryOptions', { forceSkillInit: true })
           })
           .catch(failureMessage => {
             this.failure = true
@@ -125,18 +161,19 @@ export default Vue.component('edit-skill', {
           })
     }
   },
-  /**
-   * Set original name
-   */
   beforeMount() {
+    getSkillTypes()
+        .then((response) => {
+          this.skillTypes = response.data
+        })
     if (!this.isCreateSkill) {
-      let skills = this.$store.state.mySkills
-      // Create a copy of the skill so we do not change the state
-      this.skill = JSON.parse(
-          JSON.stringify(skills.find(skill => skill.id === this.$route.params.id))
-      )
-      this.originalName = this.skill.name
+      getSkill(this.$route.params.id)
+          .then((response) => {
+            this.skill = response.data
+            this.originalName = this.skill.name
+          })
     }
+    this.skill.user_id = this.$store.state.user.name
   }
 })
 </script>

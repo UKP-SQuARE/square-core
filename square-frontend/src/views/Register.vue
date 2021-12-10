@@ -34,7 +34,7 @@
 <script>
 import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
-import { registerUser } from '@/api'
+import { postSignUp } from '@/api'
 
 export default Vue.component('sign-up', {
   data() {
@@ -53,7 +53,7 @@ export default Vue.component('sign-up', {
   },
   methods: {
     onSubmit() {
-      registerUser(this.form.username, this.form.password)
+      postSignUp(this.form.username, this.form.password)
         .then(() => {
           this.success = true
           this.failure = false
