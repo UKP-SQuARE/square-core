@@ -101,7 +101,7 @@
               </div>
             </div>
             <div class="row mt-3">
-              <div class="col-6">
+              <div class="col">
                 <div class="form-floating">
                   <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
                   <label for="maxResultsSkill">Max results per skill</label>
