@@ -3,15 +3,12 @@
  */
 import Vue from 'vue'
 import App from './App.vue'
+import * as bootstrap from 'bootstrap'
 import router from './router'
 import store from './store'
-import BootstrapVue from 'bootstrap-vue'
 import axios from 'axios'
 
-Vue.config.productionTip = false
-
-// Install BootstrapVue
-Vue.use(BootstrapVue)
+Vue.use(bootstrap)
 
 // Init Vue
 new Vue({
@@ -22,10 +19,9 @@ new Vue({
 
 // Configure Axios so that any 401 responses results in a redirect to the login page
 axios.interceptors.response.use((response) => {
-    return response;
+    return response
   }, (err) => {
-    const error = err.response;
-
+    const error = err.response
     if (error.status === 401 && error.config && !error.config.__isRetryRequest) {
           router.push('/login')
           return Promise.reject(error)

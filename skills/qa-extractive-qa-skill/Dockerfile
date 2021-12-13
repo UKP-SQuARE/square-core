@@ -30,6 +30,6 @@ RUN PYTHONPATH=./ pytest \
 # Deployment stage
 FROM base as build
 
-EXPOSE 8002
+EXPOSE 8006
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002", "--log-config", "logging.conf"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8006", "--log-config", "logging.conf"]

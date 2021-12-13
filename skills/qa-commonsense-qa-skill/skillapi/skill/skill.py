@@ -19,57 +19,24 @@ async def predict(request: QueryRequest) -> QueryOutput:
     :return: The prediction produced by the skill
     """
 
-    choices = request.skill_args["context"].split("\n")
+    answers = request.skill_args.get("answers")
+    if answers is None:
+        answers = request.skill_args["context"].split("\n")
 
-    # Call Model API
-    prepared_input = [[request.query, c] for c in choices] 
-    model_request = {  # Fill as needed
+    prepared_input = [[request.query, c] for c in answers] 
+    model_request = { 
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-commonsense_qa"
     }
-
-    output = await model_api(
+    model_api_output = await model_api(
         model_name="bert-base-uncased", 
         pipeline="sequence-classification", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    id2label = output["id2label"]
-    label2human_label = {f"LABEL_{i}": c for i, c in enumerate(choices)}
-
-    for i in range(len(choices)):
-        logit = output["model_outputs"]["logits"][0][i]
-        prediction_score = logit
-
-        prediction_output = {
-            "output": label2human_label[id2label[str(i)]],  # Set based on output
-            "output_score": logit
-        }
-
-        prediction_documents = [{
-            "index": "",
-            "document_id": "",
-            "document": "",
-            # "span": ["", ""],
-            "source": "",
-            "url": ""
-        }]  # Change as needed
-
-        # Return
-        prediction_id = str(uuid.uuid4())
-        prediction = {
-            "prediction_id": prediction_id,
-            "prediction_score": prediction_score,
-            "prediction_output": prediction_output,
-            "prediction_documents": prediction_documents
-        }
-        query_output.append(prediction)
-
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_sequence_classification(
+        answers=answers, model_api_output=model_api_output
+    )

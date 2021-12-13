@@ -19,58 +19,25 @@ async def predict(request: QueryRequest) -> QueryOutput:
     :return: The prediction produced by the skill
     """
 
-    # Call Model API
-    prepared_input = [request.query] 
-    if request.skill_args.get("context", None) is not None:
-        prepared_input = [prepared_input[0] + " " + request.skill_args["context"]]
+    query = request.query
+    context = request.skill_args["context"]
+    prepared_input = [context, query] 
+    
     model_request = { 
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
     }
-    output = await model_api(
+    model_api_output = await model_api(
         model_name="bert-base-uncased", 
         pipeline="sequence-classification", 
         model_request=model_request
     )
-    logger.info(f"Model API output:\n{output}")
+    logger.info(f"Model API output:\n{model_api_output}")
 
-    # Prepare prediction
-    query_output = []
-    id2label = output["id2label"]
-    label2human_label = {
-        "LABEL_0": "no",
-        "LABEL_1": "yes",
-    }
-    for i in range(2):
-        logit = output["model_outputs"]["logits"][0][i]
-        prediction_score = logit
-
-        prediction_output = {
-            "output": label2human_label[id2label[str(i)]],  # Set based on output
-            "output_score": logit
-        }
-
-        prediction_documents = [{
-            "index": "",
-            "document_id": "",
-            "document": "",
-            # "span": ["", ""],
-            "source": "",
-            "url": ""
-        }]  # Change as needed
-
-        # Return
-        prediction_id = str(uuid.uuid4())
-        prediction = {
-            "prediction_id": prediction_id,
-            "prediction_score": prediction_score,
-            "prediction_output": prediction_output,
-            "prediction_documents": prediction_documents
-        }
-        query_output.append(prediction)
-
-    query_output = sorted(query_output, key=lambda item: item["prediction_score"], reverse=True)
-
-    return QueryOutput(predictions=query_output)
+    return QueryOutput.from_sequence_classification(
+        answers=["No", "Yes"], 
+        model_api_output=model_api_output, 
+        context=context
+    )

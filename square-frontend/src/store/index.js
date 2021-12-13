@@ -1,73 +1,64 @@
 /**
  * Vuex Store. Global state of the application is managed here.
  */
+import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { fetchResults, loginUser, fetchSkills, updateSkill, deleteSkill, createSkill, fetchSelectors } from '@/api'
+import { postQuery, postSignIn, getSkills, putSkill, deleteSkill, postSkill } from '@/api'
 
 Vue.use(Vuex)
 
-const LOCALSTORAGE_KEY_JWT = "jwt"
+const LOCALSTORAGE_KEY_JWT = 'jwt'
 
 export default new Vuex.Store({
   /**
-   * State contains all variables that 
+   * State contains all variables that
    * 1) are accessed and changed in multiple components
    * 2) should be restored when a view is changed and later returned to
    */
   state: {
-    user: "",
+    user: {},
     // JWT is also stored in LocalStorage 
-    jwt: "",
+    jwt: '',
     currentResults: [],
-    currentQuestion: "Ask a question to get an answer.",
+    currentQuestion: '',
+    currentContext: '',
     availableSkills: [],
     // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
-    availableSkillSelectors: [],
     queryOptions: {
-      selector: "",
       selectedSkills: [],
-      maxQuerriedSkills: 3,
       maxResultsPerSkill: 10,
-      skillArgs: {},
-      action: "SOCKET_query"
+      skillArgs: {}
     },
     // Control flags
     flags: {
-      initialisedSelectedSkills: false,
-      initialisedSelector: false
+      initialisedSkills: false
     }
   },
-
   mutations: {
     setAnsweredQuestion(state, payload) {
       state.currentQuestion = payload.question
+      state.currentContext = payload.context
       state.currentResults = payload.results
     },
     initQueryOptions(state, payload) {
-      var forceSkillInit = payload.forceSkillInit
       // Default value for selected skills should be all available skills
-      if (!state.flags.initialisedSelectedSkills || forceSkillInit) {
-        state.queryOptions.selectedSkills = state.availableSkills.map(skill => {return skill.name})
-        state.flags.initialisedSelectedSkills = true
-      }
-      // Value for selector should be set to a selector.
-      if (!state.flags.initialisedSelector) {
-        state.queryOptions.selector = state.availableSkillSelectors[0].name
-        state.flags.initialisedSelector = true
+      if (!state.flags.initialisedSkills || payload.forceSkillInit) {
+        state.queryOptions.selectedSkills = state.availableSkills.map(skill => { return skill.id })
+        state.flags.initialisedSkills = true
       }
     },
     setSkills(state, payload) {
-      const lenSkills = state.availableSkills.length
+      let tmp = state.availableSkills.length
       state.availableSkills = payload.skills
-      if (state.user) {
-        state.mySkills = payload.skills.filter(sk => sk.owner_id === state.user.id)
+      if (state.user.name) {
+        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.user.name)
       }
-      // We want to reset selected skills if more skills are available (due to login mostly)
-      if (lenSkills != state.availableSkills.length) {
-        state.flags.initialisedSelectedSkills = false
+      // We want to reset selected skills if more skills are available (due to sign in mostly)
+      if (tmp !== state.availableSkills.length) {
+        state.flags.initialisedSkills = false
       }
     },
     /**
@@ -76,79 +67,64 @@ export default new Vuex.Store({
     setJWT(state, payload) {
       localStorage.setItem(LOCALSTORAGE_KEY_JWT, payload.jwt)
       state.jwt = payload.jwt
-      if (payload.jwt && payload.jwt.split('.').length == 3) {
-        const data = JSON.parse(atob(payload.jwt.split('.')[1]))
+      if (payload.jwt && payload.jwt.split('.').length === 3) {
+        let data = JSON.parse(atob(payload.jwt.split('.')[1]))
         state.user = data.sub
       }
     },
     setQueryOptions(state, payload) {
       state.queryOptions = payload.queryOptions
-    },
-    setSelectors(state, payload) {
-      state.availableSkillSelectors = payload.selectors
-    },
-    //WebSocket mutations
-    SOCKET_SKILLRESULT(state, payload) {
-      if (!payload.finished) {
-        state.currentResults.push(payload)
-      }
     }
   },
-
   /**
    * Mostly wrappers around API calls that manage committing the received results
    */
   actions: {
     query(context, { question, inputContext, options }) {
-      // we get these as strings; parse them back to int
-      options.maxQuerriedSkills = parseInt(options.maxQuerriedSkills)
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      let user_id = context.state.user ? context.state.user.id : ''
-      return fetchResults(question, inputContext, options, user_id)
+      let user_id = context.state.user.name ? context.state.user.name : ''
+      return postQuery(question, inputContext, options, user_id)
+          .then(axios.spread((...responses) => {
+            // Map responses to a list with the skill metadata and predictions combined
+            let results = responses.map((response, index) => ({
+              skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
+              predictions: response.data.predictions
+            }))
+            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
+            context.commit('setQueryOptions', { queryOptions: options })
+          }))
+    },
+    signIn(context, { username, password }) {
+      return postSignIn(username, password)
           .then((response) => {
-          context.commit("setAnsweredQuestion", { results: response.data, question: question, context: inputContext })
-          context.commit("setQueryOptions", { queryOptions: options })
-        })
+            context.commit('setJWT', { jwt: response.data.token })
+          })
     },
-    login(context, { username, password }) {
-      return loginUser(username, password)
-        .then((response) => {
-          context.commit("setJWT", { jwt: response.data.token })
-        })
-    },
-    signout(context) {
-      context.commit("setJWT", { jwt: "" })
+    signOut(context) {
+      context.commit('setJWT', { jwt: '' })
     },
     initJWTfromLocalStorage(context) {
-      var jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ""
-      context.commit("setJWT", { jwt: jwt })
+      let jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
+      context.commit('setJWT', { jwt: jwt })
     },
     updateSkills(context) {
-      var jwt = ""
-      if (context.getters.isAuthenticated()) {
-        jwt = context.state.jwt
-      }
-      return fetchSkills(jwt)
-        .then((response) => context.commit("setSkills", { skills: response.data }))
-    },
-    updateSelectors(context) {
-      return fetchSelectors()
-        .then((response) => context.commit("setSelectors", { selectors: response.data }))
+      let user_name = context.state.user.name ? context.state.user.name : ''
+      return getSkills(user_name)
+          .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSkill(context, { skill }) {
-      return updateSkill(skill.id, skill, context.state.jwt)
-        .then(() => context.dispatch("updateSkills"))
+      return putSkill(skill.id, skill)
+          .then(() => context.dispatch('updateSkills'))
     },
     createSkill(context, { skill }) {
-      return createSkill(skill, context.state.jwt)
-        .then(() => context.dispatch("updateSkills"))
+      return postSkill(skill)
+          .then(() => context.dispatch('updateSkills'))
     },
     deleteSkill(context, { skillId }) {
-      return deleteSkill(skillId, context.state.jwt)
-        .then(() => context.dispatch("updateSkills"))
+      return deleteSkill(skillId)
+          .then(() => context.dispatch('updateSkills'))
     }
   },
-
   /**
    * Getters for information not stored as state variables
    */
@@ -162,9 +138,7 @@ export default new Vuex.Store({
         return false
       }
       let data = JSON.parse(atob(jwt.split('.')[1]))
-      let exp = new Date(data.exp * 1000)
-      let now = new Date()
-      return now < exp
+      return new Date() < new Date(data.exp * 1000)
     },
     /**
      * Check if the JWT is expired
@@ -175,9 +149,7 @@ export default new Vuex.Store({
         return false
       }
       let data = JSON.parse(atob(jwt.split('.')[1]))
-      let exp = new Date(data.exp * 1000)
-      let now = new Date()
-      return now >= exp
+      return new Date() >= new Date(data.exp * 1000)
     }
   }
 })

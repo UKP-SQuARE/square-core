@@ -1,6 +1,17 @@
 <!-- The About Page. Contains information about this project -->
 <template>
-  <b-container>
-    <h2>This is an about page. More later</h2>
-  </b-container>
+  <div>
+    <div class="row justify-content-center">
+      <div class="col-sm-10 col-md-8 col-lg-6">
+        <h1 class="fw-light">About</h1>
+        <p class="lead">🚧</p>
+      </div>
+    </div>
+  </div>
 </template>
+
+<script>
+import Vue from 'vue'
+
+export default Vue.component('about-page', {})
+</script>

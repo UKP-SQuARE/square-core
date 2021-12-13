@@ -139,7 +139,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./square-frontend
-          target: build
+          target: production-stage
           push:  ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -456,6 +456,110 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  qa-extractive-skill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="ukpsquare/square-skills-extractive"
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-extractive_skill-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-extractive_skill-
+            ${{ runner.os }}-buildx-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-extractive-qa-skill
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+  
+  qa-multiple-choice-skill:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="ukpsquare/square-skills-multiple-choice"
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-multiple_choice_skill-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-multiple_choice_skill-
+            ${{ runner.os }}-buildx-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skills/qa-multiple-choice-skill
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+    
   model-api-auth:
     runs-on: ubuntu-latest
 
@@ -624,6 +728,87 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./datastore-api
+          target: build
+          push: ${{github.ref == 'refs/heads/master'}}
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  skill-manager:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          SERVICE="skill-manager"
+          IMAGE="ukpsquare/skill-manager"
+          echo ::set-output name=service::${SERVICE}
+          echo ::set-output name=image::${IMAGE}
+          echo ::set-output name=tag::${TAG}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ steps.prep.outputs.service }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ steps.prep.outputs.service }}-
+            ${{ runner.os }}-buildx-
+        
+      - name: Build test image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skill-manager
+          target: test
+          load: True
+          push: False
+          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-testing
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      
+      - name: Run test image
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-testing
+          options: -v /var/run/docker.sock:/var/run/docker.sock -v ${{ github.workspace }}/skill-manager/test-reports:/app/test-reports
+          run: |
+            python -m pytest --junitxml=test-reports/junit.xml --cov --cov-report=xml:test-reports/coverage.xml --cov-report=html:test-reports/coverage.html
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: skill-manager-test-reports
+          path: ${{ github.workspace }}/skill-manager/test-reports
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./skill-manager
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest

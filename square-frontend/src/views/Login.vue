@@ -1,60 +1,81 @@
 <!-- The Login Page. The user can login here. -->
 <template>
-  <b-container>
-    <h2 class="text-center">Login with your account</h2>
-    <hr />
-
-    <b-alert v-model="sessionExpired" variant="warning">Session expired. Please login again.</b-alert>
-    <b-alert v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
-
-    <b-form-row>
-      <b-form v-on:submit.prevent="onSubmit" class="offset-md-4 col-md-4">
-        <b-form-group>
-          <b-form-input v-model="form.username" type="text" required placeholder="Username"></b-form-input>
-        </b-form-group>
-        <b-form-group>
-          <b-form-input v-model="form.password" type="password" required placeholder="Password"></b-form-input>
-        </b-form-group>
-        <b-button type="submit" variant="primary">Login</b-button>
-      </b-form>
-    </b-form-row>
-  </b-container>
+  <div class="d-flex justify-content-center">
+    <div class="card border-primary shadow align-self-center text-center" style="width: 362px;">
+      <h5 class="card-header fw-light py-2">Sign in</h5>
+      <div class="card-body p-4">
+        <Alert v-if="sessionExpired" class="alert-warning" dismissible>Session expired. Please sign in again.</Alert>
+        <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+        <h3 class="card-title mb-3">Please sign in</h3>
+        <form v-on:submit.prevent="onSubmit">
+          <div class="row">
+            <div class="col">
+              <div class="form-floating">
+                <input v-model="form.username" type="text" class="form-control rounded-0 rounded-top" id="username" placeholder="Username">
+                <label for="username">Username</label>
+              </div>
+              <div class="form-floating">
+                <input v-model="form.password" type="password" class="form-control rounded-0 rounded-bottom border-top-0" id="password" placeholder="Password">
+                <label for="password">Password</label>
+              </div>
+            </div>
+          </div>
+          <div class="row my-3">
+            <div class="col">
+              <div class="form-check d-inline-block">
+                <input v-model="form.remember" class="form-check-input" type="checkbox" value="" id="remember" disabled>
+                <label class="form-check-label" for="remember">Remember me</label>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <button type="submit" class="btn btn-primary w-100">Sign in</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-export default {
-  name: "login",
+import Vue from 'vue'
+import Alert from '@/components/Alert.vue'
+
+export default Vue.component('sign-in', {
   data() {
     return {
       form: {
-        username: "",
-        password: ""
+        username: '',
+        password: '',
+        remember: false
       },
       failure: false,
-      failureMessage: ""
-    };
+      failureMessage: ''
+    }
+  },
+  components: {
+    Alert
   },
   methods: {
     onSubmit() {
-      this.$store
-        .dispatch("login", {
-          username: this.form.username,
-          password: this.form.password
-        })
-        .then(() => {
-          this.failure = false;
-          this.$router.push("/");
-        })
-        .catch(error => {
-          this.failure = true;
-          this.failureMessage = error.data.msg;
-        });
+      this.$store.dispatch('signIn', {
+        username: this.form.username,
+        password: this.form.password
+      }).then(() => {
+        this.failure = false
+        this.$router.push('/')
+      }).catch(error => {
+        this.failure = true
+        this.failureMessage = error.data.msg
+      })
     }
   },
   computed: {
     sessionExpired() {
-      return this.$store.getters.isSessionExpired();
+      return this.$store.getters.isSessionExpired()
     }
   }
-};
+})
 </script>

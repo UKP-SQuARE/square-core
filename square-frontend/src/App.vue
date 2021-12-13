@@ -1,15 +1,15 @@
 <!-- The Main View -->
 <template>
   <div id="app" class="d-flex flex-column h-100">
-    <header>
-      <NavBar />
-      <b-jumbotron bg-variant="light" class="border-bottom rounded-0 text-center mb-0 p-4">
-        <h1 class="font-weight-light">SQuARE</h1>
-        <p class="lead">QA Platform</p>
-      </b-jumbotron>
-    </header>
+    <NavBar />
+    <div class="mb-4 bg-light border-bottom">
+      <div class="container-fluid py-5 text-center">
+        <h1 class="display-5 fw-light">SQuARE</h1>
+        <p class="fs-4">QA Platform</p>
+      </div>
+    </div>
     <main class="flex-fill">
-      <router-view class="container h-100" />
+      <router-view class="container-xl h-100" />
     </main>
     <Footer />
   </div>
@@ -35,6 +35,5 @@ export default Vue.component('app', {
     .highlightText {
         background: yellow
     }
-@import '~bootstrap';
-@import '~bootstrap-vue';
+    @import "~bootstrap/scss/bootstrap";
 </style>

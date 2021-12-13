@@ -1,104 +1,93 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
-  <div>
-    <b-alert class="mt-3" v-model="showEmptyWarning" variant="danger" dismissible>You need to enter a question!</b-alert>
-    <b-alert class="mt-3" v-model="failure" variant="danger" dismissible>There was a problem: {{failureMessage}}</b-alert>
-    <b-form v-on:submit.prevent="askQuestion" class="border rounded shadow my-3 py-3">
-      <b-tabs content-class="m-3" align="center">
-        <b-tab title="Question" active>
-          <b-input-group>
-            <b-form-input v-model="inputQuestion" required placeholder="Enter your question" />
-            <b-input-group-append>
-              <b-button type="submit" variant="primary" :disabled="waitingQuery">
-                Ask your question
-                <b-spinner v-show="waitingQuery" small label="Spinning" />
-              </b-button>
-            </b-input-group-append>
-          </b-input-group>
-        </b-tab>
-        <b-tab title="Context QA" lazy>
-          <b-form-row>
-            <b-col>
-              <b-form-input
-                  v-model="inputQuestion"
-                  required
-                  placeholder="Enter your question"
-                  class="rounded-top"
-                  style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-style: dashed" />
-              <b-form-textarea
-                  v-model="inputContext"
-                  required
-                  placeholder="Provide context seperated by line breaks"
-                  rows="5"
-                  no-resize
-                  class="rounded-bottom border-top-0"
-                  style="border-top-left-radius: 0; border-top-right-radius: 0" />
-            </b-col>
-          </b-form-row>
-          <b-form-row>
-            <b-col class="text-right mt-3">
-              <b-button type="submit" variant="primary" :disabled="waitingQuery">
-                Ask your question
-                <b-spinner v-show="waitingQuery" small label="Spinning" />
-              </b-button>
-            </b-col>
-          </b-form-row>
-        </b-tab>
-      </b-tabs>
-      <div class="m-3">
-        <b-form-checkbox v-model="showOptions" switch>Show expert options</b-form-checkbox>
-        <div class="mt-3" v-show="showOptions">
-          <b-form-row>
-            <b-form-group class="col" label="Skill Selector:" label-for="skill-selector">
-              <b-form-select
-                  id="skill-selector"
-                  v-model="options.selector"
-                  :options="availableSkillSelectors"
-              ></b-form-select>
-            </b-form-group>
-          </b-form-row>
-          <b-form-row>
-            <b-form-group class="col" label="Only use these skills:" label-for="skill-select">
-              <b-form-select
-                  id="skill-select"
-                  v-model="options.selectedSkills"
-                  :options="availableSkills"
-                  multiple
-                  :select-size="Math.min(4, availableSkills.length)"
-              ></b-form-select>
-            </b-form-group>
-          </b-form-row>
-          <b-form-row>
-            <b-form-group class="col-6" label="Maximum number of querried skills:" label-for="max-querried-skills">
-              <b-form-input
-                  id="max-querried-skills"
-                  v-model="options.maxQuerriedSkills"
-                  required
-                  type="number"
-              ></b-form-input>
-            </b-form-group>
-            <b-form-group class="col-6" label="Maximum number of results per skill:" label-for="max-results-skill">
-              <b-form-input
-                  id="max-results-skill"
-                  v-model="options.maxResultsPerSkill"
-                  required
-                  type="number"
-              ></b-form-input>
-            </b-form-group>
-          </b-form-row>
+  <div class="card border-primary shadow">
+    <div class="card-body p-4">
+      <Alert v-if="showEmptyWarning" class="alert-warning" dismissible>You need to enter a question!</Alert>
+      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+      <form v-on:submit.prevent="askQuestion">
+        <div class="row">
+          <div class="col-lg">
+            <div class="row">
+              <div class="col">
+                <div class="input-group">
+                  <div class="form-floating flex-grow-1">
+                    <textarea
+                        v-model="currentQuestion"
+                        class="form-control rounded-0"
+                        style="resize: none; white-space: nowrap; overflow: scroll; border-top-left-radius: 0.25rem !important"
+                        id="question"
+                        rows="1"
+                        placeholder="Enter your question" />
+                    <label for="question">Enter your question</label>
+                  </div>
+                  <button
+                      class="btn btn-lg btn-primary rounded-0 d-inline-flex align-items-center"
+                      style="border-top-right-radius: 0.25rem !important"
+                      type="submit"
+                      :disabled="waitingQuery">
+                    <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                    &nbsp;Ask your question
+                  </button>
+                </div>
+                <div class="form-floating mb-2">
+                  <textarea
+                      v-model="inputContext"
+                      class="form-control rounded-0 rounded-bottom border-top-0"
+                      style="resize: none"
+                      :style="{ height: inputContextHeight + 'px'}"
+                      id="context"
+                      placeholder="Context seperated by line breaks" />
+                  <label for="context">Context seperated by line breaks (Optional)</label>
+                </div>
+                <small class="text-muted">Some skills require context</small>
+              </div>
+            </div>
+          </div>
+          <div v-if="showOptions" class="col-lg mt-3 mt-lg-0">
+            <div class="row">
+              <div class="col">
+                <label for="skillSelect" class="form-label col-form-label-sm text-muted">Skill selector</label>
+                <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
+                  <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">
+                    {{ skill.name }} — {{ skill.description }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col">
+                <div class="form-floating">
+                  <input v-model="options.maxResultsPerSkill" type="number" class="form-control" id="maxResultsSkill" required>
+                  <label for="maxResultsSkill">Max results per skill</label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </b-form>
+      </form>
+    </div>
+    <div class="card-footer bg-white d-flex p-2">
+      <a
+          class="btn btn-outline-secondary d-inline-flex align-items-center ms-auto"
+          :class="{ 'active': showOptions }"
+          role="button"
+          v-on:click="showOptions = !showOptions">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
+        </svg>
+        &nbsp;{{ showOptions ? 'Hide' : 'Show' }} expert options
+      </a>
+    </div>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
+import Alert from '@/components/Alert.vue'
 
-export default Vue.component('query', {
+export default Vue.component('query-skills', {
   data() {
     return {
-      showOptions: false,
       waitingQuery: false,
       options: {
         selectedSkills: []
@@ -107,35 +96,34 @@ export default Vue.component('query', {
       inputQuestion: '',
       inputContext: '',
       failure: false,
-      failureMessage: ''
+      failureMessage: '',
+      showOptions: false
     }
   },
+  components: {
+    Alert
+  },
   computed: {
-    /**
-     * Map state.availableSkills in the format for Vue Bootstrap
-     */
     availableSkills() {
-      return this.$store.state.availableSkills.map(skill => {
-        return {
-          text: `${skill.name} ${
-              skill.description ? '- ' + skill.description : ''
-          }`,
-          value: skill.name
-        }
-      })
-    },
-    availableSkillSelectors() {
-      return this.$store.state.availableSkillSelectors.map(selector => {
-        return {
-          text: `${selector.name} ${
-              selector.description ? '- ' + selector.description : ''
-          }`,
-          value: selector.name
-        }
-      })
+      return this.$store.state.availableSkills
     },
     queryOptions() {
       return this.$store.state.queryOptions
+    },
+    currentQuestion: {
+      get: function () {
+        return this.inputQuestion
+      },
+      set: function (newValue) {
+        let tmp = newValue.trimEnd().split('\n')
+        this.inputQuestion = tmp.splice(0, 1)[0]
+        if (tmp.length > 0) {
+          this.inputContext = tmp.join('\n')
+        }
+      }
+    },
+    inputContextHeight() {
+      return 58 + (this.inputContext ? 21 * 7 : 0)
     }
   },
   methods: {
@@ -147,13 +135,14 @@ export default Vue.component('query', {
           question: this.inputQuestion,
           inputContext: this.inputContext,
           options: this.options
+        }).then(() => {
+          this.failure = false
+          this.failureMessage = ''
         }).catch(error => {
           this.failure = true
           this.failureMessage = error.data.msg
         }).finally(() => {
           this.waitingQuery = false
-          // Collapse the options once results are here to save space. This is due to query and results residing in one view.
-          this.showOptions = false
         })
       } else {
         this.showEmptyWarning = true
@@ -165,22 +154,7 @@ export default Vue.component('query', {
    * Subscribe to mutation changes for the websocket
    */
   beforeMount() {
-    var self = this
-    this.$store.subscribe(mutation => {
-      if (mutation.type === 'SOCKET_SKILLRESULT') {
-        this.showOptions = false
-        if (mutation.payload.error_msg) {
-          self.failure = true
-          self.failureMessage = mutation.payload.error_msg
-          self.waitingQuery = false
-        }
-        if (mutation.payload.finished) {
-          self.waitingQuery = false
-        }
-      }
-    })
     this.$store.dispatch('updateSkills')
-        .then(() => this.$store.dispatch('updateSelectors'))
         .then(() => {
           this.$store.commit('initQueryOptions', {})
         })

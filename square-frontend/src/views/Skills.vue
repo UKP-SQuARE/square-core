@@ -1,112 +1,76 @@
 <!-- The Skills Overview Page. The user can see their skills here. They can delete, edit and train (publish) existing skills or create a new skill. -->
 <template>
-  <b-container>
-    <h2 class="text-center">My skills</h2>
-    <hr />
-
-    <b-button to="/skills/new_skill" variant="outline-success" class="float-right">New Skill</b-button>
-
-    <b-card v-for="skill in mySkills" v-bind:key="skill.id" class="offset-md-3 col-md-6 mb-1">
-      <b-card-title>
-        {{skill.name}}
-        <b-card-sub-title class="mt-1">
-          <b-badge variant="secondary" v-if="skillStatuses[skill.name]==='checking'">
-            Checking...
-            <b-spinner type="grow" small></b-spinner>
-          </b-badge>
-          <b-badge variant="success" v-else-if="skillStatuses[skill.name]==='available'">Available</b-badge>
-          <b-badge
-            variant="danger"
-            v-else-if="skillStatuses[skill.name]==='unavailable'"
-          >Unavailable</b-badge>
-
-          <b-badge variant="info" v-if="skill.is_published" class="ml-1 mb-1">Published</b-badge>
-          <b-badge variant="secondary" v-else class="ml-1 mb-1">Not Published</b-badge>
-
-          <br />
-          {{skill.url}}
-        </b-card-sub-title>
-      </b-card-title>
-
-      <b-card-text>{{skill.description}}</b-card-text>
-      <hr />
-
-      <b-button
-        v-bind:to="{name: 'skill', params: {id: skill.id}}"
-        variant="outline-primary"
-        class="float-left"
-      >Edit Skill</b-button>
-      <b-button
-        v-bind:to="{name: 'train', params: {id: skill.id}}"
-        variant="outline-primary"
-        class="float-left ml-1"
-      >Manage Publication</b-button>
-      <b-button
-        v-b-modal="'modal-'+skill.id"
-        variant="outline-danger"
-        class="float-right"
-      >Delete</b-button>
-
-      <b-modal v-bind:id="'modal-'+skill.id" title="Are you sure?">
-        <p>Please confirm that you want to delete {{skill.name}}.</p>
-        <template v-slot:modal-footer>
-          <b-button variant="outline-success"  @click="$bvModal.hide('modal-'+skill.id)">Cancel</b-button>
-          <b-button variant="outline-danger" @click="deleteSkill(skill.id)">Delete</b-button>
-        </template>
-      </b-modal>
-    </b-card>
-  </b-container>
+  <Card title="My skills">
+    <template #rightItem>
+      <router-link to="/skills/new_skill" class="btn btn-outline-primary d-inline-flex align-items-center" role="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
+          <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        &nbsp;New
+      </router-link>
+    </template>
+    <div class="list-group list-group-flush">
+      <li
+          v-for="skill in mySkills"
+          :key="skill.id"
+          class="list-group-item py-4">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{ skill.name }}</h5>
+          <small>{{ skill.url }}</small>
+        </div>
+        <p class="mb-3">{{ skill.description }}</p>
+        <Status :url="skill.url" />
+        <span v-if="skill.is_published" class="badge bg-info ms-1 p-2">Published</span>
+        <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
+        <div class="d-grid gap-2 d-flex mt-2">
+          <router-link :to="{ name: 'skill', params: {id: skill.id}} " class="btn btn-outline-primary" role="button">Edit</router-link>
+          <router-link :to="{ name: 'train', params: {id: skill.id}} " class="btn btn-outline-primary" role="button">Manage Publication</router-link>
+          <Modal
+              :skill="skill.name"
+              destructive-action="delete"
+              v-on:callback="deleteSkill"
+              :callbackValue="skill.id"
+              class="ms-auto" />
+        </div>
+      </li>
+    </div>
+    <div v-if="!mySkills.length" class="d-grid gap-2">
+      <router-link to="/skills/new_skill" class="btn btn-primary d-inline-flex justify-content-center align-items-center" role="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
+          <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z"/>
+        </svg>
+        &nbsp;New
+      </router-link>
+    </div>
+  </Card>
 </template>
 
 
 <script>
-import { pingSkill } from "@/api";
-export default {
-  name: "skills",
-  data() {
-    return {
-      /**
-       * Dictionary with skill names and their status.
-       * Status is "checking", "available", "unavailable"
-       */
-      skillStatuses: {}
-    };
+import Vue from 'vue'
+import Card from '@/components/Card.vue'
+import Modal from '@/components/Modal.vue'
+import Status from '@/components/Status.vue'
+
+export default Vue.component('list-skills', {
+  components: {
+    Card,
+    Modal,
+    Status
   },
   computed: {
     mySkills() {
-      return this.$store.state.mySkills;
+      return this.$store.state.mySkills
     },
     user() {
-      return this.$store.state.user;
+      return this.$store.state.user
     }
   },
   methods: {
     deleteSkill(skillId) {
-      this.$store.dispatch("deleteSkill", { skillId: skillId });
+      this.$store.dispatch('deleteSkill', { skillId: skillId })
     }
-  },
-  /**
-   * Check availability status of all  skills
-   */
-  beforeMount() {
-    var self = this;
-    this.$store.dispatch("updateSkills").then(() => {
-      for (var i = 0; i < self.mySkills.length; i++) {
-        var skill = self.mySkills[i];
-        var skillName = skill.name;
-        self.$set(self.skillStatuses, skillName, "checking");
-        // Needed for correct variable values in the callback because loops
-        (function(skillName) {
-          pingSkill(skill.url)
-            .then(() => {
-              self.skillStatuses[skillName] = "available";
-            })
-            .catch(() => {
-              self.skillStatuses[skillName] = "unavailable";
-            });
-        })(skillName);
-      }
-    });
   }
-};
+})
 </script>
