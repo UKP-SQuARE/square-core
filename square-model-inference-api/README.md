@@ -17,12 +17,6 @@ The Model API uses 2 components:
 n inference servers (each with their own model), and a treafik server that serves as API gateway 
 to forward requests to the correct inference server and to handle authorization of requests.
 ```
-├───auth_server                 # FastAPI Authorization Server
-│   ├───main.py                 # Entry point in server
-│   ├───Dockerfile              # Dockerfile for server
-│   ├───tests                   # Unit Tests
-│   │   ├───test_api
-│   └───auth_api
 ├───inference_server            # FastAPI Model API Server
 │   ├───tests                   # Unit Tests
 │   │   ├───test_api
@@ -87,7 +81,7 @@ Create `inference_server/.env` and configure it as needed for your local model s
 ```sh
 make run
 ```
-This *only* starts one inference server using `inference_server/.env`. No treafik, no auth server.  
+This *only* starts one inference server using `inference_server/.env`. No treafik.  
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
