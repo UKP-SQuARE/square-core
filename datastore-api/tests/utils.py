@@ -5,6 +5,7 @@ from app.models.datastore import Datastore
 from app.models.document import Document
 from app.models.index import Index
 from app.models.query import QueryResult
+from app.models.stats import DatastoreStats
 
 
 class MockConnector(BaseConnector):
@@ -42,6 +43,9 @@ class MockConnector(BaseConnector):
             return True
         else:
             return False
+
+    async def get_datastore_stats(self, datastore_name: str) -> Optional[DatastoreStats]:
+        return DatastoreStats(name=datastore_name, documents=0, size_in_bytes=0)
 
     # --- Index schemas ---
 

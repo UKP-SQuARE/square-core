@@ -14,6 +14,19 @@ class DatastoreAPIClient:
         self.token = token
         self.upload_batch_size = upload_batch_size
 
+    def _get_datastore_schema(self, datastore_name):
+        headers = {"Authorization": self.token}
+        response = requests.get(self.url + f"/datastores/{datastore_name}", headers=headers)
+        response.raise_for_status()
+        return response.json()
+
+    def _get_id_field(self, schema):
+        field = next((field for field in schema["fields"] if field["is_id"]), None)
+        if field:
+            return field["name"]
+        else:
+            return None
+
     def _post_documents(self, datastore_name, documents):
         headers = {"Authorization": self.token}
         response = requests.post(self.url + f"/datastores/{datastore_name}/documents", json=documents, headers=headers)
@@ -21,6 +34,8 @@ class DatastoreAPIClient:
         return response.json()
 
     def upload_tsv(self, datastore_name, tsv_file, max_documents=None, field_mappings=None, remove_fields=None):
+        schema = self._get_datastore_schema(datastore_name)
+        id_field = self._get_id_field(schema)
         batch = []
 
         if not max_documents:
@@ -45,6 +60,11 @@ class DatastoreAPIClient:
                         continue
                     fields.append(field)
                 data = dict(zip(header, fields))
+                # check id
+                if id_field in data:
+                    data[id_field] = int(data[id_field])
+                else:
+                    data[id_field] = i
                 batch.append(data)
 
                 if len(batch) == self.upload_batch_size:
@@ -55,6 +75,8 @@ class DatastoreAPIClient:
             print(f"Successfully uploaded {i} documents.")
 
     def upload_jsonl(self, datastore_name, jsonl_file, max_documents=None, field_mappings=None, remove_fields=None):
+        schema = self._get_datastore_schema(datastore_name)
+        id_field = self._get_id_field(schema)
         batch = []
 
         if not max_documents:
@@ -73,6 +95,11 @@ class DatastoreAPIClient:
                         if k in field_mappings:
                             item[field_mappings[k]] = v
                             del item[k]
+                # check id
+                if id_field in item:
+                    item[id_field] = int(item[id_field])
+                else:
+                    item[id_field] = i
                 batch.append(item)
 
                 if len(batch) == self.upload_batch_size:

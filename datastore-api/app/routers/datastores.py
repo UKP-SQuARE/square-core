@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.param_functions import Body, Path
 
 from ..models.datastore import Datastore, DatastoreRequest
+from ..models.stats import DatastoreStats
 from .dependencies import get_storage_connector
 
 
@@ -117,3 +118,27 @@ async def delete_datastore(
         return Response(status_code=204)
     else:
         return Response(status_code=404)
+
+
+@router.get(
+    "/{datastore_name}/stats",
+    summary="Get datastore statistics",
+    description="Get statistics such as document count and storage size in bytes for a datastore.",
+    responses={
+        200: {
+            "model": DatastoreStats,
+            "description": "The datastore statistics",
+        },
+        404: {"description": "The datastore could not be found"},
+    },
+    response_model=DatastoreStats,
+)
+async def get_datastore_stats(
+    datastore_name: str = Path(..., description="The datastore name"),
+    conn=Depends(get_storage_connector),
+):
+    stats = await conn.get_datastore_stats(datastore_name)
+    if stats is not None:
+        return stats
+    else:
+        raise HTTPException(status_code=404)

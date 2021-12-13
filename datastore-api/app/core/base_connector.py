@@ -5,6 +5,7 @@ from ..models.datastore import Datastore
 from ..models.document import Document
 from ..models.index import Index
 from ..models.query import QueryResult
+from ..models.stats import DatastoreStats
 from .base_class_converter import BaseClassConverter
 
 
@@ -51,6 +52,15 @@ class BaseConnector(ABC):
     @abstractmethod
     async def delete_datastore(self, datastore_name: str) -> bool:
         """Deletes a datastore.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+        """
+        pass
+
+    @abstractmethod
+    async def get_datastore_stats(self, datastore_name: str) -> Optional[DatastoreStats]:
+        """Returns statistics about a datastore.
 
         Args:
             datastore_name (str): Name of the datastore.

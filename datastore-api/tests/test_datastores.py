@@ -54,3 +54,10 @@ class TestDatastores:
     def test_delete_datastore_not_found(self, client):
         response = client.delete("/datastores/not_found")
         assert response.status_code == 404
+
+    def test_get_datastore_stats(self, client, datastore_name):
+        response = client.get("/datastores/{}/stats".format(datastore_name))
+        assert response.status_code == 200
+        assert "name" in response.json()
+        assert "documents" in response.json()
+        assert "size_in_bytes" in response.json()

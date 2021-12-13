@@ -9,6 +9,7 @@ from ...models.datastore import Datastore
 from ...models.document import Document
 from ...models.index import Index
 from ...models.query import QueryResult
+from ...models.stats import DatastoreStats
 from ..base_connector import BaseConnector
 from .class_converter import ElasticsearchClassConverter
 
@@ -26,7 +27,7 @@ class ElasticsearchConnector(BaseConnector):
             host (str): Hostname of the Elasticsearch instance.
         """
         super().__init__(converter=ElasticsearchClassConverter())
-        self.es = AsyncElasticsearch(hosts=[host])
+        self.es = AsyncElasticsearch(hosts=[host], timeout=30)
 
     # --- Datastore schemas ---
     # Each datastore is represented by two ES indices:
@@ -107,6 +108,22 @@ class ElasticsearchConnector(BaseConnector):
             return resp1["acknowledged"] and resp2["acknowledged"]
         except elasticsearch.exceptions.NotFoundError:
             return False
+
+    async def get_datastore_stats(self, datastore_name: str) -> Optional[DatastoreStats]:
+        """Returns statistics about a datastore.
+
+        Args:
+            datastore_name (str): Name of the datastore.
+        """
+        try:
+            result = await self.es.indices.stats(index=self._datastore_docs_index_name(datastore_name))
+            return DatastoreStats(
+                name=datastore_name,
+                documents=result["_all"]["primaries"]["docs"]["count"],
+                size_in_bytes=result["_all"]["primaries"]["store"]["size_in_bytes"],
+            )
+        except elasticsearch.exceptions.NotFoundError:
+            return None
 
     # --- Index schemas ---
 
