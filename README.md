@@ -1,4 +1,4 @@
-# SQuARE
+# SQuARE: Software for Question Answering Research
 ## Local Setup
 ### dotenv setup
 Create `.env` files for each skill, e.g. under `skills/qa-boolq-skill/.env` with the following content:
