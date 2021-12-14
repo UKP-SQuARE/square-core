@@ -25,23 +25,23 @@ services:
       - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./inference_server/traefik.yaml:/config/traefik.yaml
+      - ./inference_server/traefik/traefik.yaml:/config/traefik.yaml
 
   # Example config for one model server
-  inference_bert:
+  inference_dpr:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
     # Portforwarding not needed
 #    ports:
 #      - 8000:8000
     env_file:
-      - inference_server/.env
+      - inference_server/.env.dpr
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       #- ./inference_server/:/app/ #for developement
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bert.rule=PathPrefix(`/api/bert`)"
+      - "traefik.http.routers.bert.rule=PathPrefix(`/api/dpr`)"
 
     # Example config for another model server
   inference_roberta:
