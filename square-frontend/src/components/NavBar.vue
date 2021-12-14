@@ -14,6 +14,9 @@
                 <router-link class="nav-link" aria-current="page" to="/" exact-active-class="active">Home</router-link>
               </li>
               <li class="nav-item">
+                <router-link class="nav-link" to="/explain" exact-active-class="active">Explainability</router-link>
+              </li>
+              <li class="nav-item">
                 <router-link class="nav-link" to="/about" exact-active-class="active">About</router-link>
               </li>
             </ul>

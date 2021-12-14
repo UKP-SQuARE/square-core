@@ -11,6 +11,8 @@ import Skills from '@/views/Skills.vue'
 import Skill from '@/views/Skill.vue'
 import Home from '@/views/Home.vue'
 import Train from '@/views/Train.vue'
+import Explain from '@/views/Explain.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -64,6 +66,11 @@ const routes = [
         next()
       }
     }
+  },
+  {
+    path: '/explain',
+    name: 'explain',
+    component: Explain
   },
   {
     path: '/about',
