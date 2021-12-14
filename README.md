@@ -1,76 +1,27 @@
-# Overview
-Highly modular web app focus on question answering 
+# SQuARE: Software for Question Answering Research
+Find out more about the project on [UKPs Website](https://www.informatik.tu-darmstadt.de/ukp/research_ukp/ukp_research_projects/ukp_project_square/ukp_project_square_details.en.jsp).  
+## Local Setup
+### dotenv setup
+Create `.env` files for each skill, e.g. under `skills/qa-boolq-skill/.env` with the following content:
+```bash
+MODEL_API_KEY=your-api-key-goes-here
+MODEL_API_URL=http://model_nginx:8080/api
+DATA_API_URL=http://host.docker.internal:8002/datastores
+```
+When running the project locally, provide any api key e.g. `1234-abcd-5678-efgh`.
 
-## :rocket: Core features:
-- Central location to store and ask question with pretrained *skills*, each skill created to handle a specific questions-answering task (domain-specific e.g covid19, biomedical, ... or factoid question that based on Freebase knowledge graph). A user can implement skill model on their own or in more simple way is to use third-party API such as t5 or elli5 from huggingface.
-- Advanced question answering using automatic skill selector, which predicts the best availble skill from a pool of avaible skill that can provide the answer based on the similarity of the user question and the questions, on which a skill is trained on.
-- Provides an overview of your skills and skills that were published by other users
-- Develop your own skill as REST API, deploy it and publish its endpoints on square 
-- Manage register, publish, unpublish retrain and delete your skills
-- Integrated user and session management 
+Next, create an `.env` file for the auth_server under `square-model-inference-api/auth_server/.env` with the following content:
+```bash
+MODEL_API_KEY=your-api-key-goes-here
+API_KEY_HEADER_NAME=Authorization
+```
+Make sure the two api keys match.
 
-##  :rainbow: Quick Demo: 
-To launch Square, the only prerequisites is docker and docker-compose. docker-compose will build docker containers from scratch install all requirements for you.
-1. Install docker and docker-compose
-2. Clone Square repository from github
-`git clone https://github.com/UKPLab/square-core.git`
-3. Launch demo app
-`cd square`
-`docker-compose up  --build`
+## Build & Run
+For local development it's best to build the project with docker compose by running `docker compose build`.  
+If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
+And finally run `docker compose up -d` to start the system.  
 
-## :sparkles: Basic Workflow with a pretrained skill 
-1. Launch demo app, which hasn't had any skills registerd so you can't ask question yet.
-2. Create a sample skill and deploy it
-3. Register your sample skill on SQUARE 
-4. Choose the skill you have just created sample to answer questions 
-
-## :computer: For developers
-### Developing SQUARE-CORE
-- Each module [square-backend](https://github.com/UKPLab/square-core/tree/master/square-backend), [square-frontend](https://github.com/UKPLab/square-core/tree/master/square-frontend) and [reference-skill-example](https://github.com/UKPLab/square-core/tree/master/reference-skill-example) has its own README.md, which these module in details and shows you how to start these module individually.
-- You can launch all SQUARE-CORE modules at once with docker-composer or individually since each module also have it own Dockerfile so that they can be started, restarted or killed individually. 
-
-### :triangular_flag_on_post: Basic commands
-
-#### Deploy on a remote server and square-core locally
-Skill can be deployed on a different server than the SQUARE-CORE, which can create some issues. We has found a work-around solution for this problem.
-1. Login to the remote server
-2. Get IP of the node with `ifconfig`
-3. Start the webserver of the skill
-4. On you local machine, create a tunnel to the remote with `ssh -L 5003:$IP:5003 $USERNAME@$HOST` (Note you might need to change the port 5003 to whatever port you are running the skill webserver on).
-5. Assert that you can reach the skill from you local machine, e.g. by querying the /ping endpoint. `curl localhost:5003/api/ping`
-6. Run square-core with docker-compose
-   `docker-compose up`
-7. Goto http://localhost and register or login
-8. Create a new skill, as URL enter `http://host.docker.internal:5003/api` (Note that currently the form will say the skill is not available, this is a [bug](https://github.com/UKPLab/square-core/issues/8))
-9. Go back to home and try your skill.
-
-#### Docker-Compose
-Run `docker-compose up [--build]` to run front- and backend along with a Postgres DB in production mode.
-This starts no additional skill server.
-
-[docker-compose-skill.yaml](docker-compose-skill.yaml) gives an example on how to add skill server to the cluster.
-However, skill server can also be run independently from the core server.  
-If a skill server is run in the same cluster, then its container name should be used as host and not 127.0.0.1.
-The client will say it is not available, but the backend server can resolve it. 
-
-
-### :pencil: System Overview
-![Oveview](https://github.com/UKPLab/square-core/blob/master/doc/system.jpg)
-
-__Front-End Application__, web app which supports user actions
-- receives questions from the user and talks to the square-backend to give the answers
-- allows the CRUD of skills endpoints
-
-__Backend__
-- API Service: receives HTTP GET requests containing user question and forwards them to other system and gives back the answers
-- Selector: select skills chosen by the users and get answer from these skills
-- ElasticsearchVoteSelector: calculate similarity between question by user and saved questions to decide which skill are relevant automatically
-
-__PostgresDB__: 
-- save metadata of registered skills: owner, name, description, ect.
-- save user information: username, password, etc.
-- save examples for training and validation of all skill 
-
-__ElasticSearch__: 
-- save examples for training and validation of all skill 
+## Register Skills
+In the UI register a new user (if you do not have an account yet) and add skills. The URL for the skill must be the docker internal address. For example, for the boolq skill it would be `http://boolq_skill:8003`. The url comes from the service name specified in the `docker-compose.yml` file, the port from the docker image and code.
 
