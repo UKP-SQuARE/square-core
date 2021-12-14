@@ -1,4 +1,5 @@
 # SQuARE: Software for Question Answering Research
+Find out more about the project on [UKPs Website](https://www.informatik.tu-darmstadt.de/ukp/research_ukp/ukp_research_projects/ukp_project_square/ukp_project_square_details.en.jsp).  
 ## Local Setup
 ### dotenv setup
 Create `.env` files for each skill, e.g. under `skills/qa-boolq-skill/.env` with the following content:
