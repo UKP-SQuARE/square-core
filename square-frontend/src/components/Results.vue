@@ -9,6 +9,7 @@
             class="nav-item">
           <a class="nav-link h5 fw-light"
              :class="{ 'active': activeTab === index }"
+             :style="{ 'cursor': activeTab !== index ? 'pointer' : 'default' }"
              :id="`skill-${skillResult.skill.name}-tab`"
              data-bs-toggle="tab"
              :data-bs-target="`#skill-${skillResult.skill.name}`"
