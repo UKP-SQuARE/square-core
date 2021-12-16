@@ -151,7 +151,6 @@ export default Vue.component('query-skills', {
   },
   /**
    * Make the store update the skills and init the query options
-   * Subscribe to mutation changes for the websocket
    */
   beforeMount() {
     this.$store.dispatch('updateSkills')
