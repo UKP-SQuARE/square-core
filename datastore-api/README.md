@@ -4,8 +4,6 @@ API for storing, indexing and retrieving document corpora, powered by [Elasticse
 
 ## Overview
 
-![SQuARE Datastore API](images/overview.png)
-
 The Datastore API is dependent upon the following services:
 
 - Required (automatically via Docker):
