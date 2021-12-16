@@ -1,15 +1,6 @@
 version: "3"
 
 services:
-#  auth:
-#    #build: ./auth_server/.
-#    image: ukpsquare/square-model-api-auth:latest
-#    # Portforwarding not needed
-##    ports:
-##      - 8081:8081
-#    env_file:
-#      - ./auth_server/.env.example
-
   traefik:
     image: traefik:v2.5
     container_name: traefik
@@ -25,7 +16,7 @@ services:
       - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./inference_server/traefik/traefik.yaml:/config/traefik.yaml
+      - ./traefik/traefik.yaml:/config/traefik.yaml
 
   # Example config for one model server
   inference_dpr:
@@ -51,7 +42,7 @@ services:
     #    ports:
     #      - 8001:8000
     env_file:
-      - ./inference_server/.env.roberta
+      - ./inference_server/.env.bert_adapter
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       #- ./inference_server/:/app/ #for developement
