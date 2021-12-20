@@ -1,28 +1,32 @@
 # This is a stand-alone script that does not require additional code (except the imported packages).
 # We copy-pasted code from Model API and removing some not needed stuff for this.
 import argparse
-import os
-import logging
 import json
+import logging
+import os
 import pickle
+import queue
 import time
 from dataclasses import dataclass
-from typing import Union, List
+from typing import List, Union
+
 import h5py
-import torch
 import numpy as np
+import torch
+import torch.multiprocessing as mp
+
 # Conditionally load adapter or sentence-transformer later to simplify installation
 #from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 import transformers
-import torch.multiprocessing as mp
-import queue
-from transformers import AutoModel, AutoTokenizer  #, AutoModelWithHeads
+from transformers import AutoModel, AutoTokenizer  # , AutoModelWithHeads
+
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(processName)s-%(levelname)s-%(asctime)s: %(message)s'))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+
 
 @dataclass
 class PredictionRequest:
@@ -213,14 +217,53 @@ def read_batch(file_pointer, batch_size):
             finished = True
             break
         else:
-            lines.append(line)
+            lines.append(json.loads(line))
         i += 1
     return lines, finished
 
 
+def read_batch_tsv(file_pointer, batch_size):
+    if not hasattr(file_pointer, "tsv_header"):
+        file_pointer.tsv_header = file_pointer.readline().strip().split("\t")
+    i = 0
+    lines = []
+    finished = False
+    while i < batch_size:
+        line = file_pointer.readline().strip()
+        # empty string -> file finished
+        if not line:
+            finished = True
+            break
+        else:
+            lines.append(dict(zip(file_pointer.tsv_header, line.split("\t"))))
+        i += 1
+    return lines, finished
+
+
+def output_chunk(args, output_file, current_output, chunk_idx):
+    current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+
+    if args.hdf5:
+        chunk_output_file = f"{output_file}_{chunk_idx}.h5"
+        with h5py.File(chunk_output_file, "w") as out_f:
+            logger.info(f"Writing chunk in {chunk_output_file}")
+            if args.hdf5_gzip_level < 0:
+                out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
+                out_f.create_dataset("embeddings", data=current_output["embeddings"])
+            else:
+                out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"), compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                out_f.create_dataset("embeddings", data=current_output["embeddings"], compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+    else:
+        chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
+        with open(chunk_output_file, "wb") as out_f:
+            logger.info(f"Writing chunk in {chunk_output_file}")
+            pickle.dump(current_output, out_f)
+
+
 def encode(args):
     transformers_cache = args.transformers_cache
-    os.environ["TRANSFORMERS_CACHE"] = transformers_cache
+    if transformers_cache:
+        os.environ["TRANSFORMERS_CACHE"] = transformers_cache
     model_name = args.model_name
     model_type = args.model_type
     batch_size = args.batch_size
@@ -246,10 +289,13 @@ def encode(args):
         chunk_idx = 0
         current_processed_lines = 0
         current_output = {"ids": [], "embeddings": []}
+        if input_file.endswith(".tsv"):
+            read_batch_func = read_batch_tsv
+        else:
+            read_batch_func = read_batch
         while not finished_reading:
-            lines, finished_reading = read_batch(f_in, batch_size)
+            lines, finished_reading = read_batch_func(f_in, batch_size)
             if lines:
-                lines = [json.loads(line) for line in lines]
                 texts = [line["text"] for line in lines]
                 ids = [line["id"] for line in lines]
 
@@ -268,23 +314,8 @@ def encode(args):
             if current_processed_lines >= chunk_size or finished_reading:
                 logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
 
-                current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+                output_chunk(args, output_file, current_output, chunk_idx)
 
-                if args.hdf5:
-                    chunk_output_file = f"{output_file}_{chunk_idx}.h5"
-                    with h5py.File(chunk_output_file, "w") as out_f:
-                        logger.info(f"Writing chunk in {chunk_output_file}")
-                        if args.hdf5_gzip_level < 0:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"])
-                        else:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                else:
-                    chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
-                    with open(chunk_output_file, "wb") as out_f:
-                        logger.info(f"Writing chunk in {chunk_output_file}")
-                        pickle.dump(current_output, out_f)
                 current_processed_lines = 0
                 current_output = {"ids": [], "embeddings": []}
                 chunk_idx += 1
@@ -295,10 +326,13 @@ def _read_process(input_file, batch_size, input_queue):
     with open(input_file, "r", encoding="utf-8") as f_in:
         # We do not know how large the input file is so we read it batch-wise for memory safety reasons
         finished_reading = False
+        if input_file.endswith(".tsv"):
+            read_batch_func = read_batch_tsv
+        else:
+            read_batch_func = read_batch
         while not finished_reading:
-            lines, finished_reading = read_batch(f_in, batch_size)
+            lines, finished_reading = read_batch_func(f_in, batch_size)
             if lines:
-                lines = [json.loads(line) for line in lines]
                 texts = [line["text"] for line in lines]
                 ids = [line["id"] for line in lines]
 
@@ -340,50 +374,21 @@ def _write_process(output_file, chunk_size, args, output_queue):
             if current_processed_lines >= chunk_size:
                 logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
 
-                current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+                output_chunk(args, output_file, current_output, chunk_idx)
 
-                if args.hdf5:
-                    chunk_output_file = f"{output_file}_{chunk_idx}.h5"
-                    with h5py.File(chunk_output_file, "w") as out_f:
-                        logger.info(f"Writing chunk in {chunk_output_file}")
-                        if args.hdf5_gzip_level < 0:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"])
-                        else:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                else:
-                    chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
-                    with open(chunk_output_file, "wb") as out_f:
-                        logger.info(f"Writing chunk in {chunk_output_file}")
-                        pickle.dump(current_output, out_f)
                 current_processed_lines = 0
                 current_output = {"ids": [], "embeddings": []}
                 chunk_idx += 1
         except queue.Empty:
             logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
-            current_output["embeddings"] = np.concatenate(current_output["embeddings"])
-            if args.hdf5:
-                chunk_output_file = f"{output_file}_{chunk_idx}.h5"
-                with h5py.File(chunk_output_file, "w") as out_f:
-                    logger.info(f"Writing chunk in {chunk_output_file}")
-                    if args.hdf5_gzip_level < 0:
-                        out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
-                        out_f.create_dataset("embeddings", data=current_output["embeddings"])
-                    else:
-                        out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                        out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-            else:
-                chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
-                with open(chunk_output_file, "wb") as out_f:
-                    logger.info(f"Writing chunk in {chunk_output_file}")
-                    pickle.dump(current_output, out_f)
+            output_chunk(args, output_file, current_output, chunk_idx)
             break
 
 
 def encode_multiprocess(args):
     transformers_cache = args.transformers_cache
-    os.environ["TRANSFORMERS_CACHE"] = transformers_cache
+    if transformers_cache:
+        os.environ["TRANSFORMERS_CACHE"] = transformers_cache
     model_name = args.model_name
     model_type = args.model_type
     batch_size = args.batch_size
@@ -418,9 +423,20 @@ def encode_multiprocess(args):
 
     write_p.join()
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--transformers_cache", help="Cache folder where model files will be downloaded into and loaded from")
+
+def embed(args):
+    start_time = time.time()
+    if not args.gpus:
+        encode(args)
+    else:
+        encode_multiprocess(args)
+    end_time = time.time()
+    logger.info(f"Finished encoding in {end_time-start_time}s")
+
+
+def register_command(subparsers):
+    parser = subparsers.add_parser("embed", help="Embed a dataset using a Transformers model.")
+    parser.add_argument("--transformers_cache", default=None, help="Cache folder where model files will be downloaded into and loaded from")
     parser.add_argument("--model_name", help="Model name, i.e., name used in transformers oder sentence-transformers to load the pre-trained model")
     parser.add_argument("--model_type", help="Model type, one of 'adapter', 'transformer', 'sentence-transformer'")
     parser.add_argument("--batch_size", type=int, help="Batch size used for encoding")
@@ -428,8 +444,8 @@ if __name__ == "__main__":
                                                        "ATTENTION: This value will be set to the first value satisfying: true_chunk_size mod batch_size == 0"
                                                        "Each output file contains chunk_size embeddings "
                                                        "(except the last one if len(input) mod chunk_size != 0)")
-    parser.add_argument("--input_file", help="Input .jsonl file. Each line is a dict object: {'id': 'xxx', 'text': 'abc...'}")
-    parser.add_argument("--output_file", help="Output .pkl/.h5 file. A chunk index will be inserted between the name and extension: e.g. 'path/to/name_chunkidx.pkl' ."
+    parser.add_argument("-i", "--input_file", help="Input .jsonl file. Each line is a dict object: {'id': 'xxx', 'text': 'abc...'}")
+    parser.add_argument("-o", "--output_file", help="Output .pkl/.h5 file. A chunk index will be inserted between the name and extension: e.g. 'path/to/name_chunkidx.pkl' ."
                                               "Format: {'ids': List[str], 'embeddings': ndarray}. "
                                               "Note for hdf5, use f['ids'].asstr() to load ids as string because default is binary.")
     parser.add_argument("--adapter_name", help="For model_type=adapter, the name of the adapter that should be loaded")
@@ -442,12 +458,4 @@ if __name__ == "__main__":
                                        "Comma-separated list of devices (e.g., cuda:0,cuda:1) for multi-GPU processing."
                                        "Reading, writing and each GPU is assigned its own process."
                                        "Can also be used with only one device to use the multiprocessing for reading/ writing of outputs but this is not necessarily faster with one GPU.")
-    args = parser.parse_args()
-
-    start_time = time.time()
-    if not args.gpus:
-        encode(args)
-    else:
-        encode_multiprocess(args)
-    end_time = time.time()
-    logger.info(f"Finished encoding in {end_time-start_time}s")
+    parser.set_defaults(func=embed)

@@ -4,3 +4,6 @@ storage
 *.hdf5
 *.lock
 env
+*.ps1
+/output
+*.tsv

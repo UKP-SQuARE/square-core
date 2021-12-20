@@ -110,21 +110,7 @@ class DatastoreAPIClient:
             print(f"Successfully uploaded {i} documents.")
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Upload documents to the SQuARE Datastore API.")
-    parser.add_argument("file", type=str, help="TSV or JSONL file to upload")
-    parser.add_argument(
-        "-u", "--url", type=str, default="http://localhost:7000", help="URL of the SQuARE Datastore API"
-    )
-    parser.add_argument("-t", "--token", type=str, help="API token for the SQuARE Datastore API")
-    parser.add_argument("-s", "--datastore", type=str, help="name of the SQuARE Datastore to upload to")
-    parser.add_argument("--batch-size", type=int, default=1000, help="number of documents to upload in a batch")
-    parser.add_argument("--max-documents", type=int, default=None, help="maximum number of documents to upload")
-    parser.add_argument("--field-mappings", type=lambda x: x.split(";"), default="", help="Field mappings")
-    parser.add_argument("--remove-fields", type=lambda x: x.split(";"), default="", help="Fields to remove")
-
-    args = parser.parse_args()
-
+def upload(args):
     field_mappings = {}
     for mapping in args.field_mappings:
         if mapping:
@@ -152,5 +138,16 @@ def main():
         raise ValueError("File must be a TSV or JSONL file.")
 
 
-if __name__ == "__main__":
-    main()
+def register_command(subparsers):
+    parser = subparsers.add_parser("upload", help="Upload documents to the SQuARE Datastore API.")
+    parser.add_argument("file", type=str, help="TSV or JSONL file to upload")
+    parser.add_argument(
+        "-u", "--url", type=str, default="http://localhost:7000", help="URL of the SQuARE Datastore API"
+    )
+    parser.add_argument("-t", "--token", type=str, help="API token for the SQuARE Datastore API")
+    parser.add_argument("-s", "--datastore", type=str, help="name of the SQuARE Datastore to upload to")
+    parser.add_argument("--batch-size", type=int, default=1000, help="number of documents to upload in a batch")
+    parser.add_argument("--max-documents", type=int, default=None, help="maximum number of documents to upload")
+    parser.add_argument("--field-mappings", type=lambda x: x.split(";"), default="", help="Field mappings")
+    parser.add_argument("--remove-fields", type=lambda x: x.split(";"), default="", help="Fields to remove")
+    parser.set_defaults(func=upload)
