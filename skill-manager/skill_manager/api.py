@@ -3,11 +3,13 @@ import logging
 from bson import ObjectId
 from itertools import chain
 from typing import List, Optional
+from urllib.parse import urljoin
 
 import pymongo
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from square_skill_api.models.heartbeat import HeartbeatResult
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
@@ -32,6 +34,25 @@ def on_startup():
     mongo_settings = MongoSettings()
     app.state.mongo_client = pymongo.MongoClient(mongo_settings.connection_url)
     app.state.skill_manager_db = app.state.mongo_client.skill_manager
+
+
+@app.get("/health/heartbeat", response_model=HeartbeatResult)
+async def heartbeat():
+    return HeartbeatResult(is_alive=True)
+
+
+@app.get("/health/skill-heartbeat", response_model=HeartbeatResult)
+async def skill_heartbeat(skill_url: str):
+    skill_health_url = urljoin(skill_url, "health/heartbeat")
+
+    skill_heartbeat_response = requests.get(skill_health_url)
+    logger.debug(
+        "skill at {} health {}".format(
+            skill_health_url, skill_heartbeat_response.json()
+        )
+    )
+
+    return skill_heartbeat_response.json()
 
 
 @app.get("/skill-types", response_model=List[str])

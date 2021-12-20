@@ -115,6 +115,7 @@ def skill_factory():
 
 
 def assert_skills_equal_from_response(skill, response):
+    """check if the skill object is equal to the one in the response"""
     skill = skill.dict()
     added_skill = response.json()
     for k in added_skill:
@@ -131,6 +132,26 @@ def assert_skills_equal_from_response(skill, response):
         assert (
             added_skill[k] == skill[k]
         ), f"added_skill={added_skill[k]} skill={skill[k]}"
+
+
+def test_heartbeat(client):
+    response = client.get("/health/heartbeat")
+    assert response.status_code == 200
+    assert response.json() == {"is_alive": True}
+
+
+@responses.activate
+def test_skill_heartbeat(client):
+    skill_url = "http://test_skill_url"
+    responses.add(
+        responses.GET,
+        url=f"{skill_url}/health/heartbeat",
+        json={"is_alive": True},
+        status=200,
+    )
+    response = client.get("/health/skill-heartbeat", params={"skill_url": skill_url})
+    assert response.status_code == 200
+    assert response.json() == {"is_alive": True}
 
 
 def test_skill_types(client):
