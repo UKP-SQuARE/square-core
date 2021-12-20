@@ -1,7 +1,5 @@
-from datetime import datetime
 import logging
 from bson import ObjectId
-from itertools import chain
 from typing import List, Optional
 from urllib.parse import urljoin
 
@@ -75,12 +73,13 @@ async def get_skill_by_id(id: Optional[str] = None):
 
 @app.get("/skill", response_model=List[Skill])
 async def get_skills(user_id: Optional[str] = None):
+
+    mongo_query = {"published": True}
     if user_id:
-        user_skills = app.state.skill_manager_db.skills.find({"user_id": user_id})
-    else:
-        user_skills = []
-    published_skills = app.state.skill_manager_db.skills.find({"published": True})
-    skills = [Skill.from_mongo(s) for s in chain(user_skills, published_skills)]
+        mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
+
+    skills = app.state.skill_manager_db.skills.find(mongo_query)
+    skills = [Skill.from_mongo(s) for s in skills]
 
     logger.debug("get_skills: {skills}".format(skills=skills))
     return skills

@@ -218,6 +218,26 @@ def test_get_all_skills(pers_client, skill_factory):
     assert skill_name_to_id["user_skill"] in returned_skill_ids
 
 
+def test_get_public_user_skill_only_once(pers_client, skill_factory):
+    """test if a user publised their skill, that GET /skills only returns it once"""
+
+    current_user = "current-user-2"
+    skill = skill_factory(user_id=current_user, published=True)
+
+    response = pers_client.post("/skill", data=skill.json())
+    skill_id = response.json()["id"]
+
+    response = pers_client.get(f"/skill", params=dict(user_id=current_user))
+    assert response.status_code == 200
+    returned_skills = response.json()
+
+    # filter skills by user
+    user_skills = list(filter(lambda s: s["user_id"] == current_user, returned_skills))
+
+    assert user_skills[0]["id"] == skill_id
+    assert len(user_skills) == 1
+
+
 def test_update_skill(pers_client, skill_factory):
 
     test_skill = skill_factory()
