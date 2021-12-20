@@ -93,16 +93,16 @@ make test-api
 
 To simplify some common workflows, the Datastore API comes with a simple CLI.
 It allows embedding documents, creating FAISS indices for dense retrieval and uploading documents to the server.
-The CLI can be found in the `scripts` folder and can be installed from the cloned repository with:
+The CLI can be found in the `cli` folder and can be installed from the cloned repository with:
 
 ```
-pip install -U ./scripts/.
+pip install -U ./cli/.
 ```
 
 or from remote with:
 
 ```
-pip install -U git+https://github.com/UKP-SQuARE/square-core.git#subdirectory=datastore-api/scripts
+pip install -U git+https://github.com/UKP-SQuARE/square-core.git#subdirectory=datastore-api/cli
 ```
 
 If installation was successful, type `square-data-cli --help` to view the available commands.
