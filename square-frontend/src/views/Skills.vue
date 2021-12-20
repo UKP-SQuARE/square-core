@@ -21,11 +21,10 @@
         </div>
         <p class="mb-3">{{ skill.description }}</p>
         <Status :url="skill.url" />
-        <span v-if="skill.is_published" class="badge bg-info ms-1 p-2">Published</span>
+        <span v-if="skill.published" class="badge bg-info ms-1 p-2">Published</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
         <div class="d-grid gap-2 d-flex mt-2">
           <router-link :to="{ name: 'skill', params: {id: skill.id}} " class="btn btn-outline-primary" role="button">Edit</router-link>
-          <router-link :to="{ name: 'train', params: {id: skill.id}} " class="btn btn-outline-primary" role="button">Manage Publication</router-link>
           <Modal
               :skill="skill.name"
               destructive-action="delete"
