@@ -229,8 +229,12 @@ def test_get_public_user_skill_only_once(pers_client, skill_factory):
     response = pers_client.get(f"/skill", params=dict(user_id=current_user))
     assert response.status_code == 200
     returned_skills = response.json()
-    assert returned_skills[0]["id"] == skill_id
-    assert len(returned_skills) == 1
+    
+    # filter skills by user
+    user_skills = list(filter(lambda s: s["user_id"] == current_user, returned_skills))
+
+    assert user_skills[0]["id"] == skill_id
+    assert len(user_skills) == 1
 
 def test_update_skill(pers_client, skill_factory):
 
