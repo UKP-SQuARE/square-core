@@ -29,6 +29,13 @@ to forward requests to the correct inference server and to handle authorization 
 │       ├───core                # Server config, Startup logic, etc.
 │       ├───models              # Input/ output modelling for API
 │       └───inference           # Deep Model implementation and inference code for NLP tasks
+├───maintaining_models          # FastAPI server for adding new models or listing all models
+│   ├───main.py                 # Entry point in server
+│   ├───docker_access.py        # Manages docker acces of server
+│   ├───Dockerfile              # Dockerfile for server
+│   └───models.py               # Input modeling of the server
+├───traefik
+│   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
 ├───locust                      # Load testing configuration with Locust
 └───example_docker-compose.yml  # Example docker-compose setup for the Model API
 ```
@@ -98,9 +105,34 @@ make test
 ```
 For load testing with Locust, see [this README](locust/README.md).
 
-#### Adding new Models
+### Adding new Models
+New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/add`.
+By passing all environment information that would normally be in the `.env` file and the identifier which will be part
+ of the path prefix in the following form:
+```
+{
+  "identifier": <model_prefix>,
+  "model_name": <model_name>,
+  "model_path": <model_path>,
+  "decoder_path": <decoder_path>,
+  "model_type": <model_type>,
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "../.cache",
+  "model_class": <model_class>,
+  "return_plaintext_array": false
+}
+```
+
+The server will automatically create the model-api instance and add it to the docker network. It might take some time 
+until the model is available, since it needs to download and intialize the necessary models and adapters first. 
+To check wheter the model is ready, you can retrieve all available models at `api/models` and check whether the added 
+models is in the list.
+
+#### Adding new Models Manually
 With treafik we can add new models to the model API easily for each new model append the following to the 
-docker-compse file:
+docker-comopse file:
 
 ```dockerfile
 inference_<model>:

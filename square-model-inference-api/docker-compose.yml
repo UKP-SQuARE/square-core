@@ -26,7 +26,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/stats`)"
+      - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
 
 
   # Example config for one model server
@@ -53,7 +53,7 @@ services:
     ports:
       - 8001:8000
     env_file:
-      - ./inference_server/.env.bert_adapter
+      - ./inference_server/.env
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       #- ./inference_server/:/app/ #for developement

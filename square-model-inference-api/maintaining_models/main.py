@@ -1,36 +1,47 @@
-import os
+from fastapi import FastAPI, HTTPException
 
-from fastapi import FastAPI
-import docker
-import re
 import requests
 from models import ModelRequest
+from docker_access import start_new_model_container, get_all_model_prefixes
 
 API_URL = "http://host.docker.internal:80"
-ABSOLUTE_PATH = "/run/desktop/mnt/host/c/Users/hster/PycharmProjects/square-core/square-model-inference-api"
 
 app = FastAPI()
-client = docker.APIClient(base_url='unix://var/run/docker.sock')
 
 
-@app.get("/api/models")
+@app.get("/api")
 async def get_all_models():
-    lst_container = client.containers()
-    lst_prefix = []
-    for container in lst_container:
-        if "model-inference-api" in client.inspect_container(container["Id"])["Name"] and "maintaining" not in \
-                client.inspect_container(container["Id"])["Name"]:
-            print(client.inspect_container(container["Id"]).keys())
-            for identifier, label in client.inspect_container(container["Id"])["Config"]["Labels"].items():
-                if "PathPrefix" in label:
-                    print(label)
-                    prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
-                    lst_prefix.append(prefix)
+    lst_prefix = await(get_all_model_prefixes())
     lst_models = []
     for prefix in lst_prefix:
         r = requests.get(url=API_URL + prefix + "/stats", auth=('admin', 'example_key'))
+        # if the model-api instance has not finished loading the model it is not available yet
         if r.status_code == 200:
             lst_models.append(r.json())
 
     return lst_models
 
+
+@app.post("/api/add")
+async def add_new_model(model_params: ModelRequest):
+    identifier = model_params.identifier
+    env = {
+        "MODEL_NAME": model_params.model_name,
+        "MODEL_PATH": model_params.model_path,
+        "DECODER_PATH": model_params.decoder_path,
+        "MODEL_TYPE": model_params.model_type,
+        "MODEL_CLASS": model_params.model_class,
+        "DISABLE_GPU": model_params.disable_gpu,
+        "BATCH_SIZE": model_params.batch_size,
+        "MAX_INPUT_SIZE": model_params.max_input,
+        "TRANSFORMERS_CACHE": model_params.transformers_cache,
+        "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
+
+    }
+    container = await(start_new_model_container(identifier, env))
+    if container:
+        return {
+            "success": True,
+            "container": container.id,
+        }
+    return HTTPException(status_code=400)

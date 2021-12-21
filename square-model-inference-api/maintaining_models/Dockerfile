@@ -14,5 +14,6 @@ FROM base as build
 
 COPY main.py main.py
 COPY models.py models.py
+COPY docker_access.py docker_access.py
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
