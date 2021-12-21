@@ -1,8 +1,6 @@
 version: "3"
 
 services:
-
-
   traefik:
     image: traefik:v2.5
     container_name: traefik
@@ -50,10 +48,10 @@ services:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
     # Portforwarding not needed
-    ports:
-      - 8001:8000
+    #    ports:
+    #      - 8001:8000
     env_file:
-      - ./inference_server/.env
+      - ./inference_server/.env.bert_adapter
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       #- ./inference_server/:/app/ #for developement
