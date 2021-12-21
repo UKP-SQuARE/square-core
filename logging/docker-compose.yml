@@ -2,7 +2,7 @@ version: "3.2"
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     volumes:
       - type: bind
         source: ./config/elasticsearch.yml
@@ -18,7 +18,7 @@ services:
     networks:
       - elk
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.13.2
+    image: docker.elastic.co/logstash/logstash:7.16.1
     volumes:
       - type: bind
         source: ./config/logstash.yml
@@ -37,7 +37,7 @@ services:
     depends_on:
       - elasticsearch
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.13.2
+    image: docker.elastic.co/kibana/kibana:7.16.1
     volumes:
       - type: bind
         source: ./config/kibana.yml
@@ -51,7 +51,7 @@ services:
       - elasticsearch
 
   filebeat:
-    image: "docker.elastic.co/beats/filebeat:7.13.2"
+    image: "docker.elastic.co/beats/filebeat:7.16.1"
     command: -e --strict.perms=false
     user: root
     volumes:

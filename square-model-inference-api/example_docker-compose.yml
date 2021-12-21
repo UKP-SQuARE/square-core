@@ -19,7 +19,7 @@ services:
       - ./traefik/traefik.yaml:/config/traefik.yaml
 
   maintaining:
-    image: ukpsquare/square-model-maintaining:latest
+    image: ukpsquare/square-model-models:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:

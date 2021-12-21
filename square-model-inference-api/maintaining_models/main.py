@@ -4,7 +4,7 @@ import requests
 from models import ModelRequest
 from docker_access import start_new_model_container, get_all_model_prefixes
 
-API_URL = "http://host.docker.internal:80"
+API_URL = "http://host.docker.internal:8989"
 
 app = FastAPI()
 

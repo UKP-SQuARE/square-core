@@ -105,5 +105,5 @@ export function postSkill(newSkill) {
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
 export function pingSkill(skillUrl) {
-    return axios.get(`${skillUrl}/ping`)
+    return axios.get(`${SKILL_URL}/health/heartbeat`, { params: { skill_url: skillUrl } })
 }

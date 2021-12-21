@@ -48,7 +48,8 @@ async def get_all_model_prefixes():
     """
     Returns the prefixes under which all running model-api-instances in the dockernetwor are available
     """
-    lst_container = docker_client.containers.list(filters={"name": "model-inference-api"})
+    # assumes square is somewhere in the container name
+    lst_container = docker_client.containers.list(filters={"name": "square"})
     lst_prefix = []
     for container in lst_container:
         if "maintaining" not in container.name:

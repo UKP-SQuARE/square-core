@@ -1,13 +1,13 @@
-from datetime import datetime
 import logging
 from bson import ObjectId
-from itertools import chain
 from typing import List, Optional
+from urllib.parse import urljoin
 
 import pymongo
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from square_skill_api.models.heartbeat import HeartbeatResult
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
@@ -34,6 +34,25 @@ def on_startup():
     app.state.skill_manager_db = app.state.mongo_client.skill_manager
 
 
+@app.get("/health/heartbeat", response_model=HeartbeatResult)
+async def heartbeat():
+    return HeartbeatResult(is_alive=True)
+
+
+@app.get("/health/skill-heartbeat", response_model=HeartbeatResult)
+async def skill_heartbeat(skill_url: str):
+    skill_health_url = urljoin(skill_url, "health/heartbeat")
+
+    skill_heartbeat_response = requests.get(skill_health_url)
+    logger.debug(
+        "skill at {} health {}".format(
+            skill_health_url, skill_heartbeat_response.json()
+        )
+    )
+
+    return skill_heartbeat_response.json()
+
+
 @app.get("/skill-types", response_model=List[str])
 async def get_skill_types():
     skill_types = [skill_type.value for skill_type in SkillType]
@@ -54,12 +73,13 @@ async def get_skill_by_id(id: Optional[str] = None):
 
 @app.get("/skill", response_model=List[Skill])
 async def get_skills(user_id: Optional[str] = None):
+
+    mongo_query = {"published": True}
     if user_id:
-        user_skills = app.state.skill_manager_db.skills.find({"user_id": user_id})
-    else:
-        user_skills = []
-    published_skills = app.state.skill_manager_db.skills.find({"published": True})
-    skills = [Skill.from_mongo(s) for s in chain(user_skills, published_skills)]
+        mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
+
+    skills = app.state.skill_manager_db.skills.find(mongo_query)
+    skills = [Skill.from_mongo(s) for s in skills]
 
     logger.debug("get_skills: {skills}".format(skills=skills))
     return skills
