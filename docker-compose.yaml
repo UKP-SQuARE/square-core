@@ -91,6 +91,8 @@ services:
 
   maintaining:
     image: ukpsquare/square-model-models:latest
+    build:
+      ./square-model-inference-api/maintaining_models
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
