@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List
 
 from ...models.datastore import Datastore, DatastoreField
 from ...models.document import Document
@@ -12,7 +12,7 @@ class ElasticsearchClassConverter(BaseClassConverter):
     Provides an abstract interface for a class that converts between datastore api model objects and backend-specific objects.
     """
 
-    def convert_from_datastore(self, datastore: Datastore) -> object:
+    def convert_from_datastore(self, datastore: Datastore) -> Dict[str, Any]:
         """
         Converts a datastore object to a backend-specific object.
         """
@@ -30,7 +30,7 @@ class ElasticsearchClassConverter(BaseClassConverter):
 
         return index
 
-    def convert_to_datastore(self, datastore_name: str, obj: object) -> Datastore:
+    def convert_to_datastore(self, datastore_name: str, obj: Dict[str, Any]) -> Datastore:
         """
         Converts a backend-specific object to a datastore object.
         """
@@ -44,31 +44,31 @@ class ElasticsearchClassConverter(BaseClassConverter):
             )
         return Datastore(name=datastore_name, fields=fields)
 
-    def convert_from_index(self, index: Index) -> object:
+    def convert_from_index(self, index: Index) -> Dict[str, Any]:
         """
         Converts an index object to a backend-specific object.
         """
         return index.dict()
 
-    def convert_to_index(self, obj: object) -> Index:
+    def convert_to_index(self, obj: Dict[str, Any]) -> Index:
         """
         Converts a backend-specific object to an index object.
         """
         return Index(**obj)
 
-    def convert_from_document(self, document: Document) -> object:
+    def convert_from_document(self, document: Document) -> Dict[str, Any]:
         """
         Converts a document object to a backend-specific object.
         """
         return document.__root__
 
-    def convert_to_document(self, obj: object) -> Document:
+    def convert_to_document(self, obj: Dict[str, Any]) -> Document:
         """
         Converts a backend-specific object to a document object.
         """
         return Document(__root__=obj)
 
-    def convert_to_query_results(self, obj: object) -> List[QueryResult]:
+    def convert_to_query_results(self, obj: Dict[str, Any]) -> List[QueryResult]:
         """
         Converts a backend-specific object to a list of query results.
         """

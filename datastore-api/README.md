@@ -65,10 +65,13 @@ docker compose down
 
 ### API server
 
-Start the server:
+**Configuration:** Before starting the server, a few configuration options can be set via environment variables or a `.env` file. See [here](.env) for an example configuration and [here](app/core/config.py) for all available options.
+
+**Running:**
 ```
 make run
 ```
+By default, the server will run at port 7000.
 
 Check **http://localhost:7000/docs** for interactive documentation.
 See below for uploading documents and embeddings.

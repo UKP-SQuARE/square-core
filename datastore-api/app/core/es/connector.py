@@ -5,6 +5,7 @@ import elasticsearch.exceptions
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk, async_scan
 
+from ...core.config import settings
 from ...models.datastore import Datastore
 from ...models.document import Document
 from ...models.index import Index
@@ -27,7 +28,7 @@ class ElasticsearchConnector(BaseConnector):
             host (str): Hostname of the Elasticsearch instance.
         """
         super().__init__(converter=ElasticsearchClassConverter())
-        self.es = AsyncElasticsearch(hosts=[host], timeout=30)
+        self.es = AsyncElasticsearch(hosts=[host], timeout=settings.ES_SEARCH_TIMEOUT)
 
     # --- Datastore schemas ---
     # Each datastore is represented by two ES indices:

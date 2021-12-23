@@ -1,10 +1,14 @@
 import base64
+import logging
 from io import BytesIO
 
 import numpy as np
 import requests
 
 from ..models.index import Index
+
+
+logger = logging.getLogger(__name__)
 
 
 class ModelAPIClient:
@@ -52,10 +56,12 @@ class ModelAPIClient:
         headers = {"Authorization": self.api_key}
         response = requests.post(request_url, json=data, headers=headers)
         if response.status_code != 200:
-            print(response.json())
+            logger.error(response.json())
             raise EnvironmentError(f"Model API returned {response.status_code}.")
         else:
             embeddings = self._decode_embeddings(response.json()["model_outputs"]["embeddings"]).flatten()
             # The vector returned here may be shorter than the stored document vector.
             # In that case, we fill the remaining values with zeros.
+            if index.embedding_size - len(embeddings) > 0:
+                logger.warning("Embedded query vector is shorter than the configured size.")
             return embeddings.tolist() + [0] * (index.embedding_size - len(embeddings))

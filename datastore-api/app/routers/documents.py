@@ -34,7 +34,7 @@ async def upload_document_file(
                 successful_uploads=total_docs,
             )
         # if batch is full, upload and reset
-        if len(upload_batch) == settings.VESPA_FEED_BATCH_SIZE:
+        if len(upload_batch) == settings.UPLOAD_BATCH_SIZE:
             successes, errors = await conn.add_document_batch(datastore_name, upload_batch)
             if errors > 0:
                 return total_docs, UploadResponse(

@@ -31,6 +31,11 @@ class TestDatastores:
         assert response.json()["name"] == new_datastore_name
         assert response.json()["fields"] == new_datastore_fields
         assert "fieldsets" not in response.json()
+        # get new datastore to see if it was added
+        response = client.get("/datastores/{}".format(new_datastore_name))
+        assert response.status_code == 200
+        assert response.json()["name"] == new_datastore_name
+        assert response.json()["fields"] == new_datastore_fields
 
     def test_must_contain_id_field(self, client):
         new_datastore_name = "datastore-test-new_datastore"
@@ -50,6 +55,8 @@ class TestDatastores:
         assert response.status_code == 201
         response = client.delete("/datastores/{}".format(datastore_name))
         assert response.status_code == 204
+        response = client.get("/datastores/{}".format(datastore_name))
+        assert response.status_code == 404
 
     def test_delete_datastore_not_found(self, client):
         response = client.delete("/datastores/not_found")
