@@ -90,42 +90,57 @@ services:
   #     - 9200:9200
 
  ### DATASTORE API
-  vespa:
-    image: vespaengine/vespa
-    container_name: vespa
-    hostname: vespa-container
-    privileged: true
-    expose:
-      - "8080"
-      - "19071"
-    ports:
-      - "7070:8080"
-    #  - "19071:19071"
-    volumes:
-      - ./storage/vespa/var:/opt/vespa/var
-      - ./storage/vespa/logs:/opt/vespa/logs
-
-  mongodb:
-    image: mongo:4.0
-    container_name: mongodb
+  datastore_es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    container_name: datastore_es01
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-    #ports:
-    #  - "27017:27017"
+      - discovery.type=single-node
     volumes:
-      - ./storage/db/data:/data/db
+      - ./storage/es/data:/usr/share/elasticsearch/data
+    ports:
+      - 7200:9200
+
+  datastore_reverse-proxy:
+      image: traefik:v2.5
+      command:
+        - "--providers.docker"
+        - "--providers.docker.exposedbydefault=false"
+        - "--providers.file.filename=/config/traefik.yaml"
+        - "--entrypoints.web.address=:7010"
+        - "--entrypoints.web.http.middlewares=prefix-strip@file"
+        - "--providers.docker.defaultRule=PathPrefix(`{{ index .Labels \"square.datastore\"}}`)"
+      ports:
+        - "7010:7010"
+      volumes:
+        # The configuration file
+        - ./traefik.yaml:/config/traefik.yaml
+        # So that Traefik can listen to the Docker events
+        - /var/run/docker.sock:/var/run/docker.sock
+
+##### BEGIN FAISS Service Containers #####
+
+# Add one container per FAISS index below.
+# Each container should be defined as follows:
+  # faiss-<index_name>:
+  #   image: kwang2049/faiss-instant:latest
+  #   volumes:
+  #     - <local_path>:/opt/faiss-instant/resources
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.services.faiss-<index_name>.loadbalancer.server.port=5000"
+  #     - "square.datastore=<index_name>"
+
+##### END FAISS Service Containers #####
 
   datastore_api:
     privileged: true
-    build: .
+    build: ./datastore-api
     depends_on:
-      - vespa
-      - mongodb
+      - datastore_es
     ports:
       - "7000:7000"
     env_file:
-      - ./.env
+      - ./.env.datastore_api
 
 volumes:
   db-data:
