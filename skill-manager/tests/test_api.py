@@ -115,6 +115,7 @@ def skill_factory():
 
 
 def assert_skills_equal_from_response(skill, response):
+    """check if the skill object is equal to the one in the response"""
     skill = skill.dict()
     added_skill = response.json()
     for k in added_skill:
@@ -131,6 +132,26 @@ def assert_skills_equal_from_response(skill, response):
         assert (
             added_skill[k] == skill[k]
         ), f"added_skill={added_skill[k]} skill={skill[k]}"
+
+
+def test_heartbeat(client):
+    response = client.get("/health/heartbeat")
+    assert response.status_code == 200
+    assert response.json() == {"is_alive": True}
+
+
+@responses.activate
+def test_skill_heartbeat(client):
+    skill_url = "http://test_skill_url"
+    responses.add(
+        responses.GET,
+        url=f"{skill_url}/health/heartbeat",
+        json={"is_alive": True},
+        status=200,
+    )
+    response = client.get("/health/skill-heartbeat", params={"skill_url": skill_url})
+    assert response.status_code == 200
+    assert response.json() == {"is_alive": True}
 
 
 def test_skill_types(client):
@@ -195,6 +216,26 @@ def test_get_all_skills(pers_client, skill_factory):
     assert skill_name_to_id["public_skill"] in returned_skill_ids
     assert skill_name_to_id["private_skill"] not in returned_skill_ids
     assert skill_name_to_id["user_skill"] in returned_skill_ids
+
+
+def test_get_public_user_skill_only_once(pers_client, skill_factory):
+    """test if a user publised their skill, that GET /skills only returns it once"""
+
+    current_user = "current-user-2"
+    skill = skill_factory(user_id=current_user, published=True)
+
+    response = pers_client.post("/skill", data=skill.json())
+    skill_id = response.json()["id"]
+
+    response = pers_client.get(f"/skill", params=dict(user_id=current_user))
+    assert response.status_code == 200
+    returned_skills = response.json()
+
+    # filter skills by user
+    user_skills = list(filter(lambda s: s["user_id"] == current_user, returned_skills))
+
+    assert user_skills[0]["id"] == skill_id
+    assert len(user_skills) == 1
 
 
 def test_update_skill(pers_client, skill_factory):
