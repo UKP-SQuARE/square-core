@@ -31,71 +31,81 @@
           </div>
         </form>
       </div>
+      <div class="card-footer bg-white p-3">
+        <h5 class="card-title">About tests</h5>
+        <p class="card-text">We show up to 5 failed test cases for each of the tests below. You can download all examples, including successful ones, as a JSON file.</p>
+        <a v-on:click="downloadExamples" ref="downloadButton" class="btn btn-outline-secondary d-inline-flex align-items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+          </svg>
+          &nbsp;Download all examples
+        </a>
+      </div>
     </div>
     <div class="accordion border border-primary rounded shadow mt-3">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+      <div
+          v-for="(test, index) in checklist_tests"
+          :key="index"
+          class="accordion-item">
+        <h2 class="accordion-header">
           <button
               class="accordion-button collapsed"
               type="button"
               data-bs-toggle="collapse"
-              data-bs-target="#panelsStayOpen-collapseOne">
-            Change same name in both question and context
-            <span class="badge bg-secondary d-inline-flex align-items-center ms-3 py-2">INV</span>
-            <span class="badge bg-secondary d-inline-flex align-items-center ms-1 py-2">NER</span>
-            <span class="badge bg-danger d-inline-flex align-items-center ms-1 py-2">9.9%</span>
+              :data-bs-target="`#panelsStayOpen-${index}`">
+            {{ test.test_name }}
+            <span class="badge bg-secondary d-inline-flex align-items-center ms-3 py-2">{{ test.test_type }}</span>
+            <span class="badge bg-secondary d-inline-flex align-items-center ms-1 py-2">{{ test.capability }}</span>
+            <span class="badge bg-danger d-inline-flex align-items-center ms-1 py-2">{{ roundScore(test.failed_cases / test.total_cases) }}%</span>
           </button>
         </h2>
-        <div
-            id="panelsStayOpen-collapseOne"
-            class="accordion-collapse collapse">
+        <div :id="`panelsStayOpen-${index}`" class="accordion-collapse collapse">
           <div class="accordion-body">
             <div class="row">
               <div class="col-6 text-center">
-                <strong>INV</strong>ariance Test on <strong>NER</strong>
+                <strong>{{ test.test_type }}</strong> Test on <strong>{{ test.capability }}</strong>
               </div>
               <div class="col-6 text-center">
-                Failure rate <sup class="text-danger">14</sup>&frasl;<sub>141</sub> = <strong class="text-danger">9.9%</strong>
+                Failure rate <sup class="text-danger">{{ test.failed_cases }}</sup>&frasl;<sub>{{ test.total_cases }}</sub> = <strong class="text-danger">{{ roundScore(test.failed_cases / test.total_cases) }}%</strong>
               </div>
             </div>
             <div class="row my-3">
-              <div class="col-6"><h4>Examples</h4></div>
-              <div class="col-6 text-end"><a class="btn btn-outline-secondary">Show all cases</a></div>
+              <div class="col"><h4>Failed Examples</h4></div>
             </div>
             <div class="row">
               <div class="col">
-                <ul class="list-group overflow-scroll" style="max-height: 50vh">
-                  <li class="list-group-item bg-light">
+                <ul class="list-group overflow-scroll">
+                  <li class="list-group-item bg-light"
+                      v-for="(test_case, index) in test.test_cases.slice(0, 5)"
+                      :key="index">
                     <div class="row">
                       <div class="col">
-                        <strong>Question:</strong> <span v-html="highlightReplacement('Kayla', 'Kimberly', 'What company no longer trades as Kimberly ?')" />
+                        <strong>Question:</strong> {{ test_case.question }}
                       </div>
                     </div>
                     <div class="row my-3">
                       <div class="col">
-                        <strong>Context:</strong> <small v-html="highlightReplacement('Kayla', 'Kimberly', 'Formed in November 1990 by the equal merger of Kimberly Television and British Satellite Broadcasting , BSkyB became the UK \'s largest digital subscription television company . Following BSkyB \'s 2014 acquisition of Kimberly Italia and a majority 90.04 % interest in Kimberly Deutschland in November 2014 , its holding company British Kimberly Broadcasting Group plc changed its name to Kimberly plc . The United Kingdom operations also changed the company name from British Kimberly Broadcasting Limited to Kimberly UK Limited , still trading as Kimberly .')" />
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <strong>Prediction:</strong> <span v-html="highlightReplacement('Kayla UK Limited', 'Kimberly UK Limited', 'Kimberly UK Limited')" />
-                      </div>
-                    </div>
-                  </li>
-                  <li class="list-group-item bg-light">
-                    <div class="row">
-                      <div class="col">
-                        <strong>Question:</strong> <span v-html="highlightReplacement('Kayla', 'Karen', 'How much did Karen bid to win the 4 broadcast pacakges they bought ?')" />
+                        <strong>Context:</strong> {{ test_case.context }}
                       </div>
                     </div>
                     <div class="row my-3">
-                      <div class="col">
-                        <strong>Context:</strong> <small v-html="highlightReplacement('Kayla', 'Karen', 'Following a lengthy legal battle with the European Commission , which deemed the exclusivity of the rights to be against the interests of competition and the consumer , BSkyB \'s monopoly came to an end from the 2007–08 season . In May 2006 , the Irish broadcaster Setanta Sports was awarded two of the six Premier League packages that the English FA offered to broadcasters . Karen picked up the remaining four for £ 1.3bn . In February 2015 , Karen bid £ 4.2bn for a package of 120 premier league games across the three seasons from 2016 . This represented an increase of 70 % on the previous contract and was said to be £ 1bn more than the company had expected to pay . The move has been followed by staff cuts , increased subscription prices ( including 9 % in Karen \'s family package ) and the dropping of the 3D channel .')" />
+                      <div class="col-6">
+                        <strong class="text-success">Answer:</strong> {{ test_case.answer }}
+                        <span class="text-success">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                          </svg>
+                        </span>
                       </div>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <strong>Prediction:</strong> <span v-html="highlightReplacement('£4.2bn', '£1.3bn', '£1.3bn')" />
+                      <div class="col-6">
+                        <strong class="text-danger">Prediction:</strong> {{ test_case.prediction }}
+                        <span class="text-danger">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
+                            <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
+                          </svg>
+                        </span>
                       </div>
                     </div>
                   </li>
@@ -103,40 +113,11 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button
-              class="accordion-button collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#panelsStayOpen-collapseTwo">
-            Another awesome test
-            <span class="badge bg-secondary d-inline-flex align-items-center ms-3 py-2">MFT</span>
-            <span class="badge bg-secondary d-inline-flex align-items-center ms-1 py-2">NER</span>
-            <span class="badge bg-danger d-inline-flex align-items-center ms-1 py-2">0.0%</span>
-          </button>
-        </h2>
-        <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
-          <div class="accordion-body" />
-        </div>
-      </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button
-              class="accordion-button collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#panelsStayOpen-collapseThree">
-            Third demo test
-            <span class="badge bg-secondary d-inline-flex align-items-center ms-3 py-2">DIR</span>
-            <span class="badge bg-secondary d-inline-flex align-items-center ms-1 py-2">NER</span>
-            <span class="badge bg-danger d-inline-flex align-items-center ms-1 py-2">0.0%</span>
-          </button>
-        </h2>
-        <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
-          <div class="accordion-body" />
+          <div class="row mb-3">
+            <div class="col text-center">
+              Showing {{ Math.min(5, test.test_cases.length) }} out of {{ test.test_cases.length }} failed examples. Download all examples to see more.
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -158,9 +139,26 @@ export default Vue.component('explainability-page', {
   computed: {
     availableSkills() {
       return this.$store.state.availableSkills
+    },
+    checklist_tests() {
+      let tests = this.checklist_data.tests
+      tests.forEach(test => test.test_cases = test.test_cases.filter(
+          test_case => test_case['success/failed'] === 'failed'))
+      return tests
     }
   },
   methods: {
+    roundScore(score) {
+      return Math.round(score * 1_000) / 10
+    },
+    downloadExamples() {
+      let data = JSON.stringify(this.checklist_data, null, 2)
+      let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
+      this.$refs.downloadButton.href = URL.createObjectURL(blob)
+      this.$refs.downloadButton.download = `${this.options.selectedSkill} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
+      this.$refs.downloadButton.click()
+      console.log(this.$refs.downloadButton)
+    },
     highlightReplacement: function (source, target, doc) {
       return doc.replaceAll(target, `<mark class="bg-warning">${source}</mark><span class="d-inline-flex align-items-center px-1">
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-circle" viewBox="0 0 16 16">
