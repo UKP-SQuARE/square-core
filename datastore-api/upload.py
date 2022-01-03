@@ -91,7 +91,7 @@ class DatastoreAPIClient:
                     for field in remove_fields:
                         item.pop(field, None)
                 if field_mappings:
-                    for k, v in item.items():
+                    for k, v in list(item.items()):
                         if k in field_mappings:
                             item[field_mappings[k]] = v
                             del item[k]
