@@ -21,8 +21,8 @@
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <router-link to="/login" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
-              <router-link to="/register" role="button" class="btn btn-light">Sign up</router-link>
+              <router-link to="/signin" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
+              <router-link to="/signup" role="button" class="btn btn-light">Sign up</router-link>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -59,7 +59,11 @@ export default Vue.component('nav-bar', {
   methods: {
     signout() {
       this.$store.dispatch('signOut')
-          .then(() => this.$router.push('/'))
+          .then(() => {
+            if (this.$route.path !== '/') {
+              this.$router.push('/')
+            }
+          })
     }
   }
 })
