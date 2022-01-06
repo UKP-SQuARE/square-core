@@ -25,8 +25,9 @@ services:
       - ./traefik/traefik.yaml:/config/traefik.yaml
 
   maintaining:
-    image: ukpsquare/square-model-models:latest
-    build: ./maintaining_models
+    image: ukpsquare/square-model-deploying:latest
+    build:
+      ./deploying
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
@@ -38,24 +39,30 @@ services:
   inference_dpr:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
+    # Portforwarding not needed
+    #    ports:
+    #      - 8000:8000
     env_file:
       - inference_server/.env.dpr
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
-      #- ./inference_server/:/app/ #for development
+      #- ./inference_server/:/app/ #for developement
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dpr.rule=PathPrefix(`/api/dpr`)"
 
-  # Example config for another model server
+    # Example config for another model server
   inference_bert:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
+    # Portforwarding not needed
+    #    ports:
+    #      - 8001:8000
     env_file:
       - ./inference_server/.env.bert_adapter
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
-      #- ./inference_server/:/app/ #for development
+      #- ./inference_server/:/app/ #for developement
 
     labels:
       - "traefik.enable=true"

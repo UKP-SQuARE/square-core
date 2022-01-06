@@ -4,17 +4,17 @@ import requests
 from models import ModelRequest
 from docker_access import start_new_model_container, get_all_model_prefixes
 
-API_URL = "http://host.docker.internal:8989"
+API_URL = "http://host.docker.internal"
 
 app = FastAPI()
 
 
 @app.get("/api")
 async def get_all_models():
-    lst_prefix = await(get_all_model_prefixes())
+    lst_prefix, port = await(get_all_model_prefixes())
     lst_models = []
     for prefix in lst_prefix:
-        r = requests.get(url=API_URL + prefix + "/stats", auth=('admin', 'example_key'))
+        r = requests.get(url="{}:{}{}/stats".format(API_URL, port, prefix), auth=('admin', 'example_key'))
         # if the model-api instance has not finished loading the model it is not available yet
         if r.status_code == 200:
             lst_models.append(r.json())

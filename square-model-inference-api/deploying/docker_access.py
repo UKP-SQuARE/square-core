@@ -50,12 +50,13 @@ async def get_all_model_prefixes():
     """
     # assumes square is somewhere in the container name
     lst_container = docker_client.containers.list(filters={"name": "square"})
+    reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
+    port = list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
     lst_prefix = []
     for container in lst_container:
         if "maintaining" not in container.name:
             for identifier, label in container.labels.items():
                 if "PathPrefix" in label:
-                    print(label)
                     prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
                     lst_prefix.append(prefix)
-    return lst_prefix
+    return lst_prefix, port
