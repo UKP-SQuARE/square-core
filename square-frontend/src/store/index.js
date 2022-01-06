@@ -50,7 +50,9 @@ export default new Vuex.Store({
     initQueryOptions(state, payload) {
       // Default value for selected skills should be all available skills
       if (!state.flags.initialisedQueryOptions || payload.forceSkillInit) {
-        state.queryOptions.selectedSkills = state.availableSkills.map(skill => { return skill.id })
+        if (state.availableSkills.length > 0) {
+          state.queryOptions.selectedSkills = [state.availableSkills[0].id]
+        }
         state.flags.initialisedQueryOptions = true
       }
     },
