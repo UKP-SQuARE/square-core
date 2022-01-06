@@ -148,6 +148,6 @@ def register_command(subparsers):
     parser.add_argument("-s", "--datastore", type=str, help="name of the SQuARE Datastore to upload to")
     parser.add_argument("--batch-size", type=int, default=1000, help="number of documents to upload in a batch")
     parser.add_argument("--max-documents", type=int, default=None, help="maximum number of documents to upload")
-    parser.add_argument("--field-mappings", type=lambda x: x.split(";"), default="", help="Field mappings")
-    parser.add_argument("--remove-fields", type=lambda x: x.split(";"), default="", help="Fields to remove")
+    parser.add_argument("--field-mappings", type=lambda x: x.split(";"), default="", help="Field mappings of form field1:new_field1;field2:new_field2")
+    parser.add_argument("--remove-fields", type=lambda x: x.split(";"), default="", help="Fields to remove of form field1;field2")
     parser.set_defaults(func=upload)
