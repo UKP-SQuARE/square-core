@@ -90,9 +90,9 @@ services:
       - ./square-model-inference-api/traefik/traefik.yaml:/config/traefik.yaml
 
   maintaining:
-    image: ukpsquare/square-model-models:latest
+    image: ukpsquare/square-model-deploying:latest
     build:
-      ./square-model-inference-api/maintaining_models
+      ./square-model-inference-api/deploying
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
