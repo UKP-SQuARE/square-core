@@ -22,7 +22,7 @@
                         type="submit"
                         :disabled="waiting">
                       <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                      &nbsp;Run Checklist
+                      &nbsp;Show Checklist
                     </button>
                   </div>
                 </div>
@@ -126,6 +126,7 @@
 
 <script>
 import Vue from 'vue'
+import checklist_data from '../../checklist/tests_square_squad_v2_skill.json'
 
 export default Vue.component('explainability-page', {
   data() {
@@ -133,7 +134,8 @@ export default Vue.component('explainability-page', {
       waiting: false,
       options: {
         selectedSkill: ''
-      }
+      },
+      checklist_data: checklist_data
     }
   },
   computed: {
@@ -143,7 +145,7 @@ export default Vue.component('explainability-page', {
     checklist_tests() {
       let tests = this.checklist_data.tests
       tests.forEach(test => test.test_cases = test.test_cases.filter(
-          test_case => test_case['success/failed'] === 'failed'))
+          test_case => test_case['success_failed'] === 'failed'))
       return tests
     }
   },
