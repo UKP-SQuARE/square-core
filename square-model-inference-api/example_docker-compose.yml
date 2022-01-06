@@ -1,8 +1,8 @@
-version: "3"
+version: "3.3"
 
 services:
   traefik:
-    image: traefik:v2.5
+    image: traefik:v2.5.6
     container_name: traefik
     command:
       - --api.insecure=true
@@ -11,15 +11,22 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.http.middlewares=prefix-strip@file, auth@file, api-prefix@file
       - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      # Enable dashboard and logging
+      - --api.dashboard=true
+      - --log.level=DEBUG
     ports:
-      - 80:80
-      - 8080:8080
+      - "8989:80"  # http port
+      - "8080:8080"  # web UI port
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yaml:/config/traefik.yaml
 
   maintaining:
     image: ukpsquare/square-model-models:latest
+    build: ./maintaining_models
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
@@ -31,30 +38,24 @@ services:
   inference_dpr:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
-    # Portforwarding not needed
-#    ports:
-#      - 8000:8000
     env_file:
       - inference_server/.env.dpr
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
-      #- ./inference_server/:/app/ #for developement
+      #- ./inference_server/:/app/ #for development
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dpr.rule=PathPrefix(`/api/dpr`)"
 
-    # Example config for another model server
+  # Example config for another model server
   inference_bert:
     #build: ./inference_server/.
     image: ukpsquare/square-model-api:latest
-    # Portforwarding not needed
-    #    ports:
-    #      - 8001:8000
     env_file:
       - ./inference_server/.env.bert_adapter
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
-      #- ./inference_server/:/app/ #for developement
+      #- ./inference_server/:/app/ #for development
 
     labels:
       - "traefik.enable=true"
