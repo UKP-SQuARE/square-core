@@ -89,7 +89,8 @@ services:
   #   ports:
   #     - 9200:9200
 
- ### DATASTORE API
+  ### DATASTORE API
+
   datastore_es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     container_name: datastore_es01
@@ -141,6 +142,8 @@ services:
       - "7000:7000"
     env_file:
       - ./.env.datastore_api
+
+ ### END DATASTORE API
 
 volumes:
   db-data:

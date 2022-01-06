@@ -29,7 +29,7 @@ class DenseRetrieval:
         if index is None:
             return False
 
-        status = await self.faiss.status(datastore_name, index_name) is not None
+        status = self.faiss.status(datastore_name, index_name) is not None
         if status:
             status &= self.model_api.is_alive(index)
         return status
@@ -53,7 +53,7 @@ class DenseRetrieval:
         # 1. Get the query embedding from the model api
         query_vector = self.model_api.encode_query(query, index)
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
-        queried = await self.faiss.search(datastore_name, index_name, query_vector, top_k)
+        queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
         # 3. Lookup the retrieved doc ids in the ES index.
         docs = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
         results = []
@@ -81,7 +81,7 @@ class DenseRetrieval:
         # 0. Ensure the query vector has the right dimensionality.
         query_vector = query_vector + [0] * (index.embedding_size - len(query_vector))
         # 1. Search for the query in the FAISS store. This will return ids of matched docs.
-        queried = await self.faiss.search(datastore_name, index_name, query_vector, top_k)
+        queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
         # 2. Lookup the retrieved doc ids in the ES index.
         docs = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
         results = []
@@ -109,7 +109,7 @@ class DenseRetrieval:
         # 1. Get the query embedding from the model api
         query_vector = self.model_api.encode_query(query, index)
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
-        queried = await self.faiss.explain(datastore_name, index_name, query_vector, document_id)
+        queried = self.faiss.explain(datastore_name, index_name, query_vector, document_id)
         # 3. Lookup the retrieved doc ids in the ES index.
         doc = await self.conn.get_document(datastore_name, document_id)
         return QueryResult(document=doc, score=queried["score"])
@@ -129,5 +129,5 @@ class DenseRetrieval:
         if index is None:
             raise ValueError("Datastore or index not found.")
 
-        result = await self.faiss.reconstruct(datastore_name, index_name, document_id)
+        result = self.faiss.reconstruct(datastore_name, index_name, document_id)
         return result["vector"]
