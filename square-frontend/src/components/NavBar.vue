@@ -1,20 +1,22 @@
 <!-- The Navigation Bar at the top of the page. Most views should be reachable through this. -->
 <template>
-  <header class="p-2 bg-primary">
+  <header class="bg-primary">
     <div class="container">
       <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
         <div class="container-fluid">
-          <router-link class="navbar-brand" to="/">SQuARE</router-link>
+          <router-link class="navbar-brand" to="/">
+            <img :src="`${publicPath}SQ_Web_Dark_90px.png`" alt="" width="45" height="45" style="filter: invert(1); -webkit-filter: invert(1)">
+          </router-link>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon" />
           </button>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto">
               <li class="nav-item">
-                <router-link class="nav-link active" aria-current="page" to="/">Home</router-link>
+                <router-link class="nav-link" to="/" exact-active-class="active">QA</router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" to="/about">About</router-link>
+                <router-link class="nav-link" to="/about" exact-active-class="active">About</router-link>
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
@@ -45,6 +47,11 @@
 import Vue from 'vue'
 
 export default Vue.component('nav-bar', {
+  data() {
+    return {
+      publicPath: process.env.BASE_URL
+    }
+  },
   computed: {
     user() {
       return this.$store.state.user
