@@ -29,7 +29,7 @@ to forward requests to the correct inference server and to handle authorization 
 │       ├───core                # Server config, Startup logic, etc.
 │       ├───models              # Input/ output modelling for API
 │       └───inference           # Deep Model implementation and inference code for NLP tasks
-├───maintaining_models          # FastAPI server for adding new models or listing all models
+├───management_server          # FastAPI server for adding new models or listing all models
 │   ├───main.py                 # Entry point in server
 │   ├───docker_access.py        # Manages docker acces of server
 │   ├───Dockerfile              # Dockerfile for server
@@ -106,7 +106,7 @@ make test
 For load testing with Locust, see [this README](locust/README.md).
 
 ### Adding new Models
-New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/add`.
+New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
  of the path prefix in the following form:
 ```
@@ -126,8 +126,8 @@ By passing all environment information that would normally be in the `.env` file
 ```
 
 The server will automatically create the model-api instance and add it to the docker network. It might take some time 
-until the model is available, since it needs to download and intialize the necessary models and adapters first. 
-To check wheter the model is ready, you can retrieve all available models at `api/models` and check whether the added 
+until the model is available, since it needs to download and initialize the necessary models and adapters first. 
+To check whether the model is ready, you can retrieve all available models at `api/models` and check whether the added 
 models is in the list.
 
 #### Adding new Models Manually
