@@ -1,16 +1,38 @@
 # SQuARE Datastore API
 
-API for storing, indexing and retrieving document corpora, powered by [Vespa](https://vespa.ai).
+API for storing, indexing and retrieving document corpora, powered by [Elasticsearch](https://www.elastic.co/elasticsearch/) and [FAISS](https://github.com/facebookresearch/faiss).
 
 ## Overview
 
-![SQuARE Datastore API](images/overview.png)
+The Datastore API is dependent upon the following services:
 
-## Requirements
+- Required (automatically via Docker):
+  - **Elasticsearch** (for storing documents and sparse retrieval)
+  - **Traefik** (for routing search requests)
+- Optional (manual setup required):
+  - **FAISS** web service containers (for storing dense document embeddings): see [the section on dense retrieval](#configure-dense-retrieval-with-faiss) on how to setup.
+  - **SQuARE Model API** (for dense document retrieval)
 
-- Python 3.8+
+## Quick (production) setup
+
+1. Open the [docker-compose.yml](docker-compose.yml). Find the service declaration for `datastore_api` and uncomment it. In the `environment` section, optionally set an API key and the connection to the Model API.
+
+2. Run the Docker setup:
+   ```
+   docker compose up -d
+   ```
+   Check **http://localhost:7000/docs** for interactive documentation.
+
+3. [Upload documents](#upload-documents).
+
+4. For dense retrieval, [configure a FAISS container](#configure-dense-retrieval-with-faiss) per datastore index.
+
+## Development setup
+
+### Requirements
+
+- Python 3.7+
 - Docker
-- Java 11
 - Make (optional)
 
 Python requirements via pip (ideally with virtualenv):
@@ -22,17 +44,18 @@ pip install -r requirements.txt
 conda env create -f environment.yml
 ```
 
-## Setup
-
 ### Docker containers
 
 We use Docker containers for:
-- MongoDB
-- Vespa
+- Elasticsearch
+- Traefik
+
+Additionally, the FAISS storage for each datastore index requires its own container.
+Check the [FAISS configuration](#configure-dense-retrieval-with-faiss) section for more.
 
 Everything can be started via Docker Compose:
 ```
-docker compose up --detach
+docker compose up -d
 ```
 
 And teared down again after usage:
@@ -42,78 +65,145 @@ docker compose down
 
 ### API server
 
-Start the server:
+**Configuration:** Before starting the server, a few configuration options can be set via environment variables or a `.env` file. See [here](.env) for an example configuration and [here](app/core/config.py) for all available options.
+
+**Running:**
 ```
 make run
 ```
+By default, the server will run at port 7000.
 
-Got to **http://localhost:7000/docs** for interactive documentation.
+Check **http://localhost:7000/docs** for interactive documentation.
+See below for uploading documents and embeddings.
 
 ### Tests
 
-Run API tests (requires Vespa to be running):
+Run integration tests:
 ```
 make test
 ```
-
-## Demo configuration & data
-
-To showcase the API methods, we configure a demo datastore and fill it with some data.
-The demo has a datastore `wiki` with two indices `bm25` and `dpr`.
-
-Initialize the app and the demo datastore:
+Run API tests (does not require dependency services):
 ```
-make demo-init
+make test-api
 ```
 
-Start the server as usual:
-```shell
-make run
-```
+## Upload documents
 
-## Upload data
-
-In general, there are two ways to upload documents and embeddings to the server: via the REST interface of the Datastore API or directly via the Vespa API.
-**When uploading larger amounts of data, it is highly recommended to upload directly via Vespa.**
+In general, there are two ways to upload documents to the server: via the REST interface of the Datastore API or via the `upload.py` script.
 
 ### Uploading via the REST API
 
-The Datastore API provides different methods for uploading documents and embeddings.
-Documents are expected to be uploaded as .jsonl files, embeddings as .hdf5 files.
+The Datastore API provides different methods for uploading documents.
+Documents are expected to be uploaded as `.jsonl` files.
 
-You can download some example documents [here](https://public.ukp.informatik.tu-darmstadt.de/kwang/tutorial/vespa/dense-retrieval/msmarco/0.jsonl) and their corresponding embeddings [here](https://public.ukp.informatik.tu-darmstadt.de/kwang/tutorial/vespa/dense-retrieval/msmarco/0.hdf5).
+We first create a demo datastore to upload some documents to:
+```
+curl -X 'PUT' \
+  'http://localhost:7000/datastores/demo' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '[
+  {
+    "name": "id",
+    "type": "long"
+  },
+  {
+    "name": "title",
+    "type": "text"
+  },
+  {
+    "name": "text",
+    "type": "text"
+  }
+]'
+```
 
-Now, the documents file can be uploaded to the Datastore API as follows (uploading embeddings is similar):
+Some example documents adhering to the required format can be found at `tests/fixtures/0.jsonl`.
+We can upload these documents to the Datastore API as follows:
 ```
 curl -X 'POST' \
-  'http://localhost:7000/datastores/wiki/documents/upload' \
+  'http://localhost:7000/datastores/wiki/demo/upload' \
   -H 'Authorization: abcdefg' \
-  -F 'file=@0.jsonl'
+  -F 'file=@tests/fixtures/0.jsonl'
 ```
 
-### Uploading via Vespa
+### Uploading via `upload.py`
 
-Uploading to Vespa can be done using the [Vespa HTTP Client](https://docs.vespa.ai/en/vespa-http-client.html).
+As an example, we upload the Wikipedia split used by DPR (containing 21M passages) into a datastore named "wiki".
 
-1. Download the Vespa HTTP Client:
+1. First, we download and unzip the documents:
     ```
-    curl -L -o vespa-http-client-jar-with-dependencies.jar \
-      https://search.maven.org/classic/remotecontent?filepath=com/yahoo/vespa/vespa-http-client/7.391.28/vespa-http-client-7.391.28-jar-with-dependencies.jar
-    ```
-
-3. Prepare data in .jsonl format: Uploaded files should match [Vespa's JSON format](https://docs.vespa.ai/en/reference/document-json-format.html). An example feed can be found [here](https://raw.githubusercontent.com/vespa-engine/sample-apps/master/dense-passage-retrieval-with-ann/sample-feed.jsonl).
-
-  Rename embeddings in the sample file to match the schema:
-  ```
-  sed -i 's/text_embedding/dpr_embedding/g' sample-feed.jsonl
-  ```
-
-2. Upload .jsonl file to Vespa:
-    ```
-    java -jar vespa-http-client-jar-with-dependencies.jar --file sample-feed.jsonl --endpoint http://localhost:7070
+    curl https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz -o psgs_w100.tsv.gz
+    gunzip psgs_w100.tsv.gz
     ```
 
-## References
-- The demo system is mainly adapted from [vespa/semantic-qa-retrieval](https://github.com/vespa-engine/sample-apps/tree/master/semantic-qa-retrieval)
-- Tutorial for supporting multiple-embedding system like [ColBERT](https://github.com/stanford-futuredata/ColBERT): [vespa/msmarco-ranking](https://github.com/vespa-engine/sample-apps/blob/master/msmarco-ranking/passage-ranking.md)
-- [Official documentation](https://docs.vespa.ai/en/vespa-quick-start.html)
+2. Create the datastore:
+    ```
+    curl -X 'PUT' \
+      'http://localhost:7000/datastores/wiki' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -d '[
+      {
+        "name": "id",
+        "type": "long"
+      },
+      {
+        "name": "title",
+        "type": "text"
+      },
+      {
+        "name": "text",
+        "type": "text"
+      }
+    ]'
+    ```
+
+3. Upload documents:
+    ```
+    python upload.py\
+      -s wiki \
+      -t <access_token> \
+      psgs_w100.tsv
+    ```
+
+## Configure dense retrieval with FAISS
+
+To enable dense document retrieval with FAISS, the Datastore API relies on [FAISS web service containers](https://github.com/kwang2049/faiss-instant) that provide FAISS indices for the documents in a datastore.
+Each index in each datastore is corresponds to one FAISS web service container.
+The document embedding computation and FAISS index creation are performed offline, i.e. not via the Datastore API itself.
+
+Let's see how to add a dense retrieval index to an existing datastore (`"wiki"`).
+The new index should use Facebook's DPR model and should be called `"dpr"`.
+
+1. Embed the document corpus using the document encoder model & create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this.
+
+2. Register the new index with its name via the Datastore API:
+    ```
+    curl -X 'PUT' \
+    'http://localhost:7000/datastores/wiki/indices/dpr' \
+    -H 'accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d '{
+      "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
+      "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
+      "embedding_size": 768
+    }'
+    ```
+
+3. Specify the FAISS web service container for the new index: Open the [docker-compose.yml](docker-compose.yml) and in the section for FAISS service containers, add the following:
+    ```
+    faiss-wiki-dpr:
+      image: kwang2049/faiss-instant:latest
+      volumes:
+        - /local/path/to/index:/opt/faiss-instant/resources
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.faiss-wiki-dpr.loadbalancer.server.port=5000"
+        - "square.datastore=/wiki/dpr"
+    ```
+
+4. Restart the Docker Compose setup:
+    ```
+    docker compose up -d
+    ```
