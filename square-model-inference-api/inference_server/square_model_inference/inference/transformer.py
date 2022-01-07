@@ -1,4 +1,3 @@
-import json
 from collections import defaultdict
 from typing import Union, Tuple
 
@@ -34,12 +33,14 @@ class Transformer(Model):
     def __init__(self, model_name, model_class, batch_size, disable_gpu, max_input_size, **kwargs):
         """
         Initialize the Transformer
-        :param model_name: the Huggingface model name
-        :param model_class: the class name (according to CLASS_MAPPING) to use
-        :param batch_size: batch size used for inference
-        :param disable_gpu: do not move model to GPU even if CUDA is available
-        :param max_input_size: requests with a larger input are rejected
-        :param kwargs: Not used
+
+        Args:
+             model_name: the Huggingface model name
+             model_class: the class name (according to CLASS_MAPPING) to use
+             batch_size: batch size used for inference
+             disable_gpu: do not move model to GPU even if CUDA is available
+             max_input_size: requests with a larger input are rejected
+             kwargs: Not used
         """
         if model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
@@ -48,10 +49,12 @@ class Transformer(Model):
         self.max_input_size = max_input_size
 
     def _load_model(self, model_cls, model_name, disable_gpu):
+
         """
         Load the Transformer model model_name and its tokenizer with Huggingface.
         Model will be moved to GPU unless CUDA is unavailable or disable_gpu is true.
         """
+
         logger.debug(f"Loading model {model_name}")
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         # Check if GPU is available
@@ -78,10 +81,14 @@ class Transformer(Model):
             -> Union[dict, Tuple[dict, dict]]:
         """
         Inference on the input.
-        :param request: the request with the input and optional kwargs
-        :param output_features: return the features of the input.
-        Necessary if, e.g., attention mask is needed for post-processing.
-        :return: The model outputs and optionally the input features
+
+        Args:
+         request: the request with the input and optional kwargs
+         output_features: return the features of the input.
+            Necessary if, e.g., attention mask is needed for post-processing.
+
+        Returns:
+             The model outputs and optionally the input features
         """
         all_predictions = []
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
@@ -221,10 +228,11 @@ class Transformer(Model):
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
         """
         Span-based question answering for a given question and context.
-
         We expect the input to use the (question, context) format for the text pairs.
-        :param request:
-        :return:
+
+        Args:
+          request: the prediction request
+
         """
         # Making heavy use of https://huggingface.co/transformers/_modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
         def decode(start_: np.ndarray, end_: np.ndarray, topk: int, max_answer_len: int, undesired_tokens_: np.ndarray) -> Tuple:
