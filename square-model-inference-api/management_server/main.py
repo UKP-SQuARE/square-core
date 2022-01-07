@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 
+from time import sleep
 import requests
 from models import ModelRequest
 from docker_access import start_new_model_container, get_all_model_prefixes
@@ -39,6 +40,7 @@ async def add_new_model(model_params: ModelRequest):
 
     }
     container = await(start_new_model_container(identifier, env))
+
     if container:
         return {
             "success": True,
