@@ -7,10 +7,10 @@ API_PREFIX = "/api"
 config = Config(".env")
 
 # Corresponds to the Huggingface name for finetuned Transformers or the name of a finetuned SentenceTransformers
-MODEL_NAME: str = config("MODEL_NAME")
+MODEL_NAME: str = config("MODEL_NAME", default=None)
 # Type of the model, e.g. Transformers, Adapter, ...
 # See square_model_inference.core.event_handlers.MODEL_MAPPING for all available names with corresponding model
-MODEL_TYPE: str = config("MODEL_TYPE")
+MODEL_TYPE: str = config("MODEL_TYPE", default=None)
 
 # Path to the onnx file of the model (this is necessary for onnx models)
 MODEL_PATH: str = config("MODEL_PATH", default=None)
@@ -25,7 +25,7 @@ MAX_INPUT_SIZE: int = config("MAX_INPUT_SIZE", cast=int, default=1024)
 
 # Cache directory where model weights are stored
 # This is the name for the env variable used by transformers and sentence-transformers package
-TRANSFORMERS_CACHE: str = config("TRANSFORMERS_CACHE")
+TRANSFORMERS_CACHE: str = config("TRANSFORMERS_CACHE", default=None)
 
 # For MODEL_TYPE=transformers: decides the AutoModel* class used
 # See square_model_inference.inference.transformer.CLASS_MAPPING for valid names and corresponding class
