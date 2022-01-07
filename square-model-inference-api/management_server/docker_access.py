@@ -29,7 +29,7 @@ async def start_new_model_container(identifier, env):
     container_name = network.name + "_" + identifier
     try:
         container = docker_client.containers.run(
-            "ukpsquare/square-model-api:latest",
+            "ukpsquare/square-model-api-v1:latest",
             name=container_name,
             detach=True,
             environment=env,
@@ -46,7 +46,7 @@ async def start_new_model_container(identifier, env):
 
 async def get_all_model_prefixes():
     """
-    Returns the prefixes under which all running model-api-instances in the dockernetwor are available
+    Returns the prefixes under which all running model-api-instances in the docker-network are available
     """
     # assumes square is somewhere in the container name
     lst_container = docker_client.containers.list(filters={"name": "square"})

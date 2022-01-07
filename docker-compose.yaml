@@ -75,7 +75,7 @@ services:
 
   ### MODEL API
   traefik:
-    image: traefik:v2.5
+    image: traefik:v2.5.6
     container_name: traefik
     command:
       - --providers.docker=true
@@ -83,6 +83,10 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.http.middlewares=prefix-strip@file, auth@file, api-prefix@file
       - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      - --log.level=DEBUG
     ports:
       - 8989:80
     volumes:
@@ -90,9 +94,9 @@ services:
       - ./square-model-inference-api/traefik/traefik.yaml:/config/traefik.yaml
 
   maintaining:
-    image: ukpsquare/square-model-deploying:latest
-    build:
-      ./square-model-inference-api/deploying
+    image: ukpsquare/square-model-management:latest
+#    build:
+#      ./square-model-inference-api/management_server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
@@ -100,7 +104,7 @@ services:
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
 
   model_bert_adapter:
-    image: ukpsquare/square-model-api:latest
+    image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     volumes:
@@ -110,7 +114,7 @@ services:
       - "traefik.http.routers.bert.rule=PathPrefix(`/api/bert-base-uncased`)"
 
   model_dpr:
-    image: ukpsquare/square-model-api:latest
+    image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     volumes:
@@ -120,14 +124,14 @@ services:
       - "traefik.http.routers.dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)"
 
   model_distilbert_st:
-    image: ukpsquare/square-model-api:latest
+    image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.destillbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)"
+      - "traefik.http.routers.distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)"
 
   ### / MODEL API Finished
 

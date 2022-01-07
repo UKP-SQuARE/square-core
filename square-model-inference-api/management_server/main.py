@@ -4,7 +4,7 @@ import requests
 from models import ModelRequest
 from docker_access import start_new_model_container, get_all_model_prefixes
 
-API_URL = "http://host.docker.internal"
+API_URL = "http://172.17.0.1"
 
 app = FastAPI()
 
@@ -22,7 +22,7 @@ async def get_all_models():
     return lst_models
 
 
-@app.post("/api/add")
+@app.post("/api/deploy")
 async def add_new_model(model_params: ModelRequest):
     identifier = model_params.identifier
     env = {
