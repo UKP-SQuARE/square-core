@@ -69,7 +69,7 @@ services:
     image: ukpsquare/square-skills-retrieve-span:latest
     build: ./skills/qa-retrieve-span-skill/.
     ports:
-      - 8777:8000
+      - 8002:8002
     env_file:
       - ./skills/qa-retrieve-span-skill/.env
 
@@ -130,29 +130,6 @@ services:
     env_file:
       - ./skill-manager/.env
 
-  #adminer:
-  #  image: adminer
-  #  restart: always
-  #  ports:
-  #    - 8080:8080
-
-  # es:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
-  #   environment:
-  #     - node.name=es01
-  #     - cluster.name=es-docker-cluster
-  #     - discovery.type=single-node
-  #     - bootstrap.memory_lock=true
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   volumes:
-  #     - es01:/usr/share/elasticsearch/data
-  #   ports:
-  #     - 9200:9200
-
   ### DATASTORE API
 
   datastore_es:
@@ -161,7 +138,7 @@ services:
     environment:
       - discovery.type=single-node
     volumes:
-      - ./storage/es/data:/usr/share/elasticsearch/data
+      - datastore-api-es:/usr/share/elasticsearch/data
     ports:
       - 7200:9200
 
@@ -178,7 +155,7 @@ services:
         - "7010:7010"
       volumes:
         # The configuration file
-        - ./traefik.yaml:/config/traefik.yaml
+        - ${PWD}/traefik.yaml:/config/traefik.yaml
         # So that Traefik can listen to the Docker events
         - /var/run/docker.sock:/var/run/docker.sock
 
@@ -194,6 +171,24 @@ services:
   #     - "traefik.enable=true"
   #     - "traefik.http.services.faiss-<index_name>.loadbalancer.server.port=5000"
   #     - "square.datastore=<index_name>"
+
+  faiss-nq-dpr:
+    image: kwang2049/faiss-instant:latest
+    volumes:
+      - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.faiss-nq-dpr.loadbalancer.server.port=5000"
+      - "square.datastore=/nq/dpr"
+
+  faiss-msmarco-distilbert:
+    image: kwang2049/faiss-instant:latest
+    volumes:
+      - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.faiss-msmarco-distilbert.loadbalancer.server.port=5000"
+      - "square.datastore=/msmarco/distilbert"
 
 ##### END FAISS Service Containers #####
 
@@ -218,3 +213,10 @@ volumes:
     driver: local
   skill-manager-mongo-data:
     driver: local
+  datastore-api-es:
+    driver: local
+  datastore-api-faiss-nq-dpr:
+    driver: local
+  datastore-api-faiss-msmarco-distilbert:
+    driver: local
+
