@@ -2,61 +2,67 @@ from collections.abc import Iterable
 from typing import List
 
 from pydantic import BaseModel, validator
-from vespa.package import Document, Field, FieldSet, Schema
 
-
-FIELDSET_NAME = "default"
+from .document import Document
 
 
 class DatastoreField(BaseModel):
+    """Model one field in a datastore schema.
+
+    The data types are directly forwarded to Elasticsearch.
+    See https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html for supported types.
+    """
     name: str
     type: str
-    use_for_ranking: bool = True
-    return_with_document: bool = True
+    is_id: bool = False
 
     class Config:
         schema_extra = {
             "example": {
                 "name": "text",
-                "type": "string",
+                "type": "text",
             }
         }
 
-    def to_vespa(self) -> Field:
-        indexing = []
-        if self.return_with_document:
-            indexing.append("summary")
-        if self.use_for_ranking:
-            indexing += ["attribute", "index"]
 
-        return Field(
-            name=self.name,
-            type=self.type,
-            indexing=indexing,
-            index="enable-bm25" if self.use_for_ranking else "",
-            attribute=[]
-        )
-
-    @classmethod
-    def from_vespa(cls, field: Field):
-        return cls(
-            name=field.name,
-            type=field.type,
-            use_for_ranking="index" in field.indexing,
-            return_with_document="summary" in field.indexing,
-        )
-
-
-class DatastoreFieldSet(BaseModel):
+class Datastore(BaseModel):
+    """Models one datastore schema."""
     name: str
-    fields: List[str]
+    fields: List[DatastoreField]
 
-    @staticmethod
-    def from_vespa(fieldset: FieldSet):
-        return DatastoreFieldSet(name=FIELDSET_NAME, fields=fieldset.fields)
+    @property
+    def id_field(self) -> DatastoreField:
+        """Return the id field of the datastore."""
+        return next(
+            (field for field in self.fields if field.is_id),
+            None,
+        )
 
-    def to_vespa(self):
-        return FieldSet(name=FIELDSET_NAME, fields=self.fields)
+    @property
+    def field_names(self) -> List[str]:
+        return [field.name for field in self.fields]
+
+    def is_valid_document(self, document: Document) -> bool:
+        if self.id_field.name not in document:
+            return False
+        fields = self.field_names
+        for field in document:
+            if field not in fields:
+                return False
+
+        return True
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "wiki",
+                "fields": [
+                    DatastoreField(name="id", type="long", is_id=True),
+                    DatastoreField(name="title", type="text"),
+                    DatastoreField(name="text", type="text"),
+                ]
+            }
+        }
 
 
 class DatastoreRequest(Iterable, BaseModel):
@@ -67,50 +73,26 @@ class DatastoreRequest(Iterable, BaseModel):
         return self.__root__.__iter__()
 
     @validator("__root__")
-    def cannot_contain_id(cls, v):
+    def id_must_be_unique(cls, v):
+        id_found = False
         for field in v:
-            if field.name == "id":
-                raise ValueError("Cannot use reserved field 'id'.")
+            if field.is_id:
+                if id_found:
+                    raise ValueError("Only one field can be an id.")
+                id_found = True
+        if not id_found:
+            raise ValueError("At least one field must be an id.")
+
         return v
 
     class Config:
         schema_extra = {
             "example": [
-                DatastoreField(name="title", type="string"),
-                DatastoreField(name="text", type="string"),
+                DatastoreField(name="id", type="long", is_id=True),
+                DatastoreField(name="title", type="text"),
+                DatastoreField(name="text", type="text"),
             ]
         }
 
-    def to_vespa(self, datastore_name) -> Schema:
-        schema = Schema(datastore_name, Document())
-        # add default id field
-        schema.add_fields(Field("id", "long", indexing=["summary", "attribute"]))
-        # add all custom fields
-        schema.add_fields(*[field.to_vespa() for field in self])
-        # create a fieldset with all fields that could be used for ranking
-        schema.add_field_set(FieldSet(FIELDSET_NAME, [f.name for f in self if f.use_for_ranking]))
-        return schema
-
-
-class DatastoreResponse(BaseModel):
-    """Models a datastore as returned to the user."""
-    name: str
-    fields: List[DatastoreField]
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "wiki",
-                "fields": [
-                    DatastoreField(name="title", type="string"),
-                    DatastoreField(name="text", type="string"),
-                ]
-            }
-        }
-
-    @classmethod
-    def from_vespa(cls, schema: Schema):
-        return cls(
-            name=schema.name,
-            fields=[DatastoreField.from_vespa(f) for f in schema.document.fields],
-        )
+    def to_datastore(self, datastore_name) -> Datastore:
+        return Datastore(name=datastore_name, fields=self.__root__)

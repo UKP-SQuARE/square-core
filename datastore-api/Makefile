@@ -1,16 +1,10 @@
-.PHONY: wait-vespa-config wait-vespa-app run demo-init test
-
-wait-vespa-config:
-	python scripts/run.py wait-vespa config
-
-wait-vespa-app:
-	python scripts/run.py wait-vespa app
+.PHONY: run test-integration
 
 run:
-	python scripts/run.py run --dev
+	uvicorn app.main:app --port 7000 --reload --reload-dir app
 
-demo-init: wait-vespa-config
-	python init_app.py
-
-test: wait-vespa-config
+test:
 	PYTHONPATH="." python -m pytest -s -v tests/
+
+test-api:
+	PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest -s -v tests/
