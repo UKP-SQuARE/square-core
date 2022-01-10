@@ -17,7 +17,6 @@
       <div class="card-body">
         <slot />
       </div>
-      <slot name="footer" />
     </div>
   </div>
 </template>

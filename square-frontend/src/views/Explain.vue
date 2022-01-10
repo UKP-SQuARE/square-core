@@ -74,13 +74,11 @@
         </template>
         <template #rightItem>
           <a
-              v-on:click="selectedTest = isActiveTest(index) ? -1 : index"
               class="btn btn-outline-secondary d-inline-flex align-items-center"
+              data-bs-toggle="modal"
+              :data-bs-target="`#modal-${index}`"
               role="button">
-            <svg v-if="isActiveTest(index)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows-angle-contract" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M.172 15.828a.5.5 0 0 0 .707 0l4.096-4.096V14.5a.5.5 0 1 0 1 0v-3.975a.5.5 0 0 0-.5-.5H1.5a.5.5 0 0 0 0 1h2.768L.172 15.121a.5.5 0 0 0 0 .707zM15.828.172a.5.5 0 0 0-.707 0l-4.096 4.096V1.5a.5.5 0 1 0-1 0v3.975a.5.5 0 0 0 .5.5H14.5a.5.5 0 0 0 0-1h-2.768L15.828.879a.5.5 0 0 0 0-.707z"/>
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows-angle-expand" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows-angle-expand" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707z"/>
             </svg>
           </a>
@@ -88,57 +86,12 @@
         <div class="text-center">
           <h3 class="card-title mb-3">{{ test.test_name }}</h3>
           <p class="d-inline-flex align-items-center">
-            <span class="badge bg-primary d-inline-flex align-items-center me-1 py-2">{{ mapTestType(test.test_type) }}</span>
-            Test on
-            <span class="badge bg-primary d-inline-flex align-items-center ms-1 py-2">{{ test.capability }}</span>
-          </p>
-          <p v-if="isActiveTest(index)">
-            Failures <sup class="text-danger">{{ test.failed_cases }}</sup>&frasl;<sub>{{ test.total_cases }}</sub> = <strong class="text-danger">{{ roundScore(test.failed_cases / test.total_cases) }}%</strong>
+            <span class="badge bg-primary d-inline-flex align-items-center me-2 py-2">{{ mapTestType(test.test_type) }}</span>
+            test on
+            <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ test.capability }}</span>
           </p>
         </div>
-        <div v-if="isActiveTest(index)" class="container-fluid p-0">
-          <h4 class="my-3">Failed Examples</h4>
-              <ul class="list-group">
-                <li class="list-group-item bg-light"
-                    v-for="(test_case, index) in test.test_cases.slice(0, 5)"
-                    :key="index">
-                  <div class="row">
-                    <div class="col">
-                      <strong>Question:</strong> {{ test_case.question }}
-                    </div>
-                  </div>
-                  <div class="row my-3">
-                    <div class="col">
-                      <strong>Context:</strong> {{ test_case.context }}
-                    </div>
-                  </div>
-                  <div class="row my-3">
-                    <div class="col-6">
-                      <strong class="text-success">Answer:</strong> {{ test_case.answer }}
-                      <span class="text-success">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
-                              <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
-                            </svg>
-                          </span>
-                    </div>
-                    <div class="col-6">
-                      <strong class="text-danger">Prediction:</strong> {{ test_case.prediction }}
-                      <span class="text-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                              <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
-                              <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
-                            </svg>
-                          </span>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-        </div>
-        <template v-if="isActiveTest(index)" #footer>
-          <div class="card-footer text-center">
-            Showing {{ Math.min(5, test.test_cases.length) }} out of {{ test.test_cases.length }} failed examples. Download all examples to see more.
-          </div>
-        </template>
+        <ExplainModal :id="`modal-${index}`" :test="test" />
       </Card>
     </div>
   </div>
@@ -147,10 +100,13 @@
 <script>
 import Vue from 'vue'
 import Card from '@/components/Card.vue'
+import ExplainModal from '@/components/ExplainModal.vue'
+import mixin from '@/components/results/mixin.vue'
 import { getSkill } from '@/api'
 import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
 
 export default Vue.component('explainability-page', {
+  mixins: [mixin],
   data() {
     return {
       waiting: false,
@@ -166,7 +122,8 @@ export default Vue.component('explainability-page', {
     }
   },
   components: {
-    Card
+    Card,
+    ExplainModal
   },
   computed: {
     availableSkills() {
@@ -190,9 +147,6 @@ export default Vue.component('explainability-page', {
         this.tests = tests
       }
     },
-    roundScore(score) {
-      return Math.round(score * 1_000) / 10
-    },
     downloadExamples() {
       let data = JSON.stringify(this.checklist_data, null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
@@ -201,18 +155,6 @@ export default Vue.component('explainability-page', {
     },
     isActiveTest(index) {
       return index === this.selectedTest
-    },
-    mapTestType(shorthand) {
-      let map = {
-        'MFT': 'Min Func Test',
-        'INV': 'INVariance',
-        'DIR': 'DIRectional'
-      }
-      if (shorthand in map) {
-        return map[shorthand]
-      } else {
-        return shorthand
-      }
     },
     highlightReplacement: function (source, target, doc) {
       return doc.replaceAll(target, `<mark class="bg-warning">${source}</mark><span class="d-inline-flex align-items-center px-1">
