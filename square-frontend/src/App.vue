@@ -4,8 +4,9 @@
     <NavBar />
     <div class="mb-4 bg-light border-bottom">
       <div class="container-fluid py-5 text-center">
-        <h1 class="display-5 fw-light">SQuARE</h1>
-        <p class="fs-4">QA Platform</p>
+        <img class="d-block mx-auto mb-2" :src="`${publicPath}SQ_Web_Light_160px.png`" alt="" width="80" height="80">
+        <h1 class="display-5 fw-light">UKP-SQuARE</h1>
+        <p class="fs-4">Software for Question Answering Research</p>
       </div>
     </div>
     <main class="flex-fill">
@@ -25,6 +26,11 @@ export default Vue.component('app', {
     NavBar,
     Footer
   },
+  data() {
+    return {
+      publicPath: process.env.BASE_URL
+    }
+  },
   beforeMount() {
     this.$store.dispatch('initJWTfromLocalStorage')
   }
@@ -32,8 +38,7 @@ export default Vue.component('app', {
 </script>
 
 <style lang='scss'>
-    .highlightText {
-        background: yellow
-    }
+    $primary: #006691;
+
     @import "~bootstrap/scss/bootstrap";
 </style>

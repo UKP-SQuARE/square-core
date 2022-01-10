@@ -32,9 +32,13 @@ export default new Vuex.Store({
       maxResultsPerSkill: 10,
       skillArgs: {}
     },
+    explainOptions: {
+      selectedSkill: ''
+    },
     // Control flags
     flags: {
-      initialisedSkills: false
+      initialisedQueryOptions: false,
+      initialisedExplainOptions: false
     }
   },
   mutations: {
@@ -45,9 +49,20 @@ export default new Vuex.Store({
     },
     initQueryOptions(state, payload) {
       // Default value for selected skills should be all available skills
-      if (!state.flags.initialisedSkills || payload.forceSkillInit) {
-        state.queryOptions.selectedSkills = state.availableSkills.map(skill => { return skill.id })
-        state.flags.initialisedSkills = true
+      if (!state.flags.initialisedQueryOptions || payload.forceSkillInit) {
+        if (state.availableSkills.length > 0) {
+          state.queryOptions.selectedSkills = [state.availableSkills[0].id]
+        }
+        state.flags.initialisedQueryOptions = true
+      }
+    },
+    initExplainOptions(state, payload) {
+      // Default value for selected skills should be all available skills
+      if (!state.flags.initialisedExplainOptions || payload.forceSkillInit) {
+        if (state.availableSkills.length > 0) {
+          state.explainOptions.selectedSkill = state.availableSkills[0].id
+        }
+        state.flags.initialisedExplainOptions = true
       }
     },
     setSkills(state, payload) {
@@ -58,7 +73,8 @@ export default new Vuex.Store({
       }
       // We want to reset selected skills if more skills are available (due to sign in mostly)
       if (tmp !== state.availableSkills.length) {
-        state.flags.initialisedSkills = false
+        state.flags.initialisedQueryOptions = false
+        state.flags.initialisedExplainOptions = false
       }
     },
     /**

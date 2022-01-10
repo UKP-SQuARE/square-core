@@ -28,12 +28,22 @@
               </div>
             </div>
           </div>
-          <div class="row">
+          <div class="row my-3">
             <div class="col">
               <button type="submit" class="btn btn-primary w-100">Sign in</button>
             </div>
           </div>
         </form>
+        <div class="row">
+          <div class="col">
+            <h5>Don't have an account?</h5>
+          </div>
+        </div>
+        <div class="row mt-1">
+          <div class="col">
+            <router-link to="/signup" role="button" class="btn btn-outline-primary w-100">Sign up</router-link>
+          </div>
+        </div>
       </div>
     </div>
   </div>
