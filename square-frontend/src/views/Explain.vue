@@ -3,7 +3,7 @@
   <div>
     <div class="card border-primary shadow">
       <div class="card-body p-4">
-        <form v-on:submit.prevent="askQuestion">
+        <form v-on:submit.prevent="onSubmit">
           <div class="row">
             <div class="col-lg">
               <div class="row">
@@ -19,10 +19,12 @@
                     </div>
                     <button
                         class="btn btn-lg btn-primary d-inline-flex align-items-center"
+                        :class="`btn-${availableTestData ? 'primary' : 'secondary'}`"
                         type="submit"
-                        :disabled="waiting">
+                        :disabled="waiting || !availableTestData">
                       <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                      &nbsp;Show Checklist
+                      &nbsp;<span v-if="availableTestData">Show Checklist</span>
+                      <span v-else>Not yet available</span>
                     </button>
                   </div>
                 </div>
@@ -31,8 +33,8 @@
           </div>
         </form>
       </div>
-      <div class="card-footer bg-white p-3">
-        <h5 class="card-title">About tests</h5>
+      <div v-if="tests.length > 0" class="card-footer bg-white p-3">
+        <h5 class="card-title">{{ this.skill.name }}</h5>
         <p class="card-text">We show up to 5 failed test cases for each of the tests below. You can download all examples, including successful ones, as a JSON file.</p>
         <a v-on:click="downloadExamples" ref="downloadButton" class="btn btn-outline-secondary d-inline-flex align-items-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
@@ -43,9 +45,9 @@
         </a>
       </div>
     </div>
-    <div class="accordion border border-primary rounded shadow mt-3">
+    <div v-if="tests.length > 0" class="accordion border border-primary rounded shadow mt-3">
       <div
-          v-for="(test, index) in checklist_tests"
+          v-for="(test, index) in tests"
           :key="index"
           class="accordion-item">
         <h2 class="accordion-header">
@@ -126,7 +128,8 @@
 
 <script>
 import Vue from 'vue'
-import checklist_data from '../../checklist/tests_square_squad_v2_skill.json'
+import { getSkill } from '@/api'
+import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
 
 export default Vue.component('explainability-page', {
   data() {
@@ -135,21 +138,34 @@ export default Vue.component('explainability-page', {
       options: {
         selectedSkill: ''
       },
-      checklist_data: checklist_data
+      data: {
+        '61a9f57935adbbf1f2433073': squad2
+      },
+      skill: {},
+      tests: []
     }
   },
   computed: {
     availableSkills() {
       return this.$store.state.availableSkills
     },
-    checklist_tests() {
-      let tests = this.checklist_data.tests
-      tests.forEach(test => test.test_cases = test.test_cases.filter(
-          test_case => test_case['success_failed'] === 'failed'))
-      return tests
+    availableTestData() {
+      return this.options.selectedSkill in this.data
     }
   },
   methods: {
+    onSubmit() {
+      if (this.options.selectedSkill in this.data) {
+        getSkill(this.options.selectedSkill)
+            .then((response) => {
+              this.skill = response.data
+            })
+        let tests = this.data[this.options.selectedSkill].tests
+        tests.forEach(test => test.test_cases = test.test_cases.filter(
+            test_case => test_case['success_failed'] === 'failed'))
+        this.tests = tests
+      }
+    },
     roundScore(score) {
       return Math.round(score * 1_000) / 10
     },
@@ -157,9 +173,7 @@ export default Vue.component('explainability-page', {
       let data = JSON.stringify(this.checklist_data, null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
       this.$refs.downloadButton.href = URL.createObjectURL(blob)
-      this.$refs.downloadButton.download = `${this.options.selectedSkill} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
-      this.$refs.downloadButton.click()
-      console.log(this.$refs.downloadButton)
+      this.$refs.downloadButton.download = `${this.skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
     },
     highlightReplacement: function (source, target, doc) {
       return doc.replaceAll(target, `<mark class="bg-warning">${source}</mark><span class="d-inline-flex align-items-center px-1">
