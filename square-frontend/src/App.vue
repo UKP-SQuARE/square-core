@@ -41,4 +41,13 @@ export default Vue.component('app', {
     $primary: #006691;
 
     @import "~bootstrap/scss/bootstrap";
+
+    .card-columns {
+      @include media-breakpoint-up(sm) {
+        column-count: 2;
+      }
+      @include media-breakpoint-up(lg) {
+        column-count: 3;
+      }
+    }
 </style>
