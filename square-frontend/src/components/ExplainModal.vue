@@ -14,7 +14,7 @@
               <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ test.capability }}</span>
             </p>
             <p>
-              Failures <sup class="text-danger">{{ test.failed_cases }}</sup>&frasl;<sub>{{ test.total_cases }}</sub> = <strong class="text-danger">{{ roundScore(test.failed_cases / test.total_cases, false) }}%</strong>
+              Failure rate <sup class="text-danger">{{ test.failed_cases }}</sup>&frasl;<sub>{{ test.total_cases }}</sub> = <strong class="text-danger">{{ roundScore(test.failed_cases / test.total_cases, false) }}%</strong>
             </p>
             <div class="progress flex-grow-1 align-self-center mx-2" title="Failure rate">
               <div

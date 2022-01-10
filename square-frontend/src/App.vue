@@ -43,6 +43,7 @@ export default Vue.component('app', {
     @import "~bootstrap/scss/bootstrap";
 
     .card-columns {
+      column-gap: 2em;
       @include media-breakpoint-up(sm) {
         column-count: 2;
       }
