@@ -1,40 +1,63 @@
 version: "3.1"
 
 services:
-  vespa:
-    image: vespaengine/vespa
-    container_name: vespa
-    hostname: vespa-container
-    privileged: true
-    ports:
-      - "7070:8080"
-      - "19071:19071"
-    volumes:
-      - ./storage/vespa/var:/opt/vespa/var
-      - ./storage/vespa/logs:/opt/vespa/logs
-
-  mongodb:
-    image: mongo:4.0
-    container_name: mongodb
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    container_name: es01
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-    ports:
-      - "27017:27017"
+      - discovery.type=single-node
     volumes:
-      - ./storage/db/data:/data/db
+      - ./storage/es/data:/usr/share/elasticsearch/data
+    # Port exposure not needed in production (comment out)
+    ports:
+      - 7200:9200
+
+  reverse-proxy:
+      image: traefik:v2.5
+      command:
+        - "--providers.docker"
+        - "--providers.docker.exposedbydefault=false"
+        - "--providers.file.filename=/config/traefik.yaml"
+        - "--entrypoints.web.address=:7010"
+        - "--entrypoints.web.http.middlewares=prefix-strip@file"
+        - "--providers.docker.defaultRule=PathPrefix(`{{ index .Labels \"square.datastore\"}}`)"
+      ports:
+        - "7010:7010"
+      volumes:
+        # The configuration file
+        - ./traefik.yaml:/config/traefik.yaml
+        # So that Traefik can listen to the Docker events
+        - /var/run/docker.sock:/var/run/docker.sock
+
+##### BEGIN FAISS Service Containers #####
+
+# Add one container per FAISS index below.
+# Each container should be defined as follows:
+  # faiss-<index_name>:
+  #   image: kwang2049/faiss-instant:latest
+  #   volumes:
+  #     - <local_path>:/opt/faiss-instant/resources
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.services.faiss-<index_name>.loadbalancer.server.port=5000"
+  #     - "square.datastore=<index_name>"
+
+##### END FAISS Service Containers #####
+
+##### Datastore API Container (uncomment for production use) #####
 
   # datastore_api:
   #   privileged: true
   #   build: .
   #   depends_on:
-  #     - vespa
-  #     - mongodb
+  #     - es
+  #     - reverse-proxy
   #   ports:
   #     - "7000:7000"
   #   environment:
-  #     - VESPA_CONFIG_URL=http://vespa:19071
-  #     - VESPA_APP_URL=http://vespa:8080
-  #     - MONGODB_URL=mongodb://root:root@mongodb:27017/admin?retryWrites=true&w=majority
+  #     - API_KEY=abcdefg
+  #     - ES_URL=http://es:9200
+  #     - FAISS_URL=http://reverse-proxy:7010
   #     # Specify Model API
-  #     - MODEL_API_URL=http://localhost:8000/api
+  #     - MODEL_API_URL=http://130.83.167.232:8989/api
+  #     - MODEL_API_KEY=xyz

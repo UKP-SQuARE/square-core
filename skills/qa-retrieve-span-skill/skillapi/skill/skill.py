@@ -14,19 +14,10 @@ model_api = ModelAPI(config)
 data_api = DataAPI(config)
 
 async def predict(request: QueryRequest) -> QueryOutput:
-    """
-    Process a given query and create the predictions for it.
-    :param request: The user query
-    :return: The prediction produced by the skill
-    """
-    # Call Data API
-    data_request = {  # Fill as needed
-        "query": request.query,
-        "top_k": request.num_results
-    }
-    data = await DataAPI(datastore="wiki", index_name="dpr", data_request=data_request)
-    context = [d["fields"]["text"] for d in data]
+
+    data = await data_api(datastore_name="nq", index_name="dpr", query=request.query)
     logger.info(f"Data API output:\n{data}")
+    context = [d["document"]["text"] for d in data]
 
     # Call Model API
     prepared_input = [[request.query, c] for c in context]  # Change as needed
@@ -34,7 +25,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
-        "task_kwargs": {"topk": 1},
+        "task_kwargs": {"topk": 10},
         "adapter_name": "qa/squad2@ukp"
     }
 

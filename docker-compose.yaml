@@ -69,7 +69,7 @@ services:
     image: ukpsquare/square-skills-retrieve-span:latest
     build: ./skills/qa-retrieve-span-skill/.
     ports:
-      - 8777:8000
+      - 8002:8002
     env_file:
       - ./skills/qa-retrieve-span-skill/.env
 
@@ -130,66 +130,79 @@ services:
     env_file:
       - ./skill-manager/.env
 
-  #adminer:
-  #  image: adminer
-  #  restart: always
-  #  ports:
-  #    - 8080:8080
+  ### DATASTORE API
 
-  # es:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
-  #   environment:
-  #     - node.name=es01
-  #     - cluster.name=es-docker-cluster
-  #     - discovery.type=single-node
-  #     - bootstrap.memory_lock=true
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   volumes:
-  #     - es01:/usr/share/elasticsearch/data
-  #   ports:
-  #     - 9200:9200
-
- ### DATASTORE API
-  vespa:
-    image: vespaengine/vespa
-    container_name: vespa
-    hostname: vespa-container
-    privileged: true
-    expose:
-      - "8080"
-      - "19071"
-    ports:
-      - "7070:8080"
-    #  - "19071:19071"
-    volumes:
-      - ./storage/vespa/var:/opt/vespa/var
-      - ./storage/vespa/logs:/opt/vespa/logs
-
-  mongodb:
-    image: mongo:4.0
-    container_name: mongodb
+  datastore_es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    container_name: datastore_es01
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
-    #ports:
-    #  - "27017:27017"
+      - discovery.type=single-node
     volumes:
-      - ./storage/db/data:/data/db
+      - datastore-api-es:/usr/share/elasticsearch/data
+    ports:
+      - 7200:9200
+
+  datastore_reverse-proxy:
+      image: traefik:v2.5
+      command:
+        - "--providers.docker"
+        - "--providers.docker.exposedbydefault=false"
+        - "--providers.file.filename=/config/traefik.yaml"
+        - "--entrypoints.web.address=:7010"
+        - "--entrypoints.web.http.middlewares=prefix-strip@file"
+        - "--providers.docker.defaultRule=PathPrefix(`{{ index .Labels \"square.datastore\"}}`)"
+      ports:
+        - "7010:7010"
+      volumes:
+        # The configuration file
+        - ${PWD}/traefik.yaml:/config/traefik.yaml
+        # So that Traefik can listen to the Docker events
+        - /var/run/docker.sock:/var/run/docker.sock
+
+##### BEGIN FAISS Service Containers #####
+
+# Add one container per FAISS index below.
+# Each container should be defined as follows:
+  # faiss-<index_name>:
+  #   image: kwang2049/faiss-instant:latest
+  #   volumes:
+  #     - <local_path>:/opt/faiss-instant/resources
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.services.faiss-<index_name>.loadbalancer.server.port=5000"
+  #     - "square.datastore=<index_name>"
+
+  faiss-nq-dpr:
+    image: kwang2049/faiss-instant:latest
+    volumes:
+      - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.faiss-nq-dpr.loadbalancer.server.port=5000"
+      - "square.datastore=/nq/dpr"
+
+  faiss-msmarco-distilbert:
+    image: kwang2049/faiss-instant:latest
+    volumes:
+      - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.faiss-msmarco-distilbert.loadbalancer.server.port=5000"
+      - "square.datastore=/msmarco/distilbert"
+
+##### END FAISS Service Containers #####
 
   datastore_api:
     privileged: true
-    build: .
+    build: ./datastore-api
     depends_on:
-      - vespa
-      - mongodb
+      - datastore_es
     ports:
       - "7000:7000"
     env_file:
-      - ./.env
+      - ./.env.datastore_api
+
+ ### END DATASTORE API
 
 volumes:
   db-data:
@@ -200,3 +213,10 @@ volumes:
     driver: local
   skill-manager-mongo-data:
     driver: local
+  datastore-api-es:
+    driver: local
+  datastore-api-faiss-nq-dpr:
+    driver: local
+  datastore-api-faiss-msmarco-distilbert:
+    driver: local
+

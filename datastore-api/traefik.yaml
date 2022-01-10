@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    prefix-strip:
+      stripPrefixRegex:
+        regex:
+          - "(/[^/]+){2}"
