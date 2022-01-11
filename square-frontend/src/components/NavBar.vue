@@ -5,7 +5,7 @@
       <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
         <div class="container-fluid">
           <router-link class="navbar-brand" to="/">
-            <img :src="`${publicPath}SQ_Web_Dark_90px.png`" alt="" width="45" height="45" style="filter: invert(1); -webkit-filter: invert(1)">
+            <img :src="`${publicPath}SQ_Web_Light_90px.png`" alt="" width="45" height="45">
           </router-link>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon" />

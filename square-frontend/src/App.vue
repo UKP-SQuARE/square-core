@@ -4,7 +4,7 @@
     <NavBar />
     <div class="mb-4 bg-light border-bottom">
       <div class="container-fluid py-5 text-center">
-        <img class="d-block mx-auto mb-2" :src="`${publicPath}SQ_Web_Light_160px.png`" alt="" width="80" height="80">
+        <img class="d-block mx-auto mb-2" :src="`${publicPath}SQ_Web_Dark_160px.png`" alt="" width="80" height="80">
         <h1 class="display-5 fw-light">UKP-SQuARE</h1>
         <p class="fs-4">Software for Question Answering Research</p>
       </div>
