@@ -148,7 +148,7 @@ export default Vue.component('explainability-page', {
       }
     },
     downloadExamples() {
-      let data = JSON.stringify(this.checklist_data, null, 2)
+      let data = JSON.stringify(this.data[this.options.selectedSkill], null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
       this.$refs.downloadButton.href = URL.createObjectURL(blob)
       this.$refs.downloadButton.download = `${this.skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
