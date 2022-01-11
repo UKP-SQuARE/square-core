@@ -1,4 +1,0 @@
-<query-profile id="dense-retrieval" type="root">
-    <field name="rankings.profile">dense-retrieval</field>
-    <field name="yql">select * from sources %{datastore_name} where ([{"targetNumHits":100, "hnsw.exploreAdditionalHits":100}]nearestNeighbor(text_embedding,query_embedding)) or userQuery();</field>
-</query-profile>

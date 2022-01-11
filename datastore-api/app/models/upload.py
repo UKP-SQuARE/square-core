@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import List
+
+from pydantic import BaseModel
 
 
 class UploadUrlSet(BaseModel):
@@ -18,3 +19,4 @@ class UploadUrlSet(BaseModel):
 class UploadResponse(BaseModel):
     message: str
     successful_uploads: int
+    errors: int = 0
