@@ -1,8 +1,9 @@
 # SQuARE Model API
+
 Inference API that supports SOTA (QA) models & adapters. 
 Receives input and returns prediction and other artifacts (e.g. attention scores)
 
-## On the API Path
+## API Path
 The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
 is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
 
@@ -75,7 +76,7 @@ uninstall `transformers`, and finally install `adapter-transformers`.
 
 To test whether the api is running you can execute:
 ```bash
-curl -X GET http://localhost/api/bert/health/heartbeat  -H 'accept:application/json' --user admin:example_key
+curl -X GET http://localhost:8989/api/dpr/health/heartbeat  -H 'accept:application/json' --user admin:example_key
 ```
 
 ### Local
@@ -105,7 +106,7 @@ make test
 ```
 For load testing with Locust, see [this README](locust/README.md).
 
-### Adding new Models
+### Adding new Models using API
 New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
  of the path prefix in the following form:
@@ -130,7 +131,44 @@ until the model is available, since it needs to download and initialize the nece
 To check whether the model is ready, you can retrieve all available models at `api/models` and check whether the added 
 models is in the list.
 
-#### Adding new Models Manually
+#### Example deployment request 
+
+Deploy distilbert from sentence-transformers.
+
+```bash
+ curl -X POST http://localhost:8989/api/models/deploy  -H 'accept:application/json' -d '{
+  "identifier": "distilbert",
+  "model_name": "msmarco-distilbert-base-tas-b",
+  "model_type": "sentence-transformer",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "base",
+  "return_plaintext_array": false
+}' --user admin:example_key
+```
+
+#### Example prediction request 
+
+Get prediction from the deployed model.
+
+```bash
+ curl -X POST http://localhost:8989/api/distilbert/embedding  -H 'accept:application/json' -d '{
+  "input": [
+    "Do aliens exist?"
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {},
+  "task_kwargs": {},
+  "adapter_name": ""
+}' --user admin:example_key
+```
+
+
+
+### Adding new Models Manually
 With treafik we can add new models to the model API easily for each new model append the following to the 
 docker-comopse file:
 
@@ -158,4 +196,5 @@ them [here](traefic.yaml). All users have the following form:
 ```
 The password can be hashed using wither MD5, SHA-1 or BCrypt.
 It is easiest to use `htpasswd` to obtain the necessary hash.
+
 The default `admin` user has the password `example_key`.
