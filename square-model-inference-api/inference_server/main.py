@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def get_app() -> FastAPI:
     # Set logging config.
     try:
@@ -20,6 +21,7 @@ def get_app() -> FastAPI:
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
 
     return fast_app
+
 
 app = get_app()
 

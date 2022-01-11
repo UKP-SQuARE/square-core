@@ -12,8 +12,11 @@ class Model:
         """
         Take an input, pre-process it accordingly, perform inference according to the task,
         post-process the result and return it
-        :param payload: the prediction request containing the input and any other parameters required
-        :param task: The task that the model should perform with the payload
-        :return: the result of the prediction
+
+        Args:
+             payload: the prediction request containing the input and any other parameters required
+             task: The task that the model should perform with the payload
+        Returns:
+             PredictionOutput: the result of the prediction
         """
         raise NotImplementedError

@@ -10,12 +10,7 @@ DATA_API_URL=http://host.docker.internal:8002/datastores
 ```
 When running the project locally, provide any api key e.g. `1234-abcd-5678-efgh`.
 
-Next, create an `.env` file for the auth_server under `square-model-inference-api/auth_server/.env` with the following content:
-```bash
-MODEL_API_KEY=your-api-key-goes-here
-API_KEY_HEADER_NAME=Authorization
-```
-Make sure the two api keys match.
+Next, create your user and password with `htpasswd` and add it under `square-model-inference-api/traefik/traefik.yaml`.
 
 ## Build & Run
 For local development it's best to build the project with docker compose by running `docker compose build`.  
