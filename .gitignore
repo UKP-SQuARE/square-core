@@ -15,3 +15,6 @@ __pycache__/
 env
 .vscode
 .cache
+
+# github action local
+bin

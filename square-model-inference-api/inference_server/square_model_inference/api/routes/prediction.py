@@ -80,7 +80,7 @@ async def generation(
 
 @router.get("/stats", response_model=ModelStatistics, name="statistics")
 async def statistics() -> ModelStatistics:
-    logger.info("Supplieng statistics for ")
+    logger.info("Getting statistics for ")
     return ModelStatistics(
         model_type=MODEL_TYPE,
         model_name=MODEL_NAME,
