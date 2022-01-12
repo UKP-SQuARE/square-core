@@ -44,12 +44,14 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_markdown_tables",
     "sphinx_copybutton",
-    "sphinx-pydantic"
 ]
 
 
 autosummary_generate = True
 autoclass_content = "class"
+
+# mocking imports for autodoc
+autodoc_mock_imports = ["elasticsearch"]
 
 source_suffix = {
     '.rst': 'restructuredtext',
