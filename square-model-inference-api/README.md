@@ -3,15 +3,6 @@
 Inference API that supports SOTA (QA) models & adapters. 
 Receives input and returns prediction and other artifacts (e.g. attention scores)
 
-## API Path
-The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
-is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
-
-However, to run and distinguish multiple models, we use an API gateway with traefik so we extend 
-the path to `/api/$model-prefix/$endpoint` which is then resolved by traefik to the correct model server and forwarded
-to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
-This requires you to setup the docker-compose and treafik config as described below.
-
 ## Project structure
 
 The Model API uses 2 components: 
@@ -41,8 +32,15 @@ to forward requests to the correct inference server and to handle authorization 
 └───example_docker-compose.yml  # Example docker-compose setup for the Model API
 ```
 
-### Logging
-The components use the json-formatted logging used by the ELK Stack in square-core/logging.
+## API Path
+The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
+is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
+
+However, to run and distinguish multiple models, we use an API gateway with traefik so we extend 
+the path to `/api/$model-prefix/$endpoint` which is then resolved by traefik to the correct model server and forwarded
+to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
+This requires you to setup the docker-compose and treafik config as described below.
+
 
 ## Requirements
 
