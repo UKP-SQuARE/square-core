@@ -13,10 +13,11 @@
                   <div class="form-floating flex-grow-1">
                     <textarea
                         v-model="currentQuestion"
+                        @keydown.enter.exact.prevent
+                        @keyup.enter.exact="askQuestion"
                         class="form-control rounded-0"
-                        style="resize: none; white-space: nowrap; overflow: scroll; border-top-left-radius: 0.25rem !important"
+                        style="resize: none; white-space: nowrap; overflow-x: scroll; overflow-y: hidden; border-top-left-radius: 0.25rem !important"
                         id="question"
-                        rows="1"
                         placeholder="Enter your question" />
                     <label for="question">Enter your question</label>
                   </div>
@@ -36,7 +37,7 @@
                       style="resize: none"
                       :style="{ height: inputContextHeight + 'px'}"
                       id="context"
-                      placeholder="Context seperated by line breaks" />
+                      placeholder="Context seperated by line breaks (Optional)" />
                   <label for="context">Context seperated by line breaks (Optional)</label>
                 </div>
                 <small class="text-muted">Some skills require context.</small>

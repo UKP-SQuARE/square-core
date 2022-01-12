@@ -10,8 +10,24 @@ export default Vue.component('results-mixin', {
         return doc
       }
     },
-    roundScore(score) {
-      return Math.round(score * 100_000) / 1_000
+    roundScore(score, float = true) {
+      if (float) {
+        return Math.round(score * 100_000) / 1_000
+      } else {
+        return Math.round(score * 1_000) / 10
+      }
+    },
+    mapTestType(shorthand) {
+      let map = {
+        'MFT': 'Min Func Test',
+        'INV': 'INVariance',
+        'DIR': 'DIRectional'
+      }
+      if (shorthand in map) {
+        return map[shorthand]
+      } else {
+        return shorthand
+      }
     }
   }
 })
