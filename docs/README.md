@@ -1,6 +1,6 @@
 ## SQuARE Documentation 
 
-### Libraries used:
+### Libraries used
 
 1. Sphinx
 2. [Material UI theme](https://bashtage.github.io/sphinx-material/)
