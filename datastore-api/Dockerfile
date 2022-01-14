@@ -1,9 +1,12 @@
 FROM python:3.7.6-slim-buster as base
 
-EXPOSE 7000
-WORKDIR /app
+# required to install packages from github
+RUN apt-get -y update
+RUN apt-get -y install git
 
 RUN pip install --upgrade pip
+
+WORKDIR /app
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
@@ -29,5 +32,7 @@ RUN PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest \
 FROM base as build
 
 COPY logging.conf logging.conf
+
+EXPOSE 7000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7000", "--log-config", "logging.conf"]
