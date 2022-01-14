@@ -58,9 +58,13 @@ class ModelAPIClient:
             logger.error(response.json())
             raise EnvironmentError(f"Model API returned {response.status_code}.")
         else:
-            embeddings = self._decode_embeddings(response.json()["model_outputs"]["embeddings"]).flatten()
+            embeddings = self._decode_embeddings(
+                response.json()["model_outputs"]["embeddings"]
+            ).flatten()
             # The vector returned here may be shorter than the stored document vector.
             # In that case, we fill the remaining values with zeros.
             if index.embedding_size - len(embeddings) > 0:
-                logger.warning("Embedded query vector is shorter than the configured size.")
+                logger.warning(
+                    "Embedded query vector is shorter than the configured size."
+                )
             return embeddings.tolist() + [0] * (index.embedding_size - len(embeddings))
