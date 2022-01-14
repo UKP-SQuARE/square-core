@@ -47,7 +47,9 @@ class ModelAPIClient:
         if not self.base_url:
             raise EnvironmentError("Model API not available.")
 
-        request_url = f"{self.base_url}/{index.query_encoder_model}/embedding"
+        request_url = (
+            f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/embedding"
+        )
         data = {
             "input": [query],
             "adapter_name": index.query_encoder_adapter,
