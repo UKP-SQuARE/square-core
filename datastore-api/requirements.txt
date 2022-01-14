@@ -1,5 +1,5 @@
 Jinja2 == 3.0.1
-elasticsearch[async] == 7.15.1
+elasticsearch[async] == 7.16.1
 fastapi == 0.65.2
 filelock == 3.0.12
 h5py == 3.3.0
