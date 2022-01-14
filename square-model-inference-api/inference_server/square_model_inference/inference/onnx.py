@@ -24,6 +24,17 @@ def to_numpy(x):
 class Onnx(Transformer):
     def __init__(self, model_path: str, model_name: str, batch_size: int, disable_gpu: bool,
                  max_input_size: int, decoder_path: str = None, **kwargs) -> None:
+
+        """
+         Args:
+             model_path: patyh where the model is stored
+             model_name: the ONNX model name
+             batch_size: batch size used for inference
+             disable_gpu: do not move model to GPU even if CUDA is available
+             max_input_size: requests with a larger input are rejected
+             decoder_path: path to the decoder ONNX model
+             kwargs: Not used
+        """
         # This assumes that a corresponding onnx file exists
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         if self.tokenizer.pad_token is None:
@@ -43,10 +54,14 @@ class Onnx(Transformer):
             -> Union[dict, Tuple[dict, dict]]:
         """
         Inference on the input.
-        :param request: the request with the input and optional kwargs
-        :param output_features: return the features of the input.
-        Necessary if, e.g., attention mask is needed for post-processing.
-        :return: The model outputs and optionally the input features
+
+        Args:
+
+             request: the request with the input and optional kwargs
+             output_features: return the features of the input. Necessary if, e.g., attention mask is needed for post-processing.
+
+        Returns:
+                The model outputs and optionally the input features
         """
         all_predictions = []
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
@@ -91,8 +106,12 @@ class Onnx(Transformer):
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
         """
         Embeds the input from the request
-        :param request: The request containing input and optionally task kwargs like embedding method
-        :return: The embedding output
+
+        Args:
+             request: The request containing input and optionally task kwargs like embedding method
+
+        Return:
+             The embedding output
         """
         embedding_mode = request.task_kwargs.get("embedding_mode", "mean")
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
@@ -140,8 +159,12 @@ class Onnx(Transformer):
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         """
         Classifies the given input
-        :param request: The request containing e.g. the input text
-        :return: The prediction output contaiing the predicted labels
+
+        Args:
+             request: The request containing e.g. the input text
+
+        Returns:
+                 The prediction output containing the predicted labels
         """
         predictions = self._predict(request)
         task_outputs = {}
@@ -157,8 +180,12 @@ class Onnx(Transformer):
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
         """
         Classifies each token of the input text
-        :param request: The request containing e.g. the input text
-        :return: the classification output containing the labels
+
+        Args:
+            request: The request containing e.g. the input text
+
+        Returns:
+                 the classification output containing the labels
         """
         predictions, features = self._predict(request, output_features=True)
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
@@ -176,8 +203,12 @@ class Onnx(Transformer):
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         """
         Generates a continuation for the given input sequence
-        :param request: The request with e.g. the input sequence
-        :return: The output containing the generated text
+
+        Args:
+             request: The request with e.g. the input sequence
+
+        Returns:
+             The output containing the generated text
         """
         max_length = request.task_kwargs.get("max_length", 20)
         task_outputs = {"generated_texts": []}
@@ -207,10 +238,13 @@ class Onnx(Transformer):
     def _greedy_generation(self, request, prompt, max_length):
         """
         Performs greedy generation for the prompts
-        :param request: the inference request
-        :param prompt: the prompt for the generation
-        :param max_length: the maximum length of the generated sequence
-        :return: the ids of the generated sequence and the score
+
+        Args:
+             request: the inference request
+             prompt: the prompt for the generation
+             max_length: the maximum length of the generated sequence
+        Returns:
+             the ids of the generated sequence and the score
         """
         cur_len = 0
         eos_token_id = self.tokenizer.eos_token_id if self.tokenizer.eos_token_id is not None else self.tokenizer.pad_token_id
@@ -247,9 +281,13 @@ class Onnx(Transformer):
         """
         Prepares the input for the _predict method. If the model is an encoder decoder model the
         generated sequence is the decoder input.
-        :param encoder_features: the features of the prompt
-        :param generated_sequence: the generated ids
-        :return: the features for the model
+
+        Args:
+             encoder_features: the features of the prompt
+             generated_sequence: the generated ids
+
+        Returns:
+             the features for the model
         """
         model_input = encoder_features.copy()
         # if it is a encoder decoder model the generated sequence is passed to the decoder
@@ -268,10 +306,14 @@ class Onnx(Transformer):
     def _beam_search(self, request, prompt, max_length):
         """
         Performs beam search for the given prompt
-        :param request: the inference request
-        :param prompt: the generation prompt
-        :param max_length: the maximum length of the generated sequence
-        :return: the generated sequence(s)
+
+        Args:
+             request: the inference request
+             prompt: the generation prompt
+             max_length: the maximum length of the generated sequence
+
+        Returns:
+             the generated sequence(s)
         """
         request.preprocessing_kwargs["padding"] = False
         features = self.tokenizer(prompt,
@@ -333,7 +375,9 @@ class Onnx(Transformer):
     def get_bos_token(self):
         """
         Depending on the model the beginning of sentence token id can be different or not provided.
-        :return: beginning of sentence token id
+
+        Returns:
+             beginning of sentence token id
         """
         if self.tokenizer.bos_token_id is not None:
             return self.tokenizer.bos_token_id
@@ -345,12 +389,16 @@ class Onnx(Transformer):
         """
         Sets the scores for all tokens that are not in top_p and top_k to the filter value (default = -inf).
         Adapted from huggingface/transformers/generation_logits_process.py
-        :param scores:the initial scores for each token
-        :param top_k: the top_k threshold
-        :param top_p: the top_p threshold
-        :param min_tokens_to_keep: the min_number_of_tokens_to_keep
-        :param filter_value: the value to replace the scores with
-        :return: the processed scores
+
+        Args:
+             scores:the initial scores for each token
+             top_k: the top_k threshold
+             top_p: the top_p threshold
+             min_tokens_to_keep: the min_number_of_tokens_to_keep
+             filter_value: the value to replace the scores with
+
+        Returns:
+             the processed scores
         """
         if top_k is not None and top_k != 0:
             top_k = min(max(top_k, min_tokens_to_keep), scores.size(-1))  # Safety check

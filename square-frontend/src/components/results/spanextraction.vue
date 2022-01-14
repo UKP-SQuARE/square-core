@@ -45,7 +45,13 @@ export default Vue.component('span-extraction-results', {
   },
   computed: {
     currentContext: function () {
-      return this.highlightSpan(this.$store.state.currentContext, this.span)
+      let document = ''
+      if (this.$store.state.currentContext.length > 0) {
+        document = this.$store.state.currentContext
+      } else {
+        document = this.skillResult.predictions[0].prediction_documents[0].document
+      }
+      return this.highlightSpan(document, this.span)
     }
   },
   methods: {
