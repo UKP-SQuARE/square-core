@@ -1,6 +1,7 @@
 import base64
 import logging
 from io import BytesIO
+from urllib import request
 
 import numpy as np
 import requests
@@ -51,7 +52,7 @@ class ModelAPIClient:
             "input": [query],
             "adapter_name": index.query_encoder_adapter,
         }
-
+        logger.info(f"{request_url} : {data}")
         response = requests.post(request_url, json=data, auth=self.auth)
         if response.status_code != 200:
             logger.error(response.json())
