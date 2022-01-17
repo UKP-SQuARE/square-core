@@ -12,6 +12,7 @@ import Skill from '@/views/Skill.vue'
 import Home from '@/views/Home.vue'
 import Train from '@/views/Train.vue'
 import Explain from '@/views/Explain.vue'
+import NotFound from '@/views/NotFound.vue'
 
 Vue.use(VueRouter)
 
@@ -84,11 +85,17 @@ const routes = [
     path: '/about',
     name: 'about',
     component: About
+  },
+  {
+    path: '*',
+    name: 'notfound',
+    component: NotFound
   }
 ]
 
 const router = new VueRouter({
-  routes
+  routes,
+  mode: 'history'
 })
 
 export default router
