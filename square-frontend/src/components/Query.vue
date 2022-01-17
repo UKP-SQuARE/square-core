@@ -9,7 +9,7 @@
           <div class="col-xl">
             <div class="row">
               <div class="col">
-                <div class="input-group">
+                <div class="input-group flex-nowrap">
                   <div class="form-floating flex-grow-1">
                     <textarea
                         v-model="currentQuestion"
@@ -30,15 +30,17 @@
                     &nbsp;Ask your question
                   </button>
                 </div>
-                <div class="form-floating mb-2">
-                  <textarea
-                      v-model="inputContext"
-                      class="form-control rounded-0 rounded-bottom border-top-0"
-                      style="resize: none"
-                      :style="{ height: inputContextHeight + 'px'}"
-                      id="context"
-                      placeholder="Context seperated by line breaks (Optional)" />
-                  <label for="context">Context seperated by line breaks (Optional)</label>
+                <div class="input-group flex-nowrap">
+                  <div class="form-floating flex-grow-1 mb-2">
+                    <textarea
+                        v-model="inputContext"
+                        class="form-control rounded-0 rounded-bottom border-top-0"
+                        style="resize: none"
+                        :style="{ height: inputContextHeight + 'px'}"
+                        id="context"
+                        placeholder="Context seperated by line breaks (Optional)" />
+                    <label for="context">Context seperated by line breaks (Optional)</label>
+                  </div>
                 </div>
                 <small class="text-muted">Some skills require context.</small>
               </div>

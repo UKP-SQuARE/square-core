@@ -51,4 +51,22 @@ export default Vue.component('app', {
         column-count: 3;
       }
     }
+    @media (max-width: 768px) {
+      .input-group {
+        display: inline-block;
+      }
+      .input-group .btn, .input-group .form-control, .input-group .form-select {
+        width: 100%;
+      }
+      .input-group .form-control, .input-group .form-select {
+        border: 1px solid #ced4da !important;
+        border-radius: 0.25rem !important;
+      }
+      .input-group .btn {
+        height: calc(3.5rem + 2px);
+        min-height: calc(1.5em + 0.75rem + 2px);
+        margin: 0.75rem auto !important;
+        border-radius: 0.3rem !important;
+      }
+    }
 </style>
