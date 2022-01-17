@@ -8,7 +8,7 @@
             <div class="col-lg">
               <div class="row">
                 <div class="col">
-                  <div class="input-group">
+                  <div class="input-group flex-nowrap">
                     <div class="form-floating flex-grow-1">
                       <select v-model="options.selectedSkill" class="form-select rounded-0 rounded-start" id="skillSelect">
                         <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">

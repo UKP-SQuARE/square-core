@@ -2,7 +2,7 @@
 <template>
   <header class="bg-primary">
     <div class="container">
-      <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+      <nav class="navbar navbar-expand-md navbar-dark bg-primary">
         <div class="container-fluid">
           <router-link class="navbar-brand" to="/">
             <img :src="`${publicPath}SQ_Web_Light_90px.png`" alt="" width="45" height="45">
