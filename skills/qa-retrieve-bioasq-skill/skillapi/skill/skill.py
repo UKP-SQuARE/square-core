@@ -15,7 +15,8 @@ data_api = DataAPI(config)
 
 async def predict(request: QueryRequest) -> QueryOutput:
 
-    data = await data_api(datastore_name="nq", index_name="dpr", query=request.query)
+    # empty index_name will use bm25
+    data = await data_api(datastore_name="bioasq", index_name="", query=request.query)
     logger.info(f"Data API output:\n{data}")
     context = [d["document"]["text"] for d in data]
     context_score = [d["score"] for d in data]

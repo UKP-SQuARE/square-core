@@ -72,6 +72,13 @@ services:
       - 8002:8002
     env_file:
       - ./skills/qa-retrieve-span-skill/.env
+  retrieve_bioasq_skill:
+    image: ukpsquare/square-skills-retrieve-bioasq:latest
+    build: ./skills/qa-retrieve-bioasq-skill/.
+    ports:
+      - 8009:8009
+    env_file:
+      - ./skills/qa-retrieve-bioasq-skill/.env
 
   ### MODEL API
   traefik:

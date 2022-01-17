@@ -67,6 +67,7 @@ def skill_prediction_factory():
                             "span": None,
                             "url": "",
                             "source": "",
+                            "document_score": 0.0
                         }
                     ],
                 }

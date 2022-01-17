@@ -17,6 +17,8 @@ def get_storage_connector() -> BaseConnector:
 # IMPORTANT: When altering this, make sure to also alter the corresponding mock in conftest.py!
 @lru_cache()
 def get_search_client() -> DenseRetrieval:
-    model_api = ModelAPIClient(settings.MODEL_API_URL, settings.MODEL_API_KEY)
+    model_api = ModelAPIClient(
+        settings.MODEL_API_URL, settings.MODEL_API_USER, settings.MODEL_API_PASSWORD
+    )
     faiss = FaissClient(settings.FAISS_URL)
     return DenseRetrieval(get_storage_connector(), model_api, faiss)

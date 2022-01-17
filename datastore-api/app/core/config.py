@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     FAISS_URL: str = ""
     UPLOAD_BATCH_SIZE: int = 1000
     MODEL_API_URL: str = ""
-    MODEL_API_KEY: str = ""
+    MODEL_API_USER: str = ""
+    MODEL_API_PASSWORD: str = ""
     MAX_RETURN_ITEMS: int = 10000
 
     class Config:
