@@ -15,8 +15,8 @@
                         v-model="currentQuestion"
                         @keydown.enter.exact.prevent
                         @keyup.enter.exact="askQuestion"
-                        class="form-control rounded-0"
-                        style="resize: none; white-space: nowrap; overflow-x: scroll; overflow-y: hidden; border-top-left-radius: 0.25rem !important"
+                        class="form-control rounded-0 overflow-hidden"
+                        style="resize: none; white-space: nowrap; border-top-left-radius: 0.25rem !important"
                         id="question"
                         placeholder="Enter your question" />
                     <label for="question">Enter your question</label>
@@ -48,7 +48,7 @@
             <div class="row">
               <div class="col">
                 <label for="skillSelect" class="form-label fs-5">Skill selector</label>
-                <select v-model="options.selectedSkills" class="form-select" multiple id="skillSelect">
+                <select v-model="options.selectedSkills" size="5" class="form-select" multiple id="skillSelect">
                   <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">
                     {{ skill.name }} — {{ skill.description }}
                   </option>
