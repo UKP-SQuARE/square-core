@@ -87,7 +87,7 @@
         {
             "test_type": "MFT",
             "capability": "Vocabulary",
-            "test_name": "Intensifiers (very, super, extremely) and reducers (somewhat, kinda, ",
+            "test_name": "Intensifiers (very, super, extremely) and reducers (somewhat, kinda)",
             "test_name_description": "AAA",
             "test_type_description": "AAA",
             "test_cases": [

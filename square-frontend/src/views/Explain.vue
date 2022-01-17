@@ -104,6 +104,7 @@ import ExplainModal from '@/components/ExplainModal.vue'
 import mixin from '@/components/results/mixin.vue'
 import { getSkill } from '@/api'
 import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
+import boolq from '../../checklist/61a9f66935adbbf1f2433077.json'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -114,7 +115,8 @@ export default Vue.component('explainability-page', {
         selectedSkill: ''
       },
       data: {
-        '61a9f57935adbbf1f2433073': squad2
+        '61a9f57935adbbf1f2433073': squad2,
+        '61a9f66935adbbf1f2433077': boolq
       },
       skill: {},
       tests: [],
