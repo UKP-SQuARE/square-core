@@ -25,7 +25,7 @@ class ModelAPIClient:
         if index.query_encoder_model is None:
             return False
 
-        request_url = f"{self.base_url}/{index.query_encoder_model}/health/heartbeat"
+        request_url = f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/health/heartbeat"
         try:
             response = requests.get(request_url, auth=self.auth)
             if response.status_code != 200:
