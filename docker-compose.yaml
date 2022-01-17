@@ -24,6 +24,9 @@ services:
       - migrations-data:/app/migrations
 
   frontend:
+    build:
+      context: .
+      dockerfile: ./square-frontend/Dockerfile
     image: ukpsquare/square-frontend:latest
     restart: always
     ports:
