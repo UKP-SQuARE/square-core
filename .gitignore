@@ -15,3 +15,6 @@ __pycache__/
 env
 .vscode
 .cache
+
+# ignore build folder for docs
+docs/_build
