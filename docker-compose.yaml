@@ -26,7 +26,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: ./square-frontend/Dockerfile
+      dockerfile: ./square-frontend/Dockerfile_production
     image: ukpsquare/square-frontend:latest
     restart: always
     ports:
