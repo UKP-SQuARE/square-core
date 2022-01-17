@@ -21,6 +21,9 @@
               <li class="nav-item">
                 <router-link class="nav-link" to="/about" exact-active-class="active">About</router-link>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/docs/" target="_blank">Docs</a>
+              </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
               <router-link to="/signin" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
