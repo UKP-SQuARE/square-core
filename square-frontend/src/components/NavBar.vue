@@ -19,9 +19,6 @@
                 <router-link class="nav-link" to="/explain" exact-active-class="active">Explainability</router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" to="/about" exact-active-class="active">About</router-link>
-              </li>
-              <li class="nav-item">
                 <a class="nav-link" href="/docs/" target="_blank">Docs</a>
               </li>
               <li class="nav-item">
