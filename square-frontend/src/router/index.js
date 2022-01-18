@@ -4,7 +4,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
-import About from '@/views/About.vue'
 import Signup from '@/views/Signup.vue'
 import Signin from '@/views/Signin.vue'
 import Skills from '@/views/Skills.vue'
@@ -80,11 +79,6 @@ const routes = [
     path: '/explain',
     name: 'explain',
     component: Explain
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: About
   },
   {
     path: '*',
