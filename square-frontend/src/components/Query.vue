@@ -38,8 +38,8 @@
                         style="resize: none"
                         :style="{ height: inputContextHeight + 'px'}"
                         id="context"
-                        placeholder="Context seperated by line breaks (Optional)" />
-                    <label for="context">Context seperated by line breaks (Optional)</label>
+                        placeholder="Context separated by line breaks (Optional)" />
+                    <label for="context">Context separated by line breaks (Optional)</label>
                   </div>
                 </div>
                 <small class="text-muted">Some skills require context.</small>
