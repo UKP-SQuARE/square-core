@@ -2,7 +2,7 @@
 <template>
   <div>
     <div class="row">
-      <div class="col-xl col-lg-7 mb-4 mb-lg-0">
+      <div class="col-xl col-lg-7 mb-4 mt-lg-4">
         <ul class="list-group list-group-flush">
           <li
               v-for="(res, index) in skillResult.predictions"
@@ -23,7 +23,7 @@
           </li>
         </ul>
       </div>
-      <div class="col-xl col-lg-5">
+      <div class="col-xl col-lg-5 d-flex align-items-center">
         <div class="border rounded bg-light p-4" v-html="currentContext" />
       </div>
     </div>
