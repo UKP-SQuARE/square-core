@@ -102,7 +102,7 @@
         &nbsp;Explainability
       </h2>
       <p>Behavioural testing is a way to test the behaviour of the black-box models under certain conditions defined by the experts, a.k.a, users. This is simply done via implementing the tests for certain capability such as robustness and checking whether the models output the expected the answers.</p>
-      <p>We refer you to CheckList <a class="text-decoration-none" href="https://aclanthology.org/2020.acl-main.442/">(Ribeiro et. al., 2020)</a> for the predefined machine reading tests used in this work.</p>
+      <p>We refer you to CheckList <a class="text-decoration-none" href="https://aclanthology.org/2020.acl-main.442/" target="_blank">(Ribeiro et. al., 2020)</a> for the predefined machine reading tests used in this work.</p>
       <p>Select a skill to get started.</p>
     </div>
   </div>
