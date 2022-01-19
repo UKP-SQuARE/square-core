@@ -18,7 +18,8 @@
                         class="form-control rounded-0 overflow-hidden"
                         style="resize: none; white-space: nowrap; border-top-left-radius: 0.25rem !important"
                         id="question"
-                        placeholder="Enter your question" />
+                        placeholder="Enter your question"
+                        required />
                     <label for="question">Enter your question</label>
                   </div>
                   <button
@@ -38,11 +39,12 @@
                         style="resize: none"
                         :style="{ height: inputContextHeight + 'px'}"
                         id="context"
-                        placeholder="Context separated by line breaks (Optional)" />
-                    <label for="context">Context separated by line breaks (Optional)</label>
+                        :placeholder="contextPlaceholder"
+                        :required="skillSettings.requiresContext" />
+                    <label :class="{ 'text-muted': !skillSettings.requiresContext }" for="context">{{ contextPlaceholder }}</label>
                   </div>
                 </div>
-                <small class="text-muted">Some skills require context.</small>
+                <small class="text-muted">{{ contextHelp }}</small>
               </div>
             </div>
           </div>
@@ -50,7 +52,7 @@
             <div class="row">
               <div class="col">
                 <label for="skillSelect" class="form-label fs-5">Skill selector</label>
-                <select v-model="options.selectedSkills" size="5" class="form-select" multiple id="skillSelect">
+                <select v-model="options.selectedSkills" v-on:change="changeSkills()" size="5" class="form-select" multiple id="skillSelect">
                   <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">
                     {{ skill.name }} — {{ skill.description }}
                   </option>
@@ -79,7 +81,11 @@ export default Vue.component('query-skills', {
       inputQuestion: '',
       inputContext: '',
       failure: false,
-      failureMessage: ''
+      failureMessage: '',
+      skillSettings: {
+        requiresContext: false,
+        requiresMultipleChoices: 0
+      }
     }
   },
   components: {
@@ -104,8 +110,27 @@ export default Vue.component('query-skills', {
         }
       }
     },
+    contextPlaceholder() {
+      if (this.skillSettings.requiresMultipleChoices) {
+        let choices = this.skillSettings.requiresMultipleChoices
+        return `Provide ${choices > 1 ? choices + ' lines' : 'one line'} of context`
+      } else {
+        return 'No context required'
+      }
+    },
+    contextHelp() {
+      let help = 'no'
+      if (this.skillSettings.requiresMultipleChoices) {
+        let choices = this.skillSettings.requiresMultipleChoices
+        help = `${choices > 1 ? choices + ' lines' : 'one line'} of`
+      }
+      return `Your selected skills require ${help} context.`
+    },
+    isValidContext() {
+      return this.inputContext.split('\n').length >= this.skillSettings.requiresMultipleChoices
+    },
     inputContextHeight() {
-      return 58 + (this.inputContext ? 21 * 7 : 0)
+      return 58 + (this.inputContext ? 21 * 6 : 0)
     }
   },
   methods: {
@@ -129,6 +154,23 @@ export default Vue.component('query-skills', {
       } else {
         this.showEmptyWarning = true
       }
+    },
+    changeSkills() {
+      let settings = {
+        requiresContext: false,
+        requiresMultipleChoices: 0
+      }
+      this.availableSkills.forEach(skill => {
+        if (this.options.selectedSkills.includes(skill.id)) {
+          settings.requiresContext = settings.requiresContext || skill.skill_settings.requires_context
+          // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
+          settings.requiresMultipleChoices = Math.max(
+              settings.requiresContext ? 1 : 0,
+              settings.requiresMultipleChoices,
+              skill.skill_settings.requires_multiple_choices)
+        }
+      })
+      this.skillSettings = settings
     }
   },
   /**
