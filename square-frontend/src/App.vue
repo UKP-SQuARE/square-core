@@ -51,7 +51,7 @@ export default Vue.component('app', {
         column-count: 3;
       }
     }
-    @media (max-width: 768px) {
+    @media (max-width: 512px) {
       .input-group {
         display: inline-block;
       }
