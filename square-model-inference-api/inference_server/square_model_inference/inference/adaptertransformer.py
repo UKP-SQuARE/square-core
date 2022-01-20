@@ -94,8 +94,9 @@ class AdapterTransformer(Transformer):
         self.model.config.prediction_heads[request.adapter_name]["num_choices"] = len(request.input)
         prediction = super()._sequence_classification(request)
 
-        # id2label = {v:k for k,v in label2id.items()}
-        # prediction.id2label = id2label
+        label2id = self.model.config.prediction_heads[request.adapter_name]["label2id"]
+        id2label = {v:k for k,v in label2id.items()}
+        prediction.id2label = id2label
 
         logger.info(f"sequence classification prediction:\n{prediction}")
         return prediction
