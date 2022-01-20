@@ -6,4 +6,4 @@ sentencepiece==0.1.95
 torch==1.8.1
 sentence-transformers==1.2.0
 onnxruntime==1.8.1
-ElkJsonFormatter.tar.gz # Logging Formatter
+git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2
