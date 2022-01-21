@@ -1,0 +1,1318 @@
+{
+    "tests": [
+        {
+            "test_type": "MFT",
+            "capability": "Vocabulary",
+            "test_name": "A is COMP than B. Who is more / less COMP??",
+            "test_name_description": "AAA",
+            "test_type_description": "AAA",
+            "test_cases": [
+                {
+                    "context": "Marie is nicer than Caroline.",
+                    "question": "Who is less nice?",
+                    "options": [
+                        "Caroline",
+                        "Marie",
+                        "None",
+                        "nic",
+                        "niceer"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "niceer",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Marie is nicer than Caroline.",
+                    "question": "Who is nicer?",
+                    "options": [
+                        "Marie",
+                        "Caroline",
+                        "None",
+                        "niceer",
+                        "nic"
+                    ],
+                    "answer": "Marie",
+                    "prediction": "niceer",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Kelly is cleaner than Harriet.",
+                    "question": "Who is less clean?",
+                    "options": [
+                        "Harriet",
+                        "Kelly",
+                        "None",
+                        "clean",
+                        "cleaner"
+                    ],
+                    "answer": "Harriet",
+                    "prediction": "cleaner",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Kelly is cleaner than Harriet.",
+                    "question": "Who is cleaner?",
+                    "options": [
+                        "Kelly",
+                        "Harriet",
+                        "None",
+                        "cleaner",
+                        "clean"
+                    ],
+                    "answer": "Kelly",
+                    "prediction": "cleaner",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Alice is higher than Keith.",
+                    "question": "Who is less high?",
+                    "options": [
+                        "Keith",
+                        "Alice",
+                        "None",
+                        "high",
+                        "higher"
+                    ],
+                    "answer": "Keith",
+                    "prediction": "high",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Alice is higher than Keith.",
+                    "question": "Who is higher?",
+                    "options": [
+                        "Alice",
+                        "Keith",
+                        "None",
+                        "higher",
+                        "high"
+                    ],
+                    "answer": "Alice",
+                    "prediction": "higher",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jean is cleaner than Samuel.",
+                    "question": "Who is less clean?",
+                    "options": [
+                        "Samuel",
+                        "Jean",
+                        "None",
+                        "clean",
+                        "cleaner"
+                    ],
+                    "answer": "Samuel",
+                    "prediction": "cleaner",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jean is cleaner than Samuel.",
+                    "question": "Who is cleaner?",
+                    "options": [
+                        "Jean",
+                        "Samuel",
+                        "None",
+                        "cleaner",
+                        "clean"
+                    ],
+                    "answer": "Jean",
+                    "prediction": "cleaner",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Eric is shorter than Amanda.",
+                    "question": "Who is less short?",
+                    "options": [
+                        "Amanda",
+                        "Eric",
+                        "None",
+                        "short",
+                        "shorter"
+                    ],
+                    "answer": "Amanda",
+                    "prediction": "shorter",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Eric is shorter than Amanda.",
+                    "question": "Who is shorter?",
+                    "options": [
+                        "Eric",
+                        "Amanda",
+                        "None",
+                        "shorter",
+                        "short"
+                    ],
+                    "answer": "Eric",
+                    "prediction": "shorter",
+                    "success_failed": "failed"
+                }
+            ],
+            "total_cases": 10,
+            "failed_cases": 10,
+            "success_cases": 0,
+            "failure_rate": 100.0,
+            "success_rate": 0.0
+        },
+        {
+            "test_type": "MFT",
+            "capability": "Vocabulary",
+            "test_name": "Intensifiers (very, super, extremely) and reducers (somewhat, kinda)",
+            "test_name_description": "AAA",
+            "test_type_description": "AAA",
+            "test_cases": [
+                {
+                    "context": "Pamela is super open about the project. Mike is open about the project.",
+                    "question": "Who is most open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Pamela",
+                    "prediction": "Pamela",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Pamela is super open about the project. Mike is open about the project.",
+                    "question": "Who is least open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Mike",
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Mike is open about the project. Pamela is super open about the project.",
+                    "question": "Who is most open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Pamela",
+                    "prediction": "Pamela",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Mike is open about the project. Pamela is super open about the project.",
+                    "question": "Who is least open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Mike",
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Pamela is open about the project. Mike is slightly open about the project.",
+                    "question": "Who is most open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Pamela",
+                    "prediction": "Pamela",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Pamela is open about the project. Mike is slightly open about the project.",
+                    "question": "Who is least open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Mike",
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Mike is slightly open about the project. Pamela is open about the project.",
+                    "question": "Who is most open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Pamela",
+                    "prediction": "Pamela",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Mike is slightly open about the project. Pamela is open about the project.",
+                    "question": "Who is least open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Mike",
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Pamela is super open about the project. Mike is slightly open about the project.",
+                    "question": "Who is most open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Pamela",
+                    "prediction": "Pamela",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Pamela is super open about the project. Mike is slightly open about the project.",
+                    "question": "Who is least open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Mike",
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Mike is slightly open about the project. Pamela is super open about the project.",
+                    "question": "Who is most open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Pamela",
+                    "prediction": "Pamela",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Mike is slightly open about the project. Pamela is super open about the project.",
+                    "question": "Who is least open about the project?",
+                    "options": [
+                        "Pamela",
+                        "Mike",
+                        "slightly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Mike",
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Tom is really concerned about the project. Don is concerned about the project.",
+                    "question": "Who is most concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Tom",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Tom is really concerned about the project. Don is concerned about the project.",
+                    "question": "Who is least concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is concerned about the project. Tom is really concerned about the project.",
+                    "question": "Who is most concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Tom",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is concerned about the project. Tom is really concerned about the project.",
+                    "question": "Who is least concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Tom is concerned about the project. Don is mildly concerned about the project.",
+                    "question": "Who is most concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Tom",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Tom is concerned about the project. Don is mildly concerned about the project.",
+                    "question": "Who is least concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is mildly concerned about the project. Tom is concerned about the project.",
+                    "question": "Who is most concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Tom",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is mildly concerned about the project. Tom is concerned about the project.",
+                    "question": "Who is least concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Tom is really concerned about the project. Don is mildly concerned about the project.",
+                    "question": "Who is most concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Tom",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Tom is really concerned about the project. Don is mildly concerned about the project.",
+                    "question": "Who is least concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is mildly concerned about the project. Tom is really concerned about the project.",
+                    "question": "Who is most concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Tom",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is mildly concerned about the project. Tom is really concerned about the project.",
+                    "question": "Who is least concerned about the project?",
+                    "options": [
+                        "Tom",
+                        "Don",
+                        "mildly",
+                        "really",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "really",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jane is incredibly enthusiastic about the project. Don is enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Jane",
+                    "prediction": "incredibly",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jane is incredibly enthusiastic about the project. Don is enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is enthusiastic about the project. Jane is incredibly enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Jane",
+                    "prediction": "incredibly",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is enthusiastic about the project. Jane is incredibly enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jane is enthusiastic about the project. Don is slightly enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Jane",
+                    "prediction": "incredibly",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jane is enthusiastic about the project. Don is slightly enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is slightly enthusiastic about the project. Jane is enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Jane",
+                    "prediction": "incredibly",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is slightly enthusiastic about the project. Jane is enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jane is incredibly enthusiastic about the project. Don is slightly enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Jane",
+                    "prediction": "incredibly",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jane is incredibly enthusiastic about the project. Don is slightly enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is slightly enthusiastic about the project. Jane is incredibly enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Jane",
+                    "prediction": "incredibly",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is slightly enthusiastic about the project. Jane is incredibly enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Jane",
+                        "Don",
+                        "slightly",
+                        "incredibly",
+                        "None"
+                    ],
+                    "answer": "Don",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Caroline is super enthusiastic about the project. Ed is enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "Caroline",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Caroline is super enthusiastic about the project. Ed is enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Ed",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Ed is enthusiastic about the project. Caroline is super enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "Caroline",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ed is enthusiastic about the project. Caroline is super enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Ed",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Caroline is enthusiastic about the project. Ed is mildly enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "Caroline",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Caroline is enthusiastic about the project. Ed is mildly enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Ed",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Ed is mildly enthusiastic about the project. Caroline is enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "Caroline",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ed is mildly enthusiastic about the project. Caroline is enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Ed",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Caroline is super enthusiastic about the project. Ed is mildly enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "Caroline",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Caroline is super enthusiastic about the project. Ed is mildly enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Ed",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Ed is mildly enthusiastic about the project. Caroline is super enthusiastic about the project.",
+                    "question": "Who is most enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Caroline",
+                    "prediction": "Caroline",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ed is mildly enthusiastic about the project. Caroline is super enthusiastic about the project.",
+                    "question": "Who is least enthusiastic about the project?",
+                    "options": [
+                        "Caroline",
+                        "Ed",
+                        "mildly",
+                        "super",
+                        "None"
+                    ],
+                    "answer": "Ed",
+                    "prediction": "None",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jimmy is quite happy about the project. Louise is happy about the project.",
+                    "question": "Who is most happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Jimmy",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jimmy is quite happy about the project. Louise is happy about the project.",
+                    "question": "Who is least happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Louise",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Louise is happy about the project. Jimmy is quite happy about the project.",
+                    "question": "Who is most happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Jimmy",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Louise is happy about the project. Jimmy is quite happy about the project.",
+                    "question": "Who is least happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Louise",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jimmy is happy about the project. Louise is a little happy about the project.",
+                    "question": "Who is most happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Jimmy",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jimmy is happy about the project. Louise is a little happy about the project.",
+                    "question": "Who is least happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Louise",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Louise is a little happy about the project. Jimmy is happy about the project.",
+                    "question": "Who is most happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Jimmy",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Louise is a little happy about the project. Jimmy is happy about the project.",
+                    "question": "Who is least happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Louise",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jimmy is quite happy about the project. Louise is a little happy about the project.",
+                    "question": "Who is most happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Jimmy",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jimmy is quite happy about the project. Louise is a little happy about the project.",
+                    "question": "Who is least happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Louise",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Louise is a little happy about the project. Jimmy is quite happy about the project.",
+                    "question": "Who is most happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Jimmy",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Louise is a little happy about the project. Jimmy is quite happy about the project.",
+                    "question": "Who is least happy about the project?",
+                    "options": [
+                        "Jimmy",
+                        "Louise",
+                        "a",
+                        "little",
+                        "quite",
+                        "None"
+                    ],
+                    "answer": "Louise",
+                    "prediction": "Failed",
+                    "success_failed": "failed"
+                }
+            ],
+            "total_cases": 60,
+            "failed_cases": 48,
+            "success_cases": 12,
+            "failure_rate": 80.0,
+            "success_rate": 20.0
+        },
+        {
+            "test_type": "MFT",
+            "capability": "Taxonomy",
+            "test_name": "size, shape, age, color",
+            "test_name_description": "AAA",
+            "test_type_description": "AAA",
+            "test_cases": [
+                {
+                    "context": "There is a new purple toy in the room.",
+                    "question": "What age is the toy?",
+                    "options": [
+                        "new",
+                        "purple",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "new",
+                    "prediction": "age",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "There is a new purple toy in the room.",
+                    "question": "What color is the toy?",
+                    "options": [
+                        "new",
+                        "purple",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "purple",
+                    "prediction": "purple",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is new and purple.",
+                    "question": "What age is the toy?",
+                    "options": [
+                        "new",
+                        "purple",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "new",
+                    "prediction": "age",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is new and purple.",
+                    "question": "What color is the toy?",
+                    "options": [
+                        "new",
+                        "purple",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "purple",
+                    "prediction": "purple",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is an old blue toy in the room.",
+                    "question": "What age is the toy?",
+                    "options": [
+                        "old",
+                        "blue",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "old",
+                    "prediction": "old",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is an old blue toy in the room.",
+                    "question": "What color is the toy?",
+                    "options": [
+                        "old",
+                        "blue",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "blue",
+                    "prediction": "blue",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is old and blue.",
+                    "question": "What age is the toy?",
+                    "options": [
+                        "old",
+                        "blue",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "old",
+                    "prediction": "old",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is old and blue.",
+                    "question": "What color is the toy?",
+                    "options": [
+                        "old",
+                        "blue",
+                        "age",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "blue",
+                    "prediction": "blue",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a round grey object in the room.",
+                    "question": "What shape is the object?",
+                    "options": [
+                        "round",
+                        "grey",
+                        "shape",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "round",
+                    "prediction": "round",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a round grey object in the room.",
+                    "question": "What color is the object?",
+                    "options": [
+                        "round",
+                        "grey",
+                        "shape",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "grey",
+                    "prediction": "shape",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "There is an object in the room. The object is round and grey.",
+                    "question": "What shape is the object?",
+                    "options": [
+                        "round",
+                        "grey",
+                        "shape",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "round",
+                    "prediction": "round",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is an object in the room. The object is round and grey.",
+                    "question": "What color is the object?",
+                    "options": [
+                        "round",
+                        "grey",
+                        "shape",
+                        "color",
+                        "None"
+                    ],
+                    "answer": "grey",
+                    "prediction": "shape",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "There is a round old toy in the room.",
+                    "question": "What shape is the toy?",
+                    "options": [
+                        "round",
+                        "old",
+                        "shape",
+                        "age",
+                        "None"
+                    ],
+                    "answer": "round",
+                    "prediction": "round",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a round old toy in the room.",
+                    "question": "What age is the toy?",
+                    "options": [
+                        "round",
+                        "old",
+                        "shape",
+                        "age",
+                        "None"
+                    ],
+                    "answer": "old",
+                    "prediction": "old",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is round and old.",
+                    "question": "What shape is the toy?",
+                    "options": [
+                        "round",
+                        "old",
+                        "shape",
+                        "age",
+                        "None"
+                    ],
+                    "answer": "round",
+                    "prediction": "round",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is round and old.",
+                    "question": "What age is the toy?",
+                    "options": [
+                        "round",
+                        "old",
+                        "shape",
+                        "age",
+                        "None"
+                    ],
+                    "answer": "old",
+                    "prediction": "old",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a small square toy in the room.",
+                    "question": "What size is the toy?",
+                    "options": [
+                        "small",
+                        "square",
+                        "size",
+                        "shape",
+                        "None"
+                    ],
+                    "answer": "small",
+                    "prediction": "shape",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "There is a small square toy in the room.",
+                    "question": "What shape is the toy?",
+                    "options": [
+                        "small",
+                        "square",
+                        "size",
+                        "shape",
+                        "None"
+                    ],
+                    "answer": "square",
+                    "prediction": "square",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is small and square.",
+                    "question": "What size is the toy?",
+                    "options": [
+                        "small",
+                        "square",
+                        "size",
+                        "shape",
+                        "None"
+                    ],
+                    "answer": "small",
+                    "prediction": "shape",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "There is a toy in the room. The toy is small and square.",
+                    "question": "What shape is the toy?",
+                    "options": [
+                        "small",
+                        "square",
+                        "size",
+                        "shape",
+                        "None"
+                    ],
+                    "answer": "square",
+                    "prediction": "square",
+                    "success_failed": "success"
+                }
+            ],
+            "total_cases": 20,
+            "failed_cases": 6,
+            "success_cases": 14,
+            "failure_rate": 30.0,
+            "success_rate": 70.0
+        }
+    ]
+}

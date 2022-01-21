@@ -54,6 +54,11 @@
                     <strong>Context:</strong> <span v-html="applyChanges(test_case.context, test_case)" />
                   </div>
                 </div>
+                <div v-if="'options' in test_case" class="row my-3">
+                  <div class="col">
+                    <strong>Options:</strong> {{ test_case.options.join(', ') }}
+                  </div>
+                </div>
                 <div class="row my-3">
                   <div class="col">
                     <strong class="text-success">Answer:</strong> {{ 'answer' in test_case ? test_case.answer : test_case.gold_answer }}
