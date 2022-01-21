@@ -63,7 +63,7 @@ services:
       - ./skills/qa-extractive-qa-skill/.env
   multiple_choice_qa_skill:
     image: ukpsquare/square-skills-multiple-choice:latest
-    build: ./skills/qa-extractive-qa-skill/.
+    build: ./skills/qa-multiple-choice-skill/.
     ports:
       - 8007:8007
     env_file:
