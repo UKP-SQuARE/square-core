@@ -7,11 +7,7 @@
 
 ### Requirements
 
-1. sphinx==4.3.2
-2. sphinx-copybutton==0.4.0	
-3. sphinx-markdown-tables==0.0.15	
-4. sphinx-material==0.0.35	
-5. myst-parser==0.16.1
+`see requirements.txt`
 
 ### Folder Structure
 
@@ -43,6 +39,7 @@
 ├───make.bat             # makefile for windows
 ├───Makefile             # Makefile to run the project
 ├───README.md            # documentation
+├───requirements.txt     # libraries needed
 ```
 
 
@@ -56,4 +53,3 @@ make clean
 # create a fresh build
 make html
 ```
-

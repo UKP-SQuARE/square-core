@@ -1,0 +1,24 @@
+{% extends '!layout.html' %}
+
+
+{%- block extrahead %}
+{# Add custom things to the head HTML tag #}
+
+{{ super() }}
+
+{%- endblock %}
+
+
+{% block footer %}
+
+        <footer class="footer-basic">
+<!--            <div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a></div>-->
+            <div class="footer-links">
+               <a class= "footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/impressum.en.jsp">Legal Note</a>
+               <a class= "footer-refs" href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp">Privacy Policy</a>
+               <a class= "footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp">UKP Lab</a>
+            </div>
+            <p class="copyright">UKP © 2022</p>
+        </footer>
+
+{% endblock %}
