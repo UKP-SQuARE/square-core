@@ -116,6 +116,7 @@ import mixin from '@/components/results/mixin.vue'
 import { getSkill } from '@/api'
 import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
 import boolq from '../../checklist/61a9f66935adbbf1f2433077.json'
+import commonsense from '../../checklist/61a9f6d035adbbf1f243307d.json'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -127,7 +128,8 @@ export default Vue.component('explainability-page', {
       },
       data: {
         '61a9f57935adbbf1f2433073': squad2,
-        '61a9f66935adbbf1f2433077': boolq
+        '61a9f66935adbbf1f2433077': boolq,
+        '61a9f6d035adbbf1f243307d': commonsense
       },
       skill: {},
       tests: [],
