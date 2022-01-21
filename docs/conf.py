@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_markdown_tables",
     "sphinx_copybutton",
+    "sphinx-favicon",
 ]
 
 
@@ -51,7 +52,8 @@ autosummary_generate = True
 autoclass_content = "class"
 
 # mocking imports for autodoc
-autodoc_mock_imports = ["elasticsearch"]
+autodoc_mock_imports = ["elasticsearch", "transformers", "torch", "pydantic", "numpy", "starlette",
+                        "sentence_transformers", "onnxruntime"]
 
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -79,12 +81,12 @@ html_theme = 'sphinx_material'
 html_static_path = ['_static']
 
 # logo path
-html_logo = "images/SQ_Web_Dark_160px.png"
+html_logo = "images/SQ_Web_Light_90px.png"
 
 
 # Material theme options (see theme.conf for more information)
 html_theme_options = {
-
+    # 'body_max_width': '70%',
     "html_minify": False,
     "html_prettify": True,
     "css_minify": True,
@@ -92,23 +94,22 @@ html_theme_options = {
     # Set the name of the project to appear in the navigation.
     'nav_title': 'SQuARE',
     # Set the color and the accent color
-    'color_primary': '#086494',
-    'color_accent': '#086494',
-
+    # 'color_primary': '#086494',
+    # 'color_accent': '#086494',
     'master_doc': False,
 
     # Set the repo location to get a badge with stats
     'repo_url': 'https://github.com/UKP-SQuARE/square-core',
     'repo_name': 'square-core',
 
-    # 'nav_links': [{'href': 'index', 'title': 'Home', 'internal': 'True'},
+    # 'nav_links': [{'href': 'http://square.ukp-lab.de', 'title': 'SQuARE Platform', 'external': 'True'},
                   # {'href': 'index', 'title': 'Getting Started', 'internal': 'True'},
                   # {'href': '', 'title': 'Components', 'internal': ''},
                   # {'href': '', 'title': 'API', 'internal': ''}
                   # ],
 
     # Visible levels of the global TOC; -1 means unlimited
-    'globaltoc_depth': 6,
+    'globaltoc_depth': 1,
     # If False, expand all TOC entries
     'globaltoc_collapse': True,
     # If True, show hidden TOC entries
@@ -122,6 +123,25 @@ html_theme_options = {
 
 }
 
+
 html_sidebars = {
     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
 }
+
+favicons = [
+    {
+        "rel": "icon",
+        "static-file": "SQ_Web_Light.png",
+        "type": "image/png",
+    },
+
+    {
+        "rel": "apple-touch-icon",
+        "static-file": "SQ_Web_Light.png",
+        "type": "image/png",
+    },
+]
+
+
+def setup(app):
+    app.add_css_file('custom.css')
