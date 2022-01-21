@@ -10,12 +10,12 @@ The Datastore API is dependent upon the following services:
   - **Elasticsearch** (for storing documents and sparse retrieval)
   - **Traefik** (for routing search requests)
 - Optional (manual setup required):
-  - **FAISS** web service containers (for storing dense document embeddings): see [the section on dense retrieval](#configure-dense-retrieval-with-faiss) on how to setup.
+  - **FAISS** web service containers (for storing dense document embeddings): see the section on dense retrieval on how to setup.
   - **SQuARE Model API** (for dense document retrieval)
 
 ## Quick (production) setup
 
-1. Open the [docker-compose.yml](docker-compose.yml). Find the service declaration for `datastore_api` and uncomment it. In the `environment` section, optionally set an API key and the connection to the Model API.
+1. Open the *docker-compose.yml*. Find the service declaration for datastore_api and uncomment it. In the environment section, optionally set an API key and the connection to the Model API.
 
 2. Run the Docker setup:
    ```
@@ -23,9 +23,9 @@ The Datastore API is dependent upon the following services:
    ```
    Check **http://localhost:7000/docs** for interactive documentation.
 
-3. [Upload documents](#upload-documents).
+3. Upload documents.
 
-4. For dense retrieval, [configure a FAISS container](#configure-dense-retrieval-with-faiss) per datastore index.
+4. For dense retrieval, configure a FAISS container per datastore index.
 
 ## Development setup
 
@@ -51,7 +51,7 @@ We use Docker containers for:
 - Traefik
 
 Additionally, the FAISS storage for each datastore index requires its own container.
-Check the [FAISS configuration](#configure-dense-retrieval-with-faiss) section for more.
+Check the FAISS configuration section for more.
 
 Everything can be started via Docker Compose:
 ```
@@ -65,7 +65,7 @@ docker compose down
 
 ### API server
 
-**Configuration:** Before starting the server, a few configuration options can be set via environment variables or a `.env` file. See [here](.env) for an example configuration and [here](app/core/config.py) for all available options.
+**Configuration:** Before starting the server, a few configuration options can be set via environment variables or a `.env` file. See **.env** for an example configuration and **app/core/config.py** for all available options.
 
 **Running:**
 ```
@@ -127,7 +127,7 @@ curl -X 'POST' \
   -F 'file=@tests/fixtures/0.jsonl'
 ```
 
-### Uploading via `upload.py`
+### Uploading via *upload.py*
 
 As an example, we upload the Wikipedia split used by DPR (containing 21M passages) into a datastore named "wiki".
 
@@ -191,7 +191,7 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     }'
     ```
 
-3. Specify the FAISS web service container for the new index: Open the [docker-compose.yml](docker-compose.yml) and in the section for FAISS service containers, add the following:
+3. Specify the FAISS web service container for the new index: Open the *docker-compose.yml* and in the section for FAISS service containers, add the following:
     ```
     faiss-wiki-dpr:
       image: kwang2049/faiss-instant:latest

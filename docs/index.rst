@@ -8,7 +8,7 @@ SQuARE - Software for Question Answering Research
 ==================================================
 
 .. note::
-   To get started directly, please visit the :ref:`get started<Get Started>` page.
+   To try out SQuARE directly, please visit the `SQuARE Website <http://square.ukp-lab.de>`_.
 
 
 SQuARE is a scalable and flexible **open-source** QA platform that enables researchers and developers to:
@@ -23,7 +23,7 @@ SQuARE is a scalable and flexible **open-source** QA platform that enables resea
 Architecture
 -------------
 
-.. figure:: images/square_arch.svg
+.. figure:: images/square-arch.png
    :width: 800
    :align: center
    :alt: SQuARE Architecture
@@ -50,7 +50,7 @@ Architecture
 
 .. toctree::
     :caption: API
-    :maxdepth: 4
+    :maxdepth: 2
 
     pages/api/datastore_api/datastores.rst
     pages/api/model_api/models.rst
