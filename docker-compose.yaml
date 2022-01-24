@@ -87,6 +87,8 @@ services:
       - 8008
     env_file:
       - ./skill-manager/.env
+    environment:
+      - WEB_CONCURRENCY=4
     depends_on:
       - skill_manager_mongo
     labels:
@@ -117,6 +119,7 @@ services:
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1
       - VERIFY_SSL=0
+      - WEB_CONCURRENCY=4
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
@@ -131,6 +134,8 @@ services:
     image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
+    environment:
+      - WEB_CONCURRENCY=4
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -147,6 +152,8 @@ services:
     image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
+    environment:
+      - WEB_CONCURRENCY=4
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -164,6 +171,8 @@ services:
     image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
+    environment:
+      - WEB_CONCURRENCY=4
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
@@ -185,6 +194,8 @@ services:
       - "7000:7000"
     env_file:
       - ./.env.datastore_api
+    environment:
+      - WEB_CONCURRENCY=4
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
@@ -234,6 +245,8 @@ services:
       - 8002:8002
     env_file:
       - ./skills/qa-retrieve-span-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
   boolq_skill:
     image: ukpsquare/square-skills-boolq:latest
@@ -242,6 +255,8 @@ services:
       - 8003:8003
     env_file:
       - ./skills/qa-boolq-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
   squad_v2_skill:
     image: ukpsquare/square-skills-squad-v2:latest
@@ -250,6 +265,8 @@ services:
       - 8004:8004
     env_file:
       - ./skills/qa-squad-v2-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
   commonsense_qa_skill:
     image: ukpsquare/square-skills-commonsense-qa:latest
@@ -258,6 +275,8 @@ services:
       - 8005:8005
     env_file:
       - ./skills/qa-commonsense-qa-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
   extractive_qa_skill:
     image: ukpsquare/square-skills-extractive:latest
@@ -266,6 +285,8 @@ services:
       - 8006:8006
     env_file:
       - ./skills/qa-extractive-qa-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
   multiple_choice_qa_skill:
     image: ukpsquare/square-skills-multiple-choice:latest
@@ -274,6 +295,8 @@ services:
       - 8007:8007
     env_file:
       - ./skills/qa-multiple-choice-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
   retrieve_bioasq_skill:
     image: ukpsquare/square-skills-retrieve-bioasq:latest
@@ -282,6 +305,8 @@ services:
       - 8009:8009
     env_file:
       - ./skills/qa-retrieve-bioasq-skill/.env
+    environment:
+      - WEB_CONCURRENCY=4
 
 volumes:
   traefik-public-certificates:
