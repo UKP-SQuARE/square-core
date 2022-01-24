@@ -81,7 +81,7 @@ def test_transformer_generation():
 
 @pytest.fixture(scope="class")
 def test_adapter():
-    return AdapterTransformer(TRANSFORMER_MODEL, 1, True, TRANSFORMERS_TESTING_CACHE, 50)
+    return AdapterTransformer(TRANSFORMER_MODEL, 1, True, TRANSFORMERS_TESTING_CACHE, 50, False)
 
 
 @pytest.fixture(scope="class")

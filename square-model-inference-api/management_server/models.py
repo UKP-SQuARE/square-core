@@ -15,3 +15,4 @@ class ModelRequest(BaseModel):
     transformers_cache: Optional[str] = "../.cache"
     model_class: str
     return_plaintext_arrays: Optional[bool] = False
+    preloaded_adapters: Optional[bool] = True

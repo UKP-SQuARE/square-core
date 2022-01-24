@@ -50,16 +50,19 @@ services:
       - "traefik.http.routers.dpr.rule=PathPrefix(`/api/dpr`)"
 
     # Example config for another model server
-#  inference_bert:
-#    build: ./inference_server/.
-#    image: ukpsquare/square-model-api-v1:latest
+  inference_bert:
+    build: ./inference_server/.
+    image: ukpsquare/square-model-api-v1:latest
 
-#    env_file:
-#      - ./inference_server/.env.bert_adapter
-#    volumes:
-#      - ./.cache/:/etc/huggingface/.cache/
-#      #- ./inference_server/:/app/ #for development
-#
-#    labels:
-#      - "traefik.enable=true"
-#      - "traefik.http.routers.bert.rule=PathPrefix(`/api/bert`)"
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - ./inference_server/.env.bert_adapter
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+      #- ./inference_server/:/app/ #for development
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bert.rule=PathPrefix(`/api/bert`)"

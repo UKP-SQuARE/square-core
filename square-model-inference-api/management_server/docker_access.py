@@ -44,6 +44,23 @@ async def start_new_model_container(identifier, env):
     return container
 
 
+def remove_model_container(identifier):
+    """
+    Removes container for the given identifier
+    """
+    labels = {
+        "traefik.enable": "true",
+        "traefik.http.routers." + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+    }
+    if len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
+        return False
+    container = docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
+    container.stop()
+    container.remove()
+
+    return len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0
+
+
 async def get_all_model_prefixes():
     """
     Returns the prefixes under which all running model-api-instances in the docker-network are available

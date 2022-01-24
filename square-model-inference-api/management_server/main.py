@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from time import sleep
 import requests
 from models import ModelRequest
-from docker_access import start_new_model_container, get_all_model_prefixes
+from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container
 
 API_URL = "http://172.17.0.1"
 
@@ -37,7 +37,7 @@ async def add_new_model(model_params: ModelRequest):
         "MAX_INPUT_SIZE": model_params.max_input,
         "TRANSFORMERS_CACHE": model_params.transformers_cache,
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
-
+        "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
     }
     container = await(start_new_model_container(identifier, env))
 
@@ -47,3 +47,7 @@ async def add_new_model(model_params: ModelRequest):
             "container": container.id,
         }
     return HTTPException(status_code=400)
+
+@app.post("/api/remove/{identifier}")
+async def add_new_model(identifier):
+    return {"success": remove_model_container(identifier)}
