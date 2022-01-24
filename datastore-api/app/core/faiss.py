@@ -34,7 +34,7 @@ class FaissClient:
             logger.info(response.text)
             raise EnvironmentError(f"Faiss server returned {response.status_code}.")
         
-        logger.debug(f"received response from model api:\n{response.content}")
+        logger.debug(f"received response from datastore api:\n{response.content}")
         
         queried = response.json()[0]
         return queried
