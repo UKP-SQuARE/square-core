@@ -16,6 +16,8 @@ COPY main.py main.py
 COPY ./skillapi skillapi
 COPY logging.conf logging.conf
 
-EXPOSE 8009
+FROM base as build
+
+EXPOSE 8007
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8009", "--log-config", "logging.conf"]
