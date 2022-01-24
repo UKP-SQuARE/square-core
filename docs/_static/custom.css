@@ -18,7 +18,6 @@
     /*background-color: #006691;*/
 }
 
-
 .md-footer{
     max-width: 100%;
 }
@@ -29,15 +28,13 @@
     /*color: #006691;*/
 }
 
-
 /* Nav bar color */
 .md-header{
     background-color: #006691 !important;
 }
 
-
 /* All links */
-a:not(.md-source, .md-tabs__link, .footer-links){
+a:not(.md-source, .md-tabs__link, .footer-links, .dropdown-content){
     color: #006691;
 }
 
@@ -70,7 +67,6 @@ a:not(.md-source, .md-tabs__link, .footer-links){
   margin-left: 10px;
 }
 
-
 .footer-basic .copyright {
   margin-top:10px;
   text-align:center;
@@ -81,16 +77,25 @@ a:not(.md-source, .md-tabs__link, .footer-links){
 
 /* footer end */
 
-
 .dropdown-content{
     background-color: lightgrey !important;
-    color: white !important;
+    /*color: white !important;*/
+    font-weight: bold;
+}
+
+.dropdown-content:hover{
+    background-color: black !important;
+}
+
+img[alt=checklist] {
+    width: 400px;
+    display: block;
+    margin: auto;
 }
 
 a:hover {
     color: lightblue;
 }
-
 
 /* Side Menu Links */
 .md-nav__item a {
@@ -122,9 +127,7 @@ a:hover {
     color: #006691 !important;
 }
 
-
 body{
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",
     sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji”;
 }
-
