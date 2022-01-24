@@ -31,7 +31,8 @@ Architecture
 
 .. toctree::
     :caption: Overview
-    :maxdepth: 2
+    :maxdepth: 1
+    :hidden:
 
     pages/overview/get_started.md
     pages/overview/use_cases.md
@@ -41,7 +42,8 @@ Architecture
 
 .. toctree::
     :caption: Components
-    :maxdepth: 2
+    :maxdepth: 1
+    :hidden:
 
     pages/components/datastores.md
     pages/components/models.md
@@ -50,7 +52,8 @@ Architecture
 
 .. toctree::
     :caption: API
-    :maxdepth: 2
+    :maxdepth: 1
+    :hidden:
 
     pages/api/datastore_api/datastores.rst
     pages/api/model_api/models.rst
