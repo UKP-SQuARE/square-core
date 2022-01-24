@@ -227,7 +227,7 @@ services:
       - "traefik.http.routers.datastores-faiss-dpr.tls=true"
       - "traefik.http.routers.datastores-faiss-dpr.tls.certresolver=le"
       - "traefik.http.routers.datastores-faiss-dpr.middlewares=datastores-faiss-dpr-stripprefix"
-      - "traefik.http.middlewares.datastores-faiss-dpr-stripprefix.stripPrefixRegex.regex=/api/nq/dpr"
+      - "traefik.http.middlewares.datastores-faiss-dpr-stripprefix.stripprefix.prefixes=/api/nq/dpr"
 
   faiss-msmarco-distilbert:
     image: kwang2049/faiss-instant:latest
@@ -240,7 +240,7 @@ services:
       - "traefik.http.routers.datastores-faiss-distilbert.tls=true"
       - "traefik.http.routers.datastores-faiss-distilbert.tls.certresolver=le"
       - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
-      - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripPrefixRegex.regex=/api/msmarco/distilbert"
+      - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
 
   naturalqa_retrieve_span_skill:
     image: ukpsquare/square-skills-retrieve-span:latest
