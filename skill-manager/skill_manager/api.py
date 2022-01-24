@@ -34,12 +34,12 @@ def on_startup():
     app.state.skill_manager_db = app.state.mongo_client.skill_manager
 
 
-@app.get("/health/heartbeat", response_model=HeartbeatResult)
+@app.get("/api/health/heartbeat", response_model=HeartbeatResult)
 async def heartbeat():
     return HeartbeatResult(is_alive=True)
 
 
-@app.get("/health/skill-heartbeat", response_model=HeartbeatResult)
+@app.get("/api/health/skill-heartbeat", response_model=HeartbeatResult)
 async def skill_heartbeat(skill_url: str):
     skill_health_url = urljoin(skill_url, "health/heartbeat")
 
@@ -53,7 +53,7 @@ async def skill_heartbeat(skill_url: str):
     return skill_heartbeat_response.json()
 
 
-@app.get("/skill-types", response_model=List[str])
+@app.get("/api/skill-types", response_model=List[str])
 async def get_skill_types():
     skill_types = [skill_type.value for skill_type in SkillType]
 
@@ -61,7 +61,7 @@ async def get_skill_types():
     return skill_types
 
 
-@app.get("/skill/{id}", response_model=Skill)
+@app.get("/api/skill/{id}", response_model=Skill)
 async def get_skill_by_id(id: Optional[str] = None):
     skill = Skill.from_mongo(
         app.state.skill_manager_db.skills.find_one({"_id": ObjectId(id)})
@@ -71,7 +71,7 @@ async def get_skill_by_id(id: Optional[str] = None):
     return skill
 
 
-@app.get("/skill", response_model=List[Skill])
+@app.get("/api/skill", response_model=List[Skill])
 async def get_skills(user_id: Optional[str] = None):
 
     mongo_query = {"published": True}
@@ -85,7 +85,7 @@ async def get_skills(user_id: Optional[str] = None):
     return skills
 
 
-@app.post("/skill", response_model=Skill, status_code=201)
+@app.post("/api/skill", response_model=Skill, status_code=201)
 async def create_skill(skill: Skill):
 
     skill_id = app.state.skill_manager_db.skills.insert_one(skill.mongo()).inserted_id
@@ -95,7 +95,7 @@ async def create_skill(skill: Skill):
     return skill
 
 
-@app.put("/skill/{id}", response_model=Skill)
+@app.put("/api/skill/{id}", response_model=Skill)
 async def update_skill(id: str, data: dict):
     skill = await get_skill_by_id(id)
 
@@ -116,7 +116,7 @@ async def update_skill(id: str, data: dict):
     return skill
 
 
-@app.delete("/skill/{id}", status_code=204)
+@app.delete("/api/skill/{id}", status_code=204)
 async def delete_skill(id: str):
     delete_result = app.state.skill_manager_db.skills.delete_one({"_id": ObjectId(id)})
     logger.debug("delete_skill: {id}".format(id=id))
@@ -126,7 +126,7 @@ async def delete_skill(id: str):
         raise RuntimeError(delete_result.raw_result)
 
 
-@app.post("/skill/{id}/publish", response_model=Skill, status_code=201)
+@app.post("/api/skill/{id}/publish", response_model=Skill, status_code=201)
 async def publish_skill(id: str):
     skill = await get_skill_by_id(id)
     skill.published = True
@@ -136,7 +136,7 @@ async def publish_skill(id: str):
     return skill
 
 
-@app.post("/skill/{id}/unpublish", response_model=Skill, status_code=201)
+@app.post("/api/skill/{id}/unpublish", response_model=Skill, status_code=201)
 async def unpublish_skill(id: str):
     skill = await get_skill_by_id(id)
     skill.published = False
@@ -146,7 +146,7 @@ async def unpublish_skill(id: str):
     return skill
 
 
-@app.post("/skill/{id}/query", response_model=QueryOutput)
+@app.post("/api/skill/{id}/query", response_model=QueryOutput)
 async def query_skill(query_request: QueryRequest, id: str):
     logger.info(
         "received query: {query} for skill {id}".format(

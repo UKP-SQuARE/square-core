@@ -136,7 +136,7 @@ def assert_skills_equal_from_response(skill, response):
 
 
 def test_heartbeat(client):
-    response = client.get("/health/heartbeat")
+    response = client.get("/api/health/heartbeat")
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 
@@ -150,14 +150,14 @@ def test_skill_heartbeat(client):
         json={"is_alive": True},
         status=200,
     )
-    response = client.get("/health/skill-heartbeat", params={"skill_url": skill_url})
+    response = client.get("/api/health/skill-heartbeat", params={"skill_url": skill_url})
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 
 
 def test_skill_types(client):
 
-    response = client.get("/skill-types")
+    response = client.get("/api/skill-types")
     assert response.status_code == 200
 
     skill_types = response.json()
@@ -167,7 +167,7 @@ def test_skill_types(client):
 def test_create_skill(pers_client, skill_factory):
 
     test_skill = skill_factory()
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
     assert response.status_code == 201
 
     assert_skills_equal_from_response(test_skill, response)
@@ -176,10 +176,10 @@ def test_create_skill(pers_client, skill_factory):
 def test_get_skill_by_id(pers_client, skill_factory):
 
     test_skill = skill_factory()
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
     added_skill_id = response.json()["id"]
 
-    response = pers_client.get(f"/skill/{added_skill_id}")
+    response = pers_client.get(f"/api/skill/{added_skill_id}")
     assert response.status_code == 200
 
     assert_skills_equal_from_response(test_skill, response)
@@ -197,11 +197,11 @@ def test_get_all_skills(pers_client, skill_factory):
 
     skill_name_to_id = {}
     for skill_name, skill in skills_to_add.items():
-        response = pers_client.post("/skill", data=skill.json())
+        response = pers_client.post("/api/skill", data=skill.json())
         skill_name_to_id[skill_name] = response.json()["id"]
 
     # test with anonymous user
-    response = pers_client.get(f"/skill")
+    response = pers_client.get(f"/api/skill")
     assert response.status_code == 200
 
     returned_skill_ids = [skill["id"] for skill in response.json()]
@@ -210,7 +210,7 @@ def test_get_all_skills(pers_client, skill_factory):
     assert skill_name_to_id["user_skill"] not in returned_skill_ids
 
     # test with registered user
-    response = pers_client.get(f"/skill", params=dict(user_id=current_user))
+    response = pers_client.get(f"/api/skill", params=dict(user_id=current_user))
     assert response.status_code == 200
 
     returned_skill_ids = [skill["id"] for skill in response.json()]
@@ -225,10 +225,10 @@ def test_get_public_user_skill_only_once(pers_client, skill_factory):
     current_user = "current-user-2"
     skill = skill_factory(user_id=current_user, published=True)
 
-    response = pers_client.post("/skill", data=skill.json())
+    response = pers_client.post("/api/skill", data=skill.json())
     skill_id = response.json()["id"]
 
-    response = pers_client.get(f"/skill", params=dict(user_id=current_user))
+    response = pers_client.get(f"/api/skill", params=dict(user_id=current_user))
     assert response.status_code == 200
     returned_skills = response.json()
 
@@ -242,13 +242,13 @@ def test_get_public_user_skill_only_once(pers_client, skill_factory):
 def test_update_skill(pers_client, skill_factory):
 
     test_skill = skill_factory()
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
 
     skill_id = response.json()["id"]
     test_skill.id = skill_id
     updated_skill_name = "updated skill"
     test_skill.name = updated_skill_name
-    response = pers_client.put(f"/skill/{skill_id}", json=dict(name=updated_skill_name))
+    response = pers_client.put(f"/api/skill/{skill_id}", json=dict(name=updated_skill_name))
     assert response.status_code == 200
     assert response.json()["name"] == updated_skill_name
 
@@ -258,15 +258,15 @@ def test_update_skill(pers_client, skill_factory):
 def test_delete_skill(pers_client, skill_factory):
 
     test_skill = skill_factory()
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
 
     skill_id = response.json()["id"]
 
-    response = pers_client.delete(f"/skill/{skill_id}")
+    response = pers_client.delete(f"/api/skill/{skill_id}")
     assert response.status_code == 204
 
     response = pers_client.get(
-        f"/skill/{skill_id}", params=dict(user_id=test_skill.user_id)
+        f"/api/skill/{skill_id}", params=dict(user_id=test_skill.user_id)
     )
     assert response.status_code == 200
     assert response.json() == None
@@ -275,15 +275,15 @@ def test_delete_skill(pers_client, skill_factory):
 def test_publish_unpublish(pers_client, skill_factory):
 
     test_skill = skill_factory()
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
     skill_id = response.json()["id"]
 
-    response = pers_client.post(f"/skill/{skill_id}/unpublish")
+    response = pers_client.post(f"/api/skill/{skill_id}/unpublish")
     assert response.status_code == 201
     unpublished_skill = response.json()
     assert not unpublished_skill["published"], unpublished_skill
 
-    response = pers_client.post(f"/skill/{skill_id}/publish")
+    response = pers_client.post(f"/api/skill/{skill_id}/publish")
     assert response.status_code == 201
     published_skill = response.json()
     assert published_skill["published"], published_skill
@@ -292,7 +292,7 @@ def test_publish_unpublish(pers_client, skill_factory):
 @responses.activate
 def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
     test_skill = skill_factory()
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
     skill_id = response.json()["id"]
 
     responses.add(
@@ -309,7 +309,7 @@ def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
         skill_args={"context": "hello"},
         num_results=1,
     )
-    response = pers_client.post(f"/skill/{skill_id}/query", json=query_request.dict())
+    response = pers_client.post(f"/api/skill/{skill_id}/query", json=query_request.dict())
 
     assert response.status_code == 200
     saved_prediction = pers_client.app.state.skill_manager_db.predictions.find_one(
@@ -328,7 +328,7 @@ def test_query_skill_with_default_skill_args(
     default_skill_args = {"adapter": "my-adapter", "context": "default context"}
     test_skill = skill_factory(default_skill_args=default_skill_args)
 
-    response = pers_client.post("/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json())
     skill_id = response.json()["id"]
 
     responses.add(
@@ -345,7 +345,7 @@ def test_query_skill_with_default_skill_args(
         skill_args=query_context,
         num_results=1,
     )
-    response = pers_client.post(f"/skill/{skill_id}/query", json=query_request.dict())
+    response = pers_client.post(f"/api/skill/{skill_id}/query", json=query_request.dict())
 
     actual_skill_query_body = json.loads(responses.calls[0].request.body)["skill_args"]
     expected_skill_query_body = default_skill_args
