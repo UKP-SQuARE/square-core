@@ -222,10 +222,12 @@ services:
       - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.datastores-faiss-dpr.rule=PathPrefix(`/nq/dpr`)"
+      - "traefik.http.routers.datastores-faiss-dpr.rule=PathPrefix(`/api/nq/dpr`)"
       - "traefik.http.routers.datastores-faiss-dpr.entrypoints=websecure"
       - "traefik.http.routers.datastores-faiss-dpr.tls=true"
       - "traefik.http.routers.datastores-faiss-dpr.tls.certresolver=le"
+      - "traefik.http.routers.datastores-faiss-dpr.middlewares=datastores-faiss-dpr-stripprefix"
+      - "traefik.http.middlewares.datastores-faiss-dpr-stripprefix.stripPrefixRegex.regex=/api/nq/dpr"
 
   faiss-msmarco-distilbert:
     image: kwang2049/faiss-instant:latest
@@ -233,10 +235,12 @@ services:
       - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.datastores-faiss-distilbert.rule=PathPrefix(`/msmarco/distilbert`)"
+      - "traefik.http.routers.datastores-faiss-distilbert.rule=PathPrefix(`/api/msmarco/distilbert`)"
       - "traefik.http.routers.datastores-faiss-distilbert.entrypoints=websecure"
       - "traefik.http.routers.datastores-faiss-distilbert.tls=true"
       - "traefik.http.routers.datastores-faiss-distilbert.tls.certresolver=le"
+      - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
+      - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripPrefixRegex.regex=/api/msmarco/distilbert"
 
   naturalqa_retrieve_span_skill:
     image: ukpsquare/square-skills-retrieve-span:latest
