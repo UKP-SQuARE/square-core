@@ -17,7 +17,7 @@ services:
       - --certificatesresolvers.le.acme.tlschallenge=true
       # Uncomment staging certs for testing
       # - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      # - --certificatesresolvers.le.acme.email=<EMAIL>
+      - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
       # Enable dashboard and logging
       - --api.dashboard=true
