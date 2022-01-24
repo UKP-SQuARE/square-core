@@ -1,6 +1,9 @@
 import docker
 import os
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
@@ -54,9 +57,11 @@ async def get_all_model_prefixes():
     port = list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
     lst_prefix = []
     for container in lst_container:
-        if "maintaining" not in container.name:
+        logger.debug(f"Found candidate model container: {container.name}")
+        if "model" in container.name:
             for identifier, label in container.labels.items():
                 if "PathPrefix" in label:
                     prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
                     lst_prefix.append(prefix)
+    logger.debug(f"Found model containers: {lst_prefix} on port {port}")
     return lst_prefix, port
