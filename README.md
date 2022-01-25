@@ -25,14 +25,23 @@ Two ways are supported to use SQuARE:
 1. 🌐 Get access to the existing QA Skills (and even deploy your Skill!) via our [demo page](http://square.ukp.informatik.tu-darmstadt.de/);
 2. 💾 Or clone and install SQuARE to host services on a local machine.
 
-## Table Of Contents
+## Why SQuARE?
 
-- [Online Service](https://github.com/UKP-SQuARE/square-core/#Online-Service)
-- [Local Installation](https://github.com/UKP-SQuARE/square-core/#Local-Installation)
-- [Why SQuARE?](https://github.com/UKP-SQuARE/square-core/#Why-SQuARE?)
-- [Add New Skills](https://github.com/UKP-SQuARE/square-core/#Add-New-Skills?)
-- [Architecture](https://github.com/UKP-SQuARE/square-core/#Architecture)
-- [Contact](https://github.com/UKP-SQuARE/square-core/#Contact)
+Recent advances in NLP and information retrieval have given rise to a diverse set of question answering tasks that are of different formats (e.g., extractive, abstractive), require different model architectures (e.g., generative, discriminative) and setups (e.g., with or without retrieval). Despite having a large number of powerful, specialized QA pipelines (a.k.a., Skills) that consider a single domain, model or setup, there exists no framework where users can easily explore and compare such pipelines and can extend them according to their needs. 
+
+To address this issue, we present SQuARE, an extensible online QA platform for researchers which allows users to query and analyze a large collection of modern Skills via a user-friendly web interface and integrated behavioural tests. In addition, QA researchers can develop, manage and share their custom Skills using our microservices that support a wide range of models (Transformers, Adapters, ONNX), datastores and retrieval techniques (e.g., sparse and dense).
+
+Find out more about the project on [UKPs Website](https://www.informatik.tu-darmstadt.de/ukp/research_ukp/ukp_research_projects/ukp_project_square/ukp_project_square_details.en.jsp).  
+
+## Get Started
+👉 If you want to use the SQuARE public service online, you can refer to [Online Service](#Online-Service) for using the existing skills and refer to 
+[Add New Skills](#Add-New-Skills?) for adding new skills.
+
+👉 If you want to deploy SQuARE locally yourself, please refer to [Local Installation](https://github.com/UKP-SQuARE/square-core/#Local-Installation).
+
+👉 For illustration of the architecture, please refer to [Architecture](https://github.com/UKP-SQuARE/square-core/#Architecture).
+
+👉 And welcome to [contact us](https://github.com/UKP-SQuARE/square-core/#Contact).
 
 ## Online Service
 Try out the on-the-go skills on the [demo page]((http://square.ukp.informatik.tu-darmstadt.de/))! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
@@ -44,20 +53,6 @@ Try out the on-the-go skills on the [demo page]((http://square.ukp.informatik.tu
         <br>
     <p>
 </details>
-
-## Local Installation
-For local development it's best to build the project with docker compose by running `docker compose build`.  
-If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
-And finally run `docker compose up -d` to start the system.  
-
-## Why SQuARE?
-
-Recent advances in NLP and information retrieval have given rise to a diverse set of question answering tasks that are of different formats (e.g., extractive, abstractive), require different model architectures (e.g., generative, discriminative) and setups (e.g., with or without retrieval). Despite having a large number of powerful, specialized QA pipelines (a.k.a., Skills) that consider a single domain, model or setup, there exists no framework where users can easily explore and compare such pipelines and can extend them according to their needs. 
-
-To address this issue, we present SQuARE, an extensible online QA platform for researchers which allows users to query and analyze a large collection of modern Skills via a user-friendly web interface and integrated behavioural tests. In addition, QA researchers can develop, manage and share their custom Skills using our microservices that support a wide range of models (Transformers, Adapters, ONNX), datastores and retrieval techniques (e.g., sparse and dense).
-
-Find out more about the project on [UKPs Website](https://www.informatik.tu-darmstadt.de/ukp/research_ukp/ukp_research_projects/ukp_project_square/ukp_project_square_details.en.jsp).  
-
 
 ## Add New Skills
 
@@ -87,6 +82,11 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
         <br>
     <p>
 </details>
+
+## Local Installation
+For local development it's best to build the project with docker compose by running `docker compose build`.  
+If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
+And finally run `docker compose up -d` to start the system.  
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:
