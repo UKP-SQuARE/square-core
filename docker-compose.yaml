@@ -22,6 +22,15 @@ services:
       # Enable dashboard and logging
       - --api.dashboard=true
       - --log.level=DEBUG
+    labels:
+      # Global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+
+      # Middleware redirect from HTTP to HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
     ports:
       - "80:80" 
       - "443:443"
@@ -188,6 +197,7 @@ services:
   datastore_api:
     privileged: true
     build: ./datastore-api
+    image: ukpsquare/square-datastore-api:latest
     depends_on:
       - datastore_es
     ports:
