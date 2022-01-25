@@ -25,6 +25,14 @@ Two ways are supported to use SQuARE:
 1. 🌐 Get access to the existing QA Skills (and even deploy your Skill!) via our [demo page](http://square.ukp.informatik.tu-darmstadt.de/);
 2. 💾 Or clone and install SQuARE to host services on a local machine.
 
+## Table Of Contents
+
+- [Online Service](https://github.com/UKP-SQuARE/square-core/#Online-Service)
+- [Local Installation](https://github.com/UKP-SQuARE/square-core/#Local-Installation)
+- [Why SQuARE?](https://github.com/UKP-SQuARE/square-core/#Why-SQuARE?)
+- [Add New Skills](https://github.com/UKP-SQuARE/square-core/#Add-New-Skills?)
+- [Architecture](https://github.com/UKP-SQuARE/square-core/#Architecture)
+- [Contact](https://github.com/UKP-SQuARE/square-core/#Contact)
 
 ## Online Service
 Try out the on-the-go skills on the [demo page]((http://square.ukp.informatik.tu-darmstadt.de/))! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
