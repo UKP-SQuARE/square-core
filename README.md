@@ -6,7 +6,7 @@
 <p align="center">
     <!-- Going to also have licens, release version, paper doi, twitter, etc. here -->
     <a href="https://square.ukp-lab.de/">
-        <img alt="Website" src="https://img.shields.io/website?up_color=blue&up_message=online&url=http%3A%2F%2Fsquare.ukp.informatik.tu-darmstadt.de%2F">
+        <img alt="Website" src="https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fsquare.ukp-lab.de%2F">
     </a>
     <a href="https://square.ukp-lab.de/docs/">
         <img alt="Docs" src="https://img.shields.io/badge/docs-available-brightgreen">
