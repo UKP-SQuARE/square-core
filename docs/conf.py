@@ -45,6 +45,7 @@ extensions = [
     "sphinx_markdown_tables",
     "sphinx_copybutton",
     "sphinx-favicon",
+    "sphinx-pydantic",
 ]
 
 
