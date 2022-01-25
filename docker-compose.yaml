@@ -252,7 +252,7 @@ services:
     ports:
       - 8002:8002
     env_file:
-      - ./skills/qa-retrieve-span-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
@@ -262,7 +262,7 @@ services:
     ports:
       - 8003:8003
     env_file:
-      - ./skills/qa-boolq-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
@@ -272,7 +272,7 @@ services:
     ports:
       - 8004:8004
     env_file:
-      - ./skills/qa-squad-v2-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
@@ -282,7 +282,7 @@ services:
     ports:
       - 8005:8005
     env_file:
-      - ./skills/qa-commonsense-qa-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
@@ -292,7 +292,7 @@ services:
     ports:
       - 8006:8006
     env_file:
-      - ./skills/qa-extractive-qa-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
@@ -302,7 +302,7 @@ services:
     ports:
       - 8007:8007
     env_file:
-      - ./skills/qa-multiple-choice-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
@@ -312,7 +312,7 @@ services:
     ports:
       - 8009:8009
     env_file:
-      - ./skills/qa-retrieve-bioasq-skill/.env
+      - ./skills/.env
     environment:
       - WEB_CONCURRENCY=4
 
