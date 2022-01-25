@@ -8,6 +8,9 @@
     <a href="http://square.ukp-lab.de/">
         <img alt="Website" src="https://img.shields.io/website?up_color=blue&up_message=online&url=http%3A%2F%2Fsquare.ukp.informatik.tu-darmstadt.de%2F">
     </a>
+    <a href="http://square.ukp.informatik.tu-darmstadt.de/docs/">
+        <img alt="Docs" src="https://img.shields.io/badge/docs-available-brightgreen">
+    </a>
     <a href="https://github.com/UKP-SQuARE/square-core">
         <img alt="Repo" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
     </a>
