@@ -196,10 +196,10 @@ services:
       - ./.env.datastore_api
     environment:
       - WEB_CONCURRENCY=2
-    deploy:
-      resources: 
-        limits:
-          memory: 16384MB
+    # deploy:
+    #   resources: 
+    #     limits:
+    #       memory: 16384MB
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
