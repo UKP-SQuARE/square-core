@@ -37,11 +37,11 @@ Find out more about the project on [UKPs Website](https://www.informatik.tu-darm
 👉 If you want to use the SQuARE public service online, you can refer to [Online Service](#Online-Service) for using the existing skills and refer to 
 [Add New Skills](#Add-New-Skills?) for adding new skills.
 
-👉 If you want to deploy SQuARE locally yourself, please refer to [Local Installation](https://github.com/UKP-SQuARE/square-core/#Local-Installation).
+👉 If you want to deploy SQuARE locally yourself, please refer to [Local Installation](#Local-Installation).
 
-👉 For illustration of the architecture, please refer to [Architecture](https://github.com/UKP-SQuARE/square-core/#Architecture).
+👉 For illustration of the architecture, please refer to [Architecture](#Architecture).
 
-👉 And welcome to [contact us](https://github.com/UKP-SQuARE/square-core/#Contact).
+👉 And welcome to [contact us](#Contact).
 
 ## Online Service
 Try out the on-the-go skills on the [demo page]((http://square.ukp.informatik.tu-darmstadt.de/))! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
