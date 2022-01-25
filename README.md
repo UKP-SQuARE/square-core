@@ -6,7 +6,7 @@
 <p align="center">
     <!-- Going to also have licens, release version, paper doi, twitter, etc. here -->
     <a href="http://square.ukp-lab.de/">
-        <img alt="Demo" src="https://img.shields.io/website/http/huggingface.co/docs/transformers/index.svg?down_color=red&down_message=offline&up_message=online">
+        <img alt="Demo" src="https://img.shields.io/website?up_color=blue&up_message=online&url=http%3A%2F%2Fsquare.ukp.informatik.tu-darmstadt.de%2F">
     </a>
     <a href="https://github.com/UKP-SQuARE/square-core">
         <img alt="Repo" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
