@@ -60,7 +60,7 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 ## Add New Skills
 
 ### Step 1: Hosting New Skills
-- If you want to add new skills to the [public service](http://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours to the [pull requests](https://github.com/UKP-SQuARE/square-core/pulls). We will make it running after code review;
+- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours to the [pull requests](https://github.com/UKP-SQuARE/square-core/pulls). We will make it running after code review;
 - It is also OK to host the skill yourself somewhere else. The only thing that matters here is to provide a URL and also match the arguments formats.
 
 ### Step 2 (for Local Hosts Only): .env Setup 
