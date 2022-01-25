@@ -23,6 +23,7 @@ services:
       - --api.dashboard=true
       - --log.level=DEBUG
     labels:
+      - "traefik.enable=true"
       # Global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
