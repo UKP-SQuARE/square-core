@@ -197,6 +197,7 @@ services:
   datastore_api:
     privileged: true
     build: ./datastore-api
+    image: ukpsquare/square-datastore-api:latest
     depends_on:
       - datastore_es
     ports:
