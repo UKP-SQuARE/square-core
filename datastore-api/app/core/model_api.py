@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 class ModelAPIClient:
     """Wraps access to Square Model API methods used in the Datastore API."""
 
-    def __init__(self, base_url: str, model_api_user: str, model_api_password: str):
+    def __init__(self, base_url: str):
         self.base_url = base_url
-        self.auth = (model_api_user, model_api_password)
 
     def is_alive(self, index: Index) -> bool:
         if not self.base_url:
@@ -27,7 +26,7 @@ class ModelAPIClient:
 
         request_url = f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/health/heartbeat"
         try:
-            response = requests.get(request_url, auth=self.auth)
+            response = requests.get(request_url)
             if response.status_code != 200:
                 return False
             else:
@@ -55,7 +54,7 @@ class ModelAPIClient:
             "adapter_name": index.query_encoder_adapter,
         }
         logger.info(f"{request_url} : {data}")
-        response = requests.post(request_url, json=data, auth=self.auth)
+        response = requests.post(request_url, json=data)
         if response.status_code != 200:
             logger.error(response.json())
             raise EnvironmentError(f"Model API returned {response.status_code}.")

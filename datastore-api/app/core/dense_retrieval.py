@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from ..models.query import QueryResult
@@ -5,6 +6,7 @@ from .base_connector import BaseConnector
 from .faiss import FaissClient
 from .model_api import ModelAPIClient
 
+logger = logging.getLogger(__name__)
 
 class DenseRetrieval:
     """Contains the logic for dense retrieval leveraging the Square Model API and FAISS."""
@@ -52,8 +54,10 @@ class DenseRetrieval:
 
         # 1. Get the query embedding from the model api
         query_vector = self.model_api.encode_query(query, index)
+        logger.debug(f"Received query embedding:{query_vector}")
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
+        logger.debug(f"Queried Faiss, returned {len(queried)} docs.")
         # 3. Lookup the retrieved doc ids in the ES index.
         docs = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
         results = []

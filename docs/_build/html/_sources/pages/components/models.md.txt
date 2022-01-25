@@ -6,7 +6,7 @@ Receives input and returns prediction and other artifacts (e.g. attention scores
 ## Project structure
 
 The Model API uses 2 components: 
-n inference servers (each with their own model), and a treafik server that serves as API gateway 
+n inference servers (each with their own model), and a Traefik server that serves as API gateway 
 to forward requests to the correct inference server and to handle authorization of requests.
 ```
 ├───inference_server            # FastAPI Model API Server
@@ -61,18 +61,18 @@ uninstall `transformers`, and finally install `adapter-transformers`.
 The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
 is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
 
-However, to run and distinguish multiple models, we use an API gateway with traefik so we extend 
-the path to `/api/$model-prefix/$endpoint` which is then resolved by traefik to the correct model server and forwarded
+However, to run and distinguish multiple models, we use an API gateway with Traefik so we extend 
+the path to `/api/$model-prefix/$endpoint` which is then resolved by Traefik to the correct model server and forwarded
 to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
-This requires you to setup the docker-compose and treafik config as described below.
+This requires you to setup the docker-compose and Traefik config as described below.
 
 
 ## Setup
 ### Docker
 1. For each model server that should run, create a `.env.$model` to configure it.  
-   See [here](inference_server/.env.example) for an example.
-2. Configure `docker-compose.yaml` by adding services for the traefik reverse proxy, and the
-   model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.
+   See `inference_server/.env.example` for an example.
+2. Configure `docker-compose.yaml` by adding services for the Traefik reverse proxy, and the
+   model servers (each with their .env file). See example_docker-compose.yml for an example.
 
 To test whether the api is running you can execute:
 ```bash
@@ -93,7 +93,7 @@ This *only* starts one inference server using `inference_server/.env`. No treafi
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
-#### Running Via Docker
+#### Running via Docker
 
 ```sh
 make deploy
@@ -105,8 +105,8 @@ For unit tests:
 make test
 ```
 
-### Adding new Models using API
-New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/deploy`.
+### Adding New Models using API
+New models can be added without manually adapting the *docker-compose.yaml* file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
  of the path prefix in the following form:
 ```
@@ -167,8 +167,8 @@ Get prediction from the deployed model.
 
 
 
-### Adding new Models Manually
-With treafik we can add new models to the model API easily for each new model append the following to the 
+### Adding New Models Manually
+With Traefik we can add new models to the model API easily for each new model append the following to the 
 docker-comopse file:
 
 ```dockerfile
@@ -187,9 +187,9 @@ inference_<model>:
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
-#### Adding new Users
-The traefic component provides an Authentification service. To add new users and their password add 
-them [here](traefic.yaml). All users have the following form: 
+#### Adding New Users
+The Traefik component provides an Authentication service. To add new users and their password add 
+them in *traefik.yaml*. All users have the following form: 
 ```
 <user-name>:<password-hash>
 ```

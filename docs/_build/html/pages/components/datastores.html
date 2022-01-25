@@ -4,6 +4,8 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <meta content="Docutils 0.17.1: http://docutils.sourceforge.net/" name="generator"/>
+  <link href="../../_static/SQ_Web_Light.png" rel="icon" type="image/png"/>
+  <link href="../../_static/SQ_Web_Light.png" rel="apple-touch-icon" type="image/png"/>
   <meta content="width=device-width,initial-scale=1" name="viewport"/>
   <meta content="ie=edge" http-equiv="x-ua-compatible"/>
   <meta content="Copy to clipboard" name="lang:clipboard.copy"/>
@@ -42,6 +44,7 @@
   <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
   <link href="../../_static/material.css" rel="stylesheet" type="text/css"/>
   <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+  <link href="../../_static/custom.css" rel="stylesheet" type="text/css"/>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js">
   </script>
   <script src="../../_static/jquery.js">
@@ -59,7 +62,7 @@
   <link href="models.html" rel="next" title="Models"/>
   <link href="../overview/faq.html" rel="prev" title="FAQ"/>
  </head>
- <body data-md-color-accent="#086494" data-md-color-primary="#086494" dir="ltr">
+ <body data-md-color-accent="blue" data-md-color-primary="blue-grey" dir="ltr">
   <svg class="md-svg">
    <defs data-children-count="0">
     <svg height="448" id="__github" viewbox="0 0 416 448" width="416" xmlns="http://www.w3.org/2000/svg">
@@ -80,7 +83,7 @@
     <div class="md-flex navheader">
      <div class="md-flex__cell md-flex__cell--shrink">
       <a class="md-header-nav__button md-logo" href="../../index.html" title="SQuARE  documentation">
-       <img alt="SQuARE documentation logo" height="26" src="../../_static/SQ_Web_Dark_160px.png"/>
+       <img alt="SQuARE documentation logo" height="26" src="../../_static/SQ_Web_Light_90px.png"/>
       </a>
      </div>
      <div class="md-flex__cell md-flex__cell--shrink">
@@ -163,7 +166,7 @@
         <nav class="md-nav md-nav--primary" data-md-level="0">
          <label class="md-nav__title md-nav__title--site" for="__drawer">
           <a class="md-nav__button md-logo" href="../../index.html" title="SQuARE documentation">
-           <img alt=" logo" height="48" src="../../_static/SQ_Web_Dark_160px.png" width="48"/>
+           <img alt=" logo" height="48" src="../../_static/SQ_Web_Light_90px.png" width="48"/>
           </a>
           <a href="../../index.html" title="SQuARE documentation">
            SQuARE
@@ -294,11 +297,9 @@
                    <li class="md-nav__item">
                     <a class="md-nav__link" href="#uploading-via-upload-py">
                      Uploading via
-                     <code class="docutils literal notranslate">
-                      <span class="pre">
-                       upload.py
-                      </span>
-                     </code>
+                     <em>
+                      upload.py
+                     </em>
                     </a>
                    </li>
                   </ul>
@@ -319,72 +320,6 @@
              </li>
             </ul>
            </nav>
-           <ul class="md-nav__list">
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#overview">
-              Overview
-             </a>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#quick-production-setup">
-              Quick (production) setup
-             </a>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#development-setup">
-              Development setup
-             </a>
-             <ul class="md-nav__list">
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#requirements">
-                Requirements
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#docker-containers">
-                Docker containers
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#api-server">
-                API server
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#tests">
-                Tests
-               </a>
-              </li>
-             </ul>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#upload-documents">
-              Upload documents
-             </a>
-             <ul class="md-nav__list">
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#uploading-via-the-rest-api">
-                Uploading via the REST API
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#uploading-via-upload-py">
-                Uploading via
-                <code class="docutils literal notranslate">
-                 <span class="pre">
-                  upload.py
-                 </span>
-                </code>
-               </a>
-              </li>
-             </ul>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#configure-dense-retrieval-with-faiss">
-              Configure dense retrieval with FAISS
-             </a>
-            </li>
-           </ul>
           </li>
           <li class="md-nav__item">
            <a class="md-nav__link" href="models.html">
@@ -495,11 +430,9 @@
                 <li class="md-nav__item">
                  <a class="md-nav__link" href="#uploading-via-upload-py">
                   Uploading via
-                  <code class="docutils literal notranslate">
-                   <span class="pre">
-                    upload.py
-                   </span>
-                  </code>
+                  <em>
+                   upload.py
+                  </em>
                  </a>
                 </li>
                </ul>
@@ -589,11 +522,7 @@
               <strong>
                FAISS
               </strong>
-              web service containers (for storing dense document embeddings): see
-              <a class="reference external" href="#configure-dense-retrieval-with-faiss">
-               the section on dense retrieval
-              </a>
-              on how to setup.
+              web service containers (for storing dense document embeddings): see the section on dense retrieval on how to setup.
              </p>
             </li>
             <li>
@@ -619,22 +548,10 @@
           <li>
            <p>
             Open the
-            <span class="xref myst">
+            <em>
              docker-compose.yml
-            </span>
-            . Find the service declaration for
-            <code class="docutils literal notranslate">
-             <span class="pre">
-              datastore_api
-             </span>
-            </code>
-            and uncomment it. In the
-            <code class="docutils literal notranslate">
-             <span class="pre">
-              environment
-             </span>
-            </code>
-            section, optionally set an API key and the connection to the Model API.
+            </em>
+            . Find the service declaration for datastore_api and uncomment it. In the environment section, optionally set an API key and the connection to the Model API.
            </p>
           </li>
           <li>
@@ -657,19 +574,12 @@
           </li>
           <li>
            <p>
-            <a class="reference external" href="#upload-documents">
-             Upload documents
-            </a>
-            .
+            Upload documents.
            </p>
           </li>
           <li>
            <p>
-            For dense retrieval,
-            <a class="reference external" href="#configure-dense-retrieval-with-faiss">
-             configure a FAISS container
-            </a>
-            per datastore index.
+            For dense retrieval, configure a FAISS container per datastore index.
            </p>
           </li>
          </ol>
@@ -748,11 +658,7 @@
           </ul>
           <p>
            Additionally, the FAISS storage for each datastore index requires its own container.
-Check the
-           <a class="reference external" href="#configure-dense-retrieval-with-faiss">
-            FAISS configuration
-           </a>
-           section for more.
+Check the FAISS configuration section for more.
           </p>
           <p>
            Everything can be started via Docker Compose:
@@ -791,13 +697,13 @@ Check the
             </span>
            </code>
            file. See
-           <span class="xref myst">
-            here
-           </span>
+           <strong>
+            .env
+           </strong>
            for an example configuration and
-           <span class="xref myst">
-            here
-           </span>
+           <strong>
+            app/core/config.py
+           </strong>
            for all available options.
           </p>
           <p>
@@ -932,11 +838,9 @@ We can upload these documents to the Datastore API as follows:
          <section id="uploading-via-upload-py">
           <h3 id="uploading-via-upload-py">
            Uploading via
-           <code class="docutils literal notranslate">
-            <span class="pre">
-             upload.py
-            </span>
-           </code>
+           <em>
+            upload.py
+           </em>
            <a class="headerlink" href="#uploading-via-upload-py" title="Permalink to this headline">
             ¶
            </a>
@@ -1062,9 +966,9 @@ The new index should use Facebook’s DPR model and should be called
           <li>
            <p>
             Specify the FAISS web service container for the new index: Open the
-            <span class="xref myst">
+            <em>
              docker-compose.yml
-            </span>
+            </em>
             and in the section for FAISS service containers, add the following:
            </p>
            <div class="highlight-default notranslate">
@@ -1100,63 +1004,22 @@ The new index should use Facebook’s DPR model and should be called
     </div>
    </main>
   </div>
-  <footer class="md-footer">
-   <div class="md-footer-nav">
-    <nav class="md-footer-nav__inner md-grid">
-     <a class="md-flex md-footer-nav__link md-footer-nav__link--prev" href="../overview/faq.html" rel="prev" title="FAQ">
-      <div class="md-flex__cell md-flex__cell--shrink">
-       <i class="md-icon md-icon--arrow-back md-footer-nav__button">
-       </i>
-      </div>
-      <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-       <span class="md-flex__ellipsis">
-        <span class="md-footer-nav__direction">
-         Previous
-        </span>
-        FAQ
-       </span>
-      </div>
-     </a>
-     <a class="md-flex md-footer-nav__link md-footer-nav__link--next" href="models.html" rel="next" title="Models">
-      <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-       <span class="md-flex__ellipsis">
-        <span class="md-footer-nav__direction">
-         Next
-        </span>
-        Models
-       </span>
-      </div>
-      <div class="md-flex__cell md-flex__cell--shrink">
-       <i class="md-icon md-icon--arrow-forward md-footer-nav__button">
-       </i>
-      </div>
-     </a>
-    </nav>
+  <footer class="footer-basic">
+   <!--            <div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a></div>-->
+   <div class="footer-links">
+    <a class="footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/impressum.en.jsp">
+     Legal Note
+    </a>
+    <a class="footer-refs" href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp">
+     Privacy Policy
+    </a>
+    <a class="footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp">
+     UKP Lab
+    </a>
    </div>
-   <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-     <div class="md-footer-copyright">
-      <div class="md-footer-copyright__highlight">
-       © Copyright 2021, UKP.
-      </div>
-      Created using
-      <a href="http://www.sphinx-doc.org/">
-       Sphinx
-      </a>
-      4.3.2.
-             and
-      <a href="https://github.com/bashtage/sphinx-material/">
-       Material for
-              Sphinx
-      </a>
-     </div>
-    </div>
-   </div>
+   <p class="copyright">
+    UKP © 2022
+   </p>
   </footer>
-  <script src="../../_static/javascripts/application.js">
-  </script>
-  <script>
-   app.initialize({version: "1.0.4", url: {base: ".."}})
-  </script>
  </body>
 </html>

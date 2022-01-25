@@ -101,7 +101,7 @@
         </svg>
         &nbsp;Explainability
       </h2>
-      <p>Behavioural testing is a way to test the behaviour of the black-box models under certain conditions defined by the experts, a.k.a, users. This is simply done via implementing the tests for certain capability such as robustness and checking whether the models output the expected the answers.</p>
+      <p>Behavioural testing is a way to test the behaviour of black-box models under certain conditions defined by experts. This is simply done via implementing tests for certain capabilities such as robustness and checking whether the models output the expected answers.</p>
       <p>We refer you to CheckList <a class="text-decoration-none" href="https://aclanthology.org/2020.acl-main.442/" target="_blank">(Ribeiro et. al., 2020)</a> for the predefined machine reading tests used in this work.</p>
       <p>Select a skill to get started.</p>
     </div>
@@ -116,6 +116,7 @@ import mixin from '@/components/results/mixin.vue'
 import { getSkill } from '@/api'
 import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
 import boolq from '../../checklist/61a9f66935adbbf1f2433077.json'
+import commonsense from '../../checklist/61a9f6d035adbbf1f243307d.json'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -127,7 +128,8 @@ export default Vue.component('explainability-page', {
       },
       data: {
         '61a9f57935adbbf1f2433073': squad2,
-        '61a9f66935adbbf1f2433077': boolq
+        '61a9f66935adbbf1f2433077': boolq,
+        '61a9f6d035adbbf1f243307d': commonsense
       },
       skill: {},
       tests: [],

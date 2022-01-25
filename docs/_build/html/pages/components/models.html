@@ -4,6 +4,8 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <meta content="Docutils 0.17.1: http://docutils.sourceforge.net/" name="generator"/>
+  <link href="../../_static/SQ_Web_Light.png" rel="icon" type="image/png"/>
+  <link href="../../_static/SQ_Web_Light.png" rel="apple-touch-icon" type="image/png"/>
   <meta content="width=device-width,initial-scale=1" name="viewport"/>
   <meta content="ie=edge" http-equiv="x-ua-compatible"/>
   <meta content="Copy to clipboard" name="lang:clipboard.copy"/>
@@ -42,6 +44,7 @@
   <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
   <link href="../../_static/material.css" rel="stylesheet" type="text/css"/>
   <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+  <link href="../../_static/custom.css" rel="stylesheet" type="text/css"/>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js">
   </script>
   <script src="../../_static/jquery.js">
@@ -59,7 +62,7 @@
   <link href="skills.html" rel="next" title="Skills"/>
   <link href="datastores.html" rel="prev" title="Datastores"/>
  </head>
- <body data-md-color-accent="#086494" data-md-color-primary="#086494" dir="ltr">
+ <body data-md-color-accent="blue" data-md-color-primary="blue-grey" dir="ltr">
   <svg class="md-svg">
    <defs data-children-count="0">
     <svg height="448" id="__github" viewbox="0 0 416 448" width="416" xmlns="http://www.w3.org/2000/svg">
@@ -80,7 +83,7 @@
     <div class="md-flex navheader">
      <div class="md-flex__cell md-flex__cell--shrink">
       <a class="md-header-nav__button md-logo" href="../../index.html" title="SQuARE  documentation">
-       <img alt="SQuARE documentation logo" height="26" src="../../_static/SQ_Web_Dark_160px.png"/>
+       <img alt="SQuARE documentation logo" height="26" src="../../_static/SQ_Web_Light_90px.png"/>
       </a>
      </div>
      <div class="md-flex__cell md-flex__cell--shrink">
@@ -163,7 +166,7 @@
         <nav class="md-nav md-nav--primary" data-md-level="0">
          <label class="md-nav__title md-nav__title--site" for="__drawer">
           <a class="md-nav__button md-logo" href="../../index.html" title="SQuARE documentation">
-           <img alt=" logo" height="48" src="../../_static/SQ_Web_Dark_160px.png" width="48"/>
+           <img alt=" logo" height="48" src="../../_static/SQ_Web_Light_90px.png" width="48"/>
           </a>
           <a href="../../index.html" title="SQuARE documentation">
            SQuARE
@@ -298,7 +301,7 @@
                    </li>
                    <li class="md-nav__item">
                     <a class="md-nav__link" href="#running-via-docker">
-                     Running Via Docker
+                     Running via Docker
                     </a>
                    </li>
                    <li class="md-nav__item">
@@ -308,7 +311,7 @@
                    </li>
                    <li class="md-nav__item">
                     <a class="md-nav__link" href="#adding-new-models-using-api">
-                     Adding new Models using API
+                     Adding New Models using API
                     </a>
                     <nav class="md-nav">
                      <ul class="md-nav__list">
@@ -327,13 +330,13 @@
                    </li>
                    <li class="md-nav__item">
                     <a class="md-nav__link" href="#adding-new-models-manually">
-                     Adding new Models Manually
+                     Adding New Models Manually
                     </a>
                     <nav class="md-nav">
                      <ul class="md-nav__list">
                       <li class="md-nav__item">
                        <a class="md-nav__link" href="#adding-new-users">
-                        Adding new Users
+                        Adding New Users
                        </a>
                       </li>
                      </ul>
@@ -352,96 +355,6 @@
              </li>
             </ul>
            </nav>
-           <ul class="md-nav__list">
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#project-structure">
-              Project structure
-             </a>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#requirements">
-              Requirements
-             </a>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#installation">
-              Installation
-             </a>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#api-path">
-              API Path
-             </a>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#setup">
-              Setup
-             </a>
-             <ul class="md-nav__list">
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#docker">
-                Docker
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#local">
-                Local
-               </a>
-              </li>
-             </ul>
-            </li>
-            <li class="md-nav__item">
-             <a class="md-nav__link" href="#running">
-              Running
-             </a>
-             <ul class="md-nav__list">
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#running-localhost">
-                Running Localhost
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#running-via-docker">
-                Running Via Docker
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#running-tests">
-                Running Tests
-               </a>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#adding-new-models-using-api">
-                Adding new Models using API
-               </a>
-               <ul class="md-nav__list">
-                <li class="md-nav__item">
-                 <a class="md-nav__link" href="#example-deployment-request">
-                  Example deployment request
-                 </a>
-                </li>
-                <li class="md-nav__item">
-                 <a class="md-nav__link" href="#example-prediction-request">
-                  Example prediction request
-                 </a>
-                </li>
-               </ul>
-              </li>
-              <li class="md-nav__item">
-               <a class="md-nav__link" href="#adding-new-models-manually">
-                Adding new Models Manually
-               </a>
-               <ul class="md-nav__list">
-                <li class="md-nav__item">
-                 <a class="md-nav__link" href="#adding-new-users">
-                  Adding new Users
-                 </a>
-                </li>
-               </ul>
-              </li>
-             </ul>
-            </li>
-           </ul>
           </li>
           <li class="md-nav__item">
            <a class="md-nav__link" href="skills.html">
@@ -546,7 +459,7 @@
                 </li>
                 <li class="md-nav__item">
                  <a class="md-nav__link" href="#running-via-docker">
-                  Running Via Docker
+                  Running via Docker
                  </a>
                 </li>
                 <li class="md-nav__item">
@@ -556,7 +469,7 @@
                 </li>
                 <li class="md-nav__item">
                  <a class="md-nav__link" href="#adding-new-models-using-api">
-                  Adding new Models using API
+                  Adding New Models using API
                  </a>
                  <nav class="md-nav">
                   <ul class="md-nav__list">
@@ -575,13 +488,13 @@
                 </li>
                 <li class="md-nav__item">
                  <a class="md-nav__link" href="#adding-new-models-manually">
-                  Adding new Models Manually
+                  Adding New Models Manually
                  </a>
                  <nav class="md-nav">
                   <ul class="md-nav__list">
                    <li class="md-nav__item">
                     <a class="md-nav__link" href="#adding-new-users">
-                     Adding new Users
+                     Adding New Users
                     </a>
                    </li>
                   </ul>
@@ -627,7 +540,7 @@ Receives input and returns prediction and other artifacts (e.g. attention scores
          </h2>
          <p>
           The Model API uses 2 components:
-n inference servers (each with their own model), and a treafik server that serves as API gateway
+n inference servers (each with their own model), and a Traefik server that serves as API gateway
 to forward requests to the correct inference server and to handle authorization of requests.
          </p>
          <div class="highlight-default notranslate">
@@ -798,14 +711,14 @@ uninstall
 is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
          </p>
          <p>
-          However, to run and distinguish multiple models, we use an API gateway with traefik so we extend
+          However, to run and distinguish multiple models, we use an API gateway with Traefik so we extend
 the path to
           <code class="docutils literal notranslate">
            <span class="pre">
             /api/$model-prefix/$endpoint
            </span>
           </code>
-          which is then resolved by traefik to the correct model server and forwarded
+          which is then resolved by Traefik to the correct model server and forwarded
 to this server’s
           <code class="docutils literal notranslate">
            <span class="pre">
@@ -813,7 +726,7 @@ to this server’s
            </span>
           </code>
           endpoint. This is the path you use with Docker.
-This requires you to setup the docker-compose and treafik config as described below.
+This requires you to setup the docker-compose and Traefik config as described below.
          </p>
         </section>
         <section id="setup">
@@ -842,9 +755,11 @@ This requires you to setup the docker-compose and treafik config as described be
              to configure it.
              <br/>
              See
-             <span class="xref myst">
-              here
-             </span>
+             <code class="docutils literal notranslate">
+              <span class="pre">
+               inference_server/.env.example
+              </span>
+             </code>
              for an example.
             </p>
            </li>
@@ -856,12 +771,8 @@ This requires you to setup the docker-compose and treafik config as described be
                docker-compose.yaml
               </span>
              </code>
-             by adding services for the traefik reverse proxy, and the
-model servers (each with their .env file). See
-             <span class="xref myst">
-              example_docker-compose.yml
-             </span>
-             for an example.
+             by adding services for the Traefik reverse proxy, and the
+model servers (each with their .env file). See example_docker-compose.yml for an example.
             </p>
            </li>
           </ol>
@@ -937,7 +848,7 @@ model servers (each with their .env file). See
          </section>
          <section id="running-via-docker">
           <h3 id="running-via-docker">
-           Running Via Docker
+           Running via Docker
            <a class="headerlink" href="#running-via-docker" title="Permalink to this headline">
             ¶
            </a>
@@ -968,13 +879,17 @@ model servers (each with their .env file). See
          </section>
          <section id="adding-new-models-using-api">
           <h3 id="adding-new-models-using-api">
-           Adding new Models using API
+           Adding New Models using API
            <a class="headerlink" href="#adding-new-models-using-api" title="Permalink to this headline">
             ¶
            </a>
           </h3>
           <p>
-           New models can be added without manually adapting the docker-compose file by a
+           New models can be added without manually adapting the
+           <em>
+            docker-compose.yaml
+           </em>
+           file by a
            <code class="docutils literal notranslate">
             <span class="pre">
              POST
@@ -1082,13 +997,13 @@ models is in the list.
          </section>
          <section id="adding-new-models-manually">
           <h3 id="adding-new-models-manually">
-           Adding new Models Manually
+           Adding New Models Manually
            <a class="headerlink" href="#adding-new-models-manually" title="Permalink to this headline">
             ¶
            </a>
           </h3>
           <p>
-           With treafik we can add new models to the model API easily for each new model append the following to the
+           With Traefik we can add new models to the model API easily for each new model append the following to the
 docker-comopse file:
           </p>
           <div class="highlight-dockerfile notranslate">
@@ -1124,17 +1039,17 @@ corresponding instance of the model-api is reachable.
           </p>
           <section id="adding-new-users">
            <h4 id="adding-new-users">
-            Adding new Users
+            Adding New Users
             <a class="headerlink" href="#adding-new-users" title="Permalink to this headline">
              ¶
             </a>
            </h4>
            <p>
-            The traefic component provides an Authentification service. To add new users and their password add
-them
-            <span class="xref myst">
-             here
-            </span>
+            The Traefik component provides an Authentication service. To add new users and their password add
+them in
+            <em>
+             traefik.yaml
+            </em>
             . All users have the following form:
            </p>
            <div class="highlight-default notranslate">
@@ -1162,63 +1077,22 @@ It is easiest to use
     </div>
    </main>
   </div>
-  <footer class="md-footer">
-   <div class="md-footer-nav">
-    <nav class="md-footer-nav__inner md-grid">
-     <a class="md-flex md-footer-nav__link md-footer-nav__link--prev" href="datastores.html" rel="prev" title="Datastores">
-      <div class="md-flex__cell md-flex__cell--shrink">
-       <i class="md-icon md-icon--arrow-back md-footer-nav__button">
-       </i>
-      </div>
-      <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-       <span class="md-flex__ellipsis">
-        <span class="md-footer-nav__direction">
-         Previous
-        </span>
-        Datastores
-       </span>
-      </div>
-     </a>
-     <a class="md-flex md-footer-nav__link md-footer-nav__link--next" href="skills.html" rel="next" title="Skills">
-      <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
-       <span class="md-flex__ellipsis">
-        <span class="md-footer-nav__direction">
-         Next
-        </span>
-        Skills
-       </span>
-      </div>
-      <div class="md-flex__cell md-flex__cell--shrink">
-       <i class="md-icon md-icon--arrow-forward md-footer-nav__button">
-       </i>
-      </div>
-     </a>
-    </nav>
+  <footer class="footer-basic">
+   <!--            <div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a></div>-->
+   <div class="footer-links">
+    <a class="footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/impressum.en.jsp">
+     Legal Note
+    </a>
+    <a class="footer-refs" href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp">
+     Privacy Policy
+    </a>
+    <a class="footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp">
+     UKP Lab
+    </a>
    </div>
-   <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-     <div class="md-footer-copyright">
-      <div class="md-footer-copyright__highlight">
-       © Copyright 2021, UKP.
-      </div>
-      Created using
-      <a href="http://www.sphinx-doc.org/">
-       Sphinx
-      </a>
-      4.3.2.
-             and
-      <a href="https://github.com/bashtage/sphinx-material/">
-       Material for
-              Sphinx
-      </a>
-     </div>
-    </div>
-   </div>
+   <p class="copyright">
+    UKP © 2022
+   </p>
   </footer>
-  <script src="../../_static/javascripts/application.js">
-  </script>
-  <script>
-   app.initialize({version: "1.0.4", url: {base: ".."}})
-  </script>
  </body>
 </html>

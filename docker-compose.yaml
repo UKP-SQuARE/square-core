@@ -1,6 +1,65 @@
-version: '3.1'
+version: "3.3"
 
 services:
+  traefik:
+    image: traefik:v2.5.6
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.file.filename=/config/traefik.yaml
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Uncomment staging certs for testing
+      # - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      # Enable dashboard and logging
+      - --api.dashboard=true
+      - --log.level=DEBUG
+    labels:
+      - "traefik.enable=true"
+      # Global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+
+      # Middleware redirect from HTTP to HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    ports:
+      - "80:80" 
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yaml:/config/traefik.yaml
+      # mount volume to store certificates
+      - traefik-public-certificates:/certificates
+
+  backend:
+    image: ukpsquare/square-backend:latest
+    expose:
+      - 5000
+    depends_on:
+      - db
+    volumes:
+      - migrations-data:/app/migrations
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api/backend`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=le"
+      - "traefik.http.routers.backend.middlewares=backend-stripprefix,backend-addprefix"
+      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api/backend"
+      - "traefik.http.middlewares.backend-addprefix.addPrefix.prefix=/api"
+
   db:
     image: postgres
     restart: always
@@ -13,147 +72,44 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
-  backend:
-    image: ukpsquare/square-backend:latest
-    restart: always
-    ports:
-      - 5000:5000
-    depends_on:
-      - db
-    volumes:
-      - migrations-data:/app/migrations
-
   frontend:
     build:
       context: .
       dockerfile: ./square-frontend/Dockerfile_production
     image: ukpsquare/square-frontend:latest
     restart: always
-    ports:
-      - 80:80
-
-  ### Skills
-  boolq_skill:
-    image: ukpsquare/square-skills-boolq:latest
-    build: ./skills/qa-boolq-skill/.
-    ports:
-      - 8003:8003
-    env_file:
-      - ./skills/qa-boolq-skill/.env
-  squad_v2_skill:
-    image: ukpsquare/square-skills-squad-v2:latest
-    build: ./skills/qa-squad-v2-skill/.
-    ports:
-      - 8004:8004
-    env_file:
-      - ./skills/qa-squad-v2-skill/.env
-  commonsense_qa_skill:
-    image: ukpsquare/square-skills-commonsense-qa:latest
-    build: ./skills/qa-commonsense-qa-skill/.
-    ports:
-      - 8005:8005
-    env_file:
-      - ./skills/qa-commonsense-qa-skill/.env
-  extractive_qa_skill:
-    image: ukpsquare/square-skills-extractive:latest
-    build: ./skills/qa-extractive-qa-skill/.
-    ports:
-      - 8006:8006
-    env_file:
-      - ./skills/qa-extractive-qa-skill/.env
-  multiple_choice_qa_skill:
-    image: ukpsquare/square-skills-multiple-choice:latest
-    build: ./skills/qa-multiple-choice-skill/.
-    ports:
-      - 8007:8007
-    env_file:
-      - ./skills/qa-multiple-choice-skill/.env
-  naturalqa_retrieve_span_skill:
-    image: ukpsquare/square-skills-retrieve-span:latest
-    build: ./skills/qa-retrieve-span-skill/.
-    ports:
-      - 8002:8002
-    env_file:
-      - ./skills/qa-retrieve-span-skill/.env
-  retrieve_bioasq_skill:
-    image: ukpsquare/square-skills-retrieve-bioasq:latest
-    build: ./skills/qa-retrieve-bioasq-skill/.
-    ports:
-      - 8009:8009
-    env_file:
-      - ./skills/qa-retrieve-bioasq-skill/.env
-
-  ### MODEL API
-  traefik:
-    image: traefik:v2.5.6
-    container_name: traefik
-    command:
-      - --providers.docker=true
-      - --providers.file.filename=/config/traefik.yaml
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.http.middlewares=prefix-strip@file, auth@file, api-prefix@file
-      - --entrypoints.web.address=:80
-      - --accesslog=true
-      - --accesslog.format=json
-      - --accesslog.filepath=/var/log/traefik/access.log.json
-      - --log.level=DEBUG
-    ports:
-      - 8989:80
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./square-model-inference-api/traefik/traefik.yaml:/config/traefik.yaml
-
-  maintaining:
-    image: ukpsquare/square-model-management:latest
-#    build:
-#      ./square-model-inference-api/management_server
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    # ports:
+      # - 80:80
+    expose:
+      - 80
+      - 443
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
-
-  model_bert_adapter:
-    image: ukpsquare/square-model-api-v1:latest
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.bert_adapter
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bert.rule=PathPrefix(`/api/bert-base-uncased`)"
-
-  model_dpr:
-    image: ukpsquare/square-model-api-v1:latest
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.dpr
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)"
-
-  model_distilbert_st:
-    image: ukpsquare/square-model-api-v1:latest
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
-    volumes:
-      - ./.cache/:/etc/sentence-transformers/.cache/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)"
-
-  ### / MODEL API Finished
+      - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=le"
 
   skill_manager:
     image: ukpsquare/skill-manager:latest
     build: ./skill-manager
-    ports:
-      - 8008:8008
+    expose:
+      - 8008
     env_file:
       - ./skill-manager/.env
+    environment:
+      - WEB_CONCURRENCY=2
     depends_on:
       - skill_manager_mongo
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.skill-manager.rule=PathPrefix(`/api/skill-manager`)"
+      - "traefik.http.routers.skill-manager.entrypoints=websecure"
+      - "traefik.http.routers.skill-manager.tls=true"
+      - "traefik.http.routers.skill-manager.tls.certresolver=le"
+      - "traefik.http.routers.skill-manager.middlewares=skill-manager-stripprefix,skill-manager-addprefix"
+      - "traefik.http.middlewares.skill-manager-stripprefix.stripprefix.prefixes=/api/skill-manager"
+      - "traefik.http.middlewares.skill-manager-addprefix.addPrefix.prefix=/api"
 
   skill_manager_mongo:
     image: mongo:5.0.4
@@ -165,7 +121,105 @@ services:
     env_file:
       - ./skill-manager/.env
 
-  ### DATASTORE API
+  maintaining:
+    image: ukpsquare/square-model-management:latest
+    build: ./square-model-inference-api/management_server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1
+      - VERIFY_SSL=0
+      - WEB_CONCURRENCY=2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
+      - "traefik.http.routers.maintaining.entrypoints=websecure"
+      - "traefik.http.routers.maintaining.tls=true"
+      - "traefik.http.routers.maintaining.tls.certresolver=le"
+      - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
+      - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
+
+  model_bert_adapter:
+    image: ukpsquare/square-model-api-v1:latest
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.bert_adapter
+    environment:
+      - WEB_CONCURRENCY=2
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-bert-base-uncased.rule=PathPrefix(`/api/bert-base-uncased`)"
+      - "traefik.http.routers.model-bert-base-uncased.entrypoints=websecure"
+      - "traefik.http.routers.model-bert-base-uncased.tls=true"
+      - "traefik.http.routers.model-bert-base-uncased.tls.certresolver=le"
+      - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
+      - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
+      - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
+  
+  model_dpr:
+    image: ukpsquare/square-model-api-v1:latest
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.dpr
+    environment:
+      - WEB_CONCURRENCY=2
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)"
+      - "traefik.http.routers.model-dpr.entrypoints=websecure"
+      - "traefik.http.routers.model-dpr.tls=true"
+      - "traefik.http.routers.model-dpr.tls.certresolver=le"
+      - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
+      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
+      - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
+
+  model_distilbert_st:
+    image: ukpsquare/square-model-api-v1:latest
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
+    environment:
+      - WEB_CONCURRENCY=2
+    volumes:
+      - ./.cache/:/etc/sentence-transformers/.cache/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)"
+      - "traefik.http.routers.model-distilbert.entrypoints=websecure"
+      - "traefik.http.routers.model-distilbert.tls=true"
+      - "traefik.http.routers.model-distilbert.tls.certresolver=le"
+      - "traefik.http.routers.model-distilbert.middlewares=model-distilbert-stripprefix,model-distilbert-addprefix"
+      - "traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b"
+      - "traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api"
+
+  datastore_api:
+    privileged: true
+    build: ./datastore-api
+    image: ukpsquare/square-datastore-api:latest
+    depends_on:
+      - datastore_es
+    ports:
+      - "7000:7000"
+    env_file:
+      - ./.env.datastore_api
+    environment:
+      - WEB_CONCURRENCY=2
+    # deploy:
+    #   resources: 
+    #     limits:
+    #       memory: 16384MB
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
+      - "traefik.http.routers.datastores.entrypoints=websecure"
+      - "traefik.http.routers.datastores.tls=true"
+      - "traefik.http.routers.datastores.tls.certresolver=le"
+      - "traefik.http.routers.datastores.middlewares=datastores-stripprefix,datastores-addprefix"
+      - "traefik.http.middlewares.datastores-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.datastores-addprefix.addPrefix.prefix=/datastores"
 
   datastore_es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
@@ -177,44 +231,18 @@ services:
     ports:
       - 7200:9200
 
-  datastore_reverse-proxy:
-      image: traefik:v2.5
-      command:
-        - "--providers.docker"
-        - "--providers.docker.exposedbydefault=false"
-        - "--providers.file.filename=/config/traefik.yaml"
-        - "--entrypoints.web.address=:7010"
-        - "--entrypoints.web.http.middlewares=prefix-strip@file"
-        - "--providers.docker.defaultRule=PathPrefix(`{{ index .Labels \"square.datastore\"}}`)"
-      ports:
-        - "7010:7010"
-      volumes:
-        # The configuration file
-        - ${PWD}/traefik.yaml:/config/traefik.yaml
-        # So that Traefik can listen to the Docker events
-        - /var/run/docker.sock:/var/run/docker.sock
-
-##### BEGIN FAISS Service Containers #####
-
-# Add one container per FAISS index below.
-# Each container should be defined as follows:
-  # faiss-<index_name>:
-  #   image: kwang2049/faiss-instant:latest
-  #   volumes:
-  #     - <local_path>:/opt/faiss-instant/resources
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.services.faiss-<index_name>.loadbalancer.server.port=5000"
-  #     - "square.datastore=<index_name>"
-
   faiss-nq-dpr:
     image: kwang2049/faiss-instant:latest
     volumes:
       - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.faiss-nq-dpr.loadbalancer.server.port=5000"
-      - "square.datastore=/nq/dpr"
+      - "traefik.http.routers.datastores-faiss-dpr.rule=PathPrefix(`/api/nq/dpr`)"
+      - "traefik.http.routers.datastores-faiss-dpr.entrypoints=websecure"
+      - "traefik.http.routers.datastores-faiss-dpr.tls=true"
+      - "traefik.http.routers.datastores-faiss-dpr.tls.certresolver=le"
+      - "traefik.http.routers.datastores-faiss-dpr.middlewares=datastores-faiss-dpr-stripprefix"
+      - "traefik.http.middlewares.datastores-faiss-dpr-stripprefix.stripprefix.prefixes=/api/nq/dpr"
 
   faiss-msmarco-distilbert:
     image: kwang2049/faiss-instant:latest
@@ -222,29 +250,88 @@ services:
       - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.faiss-msmarco-distilbert.loadbalancer.server.port=5000"
-      - "square.datastore=/msmarco/distilbert"
+      - "traefik.http.routers.datastores-faiss-distilbert.rule=PathPrefix(`/api/msmarco/distilbert`)"
+      - "traefik.http.routers.datastores-faiss-distilbert.entrypoints=websecure"
+      - "traefik.http.routers.datastores-faiss-distilbert.tls=true"
+      - "traefik.http.routers.datastores-faiss-distilbert.tls.certresolver=le"
+      - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
+      - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
 
-##### END FAISS Service Containers #####
-
-  datastore_api:
-    privileged: true
-    build: ./datastore-api
-    depends_on:
-      - datastore_es
+  naturalqa_retrieve_span_skill:
+    image: ukpsquare/square-skills-retrieve-span:latest
+    build: ./skills/qa-retrieve-span-skill/.
     ports:
-      - "7000:7000"
+      - 8002:8002
     env_file:
-      - ./.env.datastore_api
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
 
- ### END DATASTORE API
+  boolq_skill:
+    image: ukpsquare/square-skills-boolq:latest
+    build: ./skills/qa-boolq-skill/.
+    ports:
+      - 8003:8003
+    env_file:
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
+
+  squad_v2_skill:
+    image: ukpsquare/square-skills-squad-v2:latest
+    build: ./skills/qa-squad-v2-skill/.
+    ports:
+      - 8004:8004
+    env_file:
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
+
+  commonsense_qa_skill:
+    image: ukpsquare/square-skills-commonsense-qa:latest
+    build: ./skills/qa-commonsense-qa-skill/.
+    ports:
+      - 8005:8005
+    env_file:
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
+
+  extractive_qa_skill:
+    image: ukpsquare/square-skills-extractive:latest
+    build: ./skills/qa-extractive-qa-skill/.
+    ports:
+      - 8006:8006
+    env_file:
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
+
+  multiple_choice_qa_skill:
+    image: ukpsquare/square-skills-multiple-choice:latest
+    build: ./skills/qa-multiple-choice-skill/.
+    ports:
+      - 8007:8007
+    env_file:
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
+
+  retrieve_bioasq_skill:
+    image: ukpsquare/square-skills-retrieve-bioasq:latest
+    build: ./skills/qa-retrieve-bioasq-skill/.
+    ports:
+      - 8009:8009
+    env_file:
+      - ./skills/.env
+    environment:
+      - WEB_CONCURRENCY=2
 
 volumes:
+  traefik-public-certificates:
   db-data:
     driver: local
   migrations-data:
-    driver: local
-  es01:
     driver: local
   skill-manager-mongo-data:
     driver: local
@@ -254,4 +341,3 @@ volumes:
     driver: local
   datastore-api-faiss-msmarco-distilbert:
     driver: local
-
