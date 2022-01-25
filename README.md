@@ -44,7 +44,7 @@ Find out more about the project on [UKPs Website](https://www.informatik.tu-darm
 👉 And welcome to [contact us](#Contact).
 
 ## Online Service
-Try out the on-the-go skills on the [demo page]((http://square.ukp.informatik.tu-darmstadt.de/))! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
+Try out the on-the-go skills on the [demo page](http://square.ukp.informatik.tu-darmstadt.de/)! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
 <details open>
     <summary>Screenshot</summary>
     <p align="center">
