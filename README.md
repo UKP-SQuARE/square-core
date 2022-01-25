@@ -5,10 +5,10 @@
 <p>
 <p align="center">
     <!-- Going to also have licens, release version, paper doi, twitter, etc. here -->
-    <a href="http://square.ukp-lab.de/">
+    <a href="https://square.ukp-lab.de/">
         <img alt="Website" src="https://img.shields.io/website?up_color=blue&up_message=online&url=http%3A%2F%2Fsquare.ukp.informatik.tu-darmstadt.de%2F">
     </a>
-    <a href="http://square.ukp.informatik.tu-darmstadt.de/docs/">
+    <a href="https://square.ukp-lab.de/docs/">
         <img alt="Docs" src="https://img.shields.io/badge/docs-available-brightgreen">
     </a>
     <a href="https://github.com/UKP-SQuARE/square-core">
@@ -25,7 +25,7 @@
 SQuARE is a flexible and extensible Question Answering (QA) platform to enable users to easily implement, manage and share their custom QA pipelines (aka Skills in SQuARE).
 
 Two ways are supported to use SQuARE:
-1. 🌐 Get access to the existing QA Skills (and even deploy your Skill!) via our [demo page](http://square.ukp.informatik.tu-darmstadt.de/);
+1. 🌐 Get access to the existing QA Skills (and even deploy your Skill!) via our [demo page](https://square.ukp-lab.de/);
 2. 💾 Or clone and install SQuARE to host services on a local machine.
 
 ## Why SQuARE?
@@ -47,7 +47,7 @@ Find out more about the project on [UKPs Website](https://www.informatik.tu-darm
 👉 And welcome to [contact us](#Contact).
 
 ## Online Service
-Try out the on-the-go skills on the [demo page](http://square.ukp.informatik.tu-darmstadt.de/)! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
+Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
 <details open>
     <summary>Screenshot</summary>
     <p align="center">
