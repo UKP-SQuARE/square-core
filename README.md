@@ -32,7 +32,7 @@ Try out the on-the-go skills on the [demo page]((http://square.ukp.informatik.tu
     <summary>Screenshot</summary>
     <p align="center">
         <br>
-        <img src="images/demo-page.png" width="600"/>
+        <img src="images/demo-page.png" width="800"/>
         <br>
     <p>
 </details>
@@ -75,7 +75,7 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
     <summary>Example: Skill Form Filling</summary>
     <p align="center">
         <br>
-        <img src="images/link_skill.png" width="600"/>
+        <img src="images/link_skill.png" width="800"/>
         <br>
     <p>
 </details>
@@ -90,7 +90,7 @@ For a whole (open QA) skill pipeline, it requires 6 steps:
 6. Optionally, the user can view the results of the predefined behavioural tests for the Skill. 
 <p align="center">
         <br>
-        <img src="images/architecture.png" width="600"/>
+        <img src="images/architecture.png" width="800"/>
         <br>
     <p>
 
