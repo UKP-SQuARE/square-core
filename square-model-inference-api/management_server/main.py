@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException
+import os
+from fastapi import FastAPI, HTTPException, UploadFile, File
 
 import requests
-from models import ModelRequest, ModelUpdate
+from models import ModelRequest
 from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
 
 API_URL = "http://172.17.0.1"
+ONNX_DEFAULT = "../square-model-inference-api/inference-server/onnx_models"
 
 app = FastAPI()
 
@@ -50,5 +52,5 @@ async def add_new_model(model_params: ModelRequest):
 
 
 @app.post("/api/remove/{identifier}")
-async def add_new_model(identifier):
+async def remove_model(identifier):
     return {"success": remove_model_container(identifier)}

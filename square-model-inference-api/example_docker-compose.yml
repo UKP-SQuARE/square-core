@@ -54,9 +54,6 @@ services:
     build: ./inference_server/.
     image: ukpsquare/square-model-api-v1:latest
 
-    ports:
-      - "8000:8000"
-
     env_file:
       - ./inference_server/.env.bert_adapter
     volumes:
