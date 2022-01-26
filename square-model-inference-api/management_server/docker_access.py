@@ -63,10 +63,19 @@ def remove_model_container(identifier):
     """
     Removes container for the given identifier
     """
+
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers." + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + identifier + ".tls": "true",
+        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-" \
+                                                                     + identifier + "-addprefix",
+        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
     }
+
     if len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
         return False
     container = docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
