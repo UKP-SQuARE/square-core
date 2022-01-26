@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.core.config import MODEL_TYPE, MODEL_NAME, MODEL_CLASS, DISABLE_GPU, BATCH_SIZE, \
-    TRANSFORMERS_CACHE, MAX_INPUT_SIZE, MODEL_PATH, DECODER_PATH
+    TRANSFORMERS_CACHE, MAX_INPUT_SIZE, MODEL_PATH, DECODER_PATH, PRELOADED_ADAPTERS
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
 from square_model_inference.inference.transformer import Transformer
 from square_model_inference.inference.onnx import Onnx
@@ -28,7 +28,8 @@ MODEL_KWARGS = {
     "disable_gpu": DISABLE_GPU,
     "batch_size": BATCH_SIZE,
     "transformers_cache": TRANSFORMERS_CACHE,
-    "max_input_size": MAX_INPUT_SIZE
+    "max_input_size": MAX_INPUT_SIZE,
+    "preloaded_adapters": PRELOADED_ADAPTERS,
 }
 
 
