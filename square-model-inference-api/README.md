@@ -70,7 +70,7 @@ uninstall `transformers`, and finally install `adapter-transformers`.
 1. For each model server that should run, create a `.env.$model` to configure it.  
    See [here](inference_server/.env.example) for an example.
 2. Configure `docker-compose.yaml` by adding services for the treafik reverse proxy, and the
-   model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.
+   model servers (each with their .env file). See [example_docker-compose.yml](docker-compose.yml) for an example.
 
 To test whether the api is running you can execute:
 ```bash
