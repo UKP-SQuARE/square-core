@@ -1,11 +1,19 @@
+import os
+import logging
+
+import requests
+
 from fastapi import FastAPI, HTTPException
 
-from time import sleep
-import requests
+from docker_access import get_all_model_prefixes, start_new_model_container
 from models import ModelRequest
-from docker_access import start_new_model_container, get_all_model_prefixes
 
-API_URL = "http://172.17.0.1"
+logger = logging.getLogger(__name__)
+
+# set this ENV variable to `host.docker.internal` for Mac
+API_URL = os.getenv("DOCKER_HOST_URL", "http://172.17.0.1")
+AUTH_USER = os.getenv("AUTH_USER", "admin")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "example_key")
 
 app = FastAPI()
 
@@ -14,11 +22,18 @@ app = FastAPI()
 async def get_all_models():
     lst_prefix, port = await(get_all_model_prefixes())
     lst_models = []
+
     for prefix in lst_prefix:
-        r = requests.get(url="{}:{}{}/stats".format(API_URL, port, prefix), auth=('admin', 'example_key'))
+        r = requests.get(
+            url="{}:{}{}/stats".format(API_URL, port, prefix), 
+            # auth=(AUTH_USER, AUTH_PASSWORD), 
+            verify=os.getenv("VERIFY_SSL", 1) == 1,
+        )
         # if the model-api instance has not finished loading the model it is not available yet
         if r.status_code == 200:
             lst_models.append(r.json())
+        else:
+            logger.debug(f"Model not up yet:\n{r.content}")
 
     return lst_models
 
