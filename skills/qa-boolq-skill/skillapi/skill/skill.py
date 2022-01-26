@@ -13,12 +13,7 @@ config = SquareSkillHelpersConfig.from_dotenv()
 model_api = ModelAPI(config)
 
 async def predict(request: QueryRequest) -> QueryOutput:
-    """
-    Process a given query and create the predictions for it.
-    :param request: The user query
-    :return: The prediction produced by the skill
-    """
-
+    """Predicts yes/no for a boolean question with context"""
     query = request.query
     context = request.skill_args["context"]
     prepared_input = [context, query] 
