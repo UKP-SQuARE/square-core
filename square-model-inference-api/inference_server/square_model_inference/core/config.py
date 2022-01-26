@@ -16,6 +16,7 @@ MODEL_TYPE: str = config("MODEL_TYPE", default=None)
 MODEL_PATH: str = config("MODEL_PATH", default=None)
 DECODER_PATH: str = config("DECODER_PATH", default=None)
 
+PRELOADED_ADAPTERS = config("PRELOADED_ADAPTERS", cast=bool, default=True)
 # Disable CUDA even if available
 DISABLE_GPU: bool = config("DISABLE_GPU", cast=bool, default=False)
 # Batch size used for many inputs

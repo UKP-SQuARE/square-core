@@ -2,18 +2,20 @@ import os
 import logging
 
 import requests
+
 from fastapi import FastAPI, HTTPException
 
-from docker_access import get_all_model_prefixes, start_new_model_container
 from models import ModelRequest
+
+from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container
 
 logger = logging.getLogger(__name__)
 
-# API_URL = "http://172.17.0.1"
-# set this ENV varibale to `host.docker.internal` for Mac 
+# set this ENV variable to `host.docker.internal` for Mac
 API_URL = os.getenv("DOCKER_HOST_URL", "http://172.17.0.1")
 AUTH_USER = os.getenv("AUTH_USER", "admin")
-AUTH_PASSWORD = os.getenv("AUTH_USER", "example_key")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "example_key")
+
 
 app = FastAPI()
 
@@ -22,11 +24,12 @@ app = FastAPI()
 async def get_all_models():
     lst_prefix, port = await(get_all_model_prefixes())
     lst_models = []
+
     for prefix in lst_prefix:
         r = requests.get(
             url="{}:{}{}/stats".format(API_URL, port, prefix), 
-            # auth=(AUTH_USER, AUTH_PASSWORD), 
-            verify=os.getenv("VERIFY_SSL", 1) == 1
+            # auth=(AUTH_USER, AUTH_PASSWORD),
+            verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
         if r.status_code == 200:
@@ -51,7 +54,7 @@ async def add_new_model(model_params: ModelRequest):
         "MAX_INPUT_SIZE": model_params.max_input,
         "TRANSFORMERS_CACHE": model_params.transformers_cache,
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
-
+        "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
     }
     container = await(start_new_model_container(identifier, env))
 
@@ -61,3 +64,8 @@ async def add_new_model(model_params: ModelRequest):
             "container": container.id,
         }
     return HTTPException(status_code=400)
+
+
+@app.post("/api/remove/{identifier}")
+async def add_new_model(identifier):
+    return {"success": remove_model_container(identifier)}

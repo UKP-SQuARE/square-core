@@ -16,5 +16,7 @@ env
 .vscode
 .cache
 
+# github action local
+bin
 # ignore build folder for docs
 docs/_build
