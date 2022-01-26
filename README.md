@@ -60,7 +60,7 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 ## Add New Skills
 
 ### Step 1: Hosting New Skills
-- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it running after code review;
+- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it run after code review;
 - It is also OK to host the skill yourself somewhere else. The only thing that matters here is to provide a URL and also match the argument formats.
 
 ### Step 2: Register the Skill
@@ -76,7 +76,7 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 </details>
 
 ## Local Installation
-For local development it's best to build the project with docker compose by running `docker compose build`.  
+For local development, it's best to build the project with docker compose by running `docker compose build`.  
 If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
 And finally run `docker compose up -d` to start the system.  
 
@@ -94,7 +94,7 @@ DATA_API_KEY=<YOUR_DATASTORE_API_KEY>
 SQUARE_API_URL=http://localhost/api
 ```
 
-3. If you use the UI locally, please also update the .env file under `./square-frontend/.env.prodctin` with the following content:
+3. If you use the UI locally, please also update the .env file under `./square-frontend/.env.production` with the following content:
 ```bash
 VUE_APP_BACKEND_URL=http://localhost/api/backend
 VUE_APP_SKILL_MANAGER_URL=http://localhost/api/skill-manager
