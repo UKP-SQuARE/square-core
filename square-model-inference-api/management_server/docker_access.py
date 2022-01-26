@@ -1,11 +1,10 @@
 import os
 import re
-
-import docker
-
 import logging
 
 logger = logging.getLogger(__name__)
+
+import docker
 
 docker_client = docker.from_env()
 

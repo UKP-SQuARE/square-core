@@ -28,11 +28,14 @@ class FaissClient:
     def search(self, datastore_name, index_name, query_vector, top_k=10) -> List[QueryResult]:
         url = f"{self.base_url}/{datastore_name}/{index_name}/search"
         data = {"k": top_k, "vectors": [query_vector]}
+        logger.debug(f"querying faiss at {url}") 
         response = requests.post(url, json=data)
         if response.status_code != 200:
             logger.info(response.text)
             raise EnvironmentError(f"Faiss server returned {response.status_code}.")
-
+        
+        logger.debug(f"received response from datastore api:\n{response.content}")
+        
         queried = response.json()[0]
         return queried
 

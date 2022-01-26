@@ -18,6 +18,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     data = await data_api(datastore_name="nq", index_name="dpr", query=request.query)
     logger.info(f"Data API output:\n{data}")
     context = [d["document"]["text"] for d in data]
+    context_score = [d["score"] for d in data]
 
     # Call Model API
     prepared_input = [[request.query, c] for c in context]  # Change as needed
@@ -25,7 +26,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
-        "task_kwargs": {"topk": 10},
+        "task_kwargs": {"topk": 1},
         "adapter_name": "qa/squad2@ukp"
     }
 
@@ -38,5 +39,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     return QueryOutput.from_question_answering(
         model_api_output=model_api_output,
-        context=context
+        context=context,
+        context_score=context_score
     )

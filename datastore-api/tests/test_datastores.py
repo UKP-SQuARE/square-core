@@ -35,7 +35,9 @@ class TestDatastores:
         response = client.get("/datastores/{}".format(new_datastore_name))
         assert response.status_code == 200
         assert response.json()["name"] == new_datastore_name
-        assert response.json()["fields"] == new_datastore_fields
+        def sort_by(d):
+            return (d["is_id"], d["name"], d["type"])
+        assert sorted(response.json()["fields"], key=sort_by) == sorted(new_datastore_fields,  key=sort_by)
 
     def test_must_contain_id_field(self, client):
         new_datastore_name = "datastore-test-new_datastore"

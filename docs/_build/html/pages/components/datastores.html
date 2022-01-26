@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="Docutils 0.17.1: http://docutils.sourceforge.net/" name="generator"/>
+  <link href="../../_static/SQ_Web_Light.png" rel="icon" type="image/png"/>
+  <link href="../../_static/SQ_Web_Light.png" rel="apple-touch-icon" type="image/png"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <meta content="ie=edge" http-equiv="x-ua-compatible"/>
+  <meta content="Copy to clipboard" name="lang:clipboard.copy"/>
+  <meta content="Copied to clipboard" name="lang:clipboard.copied"/>
+  <meta content="en" name="lang:search.language"/>
+  <meta content="True" name="lang:search.pipeline.stopwords"/>
+  <meta content="True" name="lang:search.pipeline.trimmer"/>
+  <meta content="No matching documents" name="lang:search.result.none"/>
+  <meta content="1 matching document" name="lang:search.result.one"/>
+  <meta content="# matching documents" name="lang:search.result.other"/>
+  <meta content="[\s\-]+" name="lang:search.tokenizer"/>
+  <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&amp;display=fallback" rel="stylesheet"/>
+  <style>
+   body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+  </style>
+  <link href="../../_static/stylesheets/application.css" rel="stylesheet"/>
+  <link href="../../_static/stylesheets/application-palette.css" rel="stylesheet"/>
+  <link href="../../_static/stylesheets/application-fixes.css" rel="stylesheet"/>
+  <link href="../../_static/fonts/material-icons.css" rel="stylesheet"/>
+  <meta content="#3f51b5" name="theme-color"/>
+  <script src="../../_static/javascripts/modernizr.js">
+  </script>
+  <title>
+   Datastores — SQuARE  documentation
+  </title>
+  <link href="../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+  <link href="../../_static/material.css" rel="stylesheet" type="text/css"/>
+  <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+  <link href="../../_static/custom.css" rel="stylesheet" type="text/css"/>
+  <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js">
+  </script>
+  <script src="../../_static/jquery.js">
+  </script>
+  <script src="../../_static/underscore.js">
+  </script>
+  <script src="../../_static/doctools.js">
+  </script>
+  <script src="../../_static/clipboard.min.js">
+  </script>
+  <script src="../../_static/copybutton.js">
+  </script>
+  <link href="../../genindex.html" rel="index" title="Index"/>
+  <link href="../../search.html" rel="search" title="Search"/>
+  <link href="models.html" rel="next" title="Models"/>
+  <link href="../overview/faq.html" rel="prev" title="FAQ"/>
+ </head>
+ <body data-md-color-accent="blue" data-md-color-primary="blue-grey" dir="ltr">
+  <svg class="md-svg">
+   <defs data-children-count="0">
+    <svg height="448" id="__github" viewbox="0 0 416 448" width="416" xmlns="http://www.w3.org/2000/svg">
+     <path d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z" fill="currentColor">
+     </path>
+    </svg>
+   </defs>
+  </svg>
+  <input class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+  <input class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+  <label class="md-overlay" data-md-component="overlay" for="__drawer">
+  </label>
+  <a class="md-skip" href="#pages/components/datastores" tabindex="1">
+   Skip to content
+  </a>
+  <header class="md-header" data-md-component="header">
+   <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+     <div class="md-flex__cell md-flex__cell--shrink">
+      <a class="md-header-nav__button md-logo" href="../../index.html" title="SQuARE  documentation">
+       <img alt="SQuARE documentation logo" height="26" src="../../_static/SQ_Web_Light_90px.png"/>
+      </a>
+     </div>
+     <div class="md-flex__cell md-flex__cell--shrink">
+      <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer">
+      </label>
+     </div>
+     <div class="md-flex__cell md-flex__cell--stretch">
+      <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+       <span class="md-header-nav__topic">
+        SQuARE
+       </span>
+       <span class="md-header-nav__topic">
+        Datastores
+       </span>
+      </div>
+     </div>
+     <div class="md-flex__cell md-flex__cell--shrink">
+      <label class="md-icon md-icon--search md-header-nav__button" for="__search">
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+       <label class="md-search__overlay" for="__search">
+       </label>
+       <div class="md-search__inner" role="search">
+        <form action="../../search.html" class="md-search__form" method="get" name="search">
+         <input autocapitalize="off" autocomplete="off" class="md-search__input" data-md-component="query" data-md-state="active" name="q" placeholder="Search" spellcheck="false" type="text"/>
+         <label class="md-icon md-search__icon" for="__search">
+         </label>
+         <button class="md-icon md-search__icon" data-md-component="reset" tabindex="-1" type="reset">
+          
+         </button>
+        </form>
+        <div class="md-search__output">
+         <div class="md-search__scrollwrap" data-md-scrollfix="">
+          <div class="md-search-result" data-md-component="result">
+           <div class="md-search-result__meta">
+            Type to start searching
+           </div>
+           <ol class="md-search-result__list">
+           </ol>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="md-flex__cell md-flex__cell--shrink">
+      <div class="md-header-nav__source">
+       <a class="md-source" data-md-source="github" href="https://github.com/UKP-SQuARE/square-core" title="Go to repository">
+        <div class="md-source__icon">
+         <svg height="28" viewbox="0 0 24 24" width="28" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+          <use height="24" width="24" xlink:href="#__github">
+          </use>
+         </svg>
+        </div>
+        <div class="md-source__repository">
+         square-core
+        </div>
+       </a>
+      </div>
+     </div>
+     <div class="md-flex__cell md-flex__cell--shrink dropdown">
+      <button class="dropdownbutton">
+       Versions
+      </button>
+      <div class="dropdown-content md-hero">
+       <a href="" title="v0.0.1">
+        v0.0.1
+       </a>
+      </div>
+     </div>
+    </div>
+   </nav>
+  </header>
+  <div class="md-container">
+   <main class="md-main">
+    <div class="md-main__inner md-grid" data-md-component="container">
+     <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+      <div class="md-sidebar__scrollwrap">
+       <div class="md-sidebar__inner">
+        <nav class="md-nav md-nav--primary" data-md-level="0">
+         <label class="md-nav__title md-nav__title--site" for="__drawer">
+          <a class="md-nav__button md-logo" href="../../index.html" title="SQuARE documentation">
+           <img alt=" logo" height="48" src="../../_static/SQ_Web_Light_90px.png" width="48"/>
+          </a>
+          <a href="../../index.html" title="SQuARE documentation">
+           SQuARE
+          </a>
+         </label>
+         <div class="md-nav__source">
+          <a class="md-source" data-md-source="github" href="https://github.com/UKP-SQuARE/square-core" title="Go to repository">
+           <div class="md-source__icon">
+            <svg height="28" viewbox="0 0 24 24" width="28" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+             <use height="24" width="24" xlink:href="#__github">
+             </use>
+            </svg>
+           </div>
+           <div class="md-source__repository">
+            square-core
+           </div>
+          </a>
+         </div>
+         <ul class="md-nav__list">
+          <li class="md-nav__item">
+           <span class="md-nav__link caption">
+            <span class="caption-text">
+             Overview
+            </span>
+           </span>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../overview/get_started.html">
+            Get Started
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../overview/use_cases.html">
+            Use Cases
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../overview/tutorials.html">
+            Tutorials
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../overview/roadmap.html">
+            Roadmap
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../overview/faq.html">
+            FAQ
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <span class="md-nav__link caption">
+            <span class="caption-text">
+             Components
+            </span>
+           </span>
+          </li>
+          <li class="md-nav__item">
+           <input class="md-toggle md-nav__toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+           <label class="md-nav__link md-nav__link--active" for="__toc">
+            Datastores
+           </label>
+           <a class="md-nav__link md-nav__link--active" href="#">
+            Datastores
+           </a>
+           <nav class="md-nav md-nav--secondary">
+            <label class="md-nav__title" for="__toc">
+             Contents
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix="">
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#pages-components-datastores--page-root">
+               Datastores
+              </a>
+              <nav class="md-nav">
+               <ul class="md-nav__list">
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#overview">
+                  Overview
+                 </a>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#quick-production-setup">
+                  Quick (production) setup
+                 </a>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#development-setup">
+                  Development setup
+                 </a>
+                 <nav class="md-nav">
+                  <ul class="md-nav__list">
+                   <li class="md-nav__item">
+                    <a class="md-nav__link" href="#requirements">
+                     Requirements
+                    </a>
+                   </li>
+                   <li class="md-nav__item">
+                    <a class="md-nav__link" href="#docker-containers">
+                     Docker containers
+                    </a>
+                   </li>
+                   <li class="md-nav__item">
+                    <a class="md-nav__link" href="#api-server">
+                     API server
+                    </a>
+                   </li>
+                   <li class="md-nav__item">
+                    <a class="md-nav__link" href="#tests">
+                     Tests
+                    </a>
+                   </li>
+                  </ul>
+                 </nav>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#upload-documents">
+                  Upload documents
+                 </a>
+                 <nav class="md-nav">
+                  <ul class="md-nav__list">
+                   <li class="md-nav__item">
+                    <a class="md-nav__link" href="#uploading-via-the-rest-api">
+                     Uploading via the REST API
+                    </a>
+                   </li>
+                   <li class="md-nav__item">
+                    <a class="md-nav__link" href="#uploading-via-upload-py">
+                     Uploading via
+                     <em>
+                      upload.py
+                     </em>
+                    </a>
+                   </li>
+                  </ul>
+                 </nav>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#configure-dense-retrieval-with-faiss">
+                  Configure dense retrieval with FAISS
+                 </a>
+                </li>
+               </ul>
+              </nav>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__extra_link" href="../../_sources/pages/components/datastores.md.txt">
+               Show Source
+              </a>
+             </li>
+            </ul>
+           </nav>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="models.html">
+            Models
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="skills.html">
+            Skills
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="explainability.html">
+            Explainability
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <span class="md-nav__link caption">
+            <span class="caption-text">
+             API
+            </span>
+           </span>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../api/datastore_api/datastores.html">
+            Datastore API
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../api/model_api/models.html">
+            Model API
+           </a>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="../api/skill_api/skills.html">
+            Skill API
+           </a>
+          </li>
+         </ul>
+        </nav>
+       </div>
+      </div>
+     </div>
+     <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+      <div class="md-sidebar__scrollwrap">
+       <div class="md-sidebar__inner">
+        <nav class="md-nav md-nav--secondary">
+         <label class="md-nav__title" for="__toc">
+          Contents
+         </label>
+         <ul class="md-nav__list" data-md-scrollfix="">
+          <li class="md-nav__item">
+           <a class="md-nav__link" href="#pages-components-datastores--page-root">
+            Datastores
+           </a>
+           <nav class="md-nav">
+            <ul class="md-nav__list">
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#overview">
+               Overview
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#quick-production-setup">
+               Quick (production) setup
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#development-setup">
+               Development setup
+              </a>
+              <nav class="md-nav">
+               <ul class="md-nav__list">
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#requirements">
+                  Requirements
+                 </a>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#docker-containers">
+                  Docker containers
+                 </a>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#api-server">
+                  API server
+                 </a>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#tests">
+                  Tests
+                 </a>
+                </li>
+               </ul>
+              </nav>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#upload-documents">
+               Upload documents
+              </a>
+              <nav class="md-nav">
+               <ul class="md-nav__list">
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#uploading-via-the-rest-api">
+                  Uploading via the REST API
+                 </a>
+                </li>
+                <li class="md-nav__item">
+                 <a class="md-nav__link" href="#uploading-via-upload-py">
+                  Uploading via
+                  <em>
+                   upload.py
+                  </em>
+                 </a>
+                </li>
+               </ul>
+              </nav>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#configure-dense-retrieval-with-faiss">
+               Configure dense retrieval with FAISS
+              </a>
+             </li>
+            </ul>
+           </nav>
+          </li>
+          <li class="md-nav__item">
+           <a class="md-nav__extra_link" href="../../_sources/pages/components/datastores.md.txt">
+            Show Source
+           </a>
+          </li>
+          <li class="md-nav__item" id="searchbox">
+          </li>
+         </ul>
+        </nav>
+       </div>
+      </div>
+     </div>
+     <div class="md-content">
+      <article class="md-content__inner md-typeset" role="main">
+       <section class="tex2jax_ignore mathjax_ignore" id="datastores">
+        <h1 id="pages-components-datastores--page-root">
+         Datastores
+         <a class="headerlink" href="#pages-components-datastores--page-root" title="Permalink to this headline">
+          ¶
+         </a>
+        </h1>
+        <p>
+         API for storing, indexing and retrieving document corpora, powered by
+         <a class="reference external" href="https://www.elastic.co/elasticsearch/">
+          Elasticsearch
+         </a>
+         and
+         <a class="reference external" href="https://github.com/facebookresearch/faiss">
+          FAISS
+         </a>
+         .
+        </p>
+        <section id="overview">
+         <h2 id="overview">
+          Overview
+          <a class="headerlink" href="#overview" title="Permalink to this headline">
+           ¶
+          </a>
+         </h2>
+         <p>
+          The Datastore API is dependent upon the following services:
+         </p>
+         <ul class="simple">
+          <li>
+           <p>
+            Required (automatically via Docker):
+           </p>
+           <ul>
+            <li>
+             <p>
+              <strong>
+               Elasticsearch
+              </strong>
+              (for storing documents and sparse retrieval)
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               Traefik
+              </strong>
+              (for routing search requests)
+             </p>
+            </li>
+           </ul>
+          </li>
+          <li>
+           <p>
+            Optional (manual setup required):
+           </p>
+           <ul>
+            <li>
+             <p>
+              <strong>
+               FAISS
+              </strong>
+              web service containers (for storing dense document embeddings): see the section on dense retrieval on how to setup.
+             </p>
+            </li>
+            <li>
+             <p>
+              <strong>
+               SQuARE Model API
+              </strong>
+              (for dense document retrieval)
+             </p>
+            </li>
+           </ul>
+          </li>
+         </ul>
+        </section>
+        <section id="quick-production-setup">
+         <h2 id="quick-production-setup">
+          Quick (production) setup
+          <a class="headerlink" href="#quick-production-setup" title="Permalink to this headline">
+           ¶
+          </a>
+         </h2>
+         <ol class="arabic">
+          <li>
+           <p>
+            Open the
+            <em>
+             docker-compose.yml
+            </em>
+            . Find the service declaration for datastore_api and uncomment it. In the environment section, optionally set an API key and the connection to the Model API.
+           </p>
+          </li>
+          <li>
+           <p>
+            Run the Docker setup:
+           </p>
+           <div class="highlight-default notranslate">
+            <div class="highlight">
+             <pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span> <span class="o">-</span><span class="n">d</span>
+</pre>
+            </div>
+           </div>
+           <p>
+            Check
+            <strong>
+             http://localhost:7000/docs
+            </strong>
+            for interactive documentation.
+           </p>
+          </li>
+          <li>
+           <p>
+            Upload documents.
+           </p>
+          </li>
+          <li>
+           <p>
+            For dense retrieval, configure a FAISS container per datastore index.
+           </p>
+          </li>
+         </ol>
+        </section>
+        <section id="development-setup">
+         <h2 id="development-setup">
+          Development setup
+          <a class="headerlink" href="#development-setup" title="Permalink to this headline">
+           ¶
+          </a>
+         </h2>
+         <section id="requirements">
+          <h3 id="requirements">
+           Requirements
+           <a class="headerlink" href="#requirements" title="Permalink to this headline">
+            ¶
+           </a>
+          </h3>
+          <ul class="simple">
+           <li>
+            <p>
+             Python 3.7+
+            </p>
+           </li>
+           <li>
+            <p>
+             Docker
+            </p>
+           </li>
+           <li>
+            <p>
+             Make (optional)
+            </p>
+           </li>
+          </ul>
+          <p>
+           Python requirements via pip (ideally with virtualenv):
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre>
+           </div>
+          </div>
+          <p>
+           … or via conda:
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+</pre>
+           </div>
+          </div>
+         </section>
+         <section id="docker-containers">
+          <h3 id="docker-containers">
+           Docker containers
+           <a class="headerlink" href="#docker-containers" title="Permalink to this headline">
+            ¶
+           </a>
+          </h3>
+          <p>
+           We use Docker containers for:
+          </p>
+          <ul class="simple">
+           <li>
+            <p>
+             Elasticsearch
+            </p>
+           </li>
+           <li>
+            <p>
+             Traefik
+            </p>
+           </li>
+          </ul>
+          <p>
+           Additionally, the FAISS storage for each datastore index requires its own container.
+Check the FAISS configuration section for more.
+          </p>
+          <p>
+           Everything can be started via Docker Compose:
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span> <span class="o">-</span><span class="n">d</span>
+</pre>
+           </div>
+          </div>
+          <p>
+           And teared down again after usage:
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">down</span>
+</pre>
+           </div>
+          </div>
+         </section>
+         <section id="api-server">
+          <h3 id="api-server">
+           API server
+           <a class="headerlink" href="#api-server" title="Permalink to this headline">
+            ¶
+           </a>
+          </h3>
+          <p>
+           <strong>
+            Configuration:
+           </strong>
+           Before starting the server, a few configuration options can be set via environment variables or a
+           <code class="docutils literal notranslate">
+            <span class="pre">
+             .env
+            </span>
+           </code>
+           file. See
+           <strong>
+            .env
+           </strong>
+           for an example configuration and
+           <strong>
+            app/core/config.py
+           </strong>
+           for all available options.
+          </p>
+          <p>
+           <strong>
+            Running:
+           </strong>
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">make</span> <span class="n">run</span>
+</pre>
+           </div>
+          </div>
+          <p>
+           By default, the server will run at port 7000.
+          </p>
+          <p>
+           Check
+           <strong>
+            http://localhost:7000/docs
+           </strong>
+           for interactive documentation.
+See below for uploading documents and embeddings.
+          </p>
+         </section>
+         <section id="tests">
+          <h3 id="tests">
+           Tests
+           <a class="headerlink" href="#tests" title="Permalink to this headline">
+            ¶
+           </a>
+          </h3>
+          <p>
+           Run integration tests:
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">make</span> <span class="n">test</span>
+</pre>
+           </div>
+          </div>
+          <p>
+           Run API tests (does not require dependency services):
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">make</span> <span class="n">test</span><span class="o">-</span><span class="n">api</span>
+</pre>
+           </div>
+          </div>
+         </section>
+        </section>
+        <section id="upload-documents">
+         <h2 id="upload-documents">
+          Upload documents
+          <a class="headerlink" href="#upload-documents" title="Permalink to this headline">
+           ¶
+          </a>
+         </h2>
+         <p>
+          In general, there are two ways to upload documents to the server: via the REST interface of the Datastore API or via the
+          <code class="docutils literal notranslate">
+           <span class="pre">
+            upload.py
+           </span>
+          </code>
+          script.
+         </p>
+         <section id="uploading-via-the-rest-api">
+          <h3 id="uploading-via-the-rest-api">
+           Uploading via the REST API
+           <a class="headerlink" href="#uploading-via-the-rest-api" title="Permalink to this headline">
+            ¶
+           </a>
+          </h3>
+          <p>
+           The Datastore API provides different methods for uploading documents.
+Documents are expected to be uploaded as
+           <code class="docutils literal notranslate">
+            <span class="pre">
+             .jsonl
+            </span>
+           </code>
+           files.
+          </p>
+          <p>
+           We first create a demo datastore to upload some documents to:
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="s1">'PUT'</span> \
+  <span class="s1">'http://localhost:7000/datastores/demo'</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s1">'accept: application/json'</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s1">'Content-Type: application/json'</span> \
+  <span class="o">-</span><span class="n">d</span> <span class="s1">'[</span>
+  <span class="p">{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"long"</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"title"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span>
+  <span class="p">}</span>
+<span class="p">]</span><span class="s1">'</span>
+</pre>
+           </div>
+          </div>
+          <p>
+           Some example documents adhering to the required format can be found at
+           <code class="docutils literal notranslate">
+            <span class="pre">
+             tests/fixtures/0.jsonl
+            </span>
+           </code>
+           .
+We can upload these documents to the Datastore API as follows:
+          </p>
+          <div class="highlight-default notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="s1">'POST'</span> \
+  <span class="s1">'http://localhost:7000/datastores/wiki/demo/upload'</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s1">'Authorization: abcdefg'</span> \
+  <span class="o">-</span><span class="n">F</span> <span class="s1">'file=@tests/fixtures/0.jsonl'</span>
+</pre>
+           </div>
+          </div>
+         </section>
+         <section id="uploading-via-upload-py">
+          <h3 id="uploading-via-upload-py">
+           Uploading via
+           <em>
+            upload.py
+           </em>
+           <a class="headerlink" href="#uploading-via-upload-py" title="Permalink to this headline">
+            ¶
+           </a>
+          </h3>
+          <p>
+           As an example, we upload the Wikipedia split used by DPR (containing 21M passages) into a datastore named “wiki”.
+          </p>
+          <ol class="arabic">
+           <li>
+            <p>
+             First, we download and unzip the documents:
+            </p>
+            <div class="highlight-default notranslate">
+             <div class="highlight">
+              <pre><span></span><span class="n">curl</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">dl</span><span class="o">.</span><span class="n">fbaipublicfiles</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">dpr</span><span class="o">/</span><span class="n">wikipedia_split</span><span class="o">/</span><span class="n">psgs_w100</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span> <span class="o">-</span><span class="n">o</span> <span class="n">psgs_w100</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">gunzip</span> <span class="n">psgs_w100</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span>
+</pre>
+             </div>
+            </div>
+           </li>
+           <li>
+            <p>
+             Create the datastore:
+            </p>
+            <div class="highlight-default notranslate">
+             <div class="highlight">
+              <pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="s1">'PUT'</span> \
+  <span class="s1">'http://localhost:7000/datastores/wiki'</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s1">'accept: application/json'</span> \
+  <span class="o">-</span><span class="n">H</span> <span class="s1">'Content-Type: application/json'</span> \
+  <span class="o">-</span><span class="n">d</span> <span class="s1">'[</span>
+  <span class="p">{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"long"</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"title"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span>
+  <span class="p">}</span>
+<span class="p">]</span><span class="s1">'</span>
+</pre>
+             </div>
+            </div>
+           </li>
+           <li>
+            <p>
+             Upload documents:
+            </p>
+            <div class="highlight-default notranslate">
+             <div class="highlight">
+              <pre><span></span><span class="n">python</span> <span class="n">upload</span><span class="o">.</span><span class="n">py</span>\
+  <span class="o">-</span><span class="n">s</span> <span class="n">wiki</span> \
+  <span class="o">-</span><span class="n">t</span> <span class="o">&lt;</span><span class="n">access_token</span><span class="o">&gt;</span> \
+  <span class="n">psgs_w100</span><span class="o">.</span><span class="n">tsv</span>
+</pre>
+             </div>
+            </div>
+           </li>
+          </ol>
+         </section>
+        </section>
+        <section id="configure-dense-retrieval-with-faiss">
+         <h2 id="configure-dense-retrieval-with-faiss">
+          Configure dense retrieval with FAISS
+          <a class="headerlink" href="#configure-dense-retrieval-with-faiss" title="Permalink to this headline">
+           ¶
+          </a>
+         </h2>
+         <p>
+          To enable dense document retrieval with FAISS, the Datastore API relies on
+          <a class="reference external" href="https://github.com/kwang2049/faiss-instant">
+           FAISS web service containers
+          </a>
+          that provide FAISS indices for the documents in a datastore.
+Each index in each datastore is corresponds to one FAISS web service container.
+The document embedding computation and FAISS index creation are performed offline, i.e. not via the Datastore API itself.
+         </p>
+         <p>
+          Let’s see how to add a dense retrieval index to an existing datastore (
+          <code class="docutils literal notranslate">
+           <span class="pre">
+            "wiki"
+           </span>
+          </code>
+          ).
+The new index should use Facebook’s DPR model and should be called
+          <code class="docutils literal notranslate">
+           <span class="pre">
+            "dpr"
+           </span>
+          </code>
+          .
+         </p>
+         <ol class="arabic">
+          <li>
+           <p>
+            Embed the document corpus using the document encoder model &amp; create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this.
+           </p>
+          </li>
+          <li>
+           <p>
+            Register the new index with its name via the Datastore API:
+           </p>
+           <div class="highlight-default notranslate">
+            <div class="highlight">
+             <pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="s1">'PUT'</span> \
+<span class="s1">'http://localhost:7000/datastores/wiki/indices/dpr'</span> \
+<span class="o">-</span><span class="n">H</span> <span class="s1">'accept: application/json'</span> \
+<span class="o">-</span><span class="n">H</span> <span class="s1">'Content-Type: application/json'</span> \
+<span class="o">-</span><span class="n">d</span> <span class="s1">'{</span>
+  <span class="s2">"doc_encoder_model"</span><span class="p">:</span> <span class="s2">"facebook/dpr-ctx_encoder-single-nq-base"</span><span class="p">,</span>
+  <span class="s2">"query_encoder_model"</span><span class="p">:</span> <span class="s2">"facebook/dpr-question_encoder-single-nq-base"</span><span class="p">,</span>
+  <span class="s2">"embedding_size"</span><span class="p">:</span> <span class="mi">768</span>
+<span class="p">}</span><span class="s1">'</span>
+</pre>
+            </div>
+           </div>
+          </li>
+          <li>
+           <p>
+            Specify the FAISS web service container for the new index: Open the
+            <em>
+             docker-compose.yml
+            </em>
+            and in the section for FAISS service containers, add the following:
+           </p>
+           <div class="highlight-default notranslate">
+            <div class="highlight">
+             <pre><span></span><span class="n">faiss</span><span class="o">-</span><span class="n">wiki</span><span class="o">-</span><span class="n">dpr</span><span class="p">:</span>
+  <span class="n">image</span><span class="p">:</span> <span class="n">kwang2049</span><span class="o">/</span><span class="n">faiss</span><span class="o">-</span><span class="n">instant</span><span class="p">:</span><span class="n">latest</span>
+  <span class="n">volumes</span><span class="p">:</span>
+    <span class="o">-</span> <span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">index</span><span class="p">:</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">faiss</span><span class="o">-</span><span class="n">instant</span><span class="o">/</span><span class="n">resources</span>
+  <span class="n">labels</span><span class="p">:</span>
+    <span class="o">-</span> <span class="s2">"traefik.enable=true"</span>
+    <span class="o">-</span> <span class="s2">"traefik.http.services.faiss-wiki-dpr.loadbalancer.server.port=5000"</span>
+    <span class="o">-</span> <span class="s2">"square.datastore=/wiki/dpr"</span>
+</pre>
+            </div>
+           </div>
+          </li>
+          <li>
+           <p>
+            Restart the Docker Compose setup:
+           </p>
+           <div class="highlight-default notranslate">
+            <div class="highlight">
+             <pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span> <span class="o">-</span><span class="n">d</span>
+</pre>
+            </div>
+           </div>
+          </li>
+         </ol>
+        </section>
+       </section>
+      </article>
+     </div>
+    </div>
+   </main>
+  </div>
+  <footer class="footer-basic">
+   <!--            <div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a></div>-->
+   <div class="footer-links">
+    <a class="footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/impressum.en.jsp">
+     Legal Note
+    </a>
+    <a class="footer-refs" href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp">
+     Privacy Policy
+    </a>
+    <a class="footer-refs" href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp">
+     UKP Lab
+    </a>
+   </div>
+   <p class="copyright">
+    UKP © 2022
+   </p>
+  </footer>
+ </body>
+</html>

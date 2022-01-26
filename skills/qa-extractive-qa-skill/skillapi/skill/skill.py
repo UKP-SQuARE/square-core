@@ -25,6 +25,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     prepared_input = [[query, context]]
     model_request = { 
         "input": prepared_input,
+        "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
         "adapter_name": request.skill_args["adapter"]
     }
     model_api_output = await model_api(

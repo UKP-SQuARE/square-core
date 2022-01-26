@@ -117,7 +117,9 @@ def mock_connector(wiki_datastore, dpr_index, second_index, test_document, query
 
 @pytest.fixture(scope="package")
 def mock_search_client(mock_connector):
-    model_api = ModelAPIClient(settings.MODEL_API_URL, settings.MODEL_API_KEY)
+    model_api = ModelAPIClient(
+        settings.MODEL_API_URL
+    )
     faiss = FaissClient(settings.FAISS_URL)
     return DenseRetrieval(mock_connector, model_api, faiss)
 

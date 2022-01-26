@@ -1,0 +1,4 @@
+.cache
+.git
+**/.venv
+**/node_modules
