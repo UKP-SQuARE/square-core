@@ -14,7 +14,11 @@ model_api = ModelAPI(config)
 data_api = DataAPI(config)
 
 async def predict(request: QueryRequest) -> QueryOutput:
-
+    """Given a question, performs open-domain, extractive QA. First, background 
+    knowledge is retrieved using DPR and the NaturalQuestions (Wikipedia) document 
+    collection. Next, the top 10 documents are used for span extraction. Finally, the 
+    extracted answers are returned.
+    """
     data = await data_api(datastore_name="nq", index_name="dpr", query=request.query)
     logger.info(f"Data API output:\n{data}")
     context = [d["document"]["text"] for d in data]

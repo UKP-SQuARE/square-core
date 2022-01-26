@@ -14,10 +14,10 @@ model_api = ModelAPI(config)
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
-    """
-    Process a given query and create the predictions for it.
-    :param request: The user query
-    :return: The prediction produced by the skill
+    """Given a question, a set of answers and optional context, performs multiple-choice 
+    QA. This skill is a general skill, it can be used with any adapter for 
+    multiple-choice question answering. The adapter to use can be specified in the 
+    `skill_args` or via the `default_skill_args` in the skill-manager.
     """
     query = request.query
     context = request.skill_args.get("context")
