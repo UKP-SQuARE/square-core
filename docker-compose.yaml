@@ -204,13 +204,9 @@ services:
     ports:
       - "7000:7000"
     env_file:
-      - ./.env.datastore_api
+      - ./datastore_api/.env
     environment:
       - WEB_CONCURRENCY=2
-    # deploy:
-    #   resources: 
-    #     limits:
-    #       memory: 16384MB
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
