@@ -79,12 +79,9 @@ To test whether the api is running you can execute:
 curl --insecure https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
 ```
 
-### Local
-Create `inference_server/.env` and configure it as needed for your local model server.
-
 ## Running
 
-#### Running Localhost
+### Running Localhost
 
 ```sh
 make run
@@ -93,19 +90,19 @@ This *only* starts one inference server using `inference_server/.env`. No Traefi
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
-#### Running via Docker
+### Running via Docker
 
 ```sh
 make deploy
 ```
 
-#### Running Tests
+### Running Tests
 For unit tests:
 ```sh
 make test
 ```
 
-### Adding New Models using API
+## Adding New Models using API
 New models can be added without manually adapting the *docker-compose.yaml* file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
  of the path prefix in the following form:
@@ -172,7 +169,7 @@ curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding'
 
 
 
-### Adding New Models Manually
+## Adding New Models Manually
 With Traefik we can add new models to the model API easily for each new model append the following to the 
 docker-comopse file:
 
@@ -192,13 +189,13 @@ inference_<model>:
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
-### Removing models via API
+## Removing models via API
 Removing the deployed distilbert model.
 ```bash
 curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
 ```
 
-#### Adding New Users
+## Adding New Users
 The Traefik component provides an Authentication service. To add new users and their password add 
 them in *traefik.yaml*. All users have the following form: 
 ```
