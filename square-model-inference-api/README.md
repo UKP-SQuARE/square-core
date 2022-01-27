@@ -29,7 +29,7 @@ to forward requests to the correct inference server and to handle authorization 
 ├───traefik
 │   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
 ├───locust                      # Load testing configuration with Locust
-└───example_docker-compose.yml  # Example docker-compose setup for the Model API
+└───docker-compose.yml  # Example docker-compose setup for the Model API
 ```
 
 ## API Path
@@ -70,11 +70,11 @@ uninstall `transformers`, and finally install `adapter-transformers`.
 1. For each model server that should run, create a `.env.$model` to configure it.  
    See [here](inference_server/.env.example) for an example.
 2. Configure `docker-compose.yaml` by adding services for the treafik reverse proxy, and the
-   model servers (each with their .env file). See [example_docker-compose.yml](example_docker-compose.yml) for an example.
+   model servers (each with their .env file). See [docker-compose.yml](docker-compose.yml) for an example.
 
 To test whether the api is running you can execute:
 ```bash
-curl -X GET http://localhost:8989/api/dpr/health/heartbeat  -H 'accept:application/json' --user admin:example_key
+curl --insecure https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
 ```
 
 ### Local
@@ -87,7 +87,7 @@ Create `inference_server/.env` and configure it as needed for your local model s
 ```sh
 make run
 ```
-This *only* starts one inference server using `inference_server/.env`. No treafik.  
+This *only* starts one inference server using `inference_server/.env`. No traefik.  
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
@@ -126,15 +126,19 @@ By passing all environment information that would normally be in the `.env` file
 
 The server will automatically create the model-api instance and add it to the docker network. It might take some time 
 until the model is available, since it needs to download and initialize the necessary models and adapters first. 
-To check whether the model is ready, you can retrieve all available models at `api/models` and check whether the added 
-models is in the list.
+To check whether the model is ready, you can retrieve all available models using
+`curl --insecure https://localhost:8443/api/models`
+and check whether the added models is in the list.
 
 #### Example deployment request 
 
 Deploy distilbert from sentence-transformers.
 
 ```bash
- curl -X POST http://localhost:8989/api/models/deploy  -H 'accept:application/json' -d '{
+curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
   "identifier": "distilbert",
   "model_name": "msmarco-distilbert-base-tas-b",
   "model_type": "sentence-transformer",
@@ -144,7 +148,7 @@ Deploy distilbert from sentence-transformers.
   "transformer_cache": "\/etc\/huggingface\/.cache\/",
   "model_class": "base",
   "return_plaintext_array": false
-}' --user admin:example_key
+}'
 ```
 
 #### Example prediction request 
@@ -152,7 +156,9 @@ Deploy distilbert from sentence-transformers.
 Get prediction from the deployed model.
 
 ```bash
- curl -X POST http://localhost:8989/api/distilbert/embedding  -H 'accept:application/json' -d '{
+curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding' \
+--header 'Content-Type: application/json' \
+--data-raw '{
   "input": [
     "Do aliens exist?"
   ],
@@ -161,9 +167,8 @@ Get prediction from the deployed model.
   "model_kwargs": {},
   "task_kwargs": {},
   "adapter_name": ""
-}' --user admin:example_key
+}'
 ```
-
 
 
 ### Adding new Models Manually
@@ -186,9 +191,15 @@ inference_<model>:
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
-#### Adding new Users
-The traefic component provides an Authentification service. To add new users and their password add 
-them [here](traefic.yaml). All users have the following form: 
+### Removing models via API
+Removing the deployed distilbert model.
+```bash
+curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
+```
+
+### Adding new Users
+The traefik component provides an Authentication service. To add new users and their password add 
+them [here](traefik.yaml). All users have the following form: 
 ```
 <user-name>:<password-hash>
 ```
