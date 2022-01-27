@@ -21,7 +21,7 @@ to forward requests to the correct inference server and to handle authorization 
 │       ├───core                # Server config, Startup logic, etc.
 │       ├───models              # Input/ output modelling for API
 │       └───inference           # Deep Model implementation and inference code for NLP tasks
-├───management_server          # FastAPI server for adding new models or listing all models
+├───management_server           # FastAPI server for adding new models or listing all models
 │   ├───main.py                 # Entry point in server
 │   ├───docker_access.py        # Manages docker acces of server
 │   ├───Dockerfile              # Dockerfile for server
@@ -29,7 +29,7 @@ to forward requests to the correct inference server and to handle authorization 
 ├───traefik
 │   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
 ├───locust                      # Load testing configuration with Locust
-└───example_docker-compose.yml  # Example docker-compose setup for the Model API
+└───docker-compose.yml          # Example docker-compose setup for the Model API
 ```
 
 ## Requirements
@@ -76,36 +76,33 @@ This requires you to setup the docker-compose and Traefik config as described be
 
 To test whether the api is running you can execute:
 ```bash
-curl -X GET http://localhost:8989/api/dpr/health/heartbeat  -H 'accept:application/json' --user admin:example_key
+curl --insecure https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
 ```
-
-### Local
-Create `inference_server/.env` and configure it as needed for your local model server.
 
 ## Running
 
-#### Running Localhost
+### Running Localhost
 
 ```sh
 make run
 ```
-This *only* starts one inference server using `inference_server/.env`. No treafik.  
+This *only* starts one inference server using `inference_server/.env`. No Traefik.  
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
-#### Running via Docker
+### Running via Docker
 
 ```sh
 make deploy
 ```
 
-#### Running Tests
+### Running Tests
 For unit tests:
 ```sh
 make test
 ```
 
-### Adding New Models using API
+## Adding New Models using API
 New models can be added without manually adapting the *docker-compose.yaml* file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
  of the path prefix in the following form:
@@ -135,7 +132,10 @@ models is in the list.
 Deploy distilbert from sentence-transformers.
 
 ```bash
- curl -X POST http://localhost:8989/api/models/deploy  -H 'accept:application/json' -d '{
+curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
   "identifier": "distilbert",
   "model_name": "msmarco-distilbert-base-tas-b",
   "model_type": "sentence-transformer",
@@ -145,7 +145,7 @@ Deploy distilbert from sentence-transformers.
   "transformer_cache": "\/etc\/huggingface\/.cache\/",
   "model_class": "base",
   "return_plaintext_array": false
-}' --user admin:example_key
+}'
 ```
 
 #### Example prediction request 
@@ -153,7 +153,9 @@ Deploy distilbert from sentence-transformers.
 Get prediction from the deployed model.
 
 ```bash
- curl -X POST http://localhost:8989/api/distilbert/embedding  -H 'accept:application/json' -d '{
+curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding' \
+--header 'Content-Type: application/json' \
+--data-raw '{
   "input": [
     "Do aliens exist?"
   ],
@@ -162,12 +164,12 @@ Get prediction from the deployed model.
   "model_kwargs": {},
   "task_kwargs": {},
   "adapter_name": ""
-}' --user admin:example_key
+}'
 ```
 
 
 
-### Adding New Models Manually
+## Adding New Models Manually
 With Traefik we can add new models to the model API easily for each new model append the following to the 
 docker-comopse file:
 
@@ -187,7 +189,13 @@ inference_<model>:
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
-#### Adding New Users
+## Removing models via API
+Removing the deployed distilbert model.
+```bash
+curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
+```
+
+## Adding New Users
 The Traefik component provides an Authentication service. To add new users and their password add 
 them in *traefik.yaml*. All users have the following form: 
 ```
