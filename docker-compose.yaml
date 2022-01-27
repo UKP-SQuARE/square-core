@@ -128,6 +128,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=2
     labels:
