@@ -2,15 +2,12 @@
 <template>
   <div>
     <div class="row">
-      <div class="col-xl col-lg-5 mb-4 mb-lg-0">
-        <div class="border rounded bg-light p-4" v-html="currentContext" />
-      </div>
-      <div class="col-xl col-lg-7">
+      <div class="col-xl col-lg-7 mb-4 mt-lg-4">
         <ul class="list-group list-group-flush">
           <li
               v-for="(res, index) in skillResult.predictions"
               :key="index"
-              v-on:mouseover="setActive(index, res.prediction_documents[0].span)"
+              v-on:mouseover="activeResult = index"
               class="list-group-item list-group-item-action"
               :class="{ 'border-primary': index === activeResult, 'bg-light': index === activeResult }"
               :aria-current="index === activeResult">
@@ -26,6 +23,9 @@
           </li>
         </ul>
       </div>
+      <div class="col-xl col-lg-5 d-flex align-items-center">
+        <div class="border rounded bg-light p-4" v-html="currentContext" />
+      </div>
     </div>
   </div>
 </template>
@@ -39,8 +39,7 @@ export default Vue.component('span-extraction-results', {
   mixins: [mixin],
   data() {
     return {
-      activeResult: null,
-      span: null
+      activeResult: 0
     }
   },
   computed: {
@@ -49,15 +48,9 @@ export default Vue.component('span-extraction-results', {
       if (this.$store.state.currentContext.length > 0) {
         document = this.$store.state.currentContext
       } else {
-        document = this.skillResult.predictions[0].prediction_documents[0].document
+        document = this.skillResult.predictions[this.activeResult].prediction_documents[0].document
       }
-      return this.highlightSpan(document, this.span)
-    }
-  },
-  methods: {
-    setActive(index, span) {
-      this.activeResult = index
-      this.span = span
+      return this.highlightSpan(document, this.skillResult.predictions[this.activeResult].prediction_documents[0].span)
     }
   }
 })

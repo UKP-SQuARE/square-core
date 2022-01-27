@@ -1,26 +1,41 @@
+import logging
 import os
-from fastapi import FastAPI, HTTPException, UploadFile, File
 
 import requests
-from models import ModelRequest
-from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
 
-API_URL = "http://172.17.0.1"
-ONNX_DEFAULT = "../square-model-inference-api/inference-server/onnx_models"
+from fastapi import FastAPI, HTTPException
+
+from models import ModelRequest
+
+from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container
+
+logger = logging.getLogger(__name__)
+
+# set this ENV variable to `host.docker.internal` for Mac
+API_URL = os.getenv("DOCKER_HOST_URL", "http://172.17.0.1")
+AUTH_USER = os.getenv("AUTH_USER", "admin")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "example_key")
+
 
 app = FastAPI()
 
 
 @app.get("/api")
 async def get_all_models():
-    lst_prefix = get_all_model_prefixes()
-    port = get_port()
+    lst_prefix, port = get_all_model_prefixes()
     lst_models = []
+
     for prefix in lst_prefix:
-        r = requests.get(url="{}:{}{}/stats".format(API_URL, port, prefix), auth=('admin', 'example_key'))
+        r = requests.get(
+            url="{}:{}{}/stats".format(API_URL, port, prefix),
+            # auth=(AUTH_USER, AUTH_PASSWORD),
+            verify=os.getenv("VERIFY_SSL", 1) == 1,
+        )
         # if the model-api instance has not finished loading the model it is not available yet
         if r.status_code == 200:
             lst_models.append(r.json())
+        else:
+            logger.debug(f"Model not up yet:\n{r.content}")
 
     return lst_models
 

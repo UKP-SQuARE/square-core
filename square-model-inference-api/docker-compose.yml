@@ -1,0 +1,108 @@
+# only for dev work
+
+version: "3.3"
+
+services:
+  traefik:
+    image: traefik:v2.6.0
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      # Enable https port 443
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Uncomment staging certs for testing
+      - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.le.acme.email=sachdeva@ukp.informatik.tu-darmstadt.de
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      # Enable dashboard and logging
+      - --api.dashboard=true
+      - --log.level=DEBUG
+    ports:
+      - "8989:80"  # http port
+      - "8443:443"  # https port
+      - "8080:8080"  # web UI port
+    labels:
+      - "traefik.enable=true"
+      # Global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+
+      # Middleware redirect from HTTP to HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # mount volume to store certificates
+      - traefik-public-certificates:/certificates
+
+
+  maintaining:
+    image: ukpsquare/square-model-management:latest
+#    build: ./management_server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
+      - VERIFY_SSL=0
+      - WEB_CONCURRENCY=1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
+      - "traefik.http.routers.maintaining.entrypoints=websecure"
+      - "traefik.http.routers.maintaining.tls=true"
+      - "traefik.http.routers.maintaining.tls.certresolver=le"
+      - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
+      - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
+
+
+  # --------- Example config for one model server ---------
+  model_dpr:
+    image: ukpsquare/square-model-api-v1:latest
+    env_file:
+      - ./inference_server/.env.dpr
+    environment:
+      - WEB_CONCURRENCY=1
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)"
+      - "traefik.http.routers.model-dpr.entrypoints=websecure"
+      - "traefik.http.routers.model-dpr.tls=true"
+      - "traefik.http.routers.model-dpr.tls.certresolver=le"
+      - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
+      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
+      - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
+
+#  model_bert_adapter:
+#    image: ukpsquare/square-model-api-v1:latest
+#    env_file:
+#      - ./square-model-inference-api/inference_server/.env.bert_adapter
+#    environment:
+#      - WEB_CONCURRENCY=1
+#    volumes:
+#      - ./.cache/:/etc/huggingface/.cache/
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.model-bert-base-uncased.rule=PathPrefix(`/api/bert-base-uncased`)"
+#      - "traefik.http.routers.model-bert-base-uncased.entrypoints=websecure"
+#      - "traefik.http.routers.model-bert-base-uncased.tls=true"
+#      - "traefik.http.routers.model-bert-base-uncased.tls.certresolver=le"
+#      - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
+#      - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
+#      - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
+
+
+volumes:
+  traefik-public-certificates:

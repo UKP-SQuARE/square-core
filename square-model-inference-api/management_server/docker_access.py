@@ -1,8 +1,15 @@
-import docker
 import os
 import re
+import logging
+
+logger = logging.getLogger(__name__)
+
+import docker
 
 docker_client = docker.from_env()
+
+MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
+MODELS_API_PATH = "models"  # For management server e.g. /api/models to list models etc.
 
 
 def start_new_model_container(identifier, env):
@@ -13,7 +20,14 @@ def start_new_model_container(identifier, env):
     """
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers." + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + identifier + ".tls": "true",
+        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-"\
+                                                                     + identifier + "-addprefix",
+        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
     }
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
@@ -29,7 +43,7 @@ def start_new_model_container(identifier, env):
     container_name = network.name + "_" + identifier
     try:
         container = docker_client.containers.run(
-            "ukpsquare/square-model-api-v1:latest",
+            MODEL_API_IMAGE,
             name=container_name,
             detach=True,
             environment=env,
@@ -48,10 +62,19 @@ def remove_model_container(identifier):
     """
     Removes container for the given identifier
     """
+
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers." + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + identifier + ".tls": "true",
+        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-" \
+                                                                     + identifier + "-addprefix",
+        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
     }
+
     if len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
         return False
     container = docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
@@ -67,14 +90,20 @@ def get_all_model_prefixes():
     """
     # assumes square is somewhere in the container name
     lst_container = docker_client.containers.list(filters={"name": "square"})
+    reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
+    port = list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
+
     lst_prefix = []
     for container in lst_container:
-        if "maintaining" not in container.name:
+        logger.debug(f"Found candidate model container: {container.name}")
+        if "model" in container.name:
             for identifier, label in container.labels.items():
-                if "PathPrefix" in label:
+                if "PathPrefix" in label and MODELS_API_PATH not in label:
                     prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
                     lst_prefix.append(prefix)
-    return lst_prefix
+
+    logger.debug(f"Found model containers: {lst_prefix} on port {port}")
+    return lst_prefix, port
 
 
 def get_port():

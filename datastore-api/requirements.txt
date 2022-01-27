@@ -1,5 +1,5 @@
 Jinja2 == 3.0.1
-elasticsearch[async] == 7.15.1
+elasticsearch[async] == 7.16.1
 fastapi == 0.65.2
 filelock == 3.0.12
 h5py == 3.3.0
@@ -10,4 +10,4 @@ requests == 2.25.1
 torch == 1.9.0
 transformers == 4.8.2
 uvicorn[standard] == 0.14.0
-ElkJsonFormatter.tar.gz
+git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2
