@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 import requests
 
@@ -22,12 +22,12 @@ app = FastAPI()
 
 @app.get("/api")
 async def get_all_models():
-    lst_prefix, port = await(get_all_model_prefixes())
+    lst_prefix, port = get_all_model_prefixes()
     lst_models = []
 
     for prefix in lst_prefix:
         r = requests.get(
-            url="{}:{}{}/stats".format(API_URL, port, prefix), 
+            url="{}:{}{}/stats".format(API_URL, port, prefix),
             # auth=(AUTH_USER, AUTH_PASSWORD),
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
@@ -56,7 +56,7 @@ async def add_new_model(model_params: ModelRequest):
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
     }
-    container = await(start_new_model_container(identifier, env))
+    container = start_new_model_container(identifier, env)
 
     if container:
         return {
@@ -67,5 +67,5 @@ async def add_new_model(model_params: ModelRequest):
 
 
 @app.post("/api/remove/{identifier}")
-async def add_new_model(identifier):
+async def remove_model(identifier):
     return {"success": remove_model_container(identifier)}

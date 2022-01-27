@@ -5,10 +5,10 @@ from io import BytesIO
 import base64
 import numpy as np
 from pydantic import Field, BaseModel
-from square_model_inference.core.config import RETURN_PLAINTEXT_ARRAYS
+from square_model_inference.core.config import model_config
 
 
-def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], return_plaintext: bool=RETURN_PLAINTEXT_ARRAYS) -> Dict[str, Union[list, str]]:
+def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], return_plaintext: bool=model_config.return_plaintext_arrays ) -> Dict[str, Union[list, str]]:
     """
     Encodes the Torch Tensors first to Numpy arrays and then encodes them either as plain lists or base64 string
     depending on the flag RETURN_PLAINTEXT_ARRAYS
@@ -89,7 +89,7 @@ class PredictionOutput(BaseModel):
                     "of the tensors for each input."
     )
     model_output_is_encoded: bool = Field(
-        not RETURN_PLAINTEXT_ARRAYS,
+        not model_config.return_plaintext_arrays,
         description="Flag indicating that 'model_output' is a base64-encoded numpy array and not a human-readable list."
                     "See the field description for 'model_output' on information on how to decode the array.")
 

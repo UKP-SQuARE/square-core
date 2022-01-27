@@ -45,8 +45,8 @@ services:
 
 
   maintaining:
-#    image: ukpsquare/square-model-management:latest
-    build: ./management_server
+    image: ukpsquare/square-model-management:latest
+#    build: ./management_server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:

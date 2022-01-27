@@ -5,6 +5,7 @@ from square_model_inference.inference.model import Model
 from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForEmbedding
+from square_model_inference.core.config import model_config
 
 import logging
 
@@ -16,21 +17,17 @@ class SentenceTransformer(Model):
     The class for all sentence-transformers models
     """
 
-    def __init__(self, model_name, batch_size, disable_gpu, max_input_size, **kwargs):
+    def __init__(self, **kwargs):
         """
         Initialize the SentenceTransformer
 
         Args:
 
              model_name: the sentence-transformer model name (https://sbert.net/docs/pretrained_models.html)
-             batch_size: batch size used for inference
              disable_gpu: do not move model to GPU even if CUDA is available
-             max_input_size: requests with a larger input are rejected
              kwargs: Not used
         """
-        self._load_model(model_name, disable_gpu)
-        self.batch_size = batch_size
-        self.max_input_size = max_input_size
+        self._load_model(model_config.model_name, model_config.disable_gpu)
 
     def _load_model(self, model_name, disable_gpu):
         """
@@ -49,7 +46,7 @@ class SentenceTransformer(Model):
         self.model = model
 
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
-        embeddings = self.model.encode(request.input, batch_size=self.batch_size, show_progress_bar=False)
+        embeddings = self.model.encode(request.input, batch_size=model_config.batch_size, show_progress_bar=False)
         return PredictionOutputForEmbedding(model_outputs={"embeddings": embeddings})
 
     async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
@@ -61,8 +58,8 @@ class SentenceTransformer(Model):
         """
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
-        if len(request.input) > self.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is {self.max_input_size}")
+        if len(request.input) > model_config.max_input_size:
+            raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
         if task != Task.embedding:
             raise ValueError("Only embedding task supported by this model")
         return self._embedding(request)
