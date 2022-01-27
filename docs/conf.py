@@ -17,6 +17,10 @@ sys.path.insert(0, os.path.abspath('../'))
 sys.path.append(os.path.abspath('../square-model-inference-api/inference_server'))
 # add datastore API path
 sys.path.append(os.path.abspath('../datastore-api'))
+# add square skill helpers
+sys.path.append(os.path.abspath('../square-skill-helpers'))
+# add square skill api
+sys.path.append(os.path.abspath('../square-skill-api'))
 
 
 # -- Project information -----------------------------------------------------
@@ -35,6 +39,7 @@ extensions = [
     'myst_parser',
     'sphinx.ext.autosectionlabel',
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
@@ -45,15 +50,20 @@ extensions = [
     "sphinx_markdown_tables",
     "sphinx_copybutton",
     "sphinx-favicon",
+    "sphinxcontrib.autodoc_pydantic",
 ]
 
 
 autosummary_generate = True
 autoclass_content = "class"
 
+# enable pydantic model docs
+autodoc_pydantic_model_show_json = True
+autodoc_pydantic_settings_show_json = False
+
 # mocking imports for autodoc
-autodoc_mock_imports = ["elasticsearch", "transformers", "torch", "pydantic", "numpy", "starlette",
-                        "sentence_transformers", "onnxruntime"]
+autodoc_mock_imports = ["dotenv", "elasticsearch", "transformers", "torch", "pydantic", "numpy", "starlette",
+                        "sentence_transformers", "onnxruntime", "fastapi"]
 
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -87,8 +97,8 @@ html_logo = "images/SQ_Web_Light_90px.png"
 # Material theme options (see theme.conf for more information)
 html_theme_options = {
     # 'body_max_width': '70%',
-    "html_minify": False,
-    "html_prettify": True,
+    "html_minify": True,
+    "html_prettify": False,
     "css_minify": True,
 
     # Set the name of the project to appear in the navigation.
@@ -97,6 +107,10 @@ html_theme_options = {
     # 'color_primary': '#086494',
     # 'color_accent': '#086494',
     'master_doc': False,
+
+    # Specify a base_url used to generate sitemap.xml. If not
+    # specified, then no sitemap will be built.
+    'base_url': 'https://github.com/UKP-SQuARE/square-core',
 
     # Set the repo location to get a badge with stats
     'repo_url': 'https://github.com/UKP-SQuARE/square-core',
