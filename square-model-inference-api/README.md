@@ -6,7 +6,7 @@ Receives input and returns prediction and other artifacts (e.g. attention scores
 ## Project structure
 
 The Model API uses 2 components: 
-n inference servers (each with their own model), and a treafik server that serves as API gateway 
+n inference servers (each with their own model), and a Traefik server that serves as API gateway 
 to forward requests to the correct inference server and to handle authorization of requests.
 ```
 ├───inference_server            # FastAPI Model API Server
@@ -21,7 +21,7 @@ to forward requests to the correct inference server and to handle authorization 
 │       ├───core                # Server config, Startup logic, etc.
 │       ├───models              # Input/ output modelling for API
 │       └───inference           # Deep Model implementation and inference code for NLP tasks
-├───management_server          # FastAPI server for adding new models or listing all models
+├───management_server           # FastAPI server for adding new models or listing all models
 │   ├───main.py                 # Entry point in server
 │   ├───docker_access.py        # Manages docker acces of server
 │   ├───Dockerfile              # Dockerfile for server
@@ -29,17 +29,17 @@ to forward requests to the correct inference server and to handle authorization 
 ├───traefik
 │   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
 ├───locust                      # Load testing configuration with Locust
-└───docker-compose.yml  # Example docker-compose setup for the Model API
+└───docker-compose.yml          # Example docker-compose setup for the Model API
 ```
 
 ## API Path
 The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
 is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
 
-However, to run and distinguish multiple models, we use an API gateway with traefik so we extend 
-the path to `/api/$model-prefix/$endpoint` which is then resolved by traefik to the correct model server and forwarded
+However, to run and distinguish multiple models, we use an API gateway with Traefik so we extend 
+the path to `/api/$model-prefix/$endpoint` which is then resolved by Traefik to the correct model server and forwarded
 to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
-This requires you to setup the docker-compose and treafik config as described below.
+This requires you to setup the docker-compose and Traefik config as described below.
 
 
 ## Requirements
@@ -69,7 +69,7 @@ uninstall `transformers`, and finally install `adapter-transformers`.
 ### Docker
 1. For each model server that should run, create a `.env.$model` to configure it.  
    See [here](inference_server/.env.example) for an example.
-2. Configure `docker-compose.yaml` by adding services for the treafik reverse proxy, and the
+2. Configure `docker-compose.yaml` by adding services for the Traefik reverse proxy, and the
    model servers (each with their .env file). See [docker-compose.yml](docker-compose.yml) for an example.
 
 To test whether the api is running you can execute:
@@ -87,7 +87,7 @@ Create `inference_server/.env` and configure it as needed for your local model s
 ```sh
 make run
 ```
-This *only* starts one inference server using `inference_server/.env`. No traefik.  
+This *only* starts one inference server using `inference_server/.env`. No Traefik.  
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
@@ -172,7 +172,7 @@ curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding'
 
 
 ### Adding new Models Manually
-With treafik we can add new models to the model API easily for each new model append the following to the 
+With Traefik we can add new models to the model API easily for each new model append the following to the 
 docker-comopse file:
 
 ```dockerfile
@@ -198,7 +198,7 @@ curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilb
 ```
 
 ### Adding new Users
-The traefik component provides an Authentication service. To add new users and their password add 
+The Traefik component provides an Authentication service. To add new users and their password add 
 them [here](traefik.yaml). All users have the following form: 
 ```
 <user-name>:<password-hash>
