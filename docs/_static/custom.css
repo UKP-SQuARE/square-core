@@ -7,6 +7,7 @@
 }
 }
 
+
 .md-sidebar {
   max-height: 100%;
     position: fixed;
@@ -91,6 +92,20 @@ img[alt=checklist] {
     width: 400px;
     display: block;
     margin: auto;
+}
+
+img[alt=demo-page] {
+    width: 800px;
+    display: block;
+    margin: auto;
+    text-align: left;
+}
+
+img[alt=link-skill] {
+    width: 800px;
+    display: block;
+    margin: auto;
+    text-align: left;
 }
 
 a:hover {
