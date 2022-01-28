@@ -25,6 +25,7 @@ from square_model_inference.inference.transformer import Transformer
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
 from square_model_inference.inference.sentencetransformer import SentenceTransformer
 from square_model_inference.inference.onnx import Onnx
+from square_model_inference.core.config import ModelConfig, set_test_config, model_config
 
 
 @pytest.fixture(scope="session")
@@ -52,48 +53,110 @@ class TestModel(Model):
 @pytest.fixture(scope="class")
 def test_transformer_sequence_classification():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "sequence_classification", 1, True, 50)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        model_class="sequence_classification",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50
+
+    )
+    return Transformer()
 
 
 @pytest.fixture(scope="class")
 def test_transformer_embedding():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "base", 1, True, 50)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        model_class="base",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50
+
+    )
+    return Transformer()
 
 
 @pytest.fixture(scope="class")
 def test_transformer_token_classification():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "token_classification", 1, True, 50)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        model_class="token_classification",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50
+
+    )
+    return Transformer()
 
 
 @pytest.fixture(scope="class")
 def test_transformer_question_answering():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "question_answering", 1, True, 50)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        model_class="question_answering",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50
+
+    )
+    return Transformer()
 
 
 @pytest.fixture(scope="class")
 def test_transformer_generation():
     torch.manual_seed(987654321)
-    return Transformer(TRANSFORMER_MODEL, "generation", 1, True, 50)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        model_class="generation",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50
+
+    )
+    return Transformer()
 
 
 @pytest.fixture(scope="class")
 def test_adapter():
-    return AdapterTransformer(TRANSFORMER_MODEL, 1, True, TRANSFORMERS_TESTING_CACHE, 50, False)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+        cache=TRANSFORMERS_TESTING_CACHE,
+        preloaded_adapters=False,
+
+    )
+    return AdapterTransformer()
 
 
 @pytest.fixture(scope="class")
 def test_sentence_transformer():
-    return SentenceTransformer(SENTENCE_MODEL, 1, True, 50)
+    set_test_config(
+        model_name=SENTENCE_MODEL,
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+    )
+    return SentenceTransformer()
 
 
 @pytest.fixture(scope="class")
 def test_onnx_sequence_classification():
     onnx_path = "./onnx_models/german-bert/model.onnx"
     if os.path.isfile(onnx_path):
-        return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+        set_test_config(
+            model_name=ONNX_MODEL,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            onnx_path=onnx_path,
+        )
+        return Onnx()
     else:
         return None
 
@@ -101,7 +164,14 @@ def test_onnx_sequence_classification():
 def test_onnx_token_classification():
     onnx_path = "./onnx_models\\NER-bert\\model.onnx"
     if os.path.isfile(onnx_path):
-        return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+        set_test_config(
+            model_name=ONNX_MODEL,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            onnx_path=onnx_path,
+        )
+        return Onnx()
     else:
         return None
 
@@ -109,7 +179,14 @@ def test_onnx_token_classification():
 def test_onnx_embedding():
     onnx_path = "./onnx_models/bert-base-cased/model.onnx"
     if os.path.isfile(onnx_path):
-        return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+        set_test_config(
+            model_name=ONNX_MODEL,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            onnx_path=onnx_path,
+        )
+        return Onnx()
     else:
         return None
 
@@ -117,7 +194,14 @@ def test_onnx_embedding():
 def test_onnx_question_answering():
     onnx_path = "./onnx_models/squad2-bert/model.onnx"
     if os.path.isfile(onnx_path):
-        return Onnx(onnx_path, ONNX_MODEL, 1, True, 50)
+        set_test_config(
+            model_name=ONNX_MODEL,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            onnx_path=onnx_path,
+        )
+        return Onnx()
     else:
         return None
 
@@ -126,7 +210,15 @@ def test_onnx_generation():
     onnx_path = "./onnx_models/t5_encoder_decoder/t5-small-encoder.onnx"
     decoder_init_path = "./onnx_models/t5_encoder_decoder/t5-small-init-decoder.onnx"
     if os.path.isfile(onnx_path):
-        return Onnx(onnx_path, "t5-base", 1, True, 50, decoder_path=decoder_init_path)
+        set_test_config(
+            model_name=ONNX_MODEL,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            onnx_path=onnx_path,
+            decoder_path=decoder_init_path,
+        )
+        return Onnx()
     else:
         return None
 
