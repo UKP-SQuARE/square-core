@@ -87,7 +87,8 @@ model_config = ModelConfig.load()
 
 
 # for testing the inference models
-def set_test_config(model_name, disable_gpu, batch_size, max_input_size, model_class="base", cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path=""):
+def set_test_config(model_name, disable_gpu, batch_size, max_input_size, model_class="base", cache="./.cache",
+                    preloaded_adapters=False, onnx_path="", decoder_path=""):
     global model_config
     model_config.model_name = model_name
     model_config.model_class = model_class

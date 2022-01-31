@@ -5,9 +5,12 @@ from pre_test_setup_for_docker_caching import TRANSFORMERS_TESTING_CACHE, TRANSF
 import torch
 import os
 import subprocess
-## Due to import and config reasons, the environ is set in pre_test_setup_for_docker_caching !
-## (because we import Transformer, which imports Model, imports PredictionOutput, which imports RETURN_PLAINTEXT_ARRAYS and this creates the starlette config.
-## The config  is read by this point and starlette forbids overwriting it then)
+
+# Due to import and config reasons, the environ is set in pre_test_setup_for_docker_caching !
+# (because we import Transformer, which imports Model, imports PredictionOutput, which imports
+# RETURN_PLAINTEXT_ARRAYS and this creates the starlette config.
+# The config  is read by this point and starlette forbids overwriting it then)
+
 # from starlette.config import environ
 # environ["TRANSFORMERS_CACHE"] = TRANSFORMERS_TESTING_CACHE
 # environ["MODEL_NAME"] = "test"
@@ -19,7 +22,8 @@ import subprocess
 from main import get_app
 from square_model_inference.inference.model import Model
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForGeneration, \
-    PredictionOutputForEmbedding, PredictionOutputForTokenClassification, PredictionOutputForSequenceClassification, PredictionOutputForQuestionAnswering
+    PredictionOutputForEmbedding, PredictionOutputForTokenClassification, PredictionOutputForSequenceClassification,\
+    PredictionOutputForQuestionAnswering
 from square_model_inference.models.request import PredictionRequest, Task
 from square_model_inference.inference.transformer import Transformer
 from square_model_inference.inference.adaptertransformer import AdapterTransformer
@@ -160,6 +164,7 @@ def test_onnx_sequence_classification():
     else:
         return None
 
+
 @pytest.fixture(scope="class")
 def test_onnx_token_classification():
     onnx_path = "./onnx_models\\NER-bert\\model.onnx"
@@ -174,6 +179,7 @@ def test_onnx_token_classification():
         return Onnx()
     else:
         return None
+
 
 @pytest.fixture(scope="class")
 def test_onnx_embedding():
@@ -190,6 +196,7 @@ def test_onnx_embedding():
     else:
         return None
 
+
 @pytest.fixture(scope="class")
 def test_onnx_question_answering():
     onnx_path = "./onnx_models/squad2-bert/model.onnx"
@@ -204,6 +211,7 @@ def test_onnx_question_answering():
         return Onnx()
     else:
         return None
+
 
 @pytest.fixture(scope="class")
 def test_onnx_generation():
@@ -221,6 +229,7 @@ def test_onnx_generation():
         return Onnx()
     else:
         return None
+
 
 @pytest.fixture()
 def prediction_request():
