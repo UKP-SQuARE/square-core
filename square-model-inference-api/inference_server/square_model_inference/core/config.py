@@ -84,3 +84,17 @@ class ModelConfig(Mapping):
 
 
 model_config = ModelConfig.load()
+
+
+# for testing the inference models
+def set_test_config(model_name, disable_gpu, batch_size, max_input_size, model_class="base", cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path=""):
+    global model_config
+    model_config.model_name = model_name
+    model_config.model_class = model_class
+    model_config.disable_gpu = disable_gpu
+    model_config.batch_size = batch_size
+    model_config.max_input_size = max_input_size
+    model_config.transformers_cache = cache
+    model_config.preloaded_adapters = preloaded_adapters
+    model_config.model_path = onnx_path
+    model_config.decoder_path = decoder_path
