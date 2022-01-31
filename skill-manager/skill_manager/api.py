@@ -37,18 +37,18 @@ def on_startup():
 @app.get(
     "/api/health/heartbeat",
     response_model=HeartbeatResult,
-    description="Checks if the skill-manager instance is still up and running.",
 )
 async def heartbeat():
+    """Checks if the skill-manager instance is still up and running."""
     return HeartbeatResult(is_alive=True)
 
 
 @app.get(
     "/api/health/skill-heartbeat",
     response_model=HeartbeatResult,
-    description="Checks if a skill is still up and running.",
 )
 async def skill_heartbeat(skill_url: str):
+    """Checks if a skill is still up and running."""
     skill_health_url = urljoin(skill_url, "health/heartbeat")
 
     skill_heartbeat_response = requests.get(skill_health_url)
@@ -64,9 +64,9 @@ async def skill_heartbeat(skill_url: str):
 @app.get(
     "/api/skill-types",
     response_model=List[str],
-    description="Returns a list of supported skill-types.",
 )
 async def get_skill_types():
+    """Returns a list of supported skill-types."""
     skill_types = [skill_type.value for skill_type in SkillType]
 
     logger.debug("get_skill_types {skill_types}".format(skill_types=skill_types))
@@ -76,9 +76,9 @@ async def get_skill_types():
 @app.get(
     "/api/skill/{id}",
     response_model=Skill,
-    description="Returns the skill information saved in mongoDB.",
 )
 async def get_skill_by_id(id: Optional[str] = None):
+    """Returns the saved skill information."""
     skill = Skill.from_mongo(
         app.state.skill_manager_db.skills.find_one({"_id": ObjectId(id)})
     )
@@ -90,11 +90,10 @@ async def get_skill_by_id(id: Optional[str] = None):
 @app.get(
     "/api/skill",
     response_model=List[Skill],
-    description="""Returns all skills that a user has access to. A user has access to 
-    all public skills, and private skill created by them.""",
 )
 async def get_skills(user_id: Optional[str] = None):
-
+    """Returns all skills that a user has access to. A user has access to 
+    all public skills, and private skill created by them."""
     mongo_query = {"published": True}
     if user_id:
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
@@ -110,10 +109,9 @@ async def get_skills(user_id: Optional[str] = None):
     "/api/skill",
     response_model=Skill,
     status_code=201,
-    description="Creates a new skill and saves it in mongoDB.",
 )
 async def create_skill(skill: Skill):
-
+    """Creates a new skill and saves it."""
     skill_id = app.state.skill_manager_db.skills.insert_one(skill.mongo()).inserted_id
     skill = await get_skill_by_id(skill_id)
 
@@ -124,9 +122,9 @@ async def create_skill(skill: Skill):
 @app.put(
     "/api/skill/{id}",
     response_model=Skill,
-    description="Updates a skill with the provided data.",
 )
 async def update_skill(id: str, data: dict):
+    """Updates a skill with the provided data."""
     skill = await get_skill_by_id(id)
 
     for k, v in data.items():
@@ -146,8 +144,9 @@ async def update_skill(id: str, data: dict):
     return skill
 
 
-@app.delete("/api/skill/{id}", status_code=204, description="Deletes a skill.")
+@app.delete("/api/skill/{id}", status_code=204)
 async def delete_skill(id: str):
+    """Deletes a skill."""
     delete_result = app.state.skill_manager_db.skills.delete_one({"_id": ObjectId(id)})
     logger.debug("delete_skill: {id}".format(id=id))
     if delete_result.acknowledged:
@@ -160,9 +159,9 @@ async def delete_skill(id: str):
     "/api/skill/{id}/publish",
     response_model=Skill,
     status_code=201,
-    description="Makes a skill publicly available.",
 )
 async def publish_skill(id: str):
+    """Makes a skill publicly available."""
     skill = await get_skill_by_id(id)
     skill.published = True
     skill = await update_skill(id, skill.dict())
@@ -175,9 +174,9 @@ async def publish_skill(id: str):
     "/api/skill/{id}/unpublish",
     response_model=Skill,
     status_code=201,
-    description="Makes a skill private.",
 )
 async def unpublish_skill(id: str):
+    """Makes a skill private."""
     skill = await get_skill_by_id(id)
     skill.published = False
     skill = await update_skill(id, skill.dict())
@@ -189,9 +188,9 @@ async def unpublish_skill(id: str):
 @app.post(
     "/api/skill/{id}/query",
     response_model=QueryOutput,
-    description="Sends a query to the respective skill and returns its prediction.",
 )
 async def query_skill(query_request: QueryRequest, id: str):
+    """Sends a query to the respective skill and returns its prediction."""
     logger.info(
         "received query: {query} for skill {id}".format(
             query=query_request.json(), id=id
