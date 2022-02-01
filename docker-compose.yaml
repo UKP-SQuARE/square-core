@@ -146,6 +146,7 @@ services:
 
   model_bert_adapter:
     image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
@@ -164,6 +165,7 @@ services:
   
   model_dpr:
     image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
@@ -183,6 +185,7 @@ services:
 
   model_distilbert_st:
     image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
@@ -203,6 +206,7 @@ services:
     privileged: true
     build: ./datastore-api
     image: ukpsquare/square-datastore-api:latest
+    build: ./datastore-api
     depends_on:
       - datastore_es
     ports:
