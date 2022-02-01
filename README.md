@@ -82,6 +82,7 @@ And finally run `docker compose up -d` to start the system.
 
 ### Environment Configuration
 1. Create .env files from examples
+    - First, let's initialize the .env files from our examples. Run the folling lines:  
     ```bash
     mv skill-manager/.env.example skill-manager/.env 
     mv datastore-api/.env.example datastore-api/.env 
@@ -89,24 +90,18 @@ And finally run `docker compose up -d` to start the system.
     cp square-frontend/.env.production square-frontend/.env.production-backup
     cp square-frontend/.env.development square-frontend/.env.production
     ```
-    - Skill-Manager `./skill-manager/.env`
-    👉 Update `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
-    - Datastore-API: `./datastore-api/.env`
-    👉 Enter an `API_KEY`
-    - Skills: `./skills/.env`
-    👉 Enter the `DATA_API_KEY` from the `datastore-api/.env` file
-    - Frontend `./square-frontend/.env`
-2. Update docker-compose.yaml (local only)
+    - For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
+    - In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
+    - Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
+2. Update docker-compose.yaml (staging only)
     - The `docker-compose.yaml` file contains several mentions of _Development_ and _Production_. For the local setup, we need to enable the development and disable the production settings.
     - If you have downloaded the huggingface models already and want to avoid downloading them again (which will take some time during application startup), change the .cache directory volume mapping in the model services respectively.
 3. Pull and Build Images
-    - Pull
-    First, pull the latest images.
+    - First pull the latest images.
     ```bash
     docker-compose pull
     ```
-    - Frontend
-    For the local setup we need to rebuild the frontend image to use the updated env file.
+    - For the local setup we need to rebuild the frontend image to use the updated env file.
     ```bash
     docker-compose build frontend
     ```
