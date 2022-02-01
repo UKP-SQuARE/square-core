@@ -216,8 +216,8 @@ services:
       - WEB_CONCURRENCY=2
       - ES_URL=http://datastore_es:9200
       # Development
-      - FAISS_URL=https://localhost/api
-      - MODEL_API_URL=https://localhost/api    
+      # - FAISS_URL=https://localhost/api
+      # - MODEL_API_URL=https://localhost/api    
       # Production
       - FAISS_URL=https://square.ukp-lab.de/api
       - MODEL_API_URL=https://square.ukp-lab.de/api
