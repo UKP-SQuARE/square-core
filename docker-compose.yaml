@@ -204,7 +204,6 @@ services:
 
   datastore_api:
     privileged: true
-    build: ./datastore-api
     image: ukpsquare/square-datastore-api:latest
     build: ./datastore-api
     depends_on:
@@ -212,7 +211,7 @@ services:
     ports:
       - "7000:7000"
     env_file:
-      - ./datastore_api/.env
+      - ./datastore-api/.env
     environment:
       - WEB_CONCURRENCY=2
     labels:
