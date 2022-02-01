@@ -76,10 +76,6 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 </details>
 
 ## Local Installation
-For local development, it's best to build the project with docker compose by running `docker compose build`.  
-If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
-And finally run `docker compose up -d` to start the system.  
-
 ### Environment Configuration
 1. Create .env files from examples
     - First, let's initialize the .env files from our examples. Run the folling lines:  
