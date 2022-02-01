@@ -15,7 +15,7 @@ services:
       - --accesslog.filepath=/var/log/traefik/access.log.json
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.le.acme.tlschallenge=true
-      # Uncomment staging certs for testing
+      # Development: Uncomment staging certs
       # - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
