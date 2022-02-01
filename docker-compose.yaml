@@ -85,6 +85,9 @@ services:
       - 443
     labels:
       - "traefik.enable=true"
+      # Development
+      # - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.localhost`)"
+      # Production
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
