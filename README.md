@@ -81,26 +81,41 @@ If you just want to use the current system, you can pull all images from docker 
 And finally run `docker compose up -d` to start the system.  
 
 ### Environment Configuration
-1. Create an `.env` file the datastore_api under `./datstore_api/.env`
-```bash
-API_KEY=<YOUR_DATASTORE_API_KEY>
-ES_URL=http://datastore_es:9200
-FAISS_URL=http://localhost/api
-MODEL_API_URL=http://localhost/api
-```
-2. Create an `.env` file for the skills under `./skills/.env` with the following content:
-```bash
-DATA_API_KEY=<YOUR_DATASTORE_API_KEY>
-SQUARE_API_URL=http://localhost/api
-```
-
-3. If you use the UI locally, please also update the .env file under `./square-frontend/.env.production` with the following content:
-```bash
-VUE_APP_BACKEND_URL=http://localhost/api/backend
-VUE_APP_SKILL_MANAGER_URL=http://localhost/api/skill-manager
-```
-
-4. Note that you also have to update the `traefik` service in the `docker-compose.yaml` according to your setup. The above configuration assumes that your project is running on localhost.
+1. Create .env files from examples
+    ```bash
+    mv skill-manager/.env.example skill-manager/.env 
+    mv datastore-api/.env.example datastore-api/.env 
+    mv skills/.env.example skills/.env 
+    cp square-frontend/.env.production square-frontend/.env.production-backup
+    cp square-frontend/.env.development square-frontend/.env.production
+    ```
+    - Skill-Manager `./skill-manager/.env`
+    👉 Update `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
+    - Datastore-API: `./datastore-api/.env`
+    👉 Enter an `API_KEY`
+    - Skills: `./skills/.env`
+    👉 Enter the `DATA_API_KEY` from the `datastore-api/.env` file
+    - Frontend `./square-frontend/.env`
+2. Update docker-compose.yaml (local only)
+    - The `docker-compose.yaml` file contains several mentions of _Development_ and _Production_. For the local setup, we need to enable the development and disable the production settings.
+    - If you have downloaded the huggingface models already and want to avoid downloading them again (which will take some time during application startup), change the .cache directory volume mapping in the model services respectively.
+3. Pull and Build Images
+    - Pull
+    First, pull the latest images.
+    ```bash
+    docker-compose pull
+    ```
+    - Frontend
+    For the local setup we need to rebuild the frontend image to use the updated env file.
+    ```bash
+    docker-compose build frontend
+    ```
+4. Run
+    ```bash
+    docker-compose up -d
+    ```
+    Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
+    👉 Accept that the browser cannot verify the certificate.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:
