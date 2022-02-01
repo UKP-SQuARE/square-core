@@ -130,6 +130,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      # For Windows and Mac systems: http://host.docker.intneral
       - DOCKER_HOST_URL=https://172.17.0.1
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=2
