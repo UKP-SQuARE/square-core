@@ -8,13 +8,18 @@ from pydantic import Field, BaseModel
 from square_model_inference.core.config import model_config
 
 
-def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], return_plaintext: bool=model_config.return_plaintext_arrays ) -> Dict[str, Union[list, str]]:
+def _encode_numpy(
+        obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]],
+        return_plaintext: bool = None,
+) -> Dict[str, Union[list, str]]:
     """
     Encodes the Torch Tensors first to Numpy arrays and then encodes them either as plain lists or base64 string
     depending on the flag RETURN_PLAINTEXT_ARRAYS
     :param obj: the objects whose tensors will be encoded
     :return: the same dictionary with all tensors replaced by lists or base64-encoded array strings.
     """
+    if return_plaintext is None:
+        return_plaintext = model_config.return_plaintext_arrays
     # Encode numpy array either as lists or base64 string
     def encode(arr):
         if isinstance(arr, torch.Tensor):
@@ -104,6 +109,7 @@ class PredictionOutput(BaseModel):
         """
         super().__init__(**data)
         self.model_outputs = _encode_numpy(self.model_outputs)
+        self.model_output_is_encoded = not model_config.return_plaintext_arrays
 
 
 class PredictionOutputForSequenceClassification(PredictionOutput):
