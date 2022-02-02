@@ -18,3 +18,7 @@ env
 
 # ignore build folder for docs
 docs/_build
+
+# only used for docs
+square-skill-api
+square-skill-helpers
