@@ -1,6 +1,6 @@
 # Models
 
-Inference API that supports SOTA (QA) models & adapters. 
+Management and Inference APIs that support SOTA (QA) models & adapters. 
 Receives input and returns prediction and other artifacts (e.g. attention scores)
 
 ## Project structure
@@ -171,19 +171,25 @@ curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding'
 
 ## Adding New Models Manually
 With Traefik we can add new models to the model API easily for each new model append the following to the 
-docker-comopse file:
+docker-compose file:
 
 ```dockerfile
-inference_<model>:
-    image: ukpsquare/square-model-api:latest
-    env_file:
-      - ./inference_server/.env.<model>
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
+services:
+    inference_<model>:
+        image: ukpsquare/square-model-api-v1:latest
+        env_file:
+          - ./inference_server/.env.<model>
+        volumes:
+          - ./.cache/:/etc/huggingface/.cache/
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
+          - "traefik.http.routers.<model>.entrypoints=websecure"
+          - "traefik.http.routers.<model>.tls=true"
+          - "traefik.http.routers.<model>.tls.certresolver=le"
+          - "traefik.http.routers.<model>.middlewares=<model>-stripprefix,<model-xxx>-addprefix"
+          - "traefik.http.middlewares.<model>-stripprefix.stripprefix.prefixes=/api/<model-prefix>"
+          - "traefik.http.middlewares.<model>-addprefix.addPrefix.prefix=/api"
 ```
 
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
@@ -194,12 +200,3 @@ Removing the deployed distilbert model.
 ```bash
 curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
 ```
-
-## Adding New Users
-The Traefik component provides an Authentication service. To add new users and their password add 
-them in *traefik.yaml*. All users have the following form: 
-```
-<user-name>:<password-hash>
-```
-The password can be hashed using wither MD5, SHA-1 or BCrypt.
-It is easiest to use `htpasswd` to obtain the necessary hash.

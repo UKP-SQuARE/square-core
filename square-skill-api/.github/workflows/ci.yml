@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Local Fix
+        run: |
+          # Hack to get setup-python to work on act
+          if [ ! -f "/etc/lsb-release" ] ; then
+            echo "DISTRIB_RELEASE=20.04" > /etc/lsb-release
+          fi
+
+      - name: Setup Variables
+        id: vars
+        run: |
+          REPORTS_DIR=test-reports-${{ matrix.python-version }}
+          echo ::set-output name=reports_dir::${REPORTS_DIR}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/cache@v2
+        id: pip-cache
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+    
+      - name: pip install
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt .
+          pip install -r requirements.dev.txt .
+    
+      - name: Run Tests
+        run: |
+          python -m pytest \
+            --junitxml=${{ steps.vars.outputs.reports_dir }}/junit.xml \
+            --cov \
+            --cov-report=xml:${{ steps.vars.outputs.reports_dir }}/coverage.xml \
+            --cov-report=html:${{ steps.vars.outputs.reports_dir }}/coverage.html
+      - name: Upload Unit Test Results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Unit Test Results (Python ${{ matrix.python-version }})
+          path: ${{ steps.vars.outputs.reports_dir }}/junit.xml
+
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: artifacts/**/*.xml
