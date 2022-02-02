@@ -8,7 +8,8 @@ from pydantic import Field, BaseModel
 from square_model_inference.core.config import model_config
 
 
-def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]], return_plaintext: bool=model_config.return_plaintext_arrays ) -> Dict[str, Union[list, str]]:
+def _encode_numpy(obj: Dict[str, Union[torch.Tensor, Tuple[torch.Tensor]]],
+                  return_plaintext: bool=model_config.return_plaintext_arrays) -> Dict[str, Union[list, str]]:
     """
     Encodes the Torch Tensors first to Numpy arrays and then encodes them either as plain lists or base64 string
     depending on the flag RETURN_PLAINTEXT_ARRAYS
@@ -100,7 +101,8 @@ class PredictionOutput(BaseModel):
         RETURN_PLAINTEXT_ARRAYS.
         :param data:
         'model_outputs': dict[str: Union[torch.Tensor, Tuple[torch.Tensor]]]. All tensor results of the model
-        'task_outputs': dict[str: Any]. All non-tensor results of the processed task like the predicted labels, extracted spans, etc.
+        'task_outputs': dict[str: Any]. All non-tensor results of the processed task like the predicted labels,
+                        extracted spans, etc.
         """
         super().__init__(**data)
         self.model_outputs = _encode_numpy(self.model_outputs)
@@ -115,27 +117,35 @@ class PredictionOutputForSequenceClassification(PredictionOutput):
 
 
 class PredictionOutputForTokenClassification(PredictionOutput):
-    labels: List[List[int]] = Field([], description="List of the predicted label ids for the input. Not set for regression.")
+    labels: List[List[int]] = Field([], description="List of the predicted label ids for the input. Not set "
+                                                    "for regression.")
     id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. Not set for regression.")
-    word_ids: List[List[Optional[int]]] = Field(..., description="Mapping from each token to the corresponding word in the input. "
-                                                           "'None' represents special tokens added by tokenizer")
+    word_ids: List[List[Optional[int]]] = Field(..., description="Mapping from each token to the corresponding word "
+                                                                 "in the input. 'None' represents special tokens added "
+                                                                 "by tokenizer")
+
     def __init__(self, **data):
         super().__init__(**data)
 
 
 class PredictionOutputForEmbedding(PredictionOutput):
-    embedding_mode: str = Field("", description="Only used by Transformers/ Adapters.<br> One of 'mean', 'max', 'cls', 'pooler', 'token'. The pooling mode used (or not used for 'token')")
+    embedding_mode: str = Field("", description="Only used by Transformers/ Adapters.<br> One of 'mean', 'max', 'cls', "
+                                                "'pooler', 'token'. The pooling mode used (or not used for 'token')")
     word_ids: List[List[Optional[int]]] = Field([], description="Only used by Transformers/ Adapters.<br> "
-                                                          "Only set with embedding_mode='token'."
-                                                          " Mapping from each token to the corresponding word in the input. "
-                                                           "'None' represents special tokens added by tokenizer")
+                                                                "Only set with embedding_mode='token'."
+                                                                " Mapping from each token to the corresponding word "
+                                                                "in the input. 'None' represents special tokens added "
+                                                                "by tokenizer")
+
     def __init__(self, **data):
         super().__init__(**data)
 
 
 class PredictionOutputForGeneration(PredictionOutput):
-    generated_texts: List[List[str]] = Field(..., description="List of list of the generated texts. Length of outer list is the number of inputs, "
-                                                      "length of inner list is parameter 'num_return_sequences' in request's 'task_kwargs'")
+    generated_texts: List[List[str]] = Field(...,
+                                             description="List of list of the generated texts. Length of outer "
+                                                         "list is the number of inputs, length of inner list is "
+                                                         "parameter 'num_return_sequences' in request's 'task_kwargs'")
     def __init__(self, **data):
         super().__init__(**data)
 
@@ -151,10 +161,15 @@ class QAAnswer(BaseModel):
 
 
 class PredictionOutputForQuestionAnswering(PredictionOutput):
-    answers: List[List[QAAnswer]] = Field(..., description="List of lists of answers. Length of outer list is the number of inputs, "
-                                                   "length of inner list is parameter 'topk' from the request's 'task_kwargs' (default 1). "
-                                                   "Each answer is a dictionary with 'score', 'start' (span start index in context), 'end' (span end index in context), "
-                                                   "and 'answer' (the extracted span). The inner list is sorted by score. If no answer span was extracted, "
-                                                   "the empty span is returned (start and end both 0)")
+    answers: List[List[QAAnswer]] = Field(...,
+                                          description="List of lists of answers. Length of outer list is the number "
+                                                      "of inputs, length of inner list is parameter 'topk' from the "
+                                                      "request's 'task_kwargs' (default 1). Each answer is a "
+                                                      "dictionary with 'score', 'start' (span start index in context), "
+                                                      "'end' (span end index in context), and 'answer' "
+                                                      "(the extracted span). The inner list is sorted by score. If no "
+                                                      "answer span was extracted, the empty span is returned "
+                                                      "(start and end both 0)")
+
     def __init__(self, **data):
         super().__init__(**data)
