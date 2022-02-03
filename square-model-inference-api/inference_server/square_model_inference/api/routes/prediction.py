@@ -97,7 +97,7 @@ async def update(updated_param: UpdateModel):
     :return: the information about the updated model
     """
     logger.info("Updating model parameters")
-    if model_config.model_type in ["onnx", "sentence-transformer"] and model_config.disable_gpu != updated_param:
+    if model_config.model_type in ["onnx", "sentence-transformer"] and model_config.disable_gpu != updated_param.disable_gpu:
         raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
     model_config.disable_gpu = updated_param.disable_gpu
     model_config.batch_size = updated_param.batch_size

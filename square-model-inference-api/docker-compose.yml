@@ -85,6 +85,26 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
+  # --------- Example config for onnx model server ---------
+#  model_bert_onnx:
+#    image: ukpsquare/square-model-api-v1:latest
+#    env_file:
+#      - ./inference_server/.env.bert_onnx
+#    environment:
+#      - WEB_CONCURRENCY=1
+#    volumes:
+#      - ./.cache/:/etc/huggingface/.cache/
+#      - onnx-models:/onnx_models
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/bert`)"
+#      - "traefik.http.routers.model-dpr.entrypoints=websecure"
+#      - "traefik.http.routers.model-dpr.tls=true"
+#      - "traefik.http.routers.model-dpr.tls.certresolver=le"
+#      - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
+#      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/bert"
+#      - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
 
 #  model_bert_adapter:
 #    image: ukpsquare/square-model-api-v1:latest
@@ -107,3 +127,11 @@ services:
 
 volumes:
   traefik-public-certificates:
+
+  # onnx-model folder on the vm
+  onnx-models:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/sterz/onnx_models
