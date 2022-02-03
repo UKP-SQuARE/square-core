@@ -120,7 +120,7 @@ By passing all environment information that would normally be in the `.env` file
   "max_input": 1024,
   "transformer_cache": "../.cache",
   "model_class": <model_class>,
-  "return_plaintext_array": false
+  "return_plaintext_arrays": false
 }
 ```
 
@@ -147,7 +147,7 @@ curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
   "max_input": 1024,
   "transformer_cache": "\/etc\/huggingface\/.cache\/",
   "model_class": "base",
-  "return_plaintext_array": false
+  "return_plaintext_arrays": false
 }'
 ```
 
@@ -173,19 +173,25 @@ curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding'
 
 ### Adding new Models Manually
 With Traefik we can add new models to the model API easily for each new model append the following to the 
-docker-comopse file:
+docker-compose file:
 
 ```dockerfile
-inference_<model>:
-    image: ukpsquare/square-model-api:latest
-    env_file:
-      - ./inference_server/.env.<model>
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
+services:
+    inference_<model>:
+        image: ukpsquare/square-model-api-v1:latest
+        env_file:
+          - ./inference_server/.env.<model>
+        volumes:
+          - ./.cache/:/etc/huggingface/.cache/
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
+          - "traefik.http.routers.<model>.entrypoints=websecure"
+          - "traefik.http.routers.<model>.tls=true"
+          - "traefik.http.routers.<model>.tls.certresolver=le"
+          - "traefik.http.routers.<model>.middlewares=<model>-stripprefix,<model-xxx>-addprefix"
+          - "traefik.http.middlewares.<model>-stripprefix.stripprefix.prefixes=/api/<model-prefix>"
+          - "traefik.http.middlewares.<model>-addprefix.addPrefix.prefix=/api"
 ```
 
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
@@ -199,7 +205,7 @@ curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilb
 
 ### Adding new Users
 The Traefik component provides an Authentication service. To add new users and their password add 
-them [here](traefik.yaml). All users have the following form: 
+them [here](traefik/traefik.yaml). All users have the following form: 
 ```
 <user-name>:<password-hash>
 ```

@@ -45,8 +45,8 @@ services:
 
 
   maintaining:
-    image: ukpsquare/square-model-management:latest
-#    build: ./management_server
+#    image: ukpsquare/square-model-management:latest
+    build: ./management_server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -67,7 +67,8 @@ services:
 
   # --------- Example config for one model server ---------
   model_dpr:
-    image: ukpsquare/square-model-api-v1:latest
+#    image: ukpsquare/square-model-api-v1:latest
+    build: ./inference_server
     env_file:
       - ./inference_server/.env.dpr
     environment:
