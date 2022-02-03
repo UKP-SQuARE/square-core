@@ -196,6 +196,25 @@ services:
       - "traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b"
       - "traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api"
 
+  model_bert_onnx:
+    image: ukpsquare/square-model-api-v1:latest
+    env_file:
+      - ./inference_server/.env.bert_onnx
+    environment:
+      - WEB_CONCURRENCY=1
+    volumes:
+      - ./.cache/:/etc/onnx/.cache/
+      - onnx-models:/onnx_models
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-bert-onnx.rule=PathPrefix(`/api/bert-onnx`)"
+      - "traefik.http.routers.model-bert-onnx.entrypoints=websecure"
+      - "traefik.http.routers.model-bert-onnx.tls=true"
+      - "traefik.http.routers.model-bert-onnx.tls.certresolver=le"
+      - "traefik.http.routers.model-bert-onnx.middlewares=model-bert-onnx-stripprefix,model-bert-onnx-addprefix"
+      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
+      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
+
   datastore_api:
     privileged: true
     build: ./datastore-api
@@ -349,4 +368,3 @@ volumes:
       o: bind
       type: none
       device: /home/sterz/onnx_models
-
