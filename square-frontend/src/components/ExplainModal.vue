@@ -87,9 +87,6 @@
             Showing {{ Math.min(5, test.test_cases.length) }} out of {{ test.test_cases.length }} failed examples. Download all examples to see more.
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
       </div>
     </div>
   </div>

@@ -42,6 +42,10 @@ export default Vue.component('app', {
 
     @import "~bootstrap/scss/bootstrap";
 
+    main .container-xl, .modal-header, .modal-body {
+      padding-left: max(var(--bs-gutter-x, 0.75rem), env(safe-area-inset-left));
+      padding-right: max(var(--bs-gutter-x, 0.75rem), env(safe-area-inset-right));
+    }
     .card-columns {
       column-gap: 2em;
       @include media-breakpoint-up(sm) {
