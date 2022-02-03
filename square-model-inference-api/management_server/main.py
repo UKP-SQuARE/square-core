@@ -55,6 +55,7 @@ async def add_new_model(model_params: ModelRequest):
         "TRANSFORMERS_CACHE": model_params.transformers_cache,
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
+        # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
     }
     container = start_new_model_container(identifier, env)
 
