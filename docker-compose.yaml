@@ -342,3 +342,11 @@ volumes:
     driver: local
   datastore-api-faiss-msmarco-distilbert:
     driver: local
+
+  onnx-models:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/sterz/onnx_models
+
