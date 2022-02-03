@@ -203,6 +203,23 @@ Removing the deployed distilbert model.
 curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
 ```
 
+### Update model parameters
+
+You can update the batch size, gpu option, input size and the type of returned arrays
+via our update API. An example request to change the `return_plaintext_arrays` 
+param to `true` for the dpr model is shown below:
+
+```bash
+curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/update' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "return_plaintext_arrays": true
+}'
+```
+
 ### Adding new Users
 The Traefik component provides an Authentication service. To add new users and their password add 
 them [here](traefik/traefik.yaml). All users have the following form: 
