@@ -4,7 +4,7 @@ from square_model_inference.inference.transformer import Transformer
 from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput
-
+from square_model_inference.core.config import model_config
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,26 +15,21 @@ class AdapterTransformer(Transformer):
     The class for all adapter-based models using the adapter-transformers package
     """
 
-    def __init__(self, model_name, batch_size, disable_gpu, transformers_cache, max_input_size, preloaded_adapters,
-                 **kwargs):
+    def __init__(self, **kwargs):
         """
 
         Initialize the Adapter with its underlying Transformer and pre-load all available adapters from adapterhub.ml
 
         Args:
              model_name: the Huggingface model name
-             batch_size: batch size used for inference
              disable_gpu: do not move model to GPU even if CUDA is available
              transformers_cache: Should be same as TRANSFORMERS_CACHE env variable. This folder will be used to store the adapters
-             max_input_size: requests with a larger input are rejected
              kwargs: Not used
         """
-        self._load_model(AutoModelWithHeads, model_name, disable_gpu)
-        if preloaded_adapters:
-            self._load_adapter(model_name, transformers_cache)
-        self.model_name = model_name
-        self.batch_size = batch_size
-        self.max_input_size = max_input_size
+        self._load_model(AutoModelWithHeads, model_config.model_name, model_config.disable_gpu)
+        if model_config.preloaded_adapters:
+            self._load_adapter(model_config.model_name, model_config.transformers_cache)
+        self.model_name = model_config.model_name
 
     def _load_adapter(self, model_name, transformers_cache):
         """
@@ -122,8 +117,8 @@ class AdapterTransformer(Transformer):
     async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
-        if len(request.input) > self.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is {self.max_input_size}")
+        if len(request.input) > model_config.max_input_size:
+            raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
         self._prepare_adapter(request.adapter_name)
 
         if task == Task.sequence_classification:

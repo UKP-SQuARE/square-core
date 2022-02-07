@@ -12,7 +12,7 @@ MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:la
 MODELS_API_PATH = "models"  # For management server e.g. /api/models to list models etc.
 
 
-async def start_new_model_container(identifier, env):
+def start_new_model_container(identifier, env):
     """
     Start a new container in the current network with a new model-api instance.
     identifier(str): the name/identifier of the new model api instance
@@ -84,7 +84,7 @@ def remove_model_container(identifier):
     return len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0
 
 
-async def get_all_model_prefixes():
+def get_all_model_prefixes():
     """
     Returns the prefixes under which all running model-api-instances in the docker-network are available
     """
@@ -104,3 +104,8 @@ async def get_all_model_prefixes():
 
     logger.debug(f"Found model containers: {lst_prefix} on port {port}")
     return lst_prefix, port
+
+
+def get_port():
+    reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
+    return list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
