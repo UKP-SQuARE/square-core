@@ -1,4 +1,4 @@
-<!-- The Skills Overview Page. The user can see their skills here. They can delete, edit and train (publish) existing skills or create a new skill. -->
+<!-- The Skills Overview Page. The user can see their skills here. They can delete, edit, and publish existing skills or create a new skill. -->
 <template>
   <Card title="My skills">
     <template #rightItem>
@@ -25,7 +25,7 @@
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
         <div class="d-grid gap-2 d-flex mt-2">
           <router-link :to="{ name: 'skill', params: {id: skill.id}} " class="btn btn-outline-primary" role="button">Edit</router-link>
-          <Modal
+          <ConfirmDestructiveAction
               :skill="skill.name"
               destructive-action="delete"
               v-on:callback="deleteSkill"
@@ -49,13 +49,13 @@
 <script>
 import Vue from 'vue'
 import Card from '@/components/Card.vue'
-import Modal from '@/components/Modal.vue'
+import ConfirmDestructiveAction from '@/components/modals/ConfirmDestructiveAction.vue'
 import Status from '@/components/Status.vue'
 
 export default Vue.component('list-skills', {
   components: {
     Card,
-    Modal,
+    ConfirmDestructiveAction,
     Status
   },
   computed: {

@@ -96,7 +96,7 @@
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('explain-card', {
+export default Vue.component('explain-detail', {
   props: ['test'],
   mixins: [mixin],
   methods: {

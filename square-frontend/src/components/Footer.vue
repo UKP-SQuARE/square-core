@@ -1,6 +1,6 @@
 <!-- The Navigation Bar at the top of the page. Most views should be reachable through this. -->
 <template>
-  <footer class="py-3 mt-4 bg-light border-top">
+  <footer class="py-3 bg-light border-top">
     <div class="container">
       <ul class="nav justify-content-center">
         <li class="nav-item"><a href="https://www.informatik.tu-darmstadt.de/ukp/impressum.en.jsp" class="nav-link px-2 text-muted">Legal Note</a></li>
