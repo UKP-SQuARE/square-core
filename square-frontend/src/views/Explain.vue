@@ -91,7 +91,7 @@
             <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ test.capability }}</span>
           </p>
         </div>
-        <ExplainModal :id="`modal-${index}`" :test="test" />
+        <ExplainDetail :id="`modal-${index}`" :test="test" />
       </Card>
     </div>
     <div v-else class="col-lg-6 mx-auto mt-5 p-5 bg-light border rounded-3">
@@ -111,7 +111,7 @@
 <script>
 import Vue from 'vue'
 import Card from '@/components/Card.vue'
-import ExplainModal from '@/components/ExplainModal.vue'
+import ExplainDetail from '@/components/modals/ExplainDetail.vue'
 import mixin from '@/components/results/mixin.vue'
 import { getSkill } from '@/api'
 import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
@@ -138,7 +138,7 @@ export default Vue.component('explainability-page', {
   },
   components: {
     Card,
-    ExplainModal
+    ExplainDetail
   },
   computed: {
     availableSkills() {

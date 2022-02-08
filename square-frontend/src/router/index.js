@@ -4,12 +4,12 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
+import Home from '@/views/Home.vue'
 import Signup from '@/views/Signup.vue'
 import Signin from '@/views/Signin.vue'
 import Skills from '@/views/Skills.vue'
 import Skill from '@/views/Skill.vue'
-import Home from '@/views/Home.vue'
-import Train from '@/views/Train.vue'
+import QA from '@/views/QA.vue'
 import Explain from '@/views/Explain.vue'
 import NotFound from '@/views/NotFound.vue'
 
@@ -20,6 +20,11 @@ const routes = [
     path: '/',
     name: 'home',
     component: Home
+  },
+  {
+    path: '/qa',
+    name: 'qa',
+    component: QA
   },
   {
     path: '/signup',
@@ -55,18 +60,6 @@ const routes = [
     path: '/skills/:id',
     name: 'skill',
     component: Skill,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next('/signin')
-      } else {
-        next()
-      }
-    }
-  },
-  {
-    path: '/train/:id',
-    name: 'train',
-    component: Train,
     beforeEnter(to, from, next) {
       if (!store.getters.isAuthenticated()) {
         next('/signin')

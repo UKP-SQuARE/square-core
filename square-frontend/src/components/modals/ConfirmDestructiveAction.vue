@@ -39,7 +39,7 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('destructive-action-modal', {
+export default Vue.component('confirm-destructive-action', {
   props: {
     waiting: {
       type: Boolean,
