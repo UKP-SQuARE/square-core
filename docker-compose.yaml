@@ -128,6 +128,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=2
     labels:
@@ -194,6 +195,25 @@ services:
       - "traefik.http.routers.model-distilbert.middlewares=model-distilbert-stripprefix,model-distilbert-addprefix"
       - "traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b"
       - "traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api"
+
+  model_bert_onnx:
+    image: ukpsquare/square-model-api-v1:latest
+    env_file:
+      - ./inference_server/.env.bert_onnx
+    environment:
+      - WEB_CONCURRENCY=1
+    volumes:
+      - ./.cache/:/etc/onnx/.cache/
+      - onnx-models:/onnx_models
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-bert-onnx.rule=PathPrefix(`/api/bert-onnx`)"
+      - "traefik.http.routers.model-bert-onnx.entrypoints=websecure"
+      - "traefik.http.routers.model-bert-onnx.tls=true"
+      - "traefik.http.routers.model-bert-onnx.tls.certresolver=le"
+      - "traefik.http.routers.model-bert-onnx.middlewares=model-bert-onnx-stripprefix,model-bert-onnx-addprefix"
+      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
+      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
 
   datastore_api:
     privileged: true
@@ -337,3 +357,10 @@ volumes:
     driver: local
   datastore-api-faiss-msmarco-distilbert:
     driver: local
+
+  onnx-models:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/sterz/onnx_models
