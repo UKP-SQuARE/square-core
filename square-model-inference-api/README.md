@@ -197,6 +197,31 @@ services:
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
+#### Adding Onnx models 
+Onnx models require a path to the file containing the onnx models. On the VM there are the following files already uploaded:
+```
+└───onnx_models           
+    ├───facebook-bart-base
+    │   ├───decoder.onnx
+    │   └───model.onnx
+    ├───bert-base-uncased          
+    │   └───model.onnx
+    ├───roberta-base    
+    │   └───model.onnx            
+    └───t5
+        ├───decoder.onnx
+        └───model.onnx             
+```
+
+This is already configured as a volume in the `docker-compose` file. You have to add the following to your model container:
+```
+    volumes:
+      - onnx-models:/onnx_models
+```
+
+Then the model path in the `.env` file has the `onnx_models`folder as root. For example, loading
+a the BERT model requires the following path `MODEL_PATH=/onnx_models/bert-base-cased/model.onnx`.
+
 ### Removing models via API
 Removing the deployed distilbert model.
 ```bash
@@ -219,6 +244,9 @@ curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question
   "return_plaintext_arrays": true
 }'
 ```
+
+Note that changing the `disabe_gpu` parameter is only possible for transformer and adapter models. For Onnx models
+and sentence-transformers models, changing this parameter is not supported.
 
 ### Adding new Users
 The Traefik component provides an Authentication service. To add new users and their password add 
