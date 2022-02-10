@@ -44,11 +44,11 @@ export default Vue.component('span-extraction-results', {
   },
   computed: {
     currentContext: function () {
-      let document = ''
-      if (this.$store.state.currentContext.length > 0) {
+      // If there is a prediction document returned use that and ignore local context
+      let document = this.skillResult.predictions[this.activeResult].prediction_documents[0].document
+      if (document.length === 0 && this.$store.state.currentContext.length > 0) {
+        // There can be an empty prediction document returned from the skill so use the local context instead
         document = this.$store.state.currentContext
-      } else {
-        document = this.skillResult.predictions[this.activeResult].prediction_documents[0].document
       }
       return this.highlightSpan(document, this.skillResult.predictions[this.activeResult].prediction_documents[0].span)
     }
