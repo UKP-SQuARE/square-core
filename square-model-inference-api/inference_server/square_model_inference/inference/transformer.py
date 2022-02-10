@@ -198,9 +198,7 @@ class Transformer(Model):
         request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens", False)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
-        if self.model.active_head is None:
-            if callable(self.model.add_causal_lm_head):
-                self.model.add_causal_lm_head("lm_head", True)
+
         # We cannot batch generate so we have to to it separately for each input prompt.
         for prompt in request.input:
             features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)

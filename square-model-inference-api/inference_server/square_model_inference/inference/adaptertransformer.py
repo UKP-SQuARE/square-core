@@ -1,4 +1,5 @@
 from transformers import AutoModelWithHeads, list_adapters
+from transformers.adapters.heads import CausalLMHead
 
 from square_model_inference.inference.transformer import Transformer
 from square_model_inference.models.request import PredictionRequest, Task
@@ -113,6 +114,18 @@ class AdapterTransformer(Transformer):
             raise ValueError(f"Unknown or missing adapter {adapter_name}. "
                              f"Please provider a fully specified adapter name from adapterhub.ml")
         self.model.set_active_adapters(adapter_name)
+
+    def _generation(self, request: PredictionRequest) -> PredictionOutput:
+        # ensure that the loaded had is a lm head
+        if self.model.active_head is None or not isinstance(self.model.active_head, CausalLMHead):
+            # if there is no head or a head that is not a lm head add a lm head
+            # depending on the model class different heads might be available
+            # e.g. GPT2 -> causal lm head, BART -> seq2seq lm head
+            if hasattr(self.model, "add_causal_lm_head"):
+                self.model.add_causal_lm_head("lm_head", True)
+            elif hasattr(self.model, "add_seq2seq_lm_head"):
+                self.model.add_seq2seq_lm_head("lm_head", True)
+        return super()._generation(request)
 
     async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
