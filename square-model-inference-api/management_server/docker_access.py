@@ -41,6 +41,9 @@ def start_new_model_container(identifier, env):
 
     network = docker_client.networks.get(network_id)
     container_name = network.name + "_" + identifier
+    volumes = [path + "/.cache/:/etc/huggingface/.cache/"]
+    if env["model_type"] == "onnx":
+        volumes.append("onnx-models:/onnx_models")
     try:
         container = docker_client.containers.run(
             MODEL_API_IMAGE,
@@ -48,7 +51,7 @@ def start_new_model_container(identifier, env):
             detach=True,
             environment=env,
             network=network.name,
-            volumes=[path + "/.cache/:/etc/huggingface/.cache/"],
+            volumes=volumes,
             labels=labels,
         )
 
