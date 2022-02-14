@@ -1,1 +1,1 @@
-adapter-transformers==2.2.0
+git+https://github.com/Adapter-Hub/adapter-transformers.git@develop
