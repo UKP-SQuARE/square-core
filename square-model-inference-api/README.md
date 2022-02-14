@@ -189,7 +189,7 @@ services:
           - "traefik.http.routers.<model>.entrypoints=websecure"
           - "traefik.http.routers.<model>.tls=true"
           - "traefik.http.routers.<model>.tls.certresolver=le"
-          - "traefik.http.routers.<model>.middlewares=<model>-stripprefix,<model-xxx>-addprefix"
+          - "traefik.http.routers.<model>.middlewares=<model>-stripprefix,<model>-addprefix"
           - "traefik.http.middlewares.<model>-stripprefix.stripprefix.prefixes=/api/<model-prefix>"
           - "traefik.http.middlewares.<model>-addprefix.addPrefix.prefix=/api"
 ```
@@ -220,7 +220,7 @@ This is already configured as a volume in the `docker-compose` file. You have to
 ```
 
 Then the model path in the `.env` file has the `onnx_models`folder as root. For example, loading
-a the BERT model requires the following path `MODEL_PATH=/onnx_models/bert-base-cased/model.onnx`.
+the BERT model requires the following path `MODEL_PATH=/onnx_models/bert-base-cased/model.onnx`.
 
 ### Removing models via API
 Removing the deployed distilbert model.
@@ -245,7 +245,7 @@ curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question
 }'
 ```
 
-Note that changing the `disabe_gpu` parameter is only possible for transformer and adapter models. For Onnx models
+Note that changing the `disable_gpu` parameter is only possible for transformer and adapter models. For Onnx models
 and sentence-transformers models, changing this parameter is not supported.
 
 ### Adding new Users
