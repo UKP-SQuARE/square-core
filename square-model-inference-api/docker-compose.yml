@@ -45,8 +45,8 @@ services:
 
 
   maintaining:
-    image: ukpsquare/square-model-management:latest
-    # build: ./management_server
+#    image: ukpsquare/square-model-management:latest
+    build: ./management_server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -65,7 +65,7 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
 
 
-  # --------- Example config for one model server ---------
+  # --------- Example config for transformer model server ---------
   model_dpr:
 #    image: ukpsquare/square-model-api-v1:latest
     build: ./inference_server
@@ -85,6 +85,7 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
+  # --------- Example config for abstractive QA adapter model server ---------
   model_bart_base_adapter:
     #    image: ukpsquare/square-model-api-v1:latest
     build: ./inference_server
@@ -125,7 +126,7 @@ services:
 #      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
 #      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
 
-
+  # --------- Example config for Adapter model server ---------
 #  model_bert_adapter:
 #    image: ukpsquare/square-model-api-v1:latest
 #    env_file:
