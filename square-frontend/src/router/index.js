@@ -11,6 +11,7 @@ import Skills from '@/views/Skills.vue'
 import Skill from '@/views/Skill.vue'
 import QA from '@/views/QA.vue'
 import Explain from '@/views/Explain.vue'
+import Feedback from '@/views/Feedback.vue'
 import NotFound from '@/views/NotFound.vue'
 
 Vue.use(VueRouter)
@@ -72,6 +73,11 @@ const routes = [
     path: '/explain',
     name: 'explain',
     component: Explain
+  },
+  {
+    path: '/feedback',
+    name: 'feedback',
+    component: Feedback
   },
   {
     path: '*',
