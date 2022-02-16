@@ -9,9 +9,9 @@
         <DemoVideo />
       </div>
     </div>
-    <div class="container-xl">
-      <div class="d-flex flex-column flex-md-row w-100 my-md-3 ps-md-3">
-        <div class="bg-light flex-fill me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+    <div class="container-xl my-2">
+      <div class="d-flex flex-column flex-md-row w-100 ps-md-3">
+        <div class="bg-light flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
           <div class="mb-3 pb-3">
             <div class="feature-icon bg-danger bg-gradient">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-question-lg" viewBox="0 0 16 16">
@@ -26,7 +26,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-primary bg-gradient flex-fill me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+        <div class="bg-primary bg-gradient flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
           <div class="my-3 py-3">
             <h2 class="display-5">Models</h2>
             <p class="lead fs-4">Our platform supports <strong>HuggingFace Transformers</strong>, <strong>Adapters</strong>, <strong>Sentence-Transformers</strong>, and a selection of <strong>ONNX</strong> models</p>
@@ -34,15 +34,15 @@
           </div>
         </div>
       </div>
-      <div class="d-flex flex-column-reverse flex-md-row w-100 my-md-3 ps-md-3">
-        <div class="bg-primary bg-gradient flex-fill me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+      <div class="d-flex flex-column-reverse flex-md-row w-100 ps-md-3">
+        <div class="bg-primary bg-gradient flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
           <div class="my-3 py-3">
             <h2 class="display-5">Datastores</h2>
             <p class="lead fs-4">We provide datastores for <strong>Wikipedia</strong>, <strong>PubMed</strong>, and <strong>Bing web documents</strong> with more to come</p>
             <a href="/docs/pages/components/datastores.html" class="btn btn-light btn-lg px-4">Learn more</a>
           </div>
         </div>
-        <div class="bg-light flex-fill me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="bg-light flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
           <div class="mb-3 pb-3">
             <div class="feature-icon bg-success bg-gradient">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -58,8 +58,8 @@
           </div>
         </div>
       </div>
-      <div class="d-flex flex-column flex-md-row w-100 my-md-3 ps-md-3">
-        <div class="bg-light flex-fill me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+      <div class="d-flex flex-column flex-md-row w-100 ps-md-3">
+        <div class="bg-light flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
           <div class="mb-3 pb-3">
             <h2 class="display-5">Open Source</h2>
             <p class="lead fs-2">Learn more through our <span class="text-warning">Documentation</span> and on <span class="text-warning">GitHub</span></p>
@@ -73,7 +73,7 @@
             </div>
           </div>
         </div>
-        <div class="bg-primary bg-gradient flex-fill me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+        <div class="bg-primary bg-gradient flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
           <div class="mb-3 pb-3">
             <h2 class="display-5">Social</h2>
             <p class="lead fs-3">Follow us on Twitter</p>

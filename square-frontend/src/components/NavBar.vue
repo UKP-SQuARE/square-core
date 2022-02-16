@@ -1,7 +1,7 @@
 <!-- The Navigation Bar at the top of the page. Most views should be reachable through this. -->
 <template>
   <header class="bg-primary">
-    <div class="container">
+    <div class="container-lg">
       <nav class="navbar navbar-expand-md navbar-dark bg-primary">
         <div class="container-fluid">
           <router-link class="navbar-brand d-flex align-items-center" to="/">
@@ -21,6 +21,9 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/docs/" target="_blank">Docs</a>
+              </li>
+              <li class="nav-item">
+                <router-link class="nav-link" to="/feedback" exact-active-class="active">Feedback</router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="https://github.com/UKP-SQuARE/square-core" title="GitHub" target="_blank">
