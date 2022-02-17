@@ -54,6 +54,7 @@ services:
       - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=1
+      - ONNX_VOLUME=square-model-inference-api_onnx-models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"

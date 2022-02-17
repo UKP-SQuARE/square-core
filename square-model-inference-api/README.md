@@ -222,6 +222,9 @@ This is already configured as a volume in the `docker-compose` file. You have to
 Then the model path in the `.env` file has the `onnx_models`folder as root. For example, loading
 the BERT model requires the following path `MODEL_PATH=/onnx_models/bert-base-cased/model.onnx`.
 
+In order to be able to start onnx models manually, make sure that the `ONNX_VOLUME` environment variable contains the name of the docker 
+volume with the onnx files. Then, simply specify the `model_path` and optionally the `decoder_path` to load a new onnx model. 
+
 ### Removing models via API
 Removing the deployed distilbert model.
 ```bash
