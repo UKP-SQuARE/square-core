@@ -37,6 +37,7 @@ services:
 
       # Middleware redirect from HTTP to HTTPS
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.port=8443"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
