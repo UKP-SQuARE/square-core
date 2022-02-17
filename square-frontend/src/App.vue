@@ -2,15 +2,8 @@
 <template>
   <div id="app" class="d-flex flex-column h-100">
     <NavBar />
-    <div class="mb-4 bg-light border-bottom">
-      <div class="container-fluid py-5 text-center">
-        <img class="d-block mx-auto mb-2" :src="`${publicPath}SQ_Web_Dark_160px.png`" alt="" width="80" height="80">
-        <h1 class="display-5 fw-light">UKP-SQuARE</h1>
-        <p class="fs-4">Software for Question Answering Research</p>
-      </div>
-    </div>
-    <main class="flex-fill">
-      <router-view class="container-xl h-100" />
+    <main class="flex-fill" :class="{ 'my-4': !isLandingPage }">
+      <router-view class="h-100" :class="{ 'container-xl': !isLandingPage }" />
     </main>
     <Footer />
   </div>
@@ -31,6 +24,11 @@ export default Vue.component('app', {
       publicPath: process.env.BASE_URL
     }
   },
+  computed: {
+    isLandingPage() {
+      return this.$route.name === 'home'
+    }
+  },
   beforeMount() {
     this.$store.dispatch('initJWTfromLocalStorage')
   }
@@ -39,9 +37,30 @@ export default Vue.component('app', {
 
 <style lang='scss'>
     $primary: #006691;
-
+    $success: #089e7b;
+    $info: #43afde;
+    $warning: #deac16;
+    $danger: #de4516;
     @import "~bootstrap/scss/bootstrap";
 
+    main .container-xl, .modal-header, .modal-body {
+      padding-left: max(var(--bs-gutter-x, 0.75rem), env(safe-area-inset-left));
+      padding-right: max(var(--bs-gutter-x, 0.75rem), env(safe-area-inset-right));
+    }
+    .bg-gradient {
+      background-image: linear-gradient(0, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0)) !important;
+    }
+    .feature-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 4rem;
+      height: 4rem;
+      margin-bottom: 1rem;
+      font-size: 2rem;
+      color: #fff;
+      border-radius: .75rem;
+    }
     .card-columns {
       column-gap: 2em;
       @include media-breakpoint-up(sm) {

@@ -1,7 +1,7 @@
 from bson import ObjectId
 
 class PyObjectId(ObjectId):
-
+    """Utility class for the mongoDB generated identifier."""
     @classmethod
     def __get_validators__(cls):
         yield cls.validate

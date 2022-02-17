@@ -14,7 +14,11 @@ model_api = ModelAPI(config)
 data_api = DataAPI(config)
 
 async def predict(request: QueryRequest) -> QueryOutput:
-
+    """Given a question, performs open-domain, extractive QA. First, background 
+    knowledge is retrieved using BM25 and the PubMed document collection. Next, the top
+    10 documents are used for span extraction. Finally, the extracted answers are 
+    returned.
+    """
     # empty index_name will use bm25
     data = await data_api(datastore_name="bioasq", index_name="", query=request.query)
     logger.info(f"Data API output:\n{data}")

@@ -13,10 +13,8 @@ config = SquareSkillHelpersConfig.from_dotenv()
 model_api = ModelAPI(config)
 
 async def predict(request: QueryRequest) -> QueryOutput:
-    """
-    Process a given query and create the predictions for it.
-    :param request: The user query
-    :return: The prediction produced by the skill
+    """Given a question and context, performs extractive QA using an adapter trained on 
+    SQuADV2.0.
     """
     context = request.skill_args["context"]
 
