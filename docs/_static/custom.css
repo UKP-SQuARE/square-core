@@ -9,14 +9,17 @@
 
 
 .md-sidebar {
-  max-height: 100%;
+    max-height: 70%;
     position: fixed;
   /*margin: -1.4rem 0rem 1.5rem 0rem;*/
     margin-top: -1.5rem;
-    overflow-y: auto;
+    overflow-y: scroll;
     overflow-x: auto;
     width: 12rem;
-    /*background-color: #006691;*/
+}
+
+.md-sidebar__inner{
+    color: #006691; !important;
 }
 
 .md-footer{
@@ -51,17 +54,17 @@ a:not(.md-source, .md-tabs__link, .footer-links, .dropdown-content){
 /* footer start */
 
 .footer-basic {
-  padding:15px 0;
+    padding:15px 0;
     background-color:rgb(33, 37, 41);
 }
 
 .footer-links{
     font-size: 16px;
-  color: #ffffff;
+    color: #ffffff;
     align-content: center;
     text-align: center;
-  margin: 0 0 0px;
-  transition: ease .25s;
+    margin: 0 0 0px;
+    transition: ease .25s;
 }
 
 .footer-refs {
