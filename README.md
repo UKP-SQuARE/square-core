@@ -83,12 +83,15 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
     mv skill-manager/.env.example skill-manager/.env 
     mv datastore-api/.env.example datastore-api/.env 
     mv skills/.env.example skills/.env 
+    mv keycloak/.env.example keycloak/.env 
+    mv postgres/.env.example postgres/.env 
     cp square-frontend/.env.production square-frontend/.env.production-backup
     cp square-frontend/.env.development square-frontend/.env.production
     ```
     - For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
     - In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
     - Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
+    - For postgres and eycloak, set `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value. Also update the `KEYCLOAK_PASSWORD`
 2. Update docker-compose.yaml (staging only)
     - The `docker-compose.yaml` file contains several mentions of _Development_ and _Production_. For the local setup, we need to enable the development and disable the production settings.
     - If you have downloaded the huggingface models already and want to avoid downloading them again (which will take some time during application startup), change the .cache directory volume mapping in the model services respectively.
