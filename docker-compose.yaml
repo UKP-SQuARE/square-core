@@ -278,7 +278,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -294,7 +294,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -310,7 +310,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -326,7 +326,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -342,7 +342,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -358,7 +358,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -374,7 +374,7 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
