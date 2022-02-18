@@ -110,6 +110,7 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
     ```
     Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
     👉 Accept that the browser cannot verify the certificate.
+    👉 enable the flag [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost) in Chrome.
 5. Add Skills
     Add Skills according to the [Add New Skills](#Add-New-Skills?) section. For open-domain skills the datastore need to created first.
 
