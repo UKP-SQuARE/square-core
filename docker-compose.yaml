@@ -15,7 +15,7 @@ services:
       - --accesslog.filepath=/var/log/traefik/access.log.json
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.le.acme.tlschallenge=true
-      # Uncomment staging certs for testing
+      # Development: Uncomment staging certs
       # - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
@@ -85,6 +85,9 @@ services:
       - 443
     labels:
       - "traefik.enable=true"
+      # Development
+      # - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.localhost`)"
+      # Production
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
@@ -127,6 +130,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      # For Windows and Mac systems: http://host.docker.intneral
       - DOCKER_HOST_URL=https://172.17.0.1
       - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
       - VERIFY_SSL=0
@@ -144,6 +148,7 @@ services:
 
   model_bert_adapter:
     image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
@@ -162,6 +167,7 @@ services:
   
   model_dpr:
     image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
@@ -181,6 +187,7 @@ services:
 
   model_distilbert_st:
     image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
@@ -218,16 +225,23 @@ services:
 
   datastore_api:
     privileged: true
-    build: ./datastore-api
     image: ukpsquare/square-datastore-api:latest
+    build: ./datastore-api
     depends_on:
       - datastore_es
     ports:
       - "7000:7000"
     env_file:
-      - ./datastore_api/.env
+      - ./datastore-api/.env
     environment:
       - WEB_CONCURRENCY=2
+      - ES_URL=http://datastore_es:9200
+      # Development
+      # - FAISS_URL=https://localhost/api
+      # - MODEL_API_URL=https://localhost/api    
+      # Production
+      - FAISS_URL=https://square.ukp-lab.de/api
+      - MODEL_API_URL=https://square.ukp-lab.de/api
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
@@ -283,6 +297,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
   boolq_skill:
     image: ukpsquare/square-skills-boolq:latest
@@ -293,6 +313,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
   squad_v2_skill:
     image: ukpsquare/square-skills-squad-v2:latest
@@ -303,6 +329,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
   commonsense_qa_skill:
     image: ukpsquare/square-skills-commonsense-qa:latest
@@ -313,6 +345,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
   extractive_qa_skill:
     image: ukpsquare/square-skills-extractive:latest
@@ -323,6 +361,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
   multiple_choice_qa_skill:
     image: ukpsquare/square-skills-multiple-choice:latest
@@ -333,6 +377,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
   retrieve_bioasq_skill:
     image: ukpsquare/square-skills-retrieve-bioasq:latest
@@ -343,6 +393,12 @@ services:
       - ./skills/.env
     environment:
       - WEB_CONCURRENCY=2
+      # Development
+      # - VERIFY_SSL=0
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # Production
+      - VERIFY_SSL=1
+      - SQUARE_API_URL=https://square.ukp-lab.de/api  
 
 volumes:
   traefik-public-certificates:
