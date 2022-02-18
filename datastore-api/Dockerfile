@@ -18,7 +18,7 @@ FROM base as test
 
 RUN pip install pytest pytest-cov pytest-mock requests-mock
 COPY ./tests ./tests
-COPY ./.env ./.env
+COPY ./.env.example ./.env.example
 RUN mkdir test-reports
 RUN PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest \
     --junitxml=test-reports/junit.xml \
