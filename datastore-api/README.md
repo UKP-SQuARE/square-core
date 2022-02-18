@@ -13,6 +13,8 @@ The Datastore API is dependent upon the following services:
   - **FAISS** web service containers (for storing dense document embeddings): see [the section on dense retrieval](#configure-dense-retrieval-with-faiss) on how to setup.
   - **SQuARE Model API** (for dense document retrieval)
 
+We now have a [tutorial&exercises](https://docs.google.com/document/d/1r-CeFB7jKZaMAAyjSgbkHVYi1cYpqNoo7PUcTkPqJ6M/edit#) document for learning about SQuARE - Datastores easier and fast!
+
 ## Quick (production) setup
 
 1. Open the [docker-compose.yml](docker-compose.yml). Find the service declaration for `datastore_api` and uncomment it. In the `environment` section, optionally set an API key and the connection to the Model API.
