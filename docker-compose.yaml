@@ -60,13 +60,39 @@ services:
       - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api/backend"
       - "traefik.http.middlewares.backend-addprefix.addPrefix.prefix=/api"
 
+  keycloak:
+    image: jboss/keycloak:16.1.1
+    expose:
+      - 8080
+      - 8443
+    environment:
+      - KEYCLOAK_USER=admin
+      - DB_VENDOR=postgres
+      - DB_ADDR=db
+      - DB_PORT=5432
+      - DB_USER=square
+      - DB_SCHEMA=public
+      - DB_DATABASE=keycloak
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_HOSTNAME=square.ukp-lab.de
+      - KEYCLOAK_FRONTEND_URL=https://square.ukp-lab.de/auth
+    env_file:
+      - ./keycloak/.env
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`square.ukp-lab.de`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.routers.keycloak.tls.certresolver=le"
+
   db:
     image: postgres
     restart: always
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=dbpw
       - POSTGRES_USER=square
       - POSTGRES_DB=square
     env_file:
