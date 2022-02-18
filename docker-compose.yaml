@@ -69,8 +69,11 @@ services:
       - POSTGRES_PASSWORD=dbpw
       - POSTGRES_USER=square
       - POSTGRES_DB=square
+    env_file:
+      - ./postgres/.env
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
     build:
