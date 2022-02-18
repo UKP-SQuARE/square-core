@@ -176,7 +176,7 @@ The document embedding computation and FAISS index creation are performed offlin
 Let's see how to add a dense retrieval index to an existing datastore (`"wiki"`).
 The new index should use Facebook's DPR model and should be called `"dpr"`.
 
-1. Embed the document corpus using the document encoder model & create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this.
+1. Embed the document corpus using the document encoder model & create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this. There are some pre-build Faiss indexes and they are hosted [here](https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/).
 
 2. Register the new index with its name via the Datastore API:
     ```
@@ -191,7 +191,7 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     }'
     ```
 
-3. Specify the FAISS web service container for the new index: Open the [docker-compose.yml](docker-compose.yml) and in the section for FAISS service containers, add the following:
+3. Specify the FAISS web service container for the new index: Open the [docker-compose.yml](docker-compose.yml) and in the section for FAISS service containers, add the following: (The pre-built index used here is `nq-QT_8bit_uniform-ivf262144.index` and `nq-QT_8bit_uniform-ivf262144.txt` under the [public folder](https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/))
     ```
     faiss-wiki-dpr:
       image: kwang2049/faiss-instant:latest
