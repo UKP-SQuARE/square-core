@@ -1,11 +1,11 @@
 import logging
 from typing import List, Optional
-from urllib.parse import urljoin
 
-import pymongo
 import requests
 from bson import ObjectId
 from fastapi import APIRouter
+
+from skill_manager import mongo_client
 from skill_manager.models import Prediction, Skill
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/skill")
 async def get_skill_by_id(id: Optional[str] = None):
     """Returns the saved skill information."""
     skill = Skill.from_mongo(
-        app.state.skill_manager_db.skills.find_one({"_id": ObjectId(id)})
+        mongo_client.client.skill_manager.skills.find_one({"_id": ObjectId(id)})
     )
 
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
@@ -35,13 +35,13 @@ async def get_skill_by_id(id: Optional[str] = None):
     response_model=List[Skill],
 )
 async def get_skills(user_id: Optional[str] = None):
-    """Returns all skills that a user has access to. A user has access to 
+    """Returns all skills that a user has access to. A user has access to
     all public skills, and private skill created by them."""
     mongo_query = {"published": True}
     if user_id:
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
-    skills = app.state.skill_manager_db.skills.find(mongo_query)
+    skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
 
     logger.debug("get_skills: {skills}".format(skills=skills))
@@ -55,7 +55,9 @@ async def get_skills(user_id: Optional[str] = None):
 )
 async def create_skill(skill: Skill):
     """Creates a new skill and saves it."""
-    skill_id = app.state.skill_manager_db.skills.insert_one(skill.mongo()).inserted_id
+    skill_id = mongo_client.client.skill_manager.skills.insert_one(
+        skill.mongo()
+    ).inserted_id
     skill = await get_skill_by_id(skill_id)
 
     logger.debug("create_skill: {skill}".format(skill=skill))
@@ -74,7 +76,7 @@ async def update_skill(id: str, data: dict):
         if hasattr(skill, k):
             setattr(skill, k, v)
 
-    _ = app.state.skill_manager_db.skills.find_one_and_update(
+    _ = mongo_client.client.skill_manager.skills.find_one_and_update(
         {"_id": ObjectId(id)}, {"$set": data}
     )
     updated_skill = await get_skill_by_id(id)
@@ -90,7 +92,9 @@ async def update_skill(id: str, data: dict):
 @router.delete("/{id}", status_code=204)
 async def delete_skill(id: str):
     """Deletes a skill."""
-    delete_result = app.state.skill_manager_db.skills.delete_one({"_id": ObjectId(id)})
+    delete_result = mongo_client.client.skill_manager.skills.delete_one(
+        {"_id": ObjectId(id)}
+    )
     logger.debug("delete_skill: {id}".format(id=id))
     if delete_result.acknowledged:
         return
@@ -177,7 +181,7 @@ async def query_skill(query_request: QueryRequest, id: str):
         user_id=user_id,
         predictions=predictions.predictions,
     )
-    _ = app.state.skill_manager_db.predictions.insert_one(
+    _ = mongo_client.client.skill_manager.predictions.insert_one(
         mongo_prediction.mongo()
     ).inserted_id
     logger.debug(
