@@ -4,8 +4,14 @@ The Skill-Manager serves as a central service for interacting with the Skills. I
 ## Project Structure
 ```
 ├───skill_manager
-│   ├───api.py              # definition of endpoints
+│   ├───routers
+|   |   |--api.py           # main router for all routes with `/api` prefix
+|   |   |--health.py        # routes with `/api/health` prefix
+|   |   |--skill_types.py   # routes with `/api/skill-types` prefix
+|   |   |--skill.py         # routes with `/api/skill` prefix
+│   ├───main.py             # main file creatng the `app` object
 │   ├───models.py           # input and output of endpoints
+│   ├───mongo_client.py     # wrapper class for (dis-)connecting to mongoDB
 │   ├───mongo_model.py      # utility interface for loading data from and to mongoDB
 │   ├───mongo_settings.py   # utility class for storing mongoDB connection settings
 │   ├───py_object_id.py     # utility class for mongoDB ID
@@ -19,7 +25,7 @@ The Skill-Manager serves as a central service for interacting with the Skills. I
 ```
 
 ## Testing
-For running tests locally, please install development dependencies. It is highly recommended to install the package into a separate [virtual environment](https://docs.python.org/3/tutorial/venv.html). Note that tests include integration tests with mongoDB. To run them successfully docker needs to be installed on your system. The test will automatically spin up a mongoDB instance for testing and shut it down at the end of testing.
+Tests include integration tests with mongoDB. To run them successfully docker needs to be installed and running on your system. The test will automatically spin up a mongoDB instance for testing and shut it down at the end of testing.
 ```bash
 pip install -r requirements.txt
 pip install -r requirements.dev.txt
