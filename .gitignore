@@ -1,5 +1,6 @@
 .idea/
 *iml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -20,3 +21,14 @@ env
 bin
 # ignore build folder for docs
 docs/_build
+
+
+# libs and configs
+lib/
+lib64
+pyvenv.cfg
+share/
+
+# only used for docs
+square-skill-api
+square-skill-helpers

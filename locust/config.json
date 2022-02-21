@@ -1,0 +1,60 @@
+{
+  "config": {
+    "wait_time": [1, 2]
+  },
+  "tasks": [
+    {
+      "name": "get_skills",
+      "base_uri": "/api/skill-manager/skill",
+      "endpoint": "",
+      "skill_id": "",
+      "weight": 1,
+      "query_json": {}
+    },
+    {
+      "name": "boolq",
+      "base_uri": "/api/skill-manager/skill",
+      "endpoint": "query",
+      "skill_id": "620bce65df4b0d6e0a02702e",
+      "weight": 1,
+      "query_json": {
+          "query": "Has the UK been hit by a hurricane?",
+          "skill_args":
+              {
+                "context": "The Great Storm of 1987 was a violent extratropical cyclone which caused casualties in England, France and the Channel Islands."
+              },
+          "num_results": 10,
+          "user_id": "context"
+      }
+    },
+       {
+         "name": "squad_v2",
+         "base_uri": "/api/skill-manager/skill",
+         "endpoint": "query",
+         "skill_id": "620bd6b0df4b0d6e0a02702f",
+         "weight": 1,
+         "query_json": {
+           "query": "Which governing bodies have veto power?",
+           "skill_args": {
+             "context": "The European Parliament and the Council of the European Union have powers of amendment and veto during the legislative process."
+           },
+           "num_results": 10,
+           "user_id": "context"
+         }
+      },
+       {
+       "name": "commonsense_qa",
+       "base_uri": "/api/skill-manager/skill",
+       "endpoint": "query",
+       "skill_id": "620cf27ffcd1ff97de9976df",
+       "weight": 1,
+       "query_json": {
+          "query": "Where would I not want a fox?",
+          "skill_args":
+              {"context": "england \n home \n mountains \n forest \n hen house"},
+          "num_results": 10,
+          "user_id": "context"
+       }
+    }
+  ]
+}

@@ -5,10 +5,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 import docker
+from docker.types import Mount
 
 docker_client = docker.from_env()
 
 MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
+ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models to list models etc.
 
 
@@ -41,6 +43,7 @@ def start_new_model_container(identifier, env):
 
     network = docker_client.networks.get(network_id)
     container_name = network.name + "_" + identifier
+
     try:
         container = docker_client.containers.run(
             MODEL_API_IMAGE,
@@ -49,6 +52,7 @@ def start_new_model_container(identifier, env):
             environment=env,
             network=network.name,
             volumes=[path + "/.cache/:/etc/huggingface/.cache/"],
+            mounts=[Mount(target="/onnx_models", source=ONNX_VOLUME, )],
             labels=labels,
         )
 

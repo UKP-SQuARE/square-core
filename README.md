@@ -76,31 +76,43 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 </details>
 
 ## Local Installation
-For local development, it's best to build the project with docker compose by running `docker compose build`.  
-If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
-And finally run `docker compose up -d` to start the system.  
-
 ### Environment Configuration
-1. Create an `.env` file the datastore_api under `./datstore_api/.env`
-```bash
-API_KEY=<YOUR_DATASTORE_API_KEY>
-ES_URL=http://datastore_es:9200
-FAISS_URL=http://localhost/api
-MODEL_API_URL=http://localhost/api
-```
-2. Create an `.env` file for the skills under `./skills/.env` with the following content:
-```bash
-DATA_API_KEY=<YOUR_DATASTORE_API_KEY>
-SQUARE_API_URL=http://localhost/api
-```
-
-3. If you use the UI locally, please also update the .env file under `./square-frontend/.env.production` with the following content:
-```bash
-VUE_APP_BACKEND_URL=http://localhost/api/backend
-VUE_APP_SKILL_MANAGER_URL=http://localhost/api/skill-manager
-```
-
-4. Note that you also have to update the `traefik` service in the `docker-compose.yaml` according to your setup. The above configuration assumes that your project is running on localhost.
+1. Create .env files from examples
+    - First, let's initialize the .env files from our examples. Run the folling lines:  
+    ```bash
+    mv skill-manager/.env.example skill-manager/.env 
+    mv datastore-api/.env.example datastore-api/.env 
+    mv skills/.env.example skills/.env 
+    mv keycloak/.env.example keycloak/.env 
+    mv postgres/.env.example postgres/.env 
+    cp square-frontend/.env.production square-frontend/.env.production-backup
+    cp square-frontend/.env.development square-frontend/.env.production
+    ```
+    - For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
+    - In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
+    - Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
+    - For postgres and keycloak, set `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value. Also update the `KEYCLOAK_PASSWORD`
+2. Update docker-compose.yaml (staging only)
+    - The `docker-compose.yaml` file contains several mentions of _Development_ and _Production_. For the local setup, we need to enable the development and disable the production settings.
+    - If you have downloaded the huggingface models already and want to avoid downloading them again (which will take some time during application startup), change the .cache directory volume mapping in the model services respectively.
+3. Pull and Build Images
+    - First pull the latest images.
+    ```bash
+    docker-compose pull
+    ```
+    - For the local setup we need to rebuild the frontend image to use the updated env file.
+    ```bash
+    docker-compose build frontend
+    ```
+4. Run
+    ```bash
+    docker-compose up -d
+    ```
+    Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
+    👉 Accept that the browser cannot verify the certificate.
+    👉 enable the flag [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost) in Chrome.
+5. Add Skills
+    Add Skills according to the [Add New Skills](#Add-New-Skills?) section. For open-domain skills the datastore need to created first.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:

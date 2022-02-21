@@ -1,6 +1,6 @@
 # Models
 
-Inference API that supports SOTA (QA) models & adapters. 
+Management and Inference APIs that support SOTA (QA) models & adapters. 
 Receives input and returns prediction and other artifacts (e.g. attention scores)
 
 ## Project structure
@@ -32,11 +32,19 @@ to forward requests to the correct inference server and to handle authorization 
 └───docker-compose.yml          # Example docker-compose setup for the Model API
 ```
 
+## API Path
+The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
+is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
+
+However, to run and distinguish multiple models, we use an API gateway with Traefik so we extend 
+the path to `/api/$model-prefix/$endpoint` which is then resolved by Traefik to the correct model server and forwarded
+to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
+This requires you to setup the docker-compose and Traefik config as described below.
+
+
 ## Requirements
 
-- Python 3.7+
-- Docker (optional)
-- Make (optional)
+Python 3.7+, Docker (optional), Make (optional)
 
 ## Installation
 Install the required packages in your local environment (ideally virtualenv, conda, etc.).
@@ -57,31 +65,24 @@ Thus, we first install `sentence-transformers` along with `transformers`,
 uninstall `transformers`, and finally install `adapter-transformers`.
 
 
-## API Path
-The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
-is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
-
-However, to run and distinguish multiple models, we use an API gateway with Traefik so we extend 
-the path to `/api/$model-prefix/$endpoint` which is then resolved by Traefik to the correct model server and forwarded
-to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
-This requires you to setup the docker-compose and Traefik config as described below.
-
-
 ## Setup
 ### Docker
 1. For each model server that should run, create a `.env.$model` to configure it.  
-   See `inference_server/.env.example` for an example.
+   See [here](inference_server/.env.example) for an example.
 2. Configure `docker-compose.yaml` by adding services for the Traefik reverse proxy, and the
-   model servers (each with their .env file). See example_docker-compose.yml for an example.
+   model servers (each with their .env file). See [docker-compose.yml](docker-compose.yml) for an example.
 
 To test whether the api is running you can execute:
 ```bash
 curl --insecure https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
 ```
 
+### Local
+Create `inference_server/.env` and configure it as needed for your local model server.
+
 ## Running
 
-### Running Localhost
+#### Running Localhost
 
 ```sh
 make run
@@ -90,20 +91,21 @@ This *only* starts one inference server using `inference_server/.env`. No Traefi
 For debugging, `inference_server/main.py` can also be used as entry.
 
 
-### Running via Docker
+#### Running Via Docker
 
 ```sh
 make deploy
 ```
 
-### Running Tests
+#### Running Tests
 For unit tests:
 ```sh
 make test
 ```
+For load testing with Locust, see [this README](locust/README.md).
 
-## Adding New Models using API
-New models can be added without manually adapting the *docker-compose.yaml* file by a `POST` request to`api/models/deploy`.
+### Adding new Models using API
+New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
  of the path prefix in the following form:
 ```
@@ -118,14 +120,15 @@ By passing all environment information that would normally be in the `.env` file
   "max_input": 1024,
   "transformer_cache": "../.cache",
   "model_class": <model_class>,
-  "return_plaintext_array": false
+  "return_plaintext_arrays": false
 }
 ```
 
 The server will automatically create the model-api instance and add it to the docker network. It might take some time 
 until the model is available, since it needs to download and initialize the necessary models and adapters first. 
-To check whether the model is ready, you can retrieve all available models at `api/models` and check whether the added 
-models is in the list.
+To check whether the model is ready, you can retrieve all available models using
+`curl --insecure https://localhost:8443/api/models`
+and check whether the added models is in the list.
 
 #### Example deployment request 
 
@@ -144,7 +147,7 @@ curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
   "max_input": 1024,
   "transformer_cache": "\/etc\/huggingface\/.cache\/",
   "model_class": "base",
-  "return_plaintext_array": false
+  "return_plaintext_arrays": false
 }'
 ```
 
@@ -168,38 +171,83 @@ curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding'
 ```
 
 
-
-## Adding New Models Manually
+### Adding new Models Manually
 With Traefik we can add new models to the model API easily for each new model append the following to the 
-docker-comopse file:
+docker-compose file:
 
 ```dockerfile
-inference_<model>:
-    image: ukpsquare/square-model-api:latest
-    env_file:
-      - ./inference_server/.env.<model>
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
+services:
+    inference_<model>:
+        image: ukpsquare/square-model-api-v1:latest
+        env_file:
+          - ./inference_server/.env.<model>
+        volumes:
+          - ./.cache/:/etc/huggingface/.cache/
+        labels:
+          - "traefik.enable=true"
+          - "traefik.http.routers.<model>.rule=PathPrefix(`/api/<model-prefix>`)"
+          - "traefik.http.routers.<model>.entrypoints=websecure"
+          - "traefik.http.routers.<model>.tls=true"
+          - "traefik.http.routers.<model>.tls.certresolver=le"
+          - "traefik.http.routers.<model>.middlewares=<model>-stripprefix,<model>-addprefix"
+          - "traefik.http.middlewares.<model>-stripprefix.stripprefix.prefixes=/api/<model-prefix>"
+          - "traefik.http.middlewares.<model>-addprefix.addPrefix.prefix=/api"
 ```
 
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
-## Removing models via API
+#### Adding Onnx models 
+Onnx models require a path to the file containing the onnx models. On the VM there are the following files already uploaded:
+```
+└───onnx_models           
+    ├───facebook-bart-base
+    │   ├───decoder.onnx
+    │   └───model.onnx
+    ├───bert-base-uncased          
+    │   └───model.onnx
+    ├───roberta-base    
+    │   └───model.onnx            
+    └───t5
+        ├───decoder.onnx
+        └───model.onnx             
+```
+
+This is already configured as a volume in the `docker-compose` file. You have to add the following to your model container:
+```
+    volumes:
+      - onnx-models:/onnx_models
+```
+
+Then the model path in the `.env` file has the `onnx_models`folder as root. For example, loading
+the BERT model requires the following path `MODEL_PATH=/onnx_models/bert-base-cased/model.onnx`.
+
+In order to be able to start onnx models manually, make sure that the `ONNX_VOLUME` environment variable contains the name of the docker 
+volume with the onnx files. Then, simply specify the `model_path` and optionally the `decoder_path` to load a new onnx model. 
+
+### Removing models via API
 Removing the deployed distilbert model.
 ```bash
 curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
 ```
 
-## Adding New Users
-The Traefik component provides an Authentication service. To add new users and their password add 
-them in *traefik.yaml*. All users have the following form: 
+### Update model parameters
+
+You can update the batch size, gpu option, input size and the type of returned arrays
+via our update API. An example request to change the `return_plaintext_arrays` 
+param to `true` for the dpr model is shown below:
+
+```bash
+curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/update' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "return_plaintext_arrays": true
+}'
 ```
-<user-name>:<password-hash>
-```
-The password can be hashed using wither MD5, SHA-1 or BCrypt.
-It is easiest to use `htpasswd` to obtain the necessary hash.
+
+Note that changing the `disable_gpu` parameter is only possible for transformer and adapter models. For Onnx models
+and sentence-transformers models, changing this parameter is not supported.
+
