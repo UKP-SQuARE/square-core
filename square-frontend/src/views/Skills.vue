@@ -70,6 +70,12 @@ export default Vue.component('list-skills', {
     deleteSkill(skillId) {
       this.$store.dispatch('deleteSkill', { skillId: skillId })
     }
+  },
+  /**
+   * Make the store update the skills
+   */
+  beforeMount() {
+    this.$store.dispatch('updateSkills')
   }
 })
 </script>

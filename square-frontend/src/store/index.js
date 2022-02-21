@@ -114,10 +114,12 @@ export default new Vuex.Store({
       return postSignIn(username, password)
           .then((response) => {
             context.commit('setJWT', { jwt: response.data.token })
-          })
+          }).then(() => context.dispatch('updateSkills'))
     },
     signOut(context) {
+      // Reset JWT and (private) skills
       context.commit('setJWT', { jwt: '' })
+      context.commit('setSkills', { skills: [] })
     },
     initJWTfromLocalStorage(context) {
       let jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
