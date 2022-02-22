@@ -17,7 +17,8 @@ AUTH_USER = os.getenv("AUTH_USER", "admin")
 AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "example_key")
 
 
-app = FastAPI()
+app = FastAPI(title="SQuARE Model Management API",
+              openapi_url="/api/openapi.json")
 
 
 @app.get("/api")
