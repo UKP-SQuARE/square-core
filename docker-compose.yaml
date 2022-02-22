@@ -236,7 +236,7 @@ services:
   model_bert_onnx:
     image: ukpsquare/square-model-api-v1:latest
     env_file:
-      - ./inference_server/.env.bert_onnx
+      - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
       - WEB_CONCURRENCY=1
     volumes:
