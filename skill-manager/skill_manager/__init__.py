@@ -1,3 +1,3 @@
-from skill_manager.mongo_client import MongoClient
+from skill_manager.mongo.mongo_client import MongoClient
 
 mongo_client = MongoClient()
