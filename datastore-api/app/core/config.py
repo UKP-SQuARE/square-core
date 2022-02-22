@@ -3,6 +3,7 @@ from pydantic import BaseSettings, SecretStr
 
 class Settings(BaseSettings):
     API_PREFIX: str = ""
+    OPENAPI_URL: str = "/api/openapi.json"
     API_KEY: SecretStr = ""
     ES_URL: str = ""
     ES_SEARCH_TIMEOUT: int = 30
