@@ -1,9 +1,8 @@
 import json
-import os
-import uuid
+
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
 import pytest
 import responses
@@ -11,10 +10,25 @@ from fastapi.testclient import TestClient
 from square_skill_api.models.request import QueryRequest
 from testcontainers.mongodb import MongoDbContainer
 
-from skill_manager.api import app
+from skill_manager import mongo_client
+from skill_manager.main import app
 from skill_manager.models import Skill, SkillSettings
+from skill_manager.keycloak_api import KeycloakAPI
+
+keycloak_api_mock = MagicMock()
+keycloak_api_mock.create_client.return_value = {"clientId": "test-client-id", "secret": "test-secret"}
+keycloak_api_override = lambda: keycloak_api_mock
+app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 client = TestClient(app)
+
+@pytest.fixture(scope="module")
+def monkeymodule():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
 
 
 @pytest.fixture(scope="module")
@@ -30,25 +44,30 @@ def init_mongo_db():
 
 
 @pytest.fixture(scope="module")
-def pers_client(init_mongo_db):
-    with patch("skill_manager.api.MongoSettings") as mongo_settings:
-        connection_url = init_mongo_db.get_connection_url()
+def pers_client(monkeymodule, init_mongo_db):
+    # connection_url = init_mongo_db.get_connection_url()
 
-        # HACK: *for MAC* host detection does not work properly when running inside docker
-        # therefore, we set an env variable in the Dockerfile and manually replace
-        # the host. Once the issue below is fixed in testcontainers, this could be removed.
-        # https://github.com/testcontainers/testcontainers-python/issues/43
-        if os.getenv("INSIDE_DOCKER", False) == 1:
-            lindex = connection_url.index("@") + 1
-            rindex = max(i for i, v in enumerate(connection_url) if v == ":")
-            connection_url = (
-                connection_url[:lindex]
-                + "host.docker.internal"
-                + connection_url[rindex:]
-            )
-        mongo_settings.return_value.connection_url = connection_url
-        with TestClient(app) as client:
-            yield client
+    # # HACK: *for MAC* host detection does not work properly when running inside docker
+    # # therefore, we set an env variable in the Dockerfile and manually replace
+    # # the host. Once the issue below is fixed in testcontainers, this could be removed.
+    # # https://github.com/testcontainers/testcontainers-python/issues/43
+    # if os.getenv("INSIDE_DOCKER", False) == 1:
+    #     lindex = connection_url.index("@") + 1
+    #     rindex = max(i for i, v in enumerate(connection_url) if v == ":")
+    #     connection_url = (
+    #         connection_url[:lindex] + "host.docker.internal" + connection_url[rindex:]
+    #     )
+
+    monkeymodule.setenv(
+        "MONGO_INITDB_ROOT_USERNAME", init_mongo_db.MONGO_INITDB_ROOT_USERNAME
+    )
+    monkeymodule.setenv(
+        "MONGO_INITDB_ROOT_PASSWORD", init_mongo_db.MONGO_INITDB_ROOT_PASSWORD
+    )
+    monkeymodule.setenv("MONGO_HOST", init_mongo_db.get_container_host_ip())
+    monkeymodule.setenv("MONGO_PORT", init_mongo_db.get_exposed_port(27017))
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
@@ -67,7 +86,7 @@ def skill_prediction_factory():
                             "span": None,
                             "url": "",
                             "source": "",
-                            "document_score": 0.0
+                            "document_score": 0.0,
                         }
                     ],
                 }
@@ -120,8 +139,8 @@ def assert_skills_equal_from_response(skill, response):
     skill = skill.dict()
     added_skill = response.json()
     for k in added_skill:
-        if k == "id":
-            # id was created upon inserting to the db
+        if k in ["id", "client_id", "client_secret"]:
+            # these attributes were created when inserting into mongo/keycloak
             continue
         if k in ["created_at"]:
             added_skill[k] = datetime.fromisoformat(added_skill[k])
@@ -150,7 +169,9 @@ def test_skill_heartbeat(client):
         json={"is_alive": True},
         status=200,
     )
-    response = client.get("/api/health/skill-heartbeat", params={"skill_url": skill_url})
+    response = client.get(
+        "/api/health/skill-heartbeat", params={"skill_url": skill_url}
+    )
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 
@@ -248,7 +269,9 @@ def test_update_skill(pers_client, skill_factory):
     test_skill.id = skill_id
     updated_skill_name = "updated skill"
     test_skill.name = updated_skill_name
-    response = pers_client.put(f"/api/skill/{skill_id}", json=dict(name=updated_skill_name))
+    response = pers_client.put(
+        f"/api/skill/{skill_id}", json=dict(name=updated_skill_name)
+    )
     assert response.status_code == 200
     assert response.json()["name"] == updated_skill_name
 
@@ -309,13 +332,15 @@ def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
         skill_args={"context": "hello"},
         num_results=1,
     )
-    response = pers_client.post(f"/api/skill/{skill_id}/query", json=query_request.dict())
-
-    assert response.status_code == 200
-    saved_prediction = pers_client.app.state.skill_manager_db.predictions.find_one(
-        {"query": query}
+    response = pers_client.post(
+        f"/api/skill/{skill_id}/query", json=query_request.dict()
     )
 
+    assert response.status_code == 200
+    saved_prediction = mongo_client.client.skill_manager.predictions.find_one(
+        {"query": query}
+    )
+    
     TestCase().assertDictEqual(
         response.json(), {"predictions": saved_prediction["predictions"]}
     )
@@ -345,7 +370,9 @@ def test_query_skill_with_default_skill_args(
         skill_args=query_context,
         num_results=1,
     )
-    response = pers_client.post(f"/api/skill/{skill_id}/query", json=query_request.dict())
+    response = pers_client.post(
+        f"/api/skill/{skill_id}/query", json=query_request.dict()
+    )
 
     actual_skill_query_body = json.loads(responses.calls[0].request.body)["skill_args"]
     expected_skill_query_body = default_skill_args

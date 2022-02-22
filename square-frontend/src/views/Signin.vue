@@ -75,7 +75,7 @@ export default Vue.component('sign-in', {
         password: this.form.password
       }).then(() => {
         this.failure = false
-        this.$router.push('/')
+        this.$router.push('/skills')
       }).catch(error => {
         this.failure = true
         this.failureMessage = error.data.msg

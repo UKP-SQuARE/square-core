@@ -1,140 +1,126 @@
 import logging
-from bson import ObjectId
+import os
+from http.client import HTTPException
 from typing import List, Optional
-from urllib.parse import urljoin
 
-import pymongo
+import jwt
 import requests
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from square_skill_api.models.heartbeat import HeartbeatResult
+from bson import ObjectId
+from fastapi import APIRouter, Depends, Request
+from fastapi.security.http import HTTPBearer
+from skill_manager import mongo_client
+from skill_manager.keycloak_api import KeycloakAPI
+from skill_manager.models import Prediction, Skill
+from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
-from skill_manager.models import Skill, SkillType, Prediction
-from skill_manager.mongo_settings import MongoSettings
-
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+router = APIRouter(prefix="/skill")
 
 
-@app.on_event("startup")
-def on_startup():
-    mongo_settings = MongoSettings()
-    app.state.mongo_client = pymongo.MongoClient(mongo_settings.connection_url)
-    app.state.skill_manager_db = app.state.mongo_client.skill_manager
+def get_user_from_token(request: Request):
+    token = HTTPBearer()(request).credentials
+    payload = jwt.decode(token, options=dict(verify_signature=False))
+    realm = Auth.get_realm_from_token(token)
+    return {"realm": realm, "user_id": payload["preferred_username"]}
 
 
-@app.get(
-    "/api/health/heartbeat",
-    response_model=HeartbeatResult,
-)
-async def heartbeat():
-    """Checks if the skill-manager instance is still up and running."""
-    return HeartbeatResult(is_alive=True)
+def has_auth_header(request: Request):
+    return request.headers.get("Authorization", "").lower().startswith("bearer")
 
 
-@app.get(
-    "/api/health/skill-heartbeat",
-    response_model=HeartbeatResult,
-)
-async def skill_heartbeat(skill_url: str):
-    """Checks if a skill is still up and running."""
-    skill_health_url = urljoin(skill_url, "health/heartbeat")
-
-    skill_heartbeat_response = requests.get(skill_health_url)
-    logger.debug(
-        "skill at {} health {}".format(
-            skill_health_url, skill_heartbeat_response.json()
-        )
-    )
-
-    return skill_heartbeat_response.json()
-
-
-@app.get(
-    "/api/skill-types",
-    response_model=List[str],
-)
-async def get_skill_types():
-    """Returns a list of supported skill-types."""
-    skill_types = [skill_type.value for skill_type in SkillType]
-
-    logger.debug("get_skill_types {skill_types}".format(skill_types=skill_types))
-    return skill_types
-
-
-@app.get(
-    "/api/skill/{id}",
+@router.get(
+    "/{id}",
     response_model=Skill,
 )
-async def get_skill_by_id(id: Optional[str] = None):
+async def get_skill_by_id(request: Request, id: str = None):
     """Returns the saved skill information."""
     skill = Skill.from_mongo(
-        app.state.skill_manager_db.skills.find_one({"_id": ObjectId(id)})
+        mongo_client.client.skill_manager.skills.find_one({"_id": ObjectId(id)})
     )
-
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
+
+    if has_auth_header(request):
+        user_id = get_user_from_token(request)["username"]
+        if not skill.published and not skill.user_id == user_id:
+            raise HTTPException(403)
+
     return skill
 
 
-@app.get(
-    "/api/skill",
+@router.get(
+    "",
     response_model=List[Skill],
 )
-async def get_skills(user_id: Optional[str] = None):
-    """Returns all skills that a user has access to. A user has access to 
+async def get_skills(request: Request, user_id: Optional[str] = None):
+    """Returns all skills that a user has access to. A user has access to
     all public skills, and private skill created by them."""
     mongo_query = {"published": True}
-    if user_id:
+    if user_id or has_auth_header(request):
+        if has_auth_header(request):
+            user_id = get_user_from_token(request)["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
-    skills = app.state.skill_manager_db.skills.find(mongo_query)
+    skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
 
     logger.debug("get_skills: {skills}".format(skills=skills))
     return skills
 
 
-@app.post(
-    "/api/skill",
+@router.post(
+    "",
     response_model=Skill,
     status_code=201,
 )
-async def create_skill(skill: Skill):
+async def create_skill(
+    skill: Skill, request: Request, keycloak_api = Depends(KeycloakAPI)
+):
     """Creates a new skill and saves it."""
-    skill_id = app.state.skill_manager_db.skills.insert_one(skill.mongo()).inserted_id
-    skill = await get_skill_by_id(skill_id)
 
+    if has_auth_header(request):
+        payload = get_user_from_token(request)
+        realm = payload["realm"]
+        username = payload["username"]
+    else:
+        realm = "square"
+        username = skill.user_id
+
+    client = keycloak_api.create_client(
+        realm=realm, username=username, skill_name=skill.name
+    )
+    skill.client_id = client["clientId"]
+    skill_id = mongo_client.client.skill_manager.skills.insert_one(
+        skill.mongo()
+    ).inserted_id
+    skill = await get_skill_by_id(request, skill_id)
     logger.debug("create_skill: {skill}".format(skill=skill))
+
+    # set the secret *after* saving the skill to mongoDB, so the secret will be
+    # returned, but not logged and not persisted.
+    skill.client_secret = client["secret"]
     return skill
 
 
-@app.put(
-    "/api/skill/{id}",
+@router.put(
+    "/{id}",
     response_model=Skill,
 )
-async def update_skill(id: str, data: dict):
+async def update_skill(request: Request, id: str, data: dict):
     """Updates a skill with the provided data."""
-    skill = await get_skill_by_id(id)
+    skill = await get_skill_by_id(request, id)
 
     for k, v in data.items():
         if hasattr(skill, k):
             setattr(skill, k, v)
 
-    _ = app.state.skill_manager_db.skills.find_one_and_update(
+    _ = mongo_client.client.skill_manager.skills.find_one_and_update(
         {"_id": ObjectId(id)}, {"$set": data}
     )
-    updated_skill = await get_skill_by_id(id)
+    updated_skill = await get_skill_by_id(request, id)
 
     logger.debug(
         "update_skill: old: {skill} updated: {updated_skill}".format(
@@ -144,10 +130,14 @@ async def update_skill(id: str, data: dict):
     return skill
 
 
-@app.delete("/api/skill/{id}", status_code=204)
-async def delete_skill(id: str):
+@router.delete("/{id}", status_code=204)
+async def delete_skill(request: Request, id: str):
     """Deletes a skill."""
-    delete_result = app.state.skill_manager_db.skills.delete_one({"_id": ObjectId(id)})
+    _ = await get_skill_by_id(request, id)
+
+    delete_result = mongo_client.client.skill_manager.skills.delete_one(
+        {"_id": ObjectId(id)}
+    )
     logger.debug("delete_skill: {id}".format(id=id))
     if delete_result.acknowledged:
         return
@@ -155,41 +145,41 @@ async def delete_skill(id: str):
         raise RuntimeError(delete_result.raw_result)
 
 
-@app.post(
-    "/api/skill/{id}/publish",
+@router.post(
+    "/{id}/publish",
     response_model=Skill,
     status_code=201,
 )
-async def publish_skill(id: str):
+async def publish_skill(request: Request, id: str):
     """Makes a skill publicly available."""
-    skill = await get_skill_by_id(id)
+    skill = await get_skill_by_id(request, id)
     skill.published = True
-    skill = await update_skill(id, skill.dict())
+    skill = await update_skill(request, id, skill.dict())
 
     logger.debug("publish_skill: {skill}".format(skill=skill))
     return skill
 
 
-@app.post(
-    "/api/skill/{id}/unpublish",
+@router.post(
+    "/{id}/unpublish",
     response_model=Skill,
     status_code=201,
 )
-async def unpublish_skill(id: str):
+async def unpublish_skill(request: Request, id: str):
     """Makes a skill private."""
-    skill = await get_skill_by_id(id)
+    skill = await get_skill_by_id(request, id)
     skill.published = False
-    skill = await update_skill(id, skill.dict())
+    skill = await update_skill(request, id, skill.dict())
 
     logger.debug("unpublish_skill: {skill}".format(skill=skill))
     return skill
 
 
-@app.post(
-    "/api/skill/{id}/query",
+@router.post(
+    "/{id}/query",
     response_model=QueryOutput,
 )
-async def query_skill(query_request: QueryRequest, id: str):
+async def query_skill(request: Request, query_request: QueryRequest, id: str):
     """Sends a query to the respective skill and returns its prediction."""
     logger.info(
         "received query: {query} for skill {id}".format(
@@ -200,7 +190,7 @@ async def query_skill(query_request: QueryRequest, id: str):
     query = query_request.query
     user_id = query_request.user_id
 
-    skill: Skill = await get_skill_by_id(id)
+    skill: Skill = await get_skill_by_id(request, id)
 
     default_skill_args = skill.default_skill_args
     if default_skill_args is not None:
@@ -234,7 +224,7 @@ async def query_skill(query_request: QueryRequest, id: str):
         user_id=user_id,
         predictions=predictions.predictions,
     )
-    _ = app.state.skill_manager_db.predictions.insert_one(
+    _ = mongo_client.client.skill_manager.predictions.insert_one(
         mongo_prediction.mongo()
     ).inserted_id
     logger.debug(
