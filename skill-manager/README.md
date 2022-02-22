@@ -4,24 +4,28 @@ The Skill-Manager serves as a central service for interacting with the Skills. I
 ## Project Structure
 ```
 ├───skill_manager
+│   ├───mongo
+│   │   ├───mongo_client.py         # wrapper class for (dis-)connecting to mongoDB
+│   │   ├───mongo_model.py          # utility interface for loading data from and to mongoDB
+│   │   ├───py_object_id.py         # utility class for mongoDB ID
+│   ├───settings
+│   │   ├───keycloak_settings.py    # Settings class for Keycloak, loads .env variables
+│   │   ├───mongo_settings.py       # Settings class for MongoDB, loads .env variables
 │   ├───routers
-|   |   |--api.py           # main router for all routes with `/api` prefix
-|   |   |--health.py        # routes with `/api/health` prefix
-|   |   |--skill_types.py   # routes with `/api/skill-types` prefix
-|   |   |--skill.py         # routes with `/api/skill` prefix
-│   ├───main.py             # main file creatng the `app` object
-│   ├───models.py           # input and output of endpoints
-│   ├───mongo_client.py     # wrapper class for (dis-)connecting to mongoDB
-│   ├───mongo_model.py      # utility interface for loading data from and to mongoDB
-│   ├───mongo_settings.py   # utility class for storing mongoDB connection settings
-│   ├───py_object_id.py     # utility class for mongoDB ID
+│   │   ├───api.py                  # main router for all routes with `/api` prefix
+│   │   ├───health.py               # routes with `/api/health` prefix
+│   │   ├───skill_types.py          # routes with `/api/skill-types` prefix
+│   │   ├───skill.py                # routes with `/api/skill` prefix
+│   ├───keycloak_api.py             # Class for managaing Clients in Keycloak
+│   ├───main.py                     # main file creatng the `app` object
+│   ├───models.py                   # input and output of endpoints
 ├───tests
 │   ├───test_api.py
-├───.env                    # environment file loaded by root docker-compose.yaml
-├───Dockerfile              # image definition
-├───logging.conf            # logging configuration
-├───requirements.dev.txt    # dependencies for development
-├───requirements.txt        # dependencies
+├───.env                            # environment file loaded by root docker-compose.yaml
+├───Dockerfile                      # image definition
+├───logging.conf                    # logging configuration
+├───requirements.dev.txt            # dependencies for development
+├───requirements.txt                # dependencies
 ```
 
 ## Testing
