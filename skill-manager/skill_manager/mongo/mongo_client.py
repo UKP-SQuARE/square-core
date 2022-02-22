@@ -1,6 +1,6 @@
 import pymongo
 
-from skill_manager.mongo_settings import MongoSettings
+from skill_manager.settings.mongo_settings import MongoSettings
 
 class MongoClient():
 
