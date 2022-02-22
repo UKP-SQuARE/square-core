@@ -2,6 +2,7 @@ import json
 
 from datetime import datetime
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 import pytest
 import responses
@@ -12,9 +13,14 @@ from testcontainers.mongodb import MongoDbContainer
 from skill_manager import mongo_client
 from skill_manager.main import app
 from skill_manager.models import Skill, SkillSettings
+from skill_manager.keycloak_api import KeycloakAPI
+
+keycloak_api_mock = MagicMock()
+keycloak_api_mock.create_client.return_value = {"clientId": "test-client-id", "secret": "test-secret"}
+keycloak_api_override = lambda: keycloak_api_mock
+app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 client = TestClient(app)
-
 
 @pytest.fixture(scope="module")
 def monkeymodule():
@@ -133,8 +139,8 @@ def assert_skills_equal_from_response(skill, response):
     skill = skill.dict()
     added_skill = response.json()
     for k in added_skill:
-        if k == "id":
-            # id was created upon inserting to the db
+        if k in ["id", "client_id", "client_secret"]:
+            # these attributes were created when inserting into mongo/keycloak
             continue
         if k in ["created_at"]:
             added_skill[k] = datetime.fromisoformat(added_skill[k])
