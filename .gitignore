@@ -22,6 +22,7 @@ bin
 # ignore build folder for docs
 docs/_build
 
+
 # libs and configs
 lib/
 lib64

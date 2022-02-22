@@ -60,21 +60,10 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 ## Add New Skills
 
 ### Step 1: Hosting New Skills
-- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours to the [pull requests](https://github.com/UKP-SQuARE/square-core/pulls). We will make it running after code review;
-- It is also OK to host the skill yourself somewhere else. The only thing that matters here is to provide a URL and also match the arguments formats.
+- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it run after code review;
+- It is also OK to host the skill yourself somewhere else. The only thing that matters here is to provide a URL and also match the argument formats.
 
-### Step 2 (for Local Hosts Only): .env Setup 
-Create `.env` files for each skill, e.g. under `skills/qa-boolq-skill/.env` with the following content:
-```bash
-MODEL_API_KEY=your-api-key-goes-here
-MODEL_API_URL=http://model_nginx:8080/api
-DATA_API_URL=http://host.docker.internal:8002/datastores
-```
-When running the project locally, provide any api key e.g. `1234-abcd-5678-efgh`.
-
-Next, create your user and password with `htpasswd` and add it under `square-model-inference-api/traefik/traefik.yaml`.
-
-### Step 3: Register the Skill
+### Step 2: Register the Skill
 Go to your user profile and click on "My Skills" and "New" buttons. Fill out the form and link it to the hosted skills:
 
 <details open>
@@ -87,9 +76,31 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 </details>
 
 ## Local Installation
-For local development it's best to build the project with docker compose by running `docker compose build`.  
+For local development, it's best to build the project with docker compose by running `docker compose build`.  
 If you just want to use the current system, you can pull all images from docker hub with `docker compose pull`.  
 And finally run `docker compose up -d` to start the system.  
+
+### Environment Configuration
+1. Create an `.env` file the datastore_api under `./datstore_api/.env`
+```bash
+API_KEY=<YOUR_DATASTORE_API_KEY>
+ES_URL=http://datastore_es:9200
+FAISS_URL=http://localhost/api
+MODEL_API_URL=http://localhost/api
+```
+2. Create an `.env` file for the skills under `./skills/.env` with the following content:
+```bash
+DATA_API_KEY=<YOUR_DATASTORE_API_KEY>
+SQUARE_API_URL=http://localhost/api
+```
+
+3. If you use the UI locally, please also update the .env file under `./square-frontend/.env.production` with the following content:
+```bash
+VUE_APP_BACKEND_URL=http://localhost/api/backend
+VUE_APP_SKILL_MANAGER_URL=http://localhost/api/skill-manager
+```
+
+4. Note that you also have to update the `traefik` service in the `docker-compose.yaml` according to your setup. The above configuration assumes that your project is running on localhost.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:
