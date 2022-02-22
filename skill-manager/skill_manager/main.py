@@ -8,7 +8,10 @@ from skill_manager.routers.api import router
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    title="Skill-Manager API",
+    openapi_url="/api/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,
