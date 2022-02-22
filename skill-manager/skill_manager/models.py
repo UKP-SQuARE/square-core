@@ -5,8 +5,8 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, validator
 from square_skill_api.models.prediction import Prediction as SkillPrediction
 
-from skill_manager.mongo_model import MongoModel
-from skill_manager.py_object_id import PyObjectId
+from skill_manager.mongo.mongo_model import MongoModel
+from skill_manager.mongo.py_object_id import PyObjectId
 
 
 class SkillType(str, Enum):
@@ -53,16 +53,16 @@ class Skill(MongoModel):
     url: str = Field(..., description="The url where the skill is running.")
     skill_type: SkillType
     skill_settings: SkillSettings
-    skill_input_examples: Optional[List[SkillInputExample]]
     user_id: str = Field(..., description="Username of the skill author.")
     created_at: datetime = Field(
         default_factory=datetime.now, description="Timestamp of skill creation."
     )
+    skill_input_examples: Optional[List[SkillInputExample]]
     description: Optional[str] = Field(
         None,
         description="A description of the skill, for example describing its pipeline.",
     )
-    default_skill_args: Dict = Field(
+    default_skill_args: Optional[Dict] = Field(
         None,
         description="A dictionary holding key-value pairs that should always be sent to the skill as input. This allows to use the same skill implementataion in different ways.",
     )
