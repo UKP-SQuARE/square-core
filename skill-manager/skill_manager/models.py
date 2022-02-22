@@ -70,6 +70,12 @@ class Skill(MongoModel):
         False,
         description="If `True`, the skill will be publicly availble, ready to be used by anyone. If `False`, only the skill author has access to it.",
     )
+    client_id: Optional[str] = Field(
+        None, description="The clientId of the skill stored in Keycloak."
+    )
+    client_secret: Optional[str] = Field(
+        None, description="The cleint secret of the skill stored in Keycloak."
+    )
 
     @validator("url")
     def validate_url(cls, url: str) -> str:
