@@ -49,4 +49,17 @@ MONGO_INITDB_ROOT_USERNAME=root
 MONGO_INITDB_ROOT_PASSWORD=example
 MONGO_HOST=localhost
 MONGO_PORT=27017
+KEYCLOAK_SKILL_MANAGER_CLIENT_SECRET=PASTE_FROM_NEXT_STEP
 ```
+### Keycloak Skill-Manager Client Setup
+When new skills are created, the skill-manager also creates new clients in Keycloak. For this, the skill-manager requires the privilages to create clients.
+1. Login to the admin console of keycloak
+2. Select the realm where the skill-manager should create clients
+3. Create a new client with client id `skill-manager` (or any other client id, but then it needs to be set as the `KEYCLOAK_SKILL_MANAGER_CLIENT_ID` env variable)
+4. In the Settings tab
+    - set the Access Type to `confidential`
+    - disable Standard Flow Enabled and Direct Access Grants Enabled
+    - enable Service Accounts Enabled
+    - save
+5. In the Service Account Roles tab under at Client Roles, select `realm-management` and add the `create-client` and `manage-client` to the assigned roles
+6. In the Credentials tab copy the secret and set it in the .env file
