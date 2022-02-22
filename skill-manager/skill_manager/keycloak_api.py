@@ -1,12 +1,15 @@
+import json
 import string
 import secrets
 from typing import Dict
 
 import requests
 
+from skill_manager.settings import KeycloakSettings
+
 
 class KeycloakAPI:
-    def __init__(self, keycloak_base_url: str, client_id: str, client_secret: str):
+    def __init__(self):
         """Class for interacting with Keycloak for CRUD clients.
 
         Args:
@@ -14,9 +17,7 @@ class KeycloakAPI:
             client_id (str): client id of the client that is authorized to manage clients
             client_secret (str): client secret
         """
-        self.keycloak_base_url = keycloak_base_url
-        self.client_id = client_id
-        self.client_secret = client_secret
+        self.settings = KeycloakSettings()
 
     def get_token(self, realm: str) -> str:
         """Returns an access token for managing clients in the realm."
@@ -28,12 +29,12 @@ class KeycloakAPI:
             str: access token
         """
         response = requests.post(
-            f"{self.keycloak_base_url}"
+            f"{self.settings.base_url}"
             f"/auth/realms/{realm}/protocol/openid-connect/token",
             data=dict(
                 grant_type="client_credentials",
-                client_id=self.client_id,
-                client_secret=self.client_secret,
+                client_id=self.settings.client_id,
+                client_secret=self.settings.client_secret.get_secret_value(),
             ),
         )
         response.raise_for_status()
@@ -53,34 +54,36 @@ class KeycloakAPI:
         Returns:
             Dict: Created client information in Keycloak.
         """
-        access_token = self.get_token()
+        access_token = self.get_token(realm=realm)
 
         secret = self._generate_secret()
         client_id = f"{username}-{skill_name}"
 
         response = requests.post(
-            f"{self.keycloak_base_url}/auth/admin/realms/{realm}"
+            f"{self.settings.base_url}/auth/realms/{realm}"
             f"/clients-registrations/default",
-            headers=dict(Authorization=f"Bearer {access_token}"),
-            data=dict(
-                clientId=client_id,
-                secret=secret,
-                implicitFlowEnabled=False,
-                standardFlowEnabled=False,
-                serviceAccountsEnabled=True,
-                publicClient=False,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            data=json.dumps({
+                "clientId": client_id,
+                "secret": secret,
+                "implicitFlowEnabled": False,
+                "standardFlowEnabled": False,
+                "serviceAccountsEnabled": True,
+                "publicClient": False,
                 **kwargs,
-            ),
+            }),
         )
 
         response.raise_for_status()
 
-        return dict(
-            **response.json(),
-            secret=secret,
-        )
+        _return_dict = response.json()
+        _return_dict["secret"] = secret
+        return _return_dict
 
-    def update_client(self,  realm: str, client_id: str,**kwargs: Dict) -> Dict:
+    def update_client(self,  realm: str, client_id: str, **kwargs: Dict) -> Dict:
         """Updates an existing client in Keycloak.
 
         Args:
@@ -91,20 +94,22 @@ class KeycloakAPI:
         Returns:
             Dict: Updated client information in Keycloak.
         """
-        access_token = self.get_token()
+        access_token = self.get_token(realm=realm)
 
         response = requests.put(
-            f"{self.keycloak_base_url}/auth/admin/realms/{realm}"
+            f"{self.settings.base_url}/auth/realms/{realm}"
             f"/clients-registrations/default/{client_id}",
-            headers=dict(Authorization=f"Bearer {access_token}"),
-            data=dict(**kwargs),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            data=json.dumps({"clientId": client_id, **kwargs}),
         )
-
         response.raise_for_status()
 
         return response.json()
 
-    def delete_client(self, realm: str, client_id: str):
+    def delete_client(self, realm: str, client_id: str) -> Dict:
         """Delets an existing client.
 
         Args:
@@ -112,19 +117,17 @@ class KeycloakAPI:
             client_id (str): The client_id of the client to update
 
         Returns:
-            _type_: _description_
+            Dict: _description_
         """
-        access_token = self.get_token()
+        access_token = self.get_token(realm=realm)
 
         response = requests.delete(
-            f"{self.keycloak_base_url}/auth/admin/realms/{realm}"
+            f"{self.settings.base_url}/auth/realms/{realm}"
             f"/clients-registrations/default/{client_id}",
             headers=dict(Authorization=f"Bearer {access_token}"),
         )
 
         response.raise_for_status()
-
-        return response.json()
 
     @staticmethod
     def _generate_secret(length: int = 20) -> str:
