@@ -238,7 +238,7 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
-      - WEB_CONCURRENCY=1
+      - WEB_CONCURRENCY=2
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models
