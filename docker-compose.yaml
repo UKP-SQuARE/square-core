@@ -131,6 +131,8 @@ services:
       - ./skill-manager/.env
     environment:
       - WEB_CONCURRENCY=2
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - KEYCLOAK_SKILL_MANAGER_CLIENT_ID=skill-manager
     depends_on:
       - skill_manager_mongo
     labels:
