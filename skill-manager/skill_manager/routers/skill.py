@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/skill")
 
-auth = Auth()
-
 
 def get_user_from_token(request: Request):
     token = HTTPBearer()(request).credentials
