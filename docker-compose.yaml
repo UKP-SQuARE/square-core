@@ -332,6 +332,7 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -348,6 +349,7 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -365,9 +367,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   commonsense_qa_skill:
     image: ukpsquare/square-skills-commonsense-qa:latest
@@ -380,10 +384,12 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux 
+      # - KEYCLOAK_BASE_URL=http://localhost:8080 
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   extractive_qa_skill:
     image: ukpsquare/square-skills-extractive:latest
@@ -397,9 +403,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   multiple_choice_qa_skill:
     image: ukpsquare/square-skills-multiple-choice:latest
@@ -413,9 +421,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   retrieve_bioasq_skill:
     image: ukpsquare/square-skills-retrieve-bioasq:latest
@@ -429,9 +439,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
 volumes:
   traefik-public-certificates:
