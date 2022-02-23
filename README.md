@@ -38,7 +38,7 @@ Find out more about the project on [UKPs Website](https://www.informatik.tu-darm
 
 ## Get Started
 👉 If you want to use the SQuARE public service online, you can refer to [Online Service](#Online-Service) for using the existing skills and refer to 
-[Add New Skills](#Add-New-Skills?) for adding new skills.
+[Add New Skills](#Add-New-Skills) for adding new skills.
 
 👉 If you want to deploy SQuARE locally yourself, please refer to [Local Installation](#Local-Installation).
 
