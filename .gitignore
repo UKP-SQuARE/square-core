@@ -15,8 +15,8 @@ __pycache__/
 
 env
 .vscode
+*.code-workspace
 .cache
-
 # github action local
 bin
 # ignore build folder for docs

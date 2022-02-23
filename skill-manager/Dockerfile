@@ -22,6 +22,7 @@ COPY requirements.dev.txt requirements.dev.txt
 RUN pip install -r requirements.dev.txt
 
 COPY tests tests
+COPY pytest.ini pytest.ini
 
 FROM base as build
 EXPOSE 8008
