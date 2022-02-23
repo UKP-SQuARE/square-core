@@ -1,10 +1,10 @@
 # Use Cases
 
 ## 1. Querying QA Skills
-SQuARE allows users to query Skills without downloading models, installing software packages, etc. Our [demo page](https://square.ukp-lab.de/) offers a wide range of skills hosted on our servers so that only a browser and an Internet connection are needed to run them. Thanks to this, users can easily conduct qualitative analysis to identify potential biases, strengths, or weaknesses.
+SQuARE allows users to query Skills without downloading models, installing software packages, etc. Our [demo page](https://square.ukp-lab.de/) offers a wide range of Skills hosted on our servers so that only a browser and an Internet connection are needed to run them. Thanks to this, users can easily conduct qualitative analysis to identify potential biases, strengths, or weaknesses.
 
 ## 2. Comparing QA Skills
-SQuARE also allows to query up to three skills in parallel to compare them conveniently. The interface shows the answers of the Skills next to each other to compare them effortlessly.
+SQuARE also allows to query up to three Skills in parallel to compare them conveniently. The interface shows the answers of the Skills next to each other to compare them effortlessly.
 
 ## 3. Publishing your own Skills
 SQuARE allows anyone to upload their own Skills onto the platform so that they can be used by other users. Publishing a new Skill requires implementing a single function that defines the question answering pipeline. This empowers practitioners and researchers by hiding software engineering and infrastructure topics and enabling them to focus only on research.
