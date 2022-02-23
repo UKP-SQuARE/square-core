@@ -11,14 +11,17 @@ from square_skill_api.models.request import QueryRequest
 from testcontainers.mongodb import MongoDbContainer
 
 from skill_manager import mongo_client
+from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
 from skill_manager.models import Skill, SkillSettings
-from skill_manager.keycloak_api import KeycloakAPI
+from skill_manager.routers import client_credentials
 
 keycloak_api_mock = MagicMock()
 keycloak_api_mock.create_client.return_value = {"clientId": "test-client-id", "secret": "test-secret"}
 keycloak_api_override = lambda: keycloak_api_mock
 app.dependency_overrides[KeycloakAPI] = keycloak_api_override
+
+app.dependency_overrides[client_credentials] = lambda: "test-token"
 
 client = TestClient(app)
 
@@ -172,6 +175,7 @@ def test_skill_heartbeat(client):
     response = client.get(
         "/api/health/skill-heartbeat", params={"skill_url": skill_url}
     )
+    print(response.json())
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 

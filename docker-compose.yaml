@@ -132,6 +132,7 @@ services:
     environment:
       - WEB_CONCURRENCY=2
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
       - CLIENT_ID=skill-manager
     depends_on:
       - skill_manager_mongo

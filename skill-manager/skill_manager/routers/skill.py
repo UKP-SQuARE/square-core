@@ -15,6 +15,8 @@ from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
+from skill_manager.routers import client_credentials
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,7 +79,7 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
     status_code=201,
 )
 async def create_skill(
-    skill: Skill, request: Request, keycloak_api = Depends(KeycloakAPI)
+    skill: Skill, request: Request, keycloak_api=Depends(KeycloakAPI)
 ):
     """Creates a new skill and saves it."""
 
@@ -179,7 +181,12 @@ async def unpublish_skill(request: Request, id: str):
     "/{id}/query",
     response_model=QueryOutput,
 )
-async def query_skill(request: Request, query_request: QueryRequest, id: str):
+async def query_skill(
+    request: Request,
+    query_request: QueryRequest,
+    id: str,
+    token: str = Depends(client_credentials),
+):
     """Sends a query to the respective skill and returns its prediction."""
     logger.info(
         "received query: {query} for skill {id}".format(
@@ -207,7 +214,11 @@ async def query_skill(request: Request, query_request: QueryRequest, id: str):
             query_request.skill_args["context"], *answers = answers
         query_request.skill_args["answers"] = answers
 
-    response = requests.post(f"{skill.url}/query", json=query_request.dict())
+    response = requests.post(
+        f"{skill.url}/query",
+        headers={"Authorization": f"Bearer {token}"},
+        json=query_request.dict(),
+    )
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
