@@ -30,7 +30,7 @@ async def skill_heartbeat(skill_url: str, token: str = Depends(client_credential
     skill_health_url = urljoin(skill_url, "health/heartbeat")
 
     skill_heartbeat_response = requests.get(
-        skill_health_url, headers={f"Authorization": "Bearer {token}"}
+        skill_health_url, headers={"Authorization": f"Bearer {token}"}
     )
     logger.debug(
         "skill at {} health {}".format(
