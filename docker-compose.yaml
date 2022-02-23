@@ -343,7 +343,7 @@ services:
     ports:
       - 8003:8003
     env_file:
-      - ./skills/.env
+      - ./skills/qa-boolq-skill/.env
     environment:
       - WEB_CONCURRENCY=2
       # Development
@@ -354,6 +354,8 @@ services:
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=ukp-boolq
 
   squad_v2_skill:
     image: ukpsquare/square-skills-squad-v2:latest
@@ -361,7 +363,7 @@ services:
     ports:
       - 8004:8004
     env_file:
-      - ./skills/.env
+      - ./skills/qa-squad-v2-skill/.env
     environment:
       - WEB_CONCURRENCY=2
       # Development
@@ -372,6 +374,8 @@ services:
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=ukp-squad-v2
 
   commonsense_qa_skill:
     image: ukpsquare/square-skills-commonsense-qa:latest
@@ -379,7 +383,7 @@ services:
     ports:
       - 8005:8005
     env_file:
-      - ./skills/.env
+      - ./skills/qa-commonsense-qa-skill/.env
     environment:
       - WEB_CONCURRENCY=2
       # Development
@@ -390,6 +394,8 @@ services:
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=ukp-commonsense-qa
 
   extractive_qa_skill:
     image: ukpsquare/square-skills-extractive:latest
@@ -397,7 +403,7 @@ services:
     ports:
       - 8006:8006
     env_file:
-      - ./skills/.env
+      - ./skills/qa-extractive-qa-skill/.env
     environment:
       - WEB_CONCURRENCY=2
       # Development
@@ -408,6 +414,8 @@ services:
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=ukp-extractive-qa
 
   multiple_choice_qa_skill:
     image: ukpsquare/square-skills-multiple-choice:latest
@@ -415,7 +423,7 @@ services:
     ports:
       - 8007:8007
     env_file:
-      - ./skills/.env
+      - ./skills/qa-multiple-choice-skill/.env
     environment:
       - WEB_CONCURRENCY=2
       # Development
@@ -426,6 +434,8 @@ services:
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=ukp-multiple-choice-qa
 
   retrieve_bioasq_skill:
     image: ukpsquare/square-skills-retrieve-bioasq:latest
@@ -433,7 +443,7 @@ services:
     ports:
       - 8009:8009
     env_file:
-      - ./skills/.env
+      - ./skills/qa-retrieve-bioasq-skill/.env
     environment:
       - WEB_CONCURRENCY=2
       # Development
@@ -444,6 +454,8 @@ services:
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=ukp-open-bioasq
 
 volumes:
   traefik-public-certificates:
