@@ -12,7 +12,7 @@ To create a new skill, simply the predict function needs to be implemented. For 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
 ```bash
-pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.4
+pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.5
 pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.11 
 ```
 Next, we can implement the `predict` function:
@@ -21,14 +21,12 @@ Next, we can implement the `predict` function:
 # import utility classes from `square_skill_api` and `square_skill_helpers`
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
-from square_skill_helpers.config import SquareSkillHelpersConfig
-from square_skill_helpers.square_api import ModelAPI, DataAPI
+from square_skill_helpers import ModelAPI, DataAPI
 
-# create a config instance. This loads environment variables required for connecting to SQuARE services. Create an `.env` file when hosting yourself or on the cloud.
-config = SquareSkillHelpersConfig.from_dotenv()
+
 # create instances of the DataAPI and ModelAPI for interacting with SQuAREs Datastores and Models
-data_api = DataAPI(config)
-model_api = ModelAPI(config)
+data_api = DataAPI()
+model_api = ModelAPI()
 
 # this is the standard input that will be given to every predict function. See the details in the `square_skill_api` package for all available inputs.
 async def predict(request: QueryRequest) -> QueryOutput:
