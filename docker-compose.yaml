@@ -351,6 +351,7 @@ services:
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=square.ukp-lab.de
 
   squad_v2_skill:
     image: ukpsquare/square-skills-squad-v2:latest
