@@ -125,6 +125,8 @@ services:
   skill_manager:
     image: ukpsquare/skill-manager:latest
     build: ./skill-manager
+    ports:
+      - 8008:8008
     expose:
       - 8008
     env_file:
@@ -416,6 +418,7 @@ services:
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   retrieve_bioasq_skill:
     image: ukpsquare/square-skills-retrieve-bioasq:latest
