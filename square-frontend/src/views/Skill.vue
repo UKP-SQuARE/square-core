@@ -144,7 +144,7 @@ export default Vue.component('edit-skill', {
       success: false,
       failure: false,
       failureMessage: '',
-      numberSkillExamples: 2
+      numberSkillExamples: 3
     }
   },
   components: {
