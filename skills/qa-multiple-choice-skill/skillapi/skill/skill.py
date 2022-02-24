@@ -23,11 +23,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
     context = request.skill_args.get("context")
     answers = request.skill_args["answers"]
 
-    # BUG: for categorical skills, answers do not need to be appended
-    if context is not None:
-        prepared_input = [[context, query + " " + answer] for answer in answers]
+    if request.skill_args.get("skill_type") == "categorical":
+        prepared_input = [[context, query]]
     else:
-        prepared_input = [[query, answer] for answer in answers]
+        if context is not None:
+            prepared_input = [[context, query + " " + answer] for answer in answers]
+        else:
+            prepared_input = [[query, answer] for answer in answers]
 
     # Call Model API
     model_request = {
