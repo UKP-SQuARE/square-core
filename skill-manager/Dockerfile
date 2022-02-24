@@ -22,8 +22,9 @@ COPY requirements.dev.txt requirements.dev.txt
 RUN pip install -r requirements.dev.txt
 
 COPY tests tests
+COPY pytest.ini pytest.ini
 
 FROM base as build
 EXPOSE 8008
 
-CMD ["uvicorn", "skill_manager.api:app", "--host", "0.0.0.0", "--port", "8008", "--log-config", "logging.conf"]
+CMD ["uvicorn", "skill_manager.main:app", "--host", "0.0.0.0", "--port", "8008", "--log-config", "logging.conf"]

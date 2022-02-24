@@ -28,16 +28,14 @@ export default new Vuex.Store({
     // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
     queryOptions: {
-      selectedSkills: [],
-      maxResultsPerSkill: 10,
-      skillArgs: {}
+      selectedSkills: Array(3).fill('None'),
+      maxResultsPerSkill: 10
     },
     explainOptions: {
       selectedSkill: ''
     },
     // Control flags
     flags: {
-      initialisedQueryOptions: false,
       initialisedExplainOptions: false
     }
   },
@@ -46,15 +44,6 @@ export default new Vuex.Store({
       state.currentQuestion = payload.question
       state.currentContext = payload.context
       state.currentResults = payload.results
-    },
-    initQueryOptions(state, payload) {
-      // Default value for selected skills should be all available skills
-      if (!state.flags.initialisedQueryOptions || payload.forceSkillInit) {
-        if (state.availableSkills.length > 0) {
-          state.queryOptions.selectedSkills = [state.availableSkills[0].id]
-        }
-        state.flags.initialisedQueryOptions = true
-      }
     },
     initExplainOptions(state, payload) {
       // Default value for selected skills should be all available skills
@@ -114,10 +103,12 @@ export default new Vuex.Store({
       return postSignIn(username, password)
           .then((response) => {
             context.commit('setJWT', { jwt: response.data.token })
-          })
+          }).then(() => context.dispatch('updateSkills'))
     },
     signOut(context) {
+      // Reset JWT and (private) skills
       context.commit('setJWT', { jwt: '' })
+      context.commit('setSkills', { skills: [] })
     },
     initJWTfromLocalStorage(context) {
       let jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
