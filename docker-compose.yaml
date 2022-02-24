@@ -131,6 +131,9 @@ services:
       - ./skill-manager/.env
     environment:
       - WEB_CONCURRENCY=2
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=skill-manager
     depends_on:
       - skill_manager_mongo
     labels:
@@ -236,9 +239,9 @@ services:
   model_bert_onnx:
     image: ukpsquare/square-model-api-v1:latest
     env_file:
-      - ./inference_server/.env.bert_onnx
+      - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
-      - WEB_CONCURRENCY=1
+      - WEB_CONCURRENCY=2
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models
@@ -329,6 +332,7 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
@@ -345,9 +349,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   squad_v2_skill:
     image: ukpsquare/square-skills-squad-v2:latest
@@ -361,9 +367,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   commonsense_qa_skill:
     image: ukpsquare/square-skills-commonsense-qa:latest
@@ -376,10 +384,12 @@ services:
       - WEB_CONCURRENCY=2
       # Development
       # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux 
+      # - KEYCLOAK_BASE_URL=http://localhost:8080 
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   extractive_qa_skill:
     image: ukpsquare/square-skills-extractive:latest
@@ -393,9 +403,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   multiple_choice_qa_skill:
     image: ukpsquare/square-skills-multiple-choice:latest
@@ -409,9 +421,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
   retrieve_bioasq_skill:
     image: ukpsquare/square-skills-retrieve-bioasq:latest
@@ -425,9 +439,11 @@ services:
       # Development
       # - VERIFY_SSL=0
       # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
+      # - KEYCLOAK_BASE_URL=http://localhost:8080
       # Production
       - VERIFY_SSL=1
       - SQUARE_API_URL=https://square.ukp-lab.de/api  
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
 volumes:
   traefik-public-certificates:

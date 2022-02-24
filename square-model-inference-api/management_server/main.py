@@ -4,6 +4,7 @@ import os
 import requests
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from models import ModelRequest
 
@@ -17,7 +18,16 @@ AUTH_USER = os.getenv("AUTH_USER", "admin")
 AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "example_key")
 
 
-app = FastAPI()
+app = FastAPI(title="SQuARE Model Management API",
+              openapi_url="/api/openapi.json")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/api")

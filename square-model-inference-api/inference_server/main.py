@@ -1,6 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from square_model_inference.api.routes.router import api_router
-from square_model_inference.core.config import API_PREFIX, APP_NAME, APP_VERSION
+from square_model_inference.core.config import API_PREFIX, APP_NAME, APP_VERSION, OPENAPI_URL
 from square_model_inference.core.event_handlers import start_app_handler, stop_app_handler
 from logging.config import fileConfig
 import logging
@@ -14,7 +15,14 @@ def get_app() -> FastAPI:
         fileConfig("logging.conf", disable_existing_loggers=False)
     except:
         logger.info("Failed to load 'logging.conf'. Continuing without configuring the server logger")
-    fast_app = FastAPI(title=APP_NAME, version=APP_VERSION)
+    fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, openapi_url=OPENAPI_URL)
+    fast_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     fast_app.include_router(api_router, prefix=API_PREFIX)
 
     fast_app.add_event_handler("startup", start_app_handler(fast_app))
