@@ -18,7 +18,7 @@
               <SkillSelector
                   v-model="options.selectedSkills[1]"
                   v-on:change-skills="changeSkills"
-                  :skills="availableSkills"
+                  :skills="availableSkillsBasedOnSettings"
                   id="skill2"
                   :disabled="!minSkillsSelected(1)" />
             </div>
@@ -26,7 +26,7 @@
               <SkillSelector
                   v-model="options.selectedSkills[2]"
                   v-on:change-skills="changeSkills"
-                  :skills="availableSkills"
+                  :skills="availableSkillsBasedOnSettings"
                   id="skill3"
                   :disabled="!minSkillsSelected(2)" />
             </div>
@@ -103,6 +103,7 @@ export default Vue.component('query-skills', {
       failure: false,
       failureMessage: '',
       skillSettings: {
+        skillType: null,
         requiresContext: false,
         requiresMultipleChoices: 0
       }
@@ -114,6 +115,11 @@ export default Vue.component('query-skills', {
   computed: {
     availableSkills() {
       return this.$store.state.availableSkills
+    },
+    availableSkillsBasedOnSettings() {
+      return this.availableSkills.filter(skill => !this.selectedSkills.includes(skill.id)
+          && skill.skill_type === this.skillSettings.skillType
+          && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
     },
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
@@ -155,8 +161,8 @@ export default Vue.component('query-skills', {
     }
   },
   methods: {
-    minSkillsSelected(n) {
-      return this.selectedSkills.length >= n
+    minSkillsSelected(num) {
+      return this.selectedSkills.length >= num
     },
     askQuestion() {
       this.waitingQuery = true
@@ -179,11 +185,15 @@ export default Vue.component('query-skills', {
     },
     changeSkills() {
       let settings = {
+        skillType: null,
         requiresContext: false,
         requiresMultipleChoices: 0
       }
       this.availableSkills.forEach(skill => {
-        if (this.options.selectedSkills.includes(skill.id)) {
+        if (this.selectedSkills.includes(skill.id)) {
+          if (settings.skillType === null) {
+            settings.skillType = skill.skill_type
+          }
           settings.requiresContext = settings.requiresContext || skill.skill_settings.requires_context
           // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
           settings.requiresMultipleChoices = Math.max(
