@@ -117,8 +117,7 @@ export default Vue.component('query-skills', {
       return this.$store.state.availableSkills
     },
     availableSkillsBasedOnSettings() {
-      return this.availableSkills.filter(skill => !this.selectedSkills.includes(skill.id)
-          && skill.skill_type === this.skillSettings.skillType
+      return this.availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
           && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
     },
     selectedSkills() {
