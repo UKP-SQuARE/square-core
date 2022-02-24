@@ -2,7 +2,7 @@
 <template>
   <form v-on:submit.prevent="askQuestion">
     <div class="row">
-      <div class="col-4 ms-auto">
+      <div class="col-md-4 ms-auto">
         <div class="bg-light border border-danger rounded shadow h-100 p-3">
           <div class="w-100">
             <div class="mb-3">
@@ -33,7 +33,7 @@
           </div>
         </div>
       </div>
-      <div class="col-4 me-auto">
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="question" class="form-label">2. Enter you question</label>
@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-      <div v-if="skillSettings.requiresContext" class="col-4">
+      <div v-if="skillSettings.requiresContext" class="col-4 mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
