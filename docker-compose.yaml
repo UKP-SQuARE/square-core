@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   traefik:
-    image: traefik:v2.5.6
+    image: traefik:v2.6.1
     container_name: traefik
     command:
       - --api.insecure=true
@@ -164,6 +164,8 @@ services:
     build: ./square-model-inference-api/management_server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+#    env_file:
+#      - ./square-model-inference-api/management_server/.env
     environment:
       # For Windows and Mac systems: http://host.docker.intneral
       - DOCKER_HOST_URL=https://172.17.0.1
@@ -171,6 +173,9 @@ services:
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=2
       - ONNX_VOLUME=square-model-inference-api_onnx-models
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=Models-test
+      - CLIENT_ID=models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
@@ -188,6 +193,7 @@ services:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
       - WEB_CONCURRENCY=2
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -199,7 +205,7 @@ services:
       - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
       - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
       - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
-  
+
   model_dpr:
     image: ukpsquare/square-model-api-v1:latest
     build: ./square-model-inference-api/inference_server
@@ -207,6 +213,7 @@ services:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
       - WEB_CONCURRENCY=2
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -227,6 +234,7 @@ services:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
       - WEB_CONCURRENCY=2
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
@@ -245,6 +253,7 @@ services:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
       - WEB_CONCURRENCY=2
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models

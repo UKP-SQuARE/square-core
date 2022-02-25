@@ -3,7 +3,7 @@
   <div id="app" class="d-flex flex-column h-100">
     <NavBar />
     <main class="flex-fill" :class="{ 'my-4': !isLandingPage }">
-      <router-view class="h-100" :class="{ 'container-xl': !isLandingPage }" />
+      <router-view class="h-100" :class="{ 'container-xxl': !isLandingPage }" />
     </main>
     <Footer />
   </div>
