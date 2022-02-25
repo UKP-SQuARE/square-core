@@ -118,6 +118,7 @@ services:
       # - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.localhost`)"
       # Production
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
+      - "traefik.http.routers.frontend.priority=1"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=le"
