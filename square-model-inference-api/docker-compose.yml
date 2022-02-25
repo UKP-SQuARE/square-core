@@ -48,6 +48,8 @@ services:
   maintaining:
 #    image: ukpsquare/square-model-management:latest
     build: ./management_server
+    ports:
+      - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
@@ -115,47 +117,47 @@ services:
       - "traefik.http.middlewares.model-bart-base-adapter-addprefix.addPrefix.prefix=/api"
 
   # --------- Example config for onnx model server ---------
-  model_bert_onnx:
+#  model_bert_onnx:
+##    image: ukpsquare/square-model-api-v1:latest
+#    build: ./inference_server
+#    env_file:
+#      - ./inference_server/.env.bert_onnx
+#    environment:
+#      - WEB_CONCURRENCY=1
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#    volumes:
+#      - ./.cache/:/etc/onnx/.cache/
+#      - onnx-models:/onnx_models
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.model-bert-onnx.rule=PathPrefix(`/api/bert-onnx`)"
+#      - "traefik.http.routers.model-bert-onnx.entrypoints=websecure"
+#      - "traefik.http.routers.model-bert-onnx.tls=true"
+#      - "traefik.http.routers.model-bert-onnx.tls.certresolver=le"
+#      - "traefik.http.routers.model-bert-onnx.middlewares=model-bert-onnx-stripprefix,model-bert-onnx-addprefix"
+#      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
+#      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
+#
+#  # --------- Example config for Adapter model server ---------
+#  model_bert_adapter:
 #    image: ukpsquare/square-model-api-v1:latest
-    build: ./inference_server
-    env_file:
-      - ./inference_server/.env.bert_onnx
-    environment:
-      - WEB_CONCURRENCY=1
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-    volumes:
-      - ./.cache/:/etc/onnx/.cache/
-      - onnx-models:/onnx_models
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.model-bert-onnx.rule=PathPrefix(`/api/bert-onnx`)"
-      - "traefik.http.routers.model-bert-onnx.entrypoints=websecure"
-      - "traefik.http.routers.model-bert-onnx.tls=true"
-      - "traefik.http.routers.model-bert-onnx.tls.certresolver=le"
-      - "traefik.http.routers.model-bert-onnx.middlewares=model-bert-onnx-stripprefix,model-bert-onnx-addprefix"
-      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
-      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
-
-  # --------- Example config for Adapter model server ---------
-  model_bert_adapter:
-    image: ukpsquare/square-model-api-v1:latest
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.bert_adapter
-    environment:
-      - WEB_CONCURRENCY=1
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.model-bert-base-uncased.rule=PathPrefix(`/api/bert-base-uncased`)"
-      - "traefik.http.routers.model-bert-base-uncased.entrypoints=websecure"
-      - "traefik.http.routers.model-bert-base-uncased.tls=true"
-      - "traefik.http.routers.model-bert-base-uncased.tls.certresolver=le"
-      - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
-      - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
-      - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
-
+#    env_file:
+#      - ./square-model-inference-api/inference_server/.env.bert_adapter
+#    environment:
+#      - WEB_CONCURRENCY=1
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#    volumes:
+#      - ./.cache/:/etc/huggingface/.cache/
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.model-bert-base-uncased.rule=PathPrefix(`/api/bert-base-uncased`)"
+#      - "traefik.http.routers.model-bert-base-uncased.entrypoints=websecure"
+#      - "traefik.http.routers.model-bert-base-uncased.tls=true"
+#      - "traefik.http.routers.model-bert-base-uncased.tls.certresolver=le"
+#      - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
+#      - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
+#      - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
+#
 
 volumes:
   traefik-public-certificates:

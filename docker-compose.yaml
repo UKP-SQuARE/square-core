@@ -162,6 +162,8 @@ services:
   maintaining:
     image: ukpsquare/square-model-management:latest
     build: ./square-model-inference-api/management_server
+    ports:
+      - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 #    env_file:
