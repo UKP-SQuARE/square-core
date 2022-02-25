@@ -62,7 +62,8 @@ async def deploy_new_model(model_params: DeployRequest):
         response_body = {
                 "success": True,
                 "container": container.id,
-                "message": "Model successfully deployed"
+                "message": "Model deployment in progress. Check the `/api/models/deployed-models` "
+                           "endpoint for more info."
             }
 
         if container:
