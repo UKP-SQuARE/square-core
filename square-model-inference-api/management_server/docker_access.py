@@ -11,7 +11,7 @@ docker_client = docker.from_env()
 
 MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
-MODELS_API_PATH = "models"  # For management server e.g. /api/models to list models etc.
+MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
 
 
 def start_new_model_container(identifier, env):
@@ -42,7 +42,7 @@ def start_new_model_container(identifier, env):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    container_name = network.name + "_" + identifier
+    container_name = network.name + "-model-" + identifier
 
     try:
         container = docker_client.containers.run(
