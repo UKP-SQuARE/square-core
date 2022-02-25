@@ -23,38 +23,30 @@
       <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
       <div class="row">
         <div class="col-md-6 mt-3">
-          <div class="form-floating">
-            <input v-model="skill.name" type="text" class="form-control rounded-0 rounded-top" id="name" placeholder="Skill name">
-            <label for="name">Skill name</label>
-          </div>
+          <label for="name" class="form-label">Skill name</label>
+          <input v-model="skill.name" type="text" class="form-control" id="name" placeholder="Skill name">
         </div>
         <div class="col-md-6 mt-3">
-          <div class="form-floating">
+          <label for="skillType" class="form-label">Skill type</label>
             <select v-model="skill.skill_type" class="form-select" id="skillType">
               <option v-for="skillType in skillTypes" v-bind:value="skillType" v-bind:key="skillType">
                 {{ skillType }}
               </option>
             </select>
-            <label for="skillType">Skill type</label>
-          </div>
         </div>
       </div>
       <div class="row">
         <div class="col-md-6 mt-3">
-          <div class="form-floating">
-            <input v-model="skill.description" type="text" class="form-control rounded-0 rounded-top" id="description" placeholder="Description">
-            <label for="description">Description</label>
-          </div>
+          <label for="description" class="form-label">Description</label>
+            <input v-model="skill.description" type="text" class="form-control" id="description" placeholder="Description">
         </div>
         <div class="col-md-6 mt-3">
-          <div class="form-floating">
+          <label for="maxResultsSkill" class="form-label">Minimum multiple choice options</label>
             <input v-model="skill.skill_settings.requires_multiple_choices" type="number" class="form-control" id="maxResultsSkill" required>
-            <label for="maxResultsSkill">Min multiple choice options</label>
-          </div>
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6 mt-3 d-flex align-items-center">
+        <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
             <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context" class="form-check-input" type="checkbox" id="requiresContext">
             <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
@@ -66,7 +58,7 @@
             </label>
           </div>
         </div>
-        <div class="col-md-6 mt-3 d-flex align-items-center">
+        <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
             <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox" id="published">
             <label class="form-check-label d-inline-flex align-items-center" for="published">
@@ -80,12 +72,38 @@
       </div>
       <div class="row">
         <div class="col mt-3">
-          <Status :url="skill.url" class="mb-2" />
-          <div class="form-floating">
-            <input v-model="skill.url" type="url" class="form-control rounded-0 rounded-top" id="url" placeholder="URL">
-            <label for="url">URL</label>
+          <label for="url" class="form-label">URL</label>
+            <input v-model="skill.url" type="url" class="form-control" id="url" placeholder="URL">
             <small class="text-muted"><span class="text-info">scheme</span>://<span class="text-info">host</span>:<span class="text-info">port</span>/<span class="text-info">base_path</span></small>
-          </div>
+            <div class="mt-2"><Status :url="skill.url" /></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col mt-4">
+          <h3>Provide example questions</h3>
+          <p class="mb-1">These examples will be featured alongside your skill.</p>
+        </div>
+      </div>
+      <div v-for="(example, index) in skill.skill_input_examples" v-bind:key="index" class="row">
+        <h4 class="mt-3">Example {{ index + 1 }}</h4>
+        <div class="col-md mt-2">
+          <label :for="`question${index}`" class="form-label">Question</label>
+          <textarea
+              v-model="example.query"
+              class="form-control mb-2"
+              style="resize: none;"
+              :style="{ 'height': `${38 * (skill.skill_settings.requires_context ? 3 : 1)}px` }"
+              :id="`question${index}`"
+              placeholder="Question" />
+        </div>
+        <div v-if="skill.skill_settings.requires_context" class="col-md mt-2">
+          <label :for="`context${index}`" class="form-label">Context</label>
+          <textarea
+              v-model="example.context"
+              class="form-control mb-2"
+              style="resize: none; height: calc(38px * 3);"
+              :id="`context${index}`"
+              placeholder="Context" />
         </div>
       </div>
     </Card>
@@ -113,10 +131,10 @@ export default Vue.component('edit-skill', {
           requires_multiple_choices: 0
         },
         url: '',
-        default_skill_args : null,
+        default_skill_args: null,
         user_id: '',
         published: false,
-        skill_input_examples: null
+        skill_input_examples: []
       },
       /**
        * The name for the title.
@@ -125,7 +143,8 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
-      failureMessage: ''
+      failureMessage: '',
+      numberSkillExamples: 3
     }
   },
   components: {
@@ -174,6 +193,13 @@ export default Vue.component('edit-skill', {
             this.failure = true
             this.failureMessage = error.data.msg
           })
+    },
+    addInputExampleFields() {
+      // Dynamically add input fields
+      // In case the default amount is modified later this will adapt for legacy skills
+      while (this.skill.skill_input_examples.length <= this.numberSkillExamples - this.skill.skill_input_examples.length) {
+        this.skill.skill_input_examples.push({ 'query': '', 'context': '' })
+      }
     }
   },
   beforeMount() {
@@ -186,7 +212,13 @@ export default Vue.component('edit-skill', {
           .then((response) => {
             this.skill = response.data
             this.originalName = this.skill.name
+            if (response.data.skill_input_examples == null) {
+              this.skill.skill_input_examples = []
+            }
+            this.addInputExampleFields()
           })
+    } else {
+      this.addInputExampleFields()
     }
     this.skill.user_id = this.$store.state.user.name
   }

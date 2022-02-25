@@ -81,7 +81,7 @@ export function putSkill(skillId, newSkill) {
 export function postQuery(question, context, options, user_id) {
     let data = {
         query: question,
-        skill_args: options.skillArgs,
+        skill_args: {},
         num_results: options.maxResultsPerSkill,
         user_id: user_id
     }
