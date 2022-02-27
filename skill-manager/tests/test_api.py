@@ -162,22 +162,22 @@ def test_heartbeat(client):
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 
-
+@pytest.mark.parametrize("is_alive", (True, False), ids=["alive", "dead"])
 @responses.activate
-def test_skill_heartbeat(client):
+def test_skill_heartbeat(is_alive, client):
     skill_url = "http://test_skill_url"
     responses.add(
         responses.GET,
         url=f"{skill_url}/health/heartbeat",
         json={"is_alive": True},
-        status=200,
+        status=200 if is_alive else 404,
     )
     response = client.get(
         "/api/health/skill-heartbeat", params={"skill_url": skill_url}
     )
-    print(response.json())
+    
     assert response.status_code == 200
-    assert response.json() == {"is_alive": True}
+    assert response.json() == {"is_alive": is_alive}
 
 
 def test_skill_types(client):
