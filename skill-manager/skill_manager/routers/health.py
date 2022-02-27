@@ -33,6 +33,8 @@ async def skill_heartbeat(skill_url: str, token: str = Depends(client_credential
         skill_health_url, headers={"Authorization": f"Bearer {token}"}
     )
     logger.debug(
-        "skill heartbeat response: {response}".format(skill_heartbeat_response.text)
+        "skill heartbeat response: {response}".format(
+            response=skill_heartbeat_response.text
+        )
     )
     return {"is_alive": skill_heartbeat_response.status_code == 200}
