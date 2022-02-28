@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-      <div v-if="skillSettings.requiresContext" class="col-4 mt-4 mt-md-0">
+      <div v-if="skillSettings.requiresContext" class="col-md-4 mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
