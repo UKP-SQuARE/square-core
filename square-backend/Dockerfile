@@ -10,7 +10,7 @@ COPY ElkJsonFormatter.tar.gz ./ElkJsonFormatter.tar.gz
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 # not in requirements because we use SQLite for dev server
-RUN pip install psycopg2
+RUN pip install psycopg2-binary
 
 COPY ./docker .
 COPY flask-manage.py flask-manage.py
