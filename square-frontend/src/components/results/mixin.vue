@@ -12,7 +12,7 @@ export default Vue.component('results-mixin', {
     },
     roundScore(score, float = true) {
       if (float) {
-        return Math.round(score * 100_000) / 1_000
+        return Math.round(score * 10_000) / 100
       } else {
         return Math.round(score * 1_000) / 10
       }
