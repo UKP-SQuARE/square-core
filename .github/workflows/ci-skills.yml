@@ -40,11 +40,11 @@ jobs:
     needs: [matrix-setup]
     strategy:
       matrix: 
-        skill: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
+        skills: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
     steps:
       - run: |
-          echo skill=${{ matrix.skills[0] }}
-          echo port=${{ matrix.skills[1] }}
+          echo "skill=${{ matrix.skills[0] }}"
+          echo "port=${{ matrix.skills[1] }}"
       - uses: actions/checkout@v2
       - name: Create Dockerfile
         run: cd skills && bash make_dockerfile.sh ${{ matrix.skills[0] }} ${{ matrix.skills[1] }}
