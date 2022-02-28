@@ -1,6 +1,6 @@
 <!-- The Navigation Bar at the top of the page. Most views should be reachable through this. -->
 <template>
-  <div class="bg-light border border-danger rounded shadow h-100 p-3">
+  <div class="bg-light border rounded shadow h-100 p-3">
     <div class="w-100">
       <div class="mb-3">
         <label for="skill1" class="form-label">1. Select a skill</label>
