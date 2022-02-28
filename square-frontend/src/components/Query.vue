@@ -136,11 +136,14 @@ export default Vue.component('query-skills', {
       }
     },
     currentExamples() {
+      // Pseudo random return 3 examples from currently selected skills
       return this.availableSkills
           .filter(skill => skill.skill_input_examples !== null
               && skill.skill_input_examples.length > 0
               && this.selectedSkills.includes(skill.id))
           .flatMap(skill => skill.skill_input_examples)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3)
     },
     contextPlaceholder() {
       if (this.skillSettings.requiresMultipleChoices) {
