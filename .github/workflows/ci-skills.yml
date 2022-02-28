@@ -55,6 +55,8 @@ jobs:
         with:
           name: ${{ matrix.skill }}-dockerfile
           path: ./skills/${{ matrix.skill }}.Dockerfile
+      - name: Display structure of downloaded files
+        run: cd skills && ls -R
       - name: Prepare
         id: prep
         run: |
@@ -89,7 +91,6 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           file: ./skills/${{ matrix.skill }}.Dockerfile
           context: ./skills
-          target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
