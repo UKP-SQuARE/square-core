@@ -29,13 +29,15 @@ async def skill_heartbeat(skill_url: str, token: str = Depends(client_credential
     """Checks if a skill is still up and running."""
     skill_health_url = urljoin(skill_url, "health/heartbeat")
 
-    skill_heartbeat_response = requests.get(
-        skill_health_url, headers={"Authorization": f"Bearer {token}"}
-    )
-    logger.debug(
-        "skill at {} health {}".format(
-            skill_health_url, skill_heartbeat_response.json()
+    try:
+        skill_heartbeat_response = requests.get(
+            skill_health_url, headers={"Authorization": f"Bearer {token}"}
         )
-    )
+    except requests.exceptions.RequestException as e:
+        logger.debug(
+            "An exception occured while requesting skill health. {}".format(str(e))
+        )
+        return {"is_alive": False}
 
-    return skill_heartbeat_response.json()
+    logger.debug("skill heartbeat response: {}".format(skill_heartbeat_response.text))
+    return {"is_alive": skill_heartbeat_response.status_code == 200}
