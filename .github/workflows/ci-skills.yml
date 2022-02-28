@@ -20,88 +20,124 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: fabasoad/yaml-json-xml-converter-action@v1.0.13
+        id: yaml2json
+        with:
+          path: config.yaml
+          from: yaml
+          to: json
+      - name: Print yaml2json result
+        run: echo "${{ steps.yaml2json.outputs.data }}"
       - id: matrix
         run: |
-          echo "::set-output name=skills::$(jq -c '[.[] | .name]' ./skills/skills.json)"
+          echo "::set-output name=skills::$(jq -c '[.skills[] | [.name, .port]]' <<< '${{ steps.yaml2json.outputs.data }}')"
+          # [["skill-name", "port"], ...]
     outputs:
       skills: ${{ steps.matrix.outputs.skills }}
+      # - name: Read config.yaml
+      #   id: config-skills-names
+      #   uses: CumulusDS/get-yaml-paths-action@v0.1.0
+      #   with:
+      #     file: ./config.yaml
+      #     skills: skills.name
+      #     environment: environment
+      # - id: matrix
+      #   run: |
+      #     echo ${{ steps.config-skills-names.outputs }}
+      #     echo "${{ steps.config-skills-names.outputs.skills }}"
+      #     echo "${{ steps.config-skills-names.outputs.environment }}"
+      #     echo "::set-output name=skills::${{ steps.config-skills-names.outputs.skills }}"
+    # outputs:
+    #   skills: ${{ steps.matrix.outputs.skills }}
 
   dockerfiles:
     runs-on: ubuntu-latest
     needs: [matrix-setup]
     strategy:
       matrix: 
-        skill: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
+        - skills: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
     steps:
-      - uses: actions/checkout@v2
       - run: |
-          cd skills && bash ./make_dockerfiles.sh ./skills.json
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.skill }}-dockerfile
-          path: ./skills/${{ matrix.skill }}.Dockerfile
+          echo "${{ matrix }}"
+          echo "${{ matrix.skills }}"
+          echo "${{ matrix[0] }}"
+          echo "${{ matrix.skills[0] }}"
+  # dockerfiles:
+  #   runs-on: ubuntu-latest
+  #   needs: [matrix-setup]
+  #   strategy:
+  #     matrix: 
+  #       skill: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - run: |
+  #         cd skills && bash ./make_dockerfiles.sh ./skills.json
+  #     - uses: actions/upload-artifact@v2
+  #       with:
+  #         name: ${{ matrix.skill }}-dockerfile
+  #         path: ./skills/${{ matrix.skill }}.Dockerfile
   
-  build:
-    runs-on: ubuntu-latest
-    needs: [dockerfiles, matrix-setup]
-    strategy:
-      matrix: 
-        skill: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
-    steps:
-      - run: |
-          echo ${{ matrix.skill }}
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: ${{ matrix.skill }}-dockerfile
-          path: ./skills
-      - name: Display structure of downloaded files
-        run: cd skills && ls -R
-      - name: Display Dockerfile
-        run: cat skills/${{ matrix.skill }}.Dockerfile
-      - name: Prepare
-        id: prep
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/skills-${{ matrix.skill }}"
-          echo ::set-output name=image::${IMAGE}
-          echo ::set-output name=tag::${TAG}
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          install: true
+  # build:
+  #   runs-on: ubuntu-latest
+  #   needs: [dockerfiles, matrix-setup]
+  #   strategy:
+  #     matrix: 
+  #       skill: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
+  #   steps:
+  #     - run: |
+  #         echo ${{ matrix.skill }}
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/download-artifact@v2
+  #       with:
+  #         name: ${{ matrix.skill }}-dockerfile
+  #         path: ./skills
+  #     - name: Display structure of downloaded files
+  #       run: cd skills && ls -R
+  #     - name: Display Dockerfile
+  #       run: cat skills/${{ matrix.skill }}.Dockerfile
+  #     - name: Prepare
+  #       id: prep
+  #       run: |
+  #         TAG=$(echo $GITHUB_SHA | head -c7)
+  #         IMAGE="ukpsquare/skills-${{ matrix.skill }}"
+  #         echo ::set-output name=image::${IMAGE}
+  #         echo ::set-output name=tag::${TAG}
+  #     - name: Set up Docker Buildx
+  #       id: buildx
+  #       uses: docker/setup-buildx-action@v1
+  #       with:
+  #         install: true
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.skill }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-${{ matrix.skill }}-
-            ${{ runner.os }}-buildx-
+  #     - name: Cache Docker layers
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: /tmp/.buildx-cache
+  #         key: ${{ runner.os }}-buildx-${{ matrix.skill }}-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-buildx-${{ matrix.skill }}-
+  #           ${{ runner.os }}-buildx-
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+  #     - name: Login to Docker Hub
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKER_HUB_USERNAME }}
+  #         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build deployable image
-        uses: docker/build-push-action@v2
-        with:
-          builder: ${{ steps.buildx.outputs.name }}
-          file: ./skills/${{ matrix.skill }}.Dockerfile
-          context: ./skills
-          push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+  #     - name: Build deployable image
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         builder: ${{ steps.buildx.outputs.name }}
+  #         file: ./skills/${{ matrix.skill }}.Dockerfile
+  #         context: ./skills
+  #         push: ${{github.ref == 'refs/heads/master'}}
+  #         tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+  #         cache-from: type=local,src=/tmp/.buildx-cache
+  #         cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
-      #  Temp fix
-      # https://github.com/docker/build-push-action/issues/252
-      # https://github.com/moby/buildkit/issues/1896
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+  #     #  Temp fix
+  #     # https://github.com/docker/build-push-action/issues/252
+  #     # https://github.com/moby/buildkit/issues/1896
+  #     - name: Move cache
+  #       run: |
+  #         rm -rf /tmp/.buildx-cache
+  #         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
