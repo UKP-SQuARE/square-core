@@ -54,9 +54,11 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.skill }}-dockerfile
-          path: ./skills/${{ matrix.skill }}.Dockerfile
+          path: ./skills
       - name: Display structure of downloaded files
         run: cd skills && ls -R
+      - name: Display Dockerfile
+        run: cat skills/${{ matrix.skill }}.Dockerfile
       - name: Prepare
         id: prep
         run: |
