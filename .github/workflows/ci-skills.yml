@@ -87,7 +87,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./skills/${{ matrix.skill }}
+          file: ./skills/${{ matrix.skill }}.Dockerfile
+          context: ./skills
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
