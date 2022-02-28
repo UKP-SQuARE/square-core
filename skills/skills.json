@@ -1,0 +1,30 @@
+[
+    {
+        "name": "boolq",
+        "port": "8001"
+    },
+    {
+        "name": "commonsense-qa",
+        "port": "8002"
+    },
+    {
+        "name": "squad",
+        "port": "8003"
+    },
+    {
+        "name": "open-bioasq",
+        "port": "8004"
+    },
+    {
+        "name": "open-squad",
+        "port": "8005"
+    },
+    {
+        "name": "extractive",
+        "port": "8006"
+    },
+    {
+        "name": "multiple-choice",
+        "port": "8007"
+    }
+]
