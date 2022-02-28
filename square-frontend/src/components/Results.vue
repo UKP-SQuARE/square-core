@@ -44,7 +44,7 @@
     </div>
     <div v-if="showContextToggle" class="row">
       <div class="col mt-3">
-        <div class="d-grid gap-2 d-md-block d-md-flex justify-content-md-center">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a
               v-on:click="showWithContext = !showWithContext"
               :class="{ 'active': showWithContext }"
