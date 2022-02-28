@@ -55,7 +55,7 @@ jobs:
     needs: [matrix-setup]
     strategy:
       matrix: 
-        - skills: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
+        skills: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
     steps:
       - run: |
           echo "${{ matrix }}"
