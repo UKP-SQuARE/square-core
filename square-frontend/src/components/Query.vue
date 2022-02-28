@@ -56,7 +56,7 @@
           </div>
         </div>
       </div>
-      <div v-if="skillSettings.requiresContext" class="col-4 mt-4 mt-md-0">
+      <div v-if="skillSettings.requiresContext" class="col-md-4 mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
@@ -73,8 +73,8 @@
       </div>
     </div>
     <div v-if="minSkillsSelected(1)" class="row">
-      <div class="col-3 mx-auto my-3">
-        <div class="d-grid gap-2">
+      <div class="col my-3">
+        <div class="d-grid gap-2 d-md-block d-md-flex justify-content-md-center">
           <button
               type="submit"
               class="btn btn-danger btn-lg shadow text-white"
@@ -136,11 +136,14 @@ export default Vue.component('query-skills', {
       }
     },
     currentExamples() {
+      // Pseudo random return 3 examples from currently selected skills
       return this.availableSkills
           .filter(skill => skill.skill_input_examples !== null
               && skill.skill_input_examples.length > 0
               && this.selectedSkills.includes(skill.id))
           .flatMap(skill => skill.skill_input_examples)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3)
     },
     contextPlaceholder() {
       if (this.skillSettings.requiresMultipleChoices) {
