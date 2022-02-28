@@ -1,18 +1,20 @@
-version: "3.7"
+#@ load("@ytt:data", "data")
+---
+
+#@ def skill_image_name(skill):
+#@ return "ukpsquare/skills-"+skill.name
+#@ end
 
 x-skill-defaults: &skill-defaults
   env_file:
     - ./skills/.env
   environment:
-    - WEB_CONCURRENCY=2
-    # Development
-    # - VERIFY_SSL=0
-    # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
-    # - KEYCLOAK_BASE_URL=http://localhost:8080
-    # Production
-    - VERIFY_SSL=1
-    - SQUARE_API_URL=https://square.ukp-lab.de/api  
-    - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+    - WEB_CONCURRENCY=(@= str(str(data.values.web_concurrency)) @)
+    - VERIFY_SSL=(@= str(str(data.values.verify_ssl[data.values.environment])) @)
+    - SQUARE_API_URL=(@= data.values.square_api_url[data.values.environment] @)
+    - KEYCLOAK_BASE_URL=(@= data.values.keycloak_base_url[data.values.environment] @)
+
+version: "3.4"
 
 services:
   traefik:
@@ -20,6 +22,8 @@ services:
     container_name: traefik
     command:
       - --api.insecure=true
+      - --api.dashboard=true
+      - --log.level=DEBUG
       - --providers.docker=true
       - --providers.file.filename=/config/traefik.yaml
       - --providers.docker.exposedbydefault=false
@@ -29,21 +33,18 @@ services:
       - --accesslog.filepath=/var/log/traefik/access.log.json
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.le.acme.tlschallenge=true
-      # Development: Uncomment staging certs
-      # - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
-      # Enable dashboard and logging
-      - --api.dashboard=true
-      - --log.level=DEBUG
+      - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
+      #@ if/end data.values.environment == "local":
+      - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     labels:
       - "traefik.enable=true"
-      # Global redirect to https
+      #! Global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=web"
       - "traefik.http.routers.http-catchall.middlewares=https-redirect"
 
-      # Middleware redirect from HTTP to HTTPS
+      #! Middleware redirect from HTTP to HTTPS
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
     ports:
@@ -53,7 +54,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yaml:/config/traefik.yaml
-      # mount volume to store certificates
+      #! mount volume to store certificates
       - traefik-public-certificates:/certificates
 
   backend:
@@ -118,16 +119,14 @@ services:
       dockerfile: ./square-frontend/Dockerfile_production
     image: ukpsquare/square-frontend:latest
     restart: always
-    # ports:
-      # - 80:80
     expose:
       - 80
       - 443
     labels:
       - "traefik.enable=true"
-      # Development
-      # - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.localhost`)"
-      # Production
+      #@ if/end data.values.environment == "local":
+      - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.localhost`)"
+      #@ if/end data.values.environment == "prod":
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
       - "traefik.http.routers.frontend.entrypoints=websecure"
@@ -144,8 +143,8 @@ services:
     env_file:
       - ./skill-manager/.env
     environment:
-      - WEB_CONCURRENCY=2
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
       - REALM=square
       - CLIENT_ID=skill-manager
     depends_on:
@@ -177,16 +176,13 @@ services:
       - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-#    env_file:
-#      - ./square-model-inference-api/management_server/.env
     environment:
-      # For Windows and Mac systems: http://host.docker.intneral
-      - DOCKER_HOST_URL=https://172.17.0.1
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "VERIFY_SSL=" + str(data.values.verify_ssl[data.values.environment])
+      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
+      - #@ "DOCKER_HOST_URL=" + data.values.docker_host_url[data.values.os]
       - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
-      - VERIFY_SSL=0
-      - WEB_CONCURRENCY=2
       - ONNX_VOLUME=square-model-inference-api_onnx-models
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=Models-test
       - CLIENT_ID=models
     labels:
@@ -198,15 +194,15 @@ services:
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
-
+  
   model_bert_adapter:
     image: ukpsquare/square-model-api-v1:latest
     build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
-      - WEB_CONCURRENCY=2
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -225,8 +221,8 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
-      - WEB_CONCURRENCY=2
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -245,8 +241,8 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
-      - WEB_CONCURRENCY=2
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
@@ -264,8 +260,8 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
-      - WEB_CONCURRENCY=2
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models
@@ -290,14 +286,10 @@ services:
     env_file:
       - ./datastore-api/.env
     environment:
-      - WEB_CONCURRENCY=2
+      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
+      - #@ "FAISS_URL=" + data.values.faiss_url[data.values.environment]
+      - #@ "MODEL_API_URL=" + data.values.model_url[data.values.environment]
       - ES_URL=http://datastore_es:9200
-      # Development
-      # - FAISS_URL=https://localhost/api
-      # - MODEL_API_URL=https://localhost/api    
-      # Production
-      - FAISS_URL=https://square.ukp-lab.de/api
-      - MODEL_API_URL=https://square.ukp-lab.de/api
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
@@ -343,48 +335,16 @@ services:
       - "traefik.http.routers.datastores-faiss-distilbert.tls.certresolver=le"
       - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
-    
-  boolq:
-    <<: *skill-defaults
-    image: ukpsquare/skills-boolq:latest
-    expose:
-      - 8001
 
-  commonsense-qa:
-    <<: *skill-defaults
-    image: ukpsquare/skills-commonsense-qa:latest
-    expose:
-      - 8002
+  #@yaml/text-templated-strings
+  #@ for skill in data.values.skills:
+    (@= skill.name @):
+      <<: *skill-defaults
+      image: #@ skill_image_name(skill)
+      expose: 
+        - #@ skill.port
+  #@ end
 
-  squad-v2:
-    <<: *skill-defaults
-    image: ukpsquare/skills-squad-v2:latest
-    expose:
-      - 8003
-  
-  open-bioasq:
-    <<: *skill-defaults
-    image: ukpsquare/skills-open-bioasq:latest
-    expose:
-      - 8004
-
-  open-squad:
-    <<: *skill-defaults
-    image: ukpsquare/skills-open-squad:latest
-    expose:
-      - 8005
-
-  extractive-qa:
-    <<: *skill-defaults
-    image: ukpsquare/skills-extractive:latest
-    expose:
-      - 8006
-
-  multiple-choice-qa:
-    <<: *skill-defaults
-    image: ukpsquare/skills-multiple-choice:latest
-    expose:
-      - 8007
 
 volumes:
   traefik-public-certificates:
