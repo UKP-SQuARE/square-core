@@ -37,7 +37,7 @@ jobs:
   
   build:
     runs-on: ubuntu-latest
-    needs: [dockerfiles, matrix-setup]
+    needs: [matrix-setup]
     strategy:
       matrix: 
         skill: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
