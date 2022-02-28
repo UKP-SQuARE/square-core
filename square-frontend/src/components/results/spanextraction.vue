@@ -1,56 +1,44 @@
 <!-- Component for the Results. The user can see the results of each chosen skill here. Results can have different formats. -->
 <template>
-  <div>
-    <div class="row">
-      <div class="col-xl col-lg-7 mb-4 mt-lg-4">
-        <ul class="list-group list-group-flush">
-          <li
-              v-for="(res, index) in skillResult.predictions"
-              :key="index"
-              v-on:mouseover="activeResult = index"
-              class="list-group-item list-group-item-action"
-              :class="{ 'border-primary': index === activeResult, 'bg-light': index === activeResult }"
-              :aria-current="index === activeResult">
-            <div class="d-flex w-100 justify-content-between align-items-start">
-              <div class="d-flex align-items-baseline">
-                <h5
-                    class="m-0"
-                    :class="{ 'text-primary': index === activeResult }">{{ index + 1 }}.</h5>
-                <small class="mx-2">{{ res.prediction_output.output }}</small>
-              </div>
-              <span class="badge bg-transparent text-dark border border-primary p-2">{{ roundScore(res.prediction_score) }}%</span>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <div class="col-xl col-lg-5 d-flex align-items-center">
-        <div class="border rounded bg-light p-4" v-html="currentContext" />
-      </div>
-    </div>
-  </div>
+  <td class="pt-4">
+    <span
+        class="badge fs-6 ms-1 mb-1 float-end"
+        :style="{ 'background-color': colorFromGradient(prediction.prediction_score) }">
+      {{ roundScore(prediction.prediction_score) }}%
+    </span>
+    <span v-html="output" />
+  </td>
 </template>
 
 <script>
 import Vue from 'vue'
 import mixin from '@/components/results/mixin.vue'
 
-export default Vue.component('span-extraction-results', {
-  props: ['skillResult'],
+export default Vue.component('span-extraction', {
+  props: ['prediction', 'showWithContext'],
   mixins: [mixin],
-  data() {
-    return {
-      activeResult: 0
+  computed: {
+    output() {
+      let output = this.prediction.prediction_output.output
+      if (this.showWithContext) {
+        // If there is a prediction document returned use that and ignore local context
+        output = this.prediction.prediction_documents[0].document
+        // There can be an empty prediction document returned from the skill so use the local context instead
+        if (output.length === 0 && this.$store.state.currentContext.length > 0) {
+          output = this.$store.state.currentContext
+        }
+        output = this.highlightSpan(output, this.prediction.prediction_documents[0].span)
+      }
+      return output
     }
   },
-  computed: {
-    currentContext: function () {
-      // If there is a prediction document returned use that and ignore local context
-      let document = this.skillResult.predictions[this.activeResult].prediction_documents[0].document
-      if (document.length === 0 && this.$store.state.currentContext.length > 0) {
-        // There can be an empty prediction document returned from the skill so use the local context instead
-        document = this.$store.state.currentContext
+  methods: {
+    highlightSpan: function (doc, span) {
+      if (span) {
+        return doc.slice(0, span[0]) + '<mark class="bg-success text-light">' + doc.slice(span[0], span[1]) + '</mark>' + doc.slice(span[1])
+      } else {
+        return doc
       }
-      return this.highlightSpan(document, this.skillResult.predictions[this.activeResult].prediction_documents[0].span)
     }
   }
 })
