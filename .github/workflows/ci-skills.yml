@@ -49,12 +49,12 @@ jobs:
       - name: Create Dockerfile
         run: cd skills && bash make_dockerfile.sh ${{ matrix.skills[0] }} ${{ matrix.skills[1] }}
       - name: Display Dockerfile
-        run: cat skills/${{ matrix.skill }}.Dockerfile
+        run: cat skills/${{ matrix.skills[0] }}.Dockerfile
       - name: Prepare
         id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/skills-${{ matrix.skill }}"
+          IMAGE="ukpsquare/skills-${{ matrix.skills[0] }}"
           echo ::set-output name=image::${IMAGE}
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
@@ -67,9 +67,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.skill }}-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ matrix.skills[0] }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ matrix.skill }}-
+            ${{ runner.os }}-buildx-${{ matrix.skills[0] }}-
             ${{ runner.os }}-buildx-
 
       - name: Login to Docker Hub
@@ -82,7 +82,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          file: ./skills/${{ matrix.skill }}.Dockerfile
+          file: ./skills/${{ matrix.skills[0] }}.Dockerfile
           context: ./skills
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
