@@ -177,9 +177,6 @@ export default Vue.component('edit-skill', {
             this.success = true
             this.failure = false
           })
-          .then(() => {
-            this.$store.commit('initQueryOptions', { forceSkillInit: true })
-          })
           .catch(failureMessage => {
             this.failure = true
             this.failureMessage = failureMessage
