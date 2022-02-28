@@ -8,7 +8,7 @@
         "port": "8002"
     },
     {
-        "name": "squad",
+        "name": "squad-v2",
         "port": "8003"
     },
     {
@@ -20,11 +20,11 @@
         "port": "8005"
     },
     {
-        "name": "extractive",
+        "name": "extractive-qa",
         "port": "8006"
     },
     {
-        "name": "multiple-choice",
+        "name": "multiple-choice-qa",
         "port": "8007"
     }
 ]
