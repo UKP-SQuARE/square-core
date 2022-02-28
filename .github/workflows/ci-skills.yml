@@ -34,24 +34,6 @@ jobs:
           # [["skill-name", "port"], ...]
     outputs:
       skills: ${{ steps.matrix.outputs.skills }}
-
-  dockerfiles:
-    runs-on: ubuntu-latest
-    needs: [matrix-setup]
-    strategy:
-      matrix: 
-        skills: ${{ fromJson(needs.matrix-setup.outputs.skills) }}
-    steps:
-      - run: |
-          echo "${{ matrix.skills[0] }}"
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          cd skills && bash ./make_dockerfile.sh ${{ matrix.skills[0] }}
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ matrix.skill }}-dockerfile
-          path: ./skills/${{ matrix.skill }}.Dockerfile
   
   build:
     runs-on: ubuntu-latest
