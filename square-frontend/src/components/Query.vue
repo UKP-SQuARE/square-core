@@ -73,7 +73,7 @@
       </div>
     </div>
     <div v-if="minSkillsSelected(1)" class="row">
-      <div class="col-3 mx-auto my-3">
+      <div class="col-md-3 mx-auto my-3">
         <div class="d-grid gap-2">
           <button
               type="submit"
