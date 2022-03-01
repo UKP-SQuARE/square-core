@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form v-on:submit.prevent="showChecklist">
+    <form v-on:submit.prevent="showCheckList">
       <div class="row">
         <div class="col">
           <CompareSkills v-on:input="changeSelectedSkills" class="border-success" />
@@ -11,12 +11,12 @@
           <div class="d-grid gap-2 d-md-flex justify-content-md-center">
             <button type="submit" class="btn btn-success btn-lg shadow text-white" :disabled="waiting">
               <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
-              &nbsp;Show Checklist</button>
+              &nbsp;Show CheckList</button>
           </div>
         </div>
       </div>
     </form>
-    <div v-if="currentTests.length">
+    <div v-if="currentTests.length > 0">
       <div class="row">
         <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3">
           <table class="table table-borderless">
@@ -107,6 +107,21 @@
         </div>
       </div>
     </div>
+    <div v-else class="row">
+      <div class="col-md-8 mx-auto mt-4 text-center">
+        <div class="bg-light border rounded shadow p-5 text-center">
+          <div class="feature-icon bg-success bg-gradient">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </div>
+          <h2 class="display-5">Explainability</h2>
+          <p class="lead fs-2">Test the <span class="text-success">behaviour</span> of <span class="text-success">black-box</span> models.</p>
+          <p class="lead fs-2">Explore capabilities such as the <span class="text-success">robustness</span> of model output.</p>
+          <p class="lead fs-2"><span class="text-success">Get started</span> by selecting up to three skills.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -158,7 +173,8 @@ export default Vue.component('explainability-page', {
       skillSettings
       this.options = options
     },
-    showChecklist() {
+    showCheckList() {
+      this.waiting = true
       let currentSkills = []
       let currentTests = []
       this.selectedSkills.forEach(skill => {
@@ -177,6 +193,7 @@ export default Vue.component('explainability-page', {
       })
       this.currentSkills = currentSkills
       this.currentTests = currentTests
+      this.waiting = false
     },
     getTest(skillIndex, testIndex) {
       return this.currentTests[skillIndex - 1][testIndex - 1]
