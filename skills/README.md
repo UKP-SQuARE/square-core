@@ -67,7 +67,20 @@ If you want to run your Skill directly on SQuARE hardware, you can submit a [pul
 3. Once you pull request is approved, your skill url will be `http://<skill-name>:<port>`
 
 ### Adding Self-Hosted or Cloud Skills
-🚧
+#### Azure Functions
+1. Login to [Azure](https://portal.azure.com/)
+2. Create a new function app
+    - Select to publish _Code_
+    - Select _Python_ as runtime stack.
+3. Once the deployment is complete, under Next Steps, click _create function_ and follow the setup instructions according to your development environment.
+4. During the setup:
+    - Use the _HTTP Trigger_ template
+    - Name the function _query_ (*This is very important, since this will determine the url under which your function will be available.*)
+    - Select _anonymous_ as authorization level.
+5. Develop your skill in the __init__.py
+6. Add environment variables to the `local.settings.json` file under `Values`.
+6. Deploy your skill according to the instructions
+7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
 ## Publicly Available Skills
 ### boolq
 *Description*: A categorical QA skill answering boolean questions given a context with yes or no.
