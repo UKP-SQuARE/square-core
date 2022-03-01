@@ -112,13 +112,13 @@
 
 <script>
 import Vue from 'vue'
-import CompareSkills from '@/components/CompareSkills.vue'
-import ExplainDetail from '@/components/modals/ExplainDetail.vue'
-import mixin from '@/components/results/mixin.vue'
-import { getSkill } from '@/api'
-import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
-import boolq from '../../checklist/61a9f66935adbbf1f2433077.json'
-import commonsense from '../../checklist/61a9f6d035adbbf1f243307d.json'
+import CompareSkills from '../components/CompareSkills'
+import ExplainDetail from '../components/modals/ExplainDetail'
+import mixin from '../components/results/mixin'
+import { getSkill } from '../api'
+import squad2 from '../../checklist/61a9f57935adbbf1f2433073'
+import boolq from '../../checklist/61a9f66935adbbf1f2433077'
+import commonsense from '../../checklist/61a9f6d035adbbf1f243307d'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -159,22 +159,24 @@ export default Vue.component('explainability-page', {
       this.options = options
     },
     showChecklist() {
-      this.currentSkills = []
-      this.currentTests = []
+      let currentSkills = []
+      let currentTests = []
       this.selectedSkills.forEach(skill => {
         if (skill in this.data) {
           getSkill(skill)
               .then((response) => {
-                this.currentSkills.push(response.data)
+                currentSkills.push(response.data)
               })
           let tests = this.data[skill].tests
           // FIXME: Sort all tests the same
           tests.sort((a, b) => b.failure_rate - a.failure_rate)
           tests.forEach(test => test.test_cases = test.test_cases.filter(
               test_case => test_case['success_failed'] === 'failed'))
-          this.currentTests.push(tests)
+          currentTests.push(tests)
         }
       })
+      this.currentSkills = currentSkills
+      this.currentTests = currentTests
     },
     getTest(skillIndex, testIndex) {
       return this.currentTests[skillIndex - 1][testIndex - 1]
@@ -186,9 +188,6 @@ export default Vue.component('explainability-page', {
       // FIXME: Does not download
       this.$refs[`downloadButton${skillIndex}`].href = URL.createObjectURL(blob)
       this.$refs[`downloadButton${skillIndex}`].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
-    },
-    isActiveTest(index) {
-      return index === this.selectedTest
     }
   }
 })
