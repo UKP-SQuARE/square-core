@@ -3,7 +3,10 @@
     <form v-on:submit.prevent="showCheckList">
       <div class="row">
         <div class="col">
-          <CompareSkills v-on:input="changeSelectedSkills" class="border-success" />
+          <CompareSkills
+              v-on:input="changeSelectedSkills"
+              class="border-success"
+              :skill-filter="skillId => skillId in data" />
         </div>
       </div>
       <div v-if="selectedSkills.length > 0" class="row">
@@ -160,9 +163,6 @@ export default Vue.component('explainability-page', {
   computed: {
     availableSkills() {
       return this.$store.state.availableSkills
-    },
-    availableTestData() {
-      return this.options.selectedSkill in this.data
     },
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')

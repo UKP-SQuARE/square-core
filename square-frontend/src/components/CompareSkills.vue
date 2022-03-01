@@ -36,7 +36,7 @@ import Vue from 'vue'
 import SkillSelector from '@/components/SkillSelector.vue'
 
 export default Vue.component('compare-skills', {
-  props: [],
+  props: ['skillFilter'],
   data() {
     return {
       options: {
@@ -49,7 +49,13 @@ export default Vue.component('compare-skills', {
   },
   computed: {
     availableSkills() {
-      return this.$store.state.availableSkills
+      let availableSkills = this.$store.state.availableSkills
+      // Apply optional filter from props
+      if (this.skillFilter !== undefined) {
+        return availableSkills.filter(skill => this.skillFilter(skill.id))
+      } else {
+        return availableSkills
+      }
     },
     availableSkillsBasedOnSettings() {
       return this.availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
