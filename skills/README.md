@@ -81,6 +81,7 @@ If you want to run your Skill directly on SQuARE hardware, you can submit a [pul
 6. Add environment variables to the `local.settings.json` file under `Values`.
 6. Deploy your skill according to the instructions
 7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
+An example repository can also be found at [UKP-SQuARE/cloud-example-azure](https://github.com/UKP-SQuARE/cloud-example-azure)
 ## Publicly Available Skills
 ### boolq
 *Description*: A categorical QA skill answering boolean questions given a context with yes or no.
