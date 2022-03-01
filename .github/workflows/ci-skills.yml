@@ -23,7 +23,7 @@ jobs:
       - uses: fabasoad/yaml-json-xml-converter-action@v1.0.13
         id: yaml2json
         with:
-          path: skills.yaml
+          path: config.yaml
           from: yaml
           to: json
       - name: Print yaml2json result
