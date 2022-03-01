@@ -243,6 +243,10 @@ services:
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("model-dpr"))
+      - traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)
+      - traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix
+      - traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base
+      - traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api
 
   model_distilbert_st:
     image: ukpsquare/square-model-api-v1:latest
@@ -257,6 +261,10 @@ services:
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("model-distilbert"))
+      - traefik.http.routers.model-distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)
+      - traefik.http.routers.model-distilbert.middlewares=model-distilbert-stripprefix,model-distilbert-addprefix
+      - traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b
+      - traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api
 
   model_bert_onnx:
     image: ukpsquare/square-model-api-v1:latest
