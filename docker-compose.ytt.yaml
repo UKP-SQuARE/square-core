@@ -214,7 +214,22 @@ services:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("bert-base-uncased"))
       - #@ template.replace(traefik_prefix("bert-base-uncased"))
-
+  
+  model_roberta_adapter:
+    image: ukpsquare/square-model-api-v1:latest
+    build: ./square-model-inference-api/inference_server
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.roberta_adapter
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+    labels:
+      - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("model-roberta-base"))
+      - #@ template.replace(traefik_prefix("roberta-base"))
+      
   model_dpr:
     image: ukpsquare/square-model-api-v1:latest
     build: ./square-model-inference-api/inference_server
