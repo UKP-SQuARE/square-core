@@ -1,4 +1,18 @@
-version: "3.3"
+version: "3.7"
+
+x-skill-defaults: &skill-defaults
+  env_file:
+    - ./skills/.env
+  environment:
+    - WEB_CONCURRENCY=2
+    # Development
+    # - VERIFY_SSL=0
+    # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
+    # - KEYCLOAK_BASE_URL=http://localhost:8080
+    # Production
+    - VERIFY_SSL=1
+    - SQUARE_API_URL=https://square.ukp-lab.de/api  
+    - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
 
 services:
   traefik:
@@ -53,9 +67,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api/backend`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=le"
       - "traefik.http.routers.backend.middlewares=backend-stripprefix,backend-addprefix"
       - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api/backend"
       - "traefik.http.middlewares.backend-addprefix.addPrefix.prefix=/api"
@@ -352,131 +363,48 @@ services:
       - "traefik.http.routers.datastores-faiss-distilbert.tls.certresolver=le"
       - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
+    
+  boolq:
+    <<: *skill-defaults
+    image: ukpsquare/skills-boolq:latest
+    expose:
+      - 8001
 
-  naturalqa_retrieve_span_skill:
-    image: ukpsquare/square-skills-retrieve-span:latest
-    build: ./skills/qa-retrieve-span-skill/.
-    ports:
-      - 8002:8002
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
-      # - KEYCLOAK_BASE_URL=http://localhost:8080
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
+  commonsense-qa:
+    <<: *skill-defaults
+    image: ukpsquare/skills-commonsense-qa:latest
+    expose:
+      - 8002
 
-  boolq_skill:
-    image: ukpsquare/square-skills-boolq:latest
-    build: ./skills/qa-boolq-skill/.
-    ports:
-      - 8003:8003
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # change to https://172.17.0.1 on linux
-      # - KEYCLOAK_BASE_URL=http://localhost:8080
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+  squad-v2:
+    <<: *skill-defaults
+    image: ukpsquare/skills-squad-v2:latest
+    expose:
+      - 8003
+  
+  open-bioasq:
+    <<: *skill-defaults
+    image: ukpsquare/skills-open-bioasq:latest
+    expose:
+      - 8004
 
-  squad_v2_skill:
-    image: ukpsquare/square-skills-squad-v2:latest
-    build: ./skills/qa-squad-v2-skill/.
-    ports:
-      - 8004:8004
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux
-      # - KEYCLOAK_BASE_URL=http://localhost:8080
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+  open-squad:
+    <<: *skill-defaults
+    image: ukpsquare/skills-open-squad:latest
+    expose:
+      - 8005
 
-  commonsense_qa_skill:
-    image: ukpsquare/square-skills-commonsense-qa:latest
-    build: ./skills/qa-commonsense-qa-skill/.
-    ports:
-      - 8005:8005
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux 
-      # - KEYCLOAK_BASE_URL=http://localhost:8080 
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+  extractive-qa:
+    <<: *skill-defaults
+    image: ukpsquare/skills-extractive:latest
+    expose:
+      - 8006
 
-  extractive_qa_skill:
-    image: ukpsquare/square-skills-extractive:latest
-    build: ./skills/qa-extractive-qa-skill/.
-    ports:
-      - 8006:8006
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
-      # - KEYCLOAK_BASE_URL=http://localhost:8080
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-
-  multiple_choice_qa_skill:
-    image: ukpsquare/square-skills-multiple-choice:latest
-    build: ./skills/qa-multiple-choice-skill/.
-    ports:
-      - 8007:8007
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
-      # - KEYCLOAK_BASE_URL=http://localhost:8080
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-
-  retrieve_bioasq_skill:
-    image: ukpsquare/square-skills-retrieve-bioasq:latest
-    build: ./skills/qa-retrieve-bioasq-skill/.
-    ports:
-      - 8009:8009
-    env_file:
-      - ./skills/.env
-    environment:
-      - WEB_CONCURRENCY=2
-      # Development
-      # - VERIFY_SSL=0
-      # - SQUARE_API_URL=https://host.docker.internal/api # https://172.17.0.1 on linux  
-      # - KEYCLOAK_BASE_URL=http://localhost:8080
-      # Production
-      - VERIFY_SSL=1
-      - SQUARE_API_URL=https://square.ukp-lab.de/api  
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+  multiple-choice-qa:
+    <<: *skill-defaults
+    image: ukpsquare/skills-multiple-choice:latest
+    expose:
+      - 8007
 
 volumes:
   traefik-public-certificates:
