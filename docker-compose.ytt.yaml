@@ -86,7 +86,7 @@ services:
       - migrations-data:/app/migrations
     labels:
       - "traefik.enable=true"
-       #@ template.replace([traefik_prefix("backend")])
+      - #@ template.replace(traefik_prefix("backend"))
 
   keycloak:
     image: jboss/keycloak:16.1.1
@@ -111,7 +111,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`square.ukp-lab.de`) && PathPrefix(`/auth`)"
-      #@ template.replace(traefik_tls("keycloak"))
+      - #@ template.replace(traefik_tls("keycloak"))
 
   db:
     image: postgres
@@ -143,7 +143,7 @@ services:
       #@ if/end data.values.environment == "prod":
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
-      #@ template.replace(traefik_tls("frontend"))
+      - #@ template.replace(traefik_tls("frontend"))
 
   skill_manager:
     image: ukpsquare/skill-manager:latest
@@ -163,7 +163,8 @@ services:
       - skill_manager_mongo
     labels:
       - "traefik.enable=true"
-      #@ template.replace([traefik_tls("skill-manager"), traefik_prefix("skill-manager")])
+      - #@ template.replace(traefik_tls("skill-manager"))
+      - #@ template.replace(traefik_prefix("skill-manager"))
 
   skill_manager_mongo:
     image: mongo:5.0.4
@@ -211,8 +212,8 @@ services:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      #@ template.replace([traefik_tls("model-bert-base-uncased"), traefik_prefix("model-bert-base-uncased")])
-      
+      - #@ template.replace(traefik_tls("bert-base-uncased"))
+      - #@ template.replace(traefik_prefix("bert-base-uncased"))
 
   model_dpr:
     image: ukpsquare/square-model-api-v1:latest
@@ -226,7 +227,7 @@ services:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      #@ template.replace([traefik_tls("model-dpr"), traefik_prefix("model-dpr")])
+      - #@ template.replace(traefik_tls("model-dpr"))
 
   model_distilbert_st:
     image: ukpsquare/square-model-api-v1:latest
@@ -240,7 +241,7 @@ services:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
       - "traefik.enable=true"
-      #@ template.replace([traefik_tls("model-distilbert"), traefik_prefix("model-distilbert")])
+      - #@ template.replace(traefik_tls("model-distilbert"))
 
   model_bert_onnx:
     image: ukpsquare/square-model-api-v1:latest
@@ -254,7 +255,8 @@ services:
       - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
-      #@ template.replace([traefik_tls("model-bert-onnx"), traefik_prefix("model-bert-onnx")])
+      - #@ template.replace(traefik_tls("model-bert-onnx"))
+      - #@ template.replace(traefik_prefix("bert-onnx"))
 
   datastore_api:
     privileged: true
@@ -273,7 +275,7 @@ services:
       ES_URL: http://datastore_es:9200
     labels:
       - "traefik.enable=true"
-      #@ template.replace(traefik_tls("datastores"))
+      - #@ template.replace(traefik_tls("datastores"))
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
       - "traefik.http.routers.datastores.middlewares=datastores-stripprefix,datastores-addprefix"
       - "traefik.http.middlewares.datastores-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
@@ -295,7 +297,7 @@ services:
       - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
-      #@ template.replace(traefik_tls("datastores-faiss-dpr"))
+      - #@ template.replace(traefik_tls("datastores-faiss-dpr"))
       - "traefik.http.routers.datastores-faiss-dpr.rule=PathPrefix(`/api/nq/dpr`)"
       - "traefik.http.routers.datastores-faiss-dpr.middlewares=datastores-faiss-dpr-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-dpr-stripprefix.stripprefix.prefixes=/api/nq/dpr"
@@ -306,7 +308,7 @@ services:
       - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
-      #@ template.replace(traefik_tls("datastores-faiss-distilbert"))
+      - #@ template.replace(traefik_tls("datastores-faiss-distilbert"))
       - "traefik.http.routers.datastores-faiss-distilbert.rule=PathPrefix(`/api/msmarco/distilbert`)"
       - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
