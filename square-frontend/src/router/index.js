@@ -3,16 +3,18 @@
  */
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
-import Home from '@/views/Home.vue'
-import Signup from '@/views/Signup.vue'
-import Signin from '@/views/Signin.vue'
-import Skills from '@/views/Skills.vue'
-import Skill from '@/views/Skill.vue'
-import QA from '@/views/QA.vue'
-import Explain from '@/views/Explain.vue'
-import Feedback from '@/views/Feedback.vue'
-import NotFound from '@/views/NotFound.vue'
+import store from '../store'
+
+// Use lazy loading to improve page size
+const Home = () => import('../views/Home')
+const QA = () => import('../views/QA')
+const Explain = () => import('../views/Explain')
+const Signin = () => import('../views/Signin')
+const Signup = () => import('../views/Signup')
+const Skills = () => import('../views/Skills')
+const Skill = () => import('../views/Skill')
+const Feedback = () => import('../views/Feedback')
+const NotFound = () => import('../views/NotFound')
 
 Vue.use(VueRouter)
 
