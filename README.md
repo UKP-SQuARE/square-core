@@ -104,7 +104,7 @@ The docker-compose file is generated using the [ytt](https://carvel.dev/ytt/) te
 - Set _os_ to your operating system, e.g. `linux`, `mac` or `windows`
 Now we can generate the docker-compose.yaml file by running:
 ```bash
-ytt -f docker-compose.ytt.yaml -f config.yaml -f skills.yaml >> docker-compose.yaml  
+ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml  
 ```
 ### Get docker images
 We now can pull the existing docker images from docker hub by running:
