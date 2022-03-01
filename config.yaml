@@ -16,8 +16,8 @@ skills:
   - name: multiple-choice-qa
     port: "8007"
 
-environment: "local"
-os: "linux"
+environment: "prod" #! set this to 'local' or 'prod'
+os: "linux" #! set this to 'linux', 'mac' or 'windows'
 
 square_api_url: 
   prod: https://square.ukp-lab.de/api
