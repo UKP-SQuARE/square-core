@@ -61,11 +61,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
 ```
 ### Adding Via Pull Request
-If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). For the skill to work, a couple of additional files are required, these can be copied from an existing skill, for example, the retrieve-span skill.
-* **Dockerfile** -> just copy and paste this file
-* **logging.conf** -> just copy and paste this file
-* **main.py** -> import your predict function here and pass it to the `get_app` function
-* **requirements.txt** -> Add additional requirements that your skill has
+If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls) with the following changes:
+1. Put your skill function in a file under: `./skills/<skill-name>/skill.py`
+2. Add you skill in the [config.yaml](../config.yaml).
 
 ### Adding Self-Hosted or Cloud Skills
 🚧
