@@ -53,7 +53,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.le.acme.tlschallenge=true
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
-      - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
+      - --certificatesresolvers.le.acme.email=${EMAIL}
       #@ if/end data.values.environment == "local":
       - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     labels:
@@ -66,6 +66,9 @@ services:
       #! Middleware redirect from HTTP to HTTPS
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+
+      #! Middleware for ratelimiting
+      - 
     ports:
       - "80:80" 
       - "443:443"
