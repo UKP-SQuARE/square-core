@@ -47,7 +47,7 @@ class KeycloakAPI:
         """Creates a new client in Keycloak in the provided realm. Client Id will be created from the username and skill_name.
 
         Args:
-            realm (str): Realm where the client will be registered. 
+            realm (str): Realm where the client will be registered.
             username (str): User creating the client.
             skill_name (str): Name of the skill this client will be registered for.
 
@@ -64,17 +64,19 @@ class KeycloakAPI:
             f"/clients-registrations/default",
             headers={
                 "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            data=json.dumps({
-                "clientId": client_id,
-                "secret": secret,
-                "implicitFlowEnabled": False,
-                "standardFlowEnabled": False,
-                "serviceAccountsEnabled": True,
-                "publicClient": False,
-                **kwargs,
-            }),
+            data=json.dumps(
+                {
+                    "clientId": client_id,
+                    "secret": secret,
+                    "implicitFlowEnabled": False,
+                    "standardFlowEnabled": False,
+                    "serviceAccountsEnabled": True,
+                    "publicClient": False,
+                    **kwargs,
+                }
+            ),
         )
 
         response.raise_for_status()
@@ -83,7 +85,7 @@ class KeycloakAPI:
         _return_dict["secret"] = secret
         return _return_dict
 
-    def update_client(self,  realm: str, client_id: str, **kwargs: Dict) -> Dict:
+    def update_client(self, realm: str, client_id: str, **kwargs: Dict) -> Dict:
         """Updates an existing client in Keycloak.
 
         Args:
@@ -101,7 +103,7 @@ class KeycloakAPI:
             f"/clients-registrations/default/{client_id}",
             headers={
                 "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             data=json.dumps({"clientId": client_id, **kwargs}),
         )

@@ -14,9 +14,9 @@ model_api = ModelAPI(config)
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
-    """Given a question, a set of answers and optional context, performs multiple-choice 
-    QA. This skill is a general skill, it can be used with any adapter for 
-    multiple-choice question answering. The adapter to use can be specified in the 
+    """Given a question, a set of answers and optional context, performs multiple-choice
+    QA. This skill is a general skill, it can be used with any adapter for
+    multiple-choice question answering. The adapter to use can be specified in the
     `skill_args` or via the `default_skill_args` in the skill-manager.
     """
     query = request.query
@@ -24,7 +24,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     choices = request.skill_args["choices"]
 
     if request.skill.get("skill_type") == "categorical":
-        # answer choices for categorical skills are hard-coded and not required as 
+        # answer choices for categorical skills are hard-coded and not required as
         # input.
         prepared_input = [[context, query]]
     else:
@@ -48,7 +48,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info("Model API output: {}".format(model_api_output))
 
     if request.skill_args.get("multiple_answers", False):
-        # if multiple answers can be correct, logits is a 2d array: 
+        # if multiple answers can be correct, logits is a 2d array:
         # [[p1(false), p1(true)], ...]
         # we flatten this to [[p1(true), p2(true), ...]]
 
