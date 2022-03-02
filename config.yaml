@@ -18,6 +18,8 @@ skills:
     port: 8006
   - name: multiple-choice-qa
     port: 8007
+  - name: generative-qa
+    port: 8008
 
 
 square_api_url: 
