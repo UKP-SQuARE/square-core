@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from http.client import HTTPException
@@ -198,6 +199,7 @@ async def query_skill(
     user_id = query_request.user_id
 
     skill: Skill = await get_skill_by_id(request, id)
+    query_request.skill = json.loads(skill.json())
 
     default_skill_args = skill.default_skill_args
     if default_skill_args is not None:
