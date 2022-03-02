@@ -61,14 +61,27 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
 ```
 ### Adding Via Pull Request
-If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). For the skill to work, a couple of additional files are required, these can be copied from an existing skill, for example, the retrieve-span skill.
-* **Dockerfile** -> just copy and paste this file
-* **logging.conf** -> just copy and paste this file
-* **main.py** -> import your predict function here and pass it to the `get_app` function
-* **requirements.txt** -> Add additional requirements that your skill has
+If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls) with the following changes:
+1. Put your skill function in a file under: `./skills/<skill-name>/skill.py`
+2. Add you skill in the [skill.yaml](../skill.yaml). Give the skill the same name as the folder under skills and use an free port (e.g. simply increment).
+3. Once you pull request is approved, your skill url will be `http://<skill-name>:<port>`
 
 ### Adding Self-Hosted or Cloud Skills
-🚧
+#### Azure Functions
+1. Login to [Azure](https://portal.azure.com/)
+2. Create a new function app
+    - Select to publish _Code_
+    - Select _Python_ as runtime stack.
+3. Once the deployment is complete, under Next Steps, click _create function_ and follow the setup instructions according to your development environment.
+4. During the setup:
+    - Use the _HTTP Trigger_ template
+    - Name the function _query_ (*This is very important, since this will determine the url under which your function will be available.*)
+    - Select _anonymous_ as authorization level.
+5. Develop your skill in the __init__.py
+6. Add environment variables to the `local.settings.json` file under `Values`.
+6. Deploy your skill according to the instructions
+7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
+An example repository can also be found at [UKP-SQuARE/cloud-example-azure](https://github.com/UKP-SQuARE/cloud-example-azure)
 ## Publicly Available Skills
 ### boolq
 *Description*: A categorical QA skill answering boolean questions given a context with yes or no.

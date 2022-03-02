@@ -1,18 +1,37 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:template", "template")
 ---
-
 #@ def skill_image_name(skill):
 #@ return "ukpsquare/skills-"+skill.name
 #@ end
 
-x-skill-defaults: &skill-defaults
-  env_file:
-    - ./skills/.env
-  environment:
-    - WEB_CONCURRENCY=(@= str(str(data.values.web_concurrency)) @)
-    - VERIFY_SSL=(@= str(str(data.values.verify_ssl[data.values.environment])) @)
-    - SQUARE_API_URL=(@= data.values.square_api_url[data.values.environment] @)
-    - KEYCLOAK_BASE_URL=(@= data.values.keycloak_base_url[data.values.environment] @)
+#@ def skill_environment():
+WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+SQUARE_API_URL: #@ data.values.square_api_url[data.values.environment]
+KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+#@ end
+
+#@ def skill_env_file(skill):
+#@ return ["./skills/.env"]
+#@ end
+
+#@ def traefik_tls(service):
+#@ return [
+#@  "traefik.http.routers." + service + ".entrypoints=websecure", 
+#@  "traefik.http.routers." + service + ".tls=true", 
+#@  "traefik.http.routers." + service + ".tls.certresolver=le"
+#@ ]
+#@ end
+
+#@ def traefik_prefix(service):
+#@ return [
+#@  "traefik.http.routers." + service + ".rule=PathPrefix(`/api/" + service + "`)", 
+#@  "traefik.http.routers." + service + ".middlewares=" + service + "-stripprefix," + service + "-addprefix", 
+#@  "traefik.http.middlewares." + service + "-stripprefix.stripprefix.prefixes=/api/" + service, 
+#@  "traefik.http.middlewares." + service + "-addprefix.addPrefix.prefix=/api"
+#@  ]
+#@ end
 
 version: "3.4"
 
@@ -67,10 +86,7 @@ services:
       - migrations-data:/app/migrations
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api/backend`)"
-      - "traefik.http.routers.backend.middlewares=backend-stripprefix,backend-addprefix"
-      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api/backend"
-      - "traefik.http.middlewares.backend-addprefix.addPrefix.prefix=/api"
+      - #@ template.replace(traefik_prefix("backend"))
 
   keycloak:
     image: jboss/keycloak:16.1.1
@@ -78,16 +94,16 @@ services:
       - 8080
       - 8443
     environment:
-      - KEYCLOAK_USER=admin
-      - DB_VENDOR=postgres
-      - DB_ADDR=db
-      - DB_PORT=5432
-      - DB_USER=square
-      - DB_SCHEMA=public
-      - DB_DATABASE=keycloak
-      - PROXY_ADDRESS_FORWARDING=true
-      - KEYCLOAK_HOSTNAME=square.ukp-lab.de
-      - KEYCLOAK_FRONTEND_URL=https://square.ukp-lab.de/auth
+      KEYCLOAK_USER: admin
+      DB_VENDOR: postgres
+      DB_ADDR: db
+      DB_PORT: 5432
+      DB_USER: square
+      DB_SCHEMA: public
+      DB_DATABASE: keycloak
+      PROXY_ADDRESS_FORWARDING: true
+      KEYCLOAK_HOSTNAME: square.ukp-lab.de
+      KEYCLOAK_FRONTEND_URL: https://square.ukp-lab.de/auth
     env_file:
       - ./keycloak/.env
     depends_on:
@@ -95,9 +111,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`square.ukp-lab.de`) && PathPrefix(`/auth`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls=true"
-      - "traefik.http.routers.keycloak.tls.certresolver=le"
+      - #@ template.replace(traefik_tls("keycloak"))
 
   db:
     image: postgres
@@ -105,8 +119,8 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_USER=square
-      - POSTGRES_DB=square
+      POSTGRES_USER: square
+      POSTGRES_DB: square
     env_file:
       - ./postgres/.env
     volumes:
@@ -129,43 +143,36 @@ services:
       #@ if/end data.values.environment == "prod":
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls=true"
-      - "traefik.http.routers.frontend.tls.certresolver=le"
+      - #@ template.replace(traefik_tls("frontend"))
 
   skill_manager:
     image: ukpsquare/skill-manager:latest
     build: ./skill-manager
     ports:
-      - 8008:8008
+      - 8000:8000
     expose:
-      - 8008
+      - 8000
     env_file:
       - ./skill-manager/.env
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
-      - REALM=square
-      - CLIENT_ID=skill-manager
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      REALM: square
+      CLIENT_ID: skill-manager
     depends_on:
       - skill_manager_mongo
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.skill-manager.rule=PathPrefix(`/api/skill-manager`)"
-      - "traefik.http.routers.skill-manager.entrypoints=websecure"
-      - "traefik.http.routers.skill-manager.tls=true"
-      - "traefik.http.routers.skill-manager.tls.certresolver=le"
-      - "traefik.http.routers.skill-manager.middlewares=skill-manager-stripprefix,skill-manager-addprefix"
-      - "traefik.http.middlewares.skill-manager-stripprefix.stripprefix.prefixes=/api/skill-manager"
-      - "traefik.http.middlewares.skill-manager-addprefix.addPrefix.prefix=/api"
+      - #@ template.replace(traefik_tls("skill-manager"))
+      - #@ template.replace(traefik_prefix("skill-manager"))
 
   skill_manager_mongo:
     image: mongo:5.0.4
     restart: always
     volumes:
       - skill-manager-mongo-data:/data/db
-    ports:
-      - 27017:27017
+    expose:
+      - 27017
     env_file:
       - ./skill-manager/.env
 
@@ -177,20 +184,18 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "VERIFY_SSL=" + str(data.values.verify_ssl[data.values.environment])
-      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
-      - #@ "DOCKER_HOST_URL=" + data.values.docker_host_url[data.values.os]
-      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
-      - ONNX_VOLUME=square-model-inference-api_onnx-models
-      - REALM=Models-test
-      - CLIENT_ID=models
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      MODEL_API_IMAGE: ukpsquare/square-model-api-v1:latest
+      ONNX_VOLUME: square-model-inference-api_onnx-models
+      REALM: Models-test
+      CLIENT_ID: models
     labels:
       - "traefik.enable=true"
+      #@ template.replace(traefik_tls("maintaining"))
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
-      - "traefik.http.routers.maintaining.entrypoints=websecure"
-      - "traefik.http.routers.maintaining.tls=true"
-      - "traefik.http.routers.maintaining.tls.certresolver=le"
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
@@ -201,19 +206,14 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.model-bert-base-uncased.rule=PathPrefix(`/api/bert-base-uncased`)"
-      - "traefik.http.routers.model-bert-base-uncased.entrypoints=websecure"
-      - "traefik.http.routers.model-bert-base-uncased.tls=true"
-      - "traefik.http.routers.model-bert-base-uncased.tls.certresolver=le"
-      - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
-      - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
-      - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
+      - #@ template.replace(traefik_tls("bert-base-uncased"))
+      - #@ template.replace(traefik_prefix("bert-base-uncased"))
   
   model_roberta_adapter:
     image: ukpsquare/square-model-api-v1:latest
@@ -221,39 +221,32 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.roberta_adapter
     environment:
-      - WEB_CONCURRENCY=2
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.model-roberta-base.rule=PathPrefix(`/api/roberta-base`)"
-      - "traefik.http.routers.model-roberta-base.entrypoints=websecure"
-      - "traefik.http.routers.model-roberta-base.tls=true"
-      - "traefik.http.routers.model-roberta-base.tls.certresolver=le"
-      - "traefik.http.routers.model-roberta-base.middlewares=model-roberta-base-stripprefix,model-roberta-base-addprefix"
-      - "traefik.http.middlewares.model-roberta-base-stripprefix.stripprefix.prefixes=/api/roberta-base"
-      - "traefik.http.middlewares.model-roberta-base-addprefix.addPrefix.prefix=/api"
-
+      - #@ template.replace(traefik_tls("model-roberta-base"))
+      - #@ template.replace(traefik_prefix("roberta-base"))
+      
   model_dpr:
     image: ukpsquare/square-model-api-v1:latest
     build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)"
-      - "traefik.http.routers.model-dpr.entrypoints=websecure"
-      - "traefik.http.routers.model-dpr.tls=true"
-      - "traefik.http.routers.model-dpr.tls.certresolver=le"
-      - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
-      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
-      - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+      - #@ template.replace(traefik_tls("model-dpr"))
+      - traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)
+      - traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix
+      - traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base
+      - traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api
 
   model_distilbert_st:
     image: ukpsquare/square-model-api-v1:latest
@@ -261,39 +254,32 @@ services:
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.model-distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)"
-      - "traefik.http.routers.model-distilbert.entrypoints=websecure"
-      - "traefik.http.routers.model-distilbert.tls=true"
-      - "traefik.http.routers.model-distilbert.tls.certresolver=le"
-      - "traefik.http.routers.model-distilbert.middlewares=model-distilbert-stripprefix,model-distilbert-addprefix"
-      - "traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b"
-      - "traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api"
+      - #@ template.replace(traefik_tls("model-distilbert"))
+      - traefik.http.routers.model-distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)
+      - traefik.http.routers.model-distilbert.middlewares=model-distilbert-stripprefix,model-distilbert-addprefix
+      - traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b
+      - traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api
 
   model_bert_onnx:
     image: ukpsquare/square-model-api-v1:latest
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "KEYCLOAK_BASE_URL=" + data.values.keycloak_base_url[data.values.environment]
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.model-bert-onnx.rule=PathPrefix(`/api/bert-onnx`)"
-      - "traefik.http.routers.model-bert-onnx.entrypoints=websecure"
-      - "traefik.http.routers.model-bert-onnx.tls=true"
-      - "traefik.http.routers.model-bert-onnx.tls.certresolver=le"
-      - "traefik.http.routers.model-bert-onnx.middlewares=model-bert-onnx-stripprefix,model-bert-onnx-addprefix"
-      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
-      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
+      - #@ template.replace(traefik_tls("model-bert-onnx"))
+      - #@ template.replace(traefik_prefix("bert-onnx"))
 
   datastore_api:
     privileged: true
@@ -306,16 +292,14 @@ services:
     env_file:
       - ./datastore-api/.env
     environment:
-      - #@ "WEB_CONCURRENCY=" + str(data.values.web_concurrency)
-      - #@ "FAISS_URL=" + data.values.faiss_url[data.values.environment]
-      - #@ "MODEL_API_URL=" + data.values.model_url[data.values.environment]
-      - ES_URL=http://datastore_es:9200
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      FAISS_URL: #@ data.values.faiss_url[data.values.environment]
+      MODEL_API_URL: #@ data.values.model_url[data.values.environment]
+      ES_URL: http://datastore_es:9200
     labels:
       - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("datastores"))
       - "traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)"
-      - "traefik.http.routers.datastores.entrypoints=websecure"
-      - "traefik.http.routers.datastores.tls=true"
-      - "traefik.http.routers.datastores.tls.certresolver=le"
       - "traefik.http.routers.datastores.middlewares=datastores-stripprefix,datastores-addprefix"
       - "traefik.http.middlewares.datastores-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.datastores-addprefix.addPrefix.prefix=/datastores"
@@ -336,10 +320,8 @@ services:
       - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("datastores-faiss-dpr"))
       - "traefik.http.routers.datastores-faiss-dpr.rule=PathPrefix(`/api/nq/dpr`)"
-      - "traefik.http.routers.datastores-faiss-dpr.entrypoints=websecure"
-      - "traefik.http.routers.datastores-faiss-dpr.tls=true"
-      - "traefik.http.routers.datastores-faiss-dpr.tls.certresolver=le"
       - "traefik.http.routers.datastores-faiss-dpr.middlewares=datastores-faiss-dpr-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-dpr-stripprefix.stripprefix.prefixes=/api/nq/dpr"
 
@@ -349,22 +331,19 @@ services:
       - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
     labels:
       - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("datastores-faiss-distilbert"))
       - "traefik.http.routers.datastores-faiss-distilbert.rule=PathPrefix(`/api/msmarco/distilbert`)"
-      - "traefik.http.routers.datastores-faiss-distilbert.entrypoints=websecure"
-      - "traefik.http.routers.datastores-faiss-distilbert.tls=true"
-      - "traefik.http.routers.datastores-faiss-distilbert.tls.certresolver=le"
       - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
 
   #@yaml/text-templated-strings
   #@ for skill in data.values.skills:
     (@= skill.name @):
-      <<: *skill-defaults
       image: #@ skill_image_name(skill)
-      expose: 
-        - #@ skill.port
+      expose: #@ [skill.port]
+      env_file: #@ skill_env_file(skill)
+      environment: #@ skill_environment()
   #@ end
-
 
 volumes:
   traefik-public-certificates:
