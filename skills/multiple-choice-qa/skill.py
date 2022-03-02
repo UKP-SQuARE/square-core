@@ -42,7 +42,16 @@ async def predict(request: QueryRequest) -> QueryOutput:
         pipeline="sequence-classification",
         model_request=model_request,
     )
-    logger.info(f"Model API output:\n{model_api_output}")
+    if request.skill_args.get("multiple_answers", False):
+        # if multiple answers can be correct, logits is a 2d array: 
+        # [[p1(false), p1(true)], ...]
+        # we flatten this to [[p1(true), p2(true), ...]]
+
+        # index of the logits to select for answer selection
+        idx = request.skill_args.get("multiple_answers_idx", 1)
+        model_api_output["model_outputs"]["logits"] = [
+            [l[idx] for l in model_api_output["model_outputs"]["logits"]]
+        ]
 
     return QueryOutput.from_sequence_classification(
         answers=choices, model_api_output=model_api_output, context=context
