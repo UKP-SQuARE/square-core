@@ -36,12 +36,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": prepared_input,
         "adapter_name": request.skill_args["adapter"],
     }
+    logger.debug("Request for model api:{}".format(model_request))
 
     model_api_output = await model_api(
         model_name=request.skill_args["base_model"],
         pipeline="sequence-classification",
         model_request=model_request,
     )
+    logger.info("Model API output: {}".format(model_api_output))
+
     if request.skill_args.get("multiple_answers", False):
         # if multiple answers can be correct, logits is a 2d array: 
         # [[p1(false), p1(true)], ...]
