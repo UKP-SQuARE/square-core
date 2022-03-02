@@ -209,11 +209,12 @@ async def query_skill(
     # FIXME: Once UI sends context and answers seperatly, this code block can be deleted
     if (
         skill.skill_type == SkillType.multiple_choice
+        and "choices" not in query_request.skill_args
     ):
-        answers = query_request.skill_args["context"].split("\n")
+        choices = query_request.skill_args["context"].split("\n")
         if skill.skill_settings.requires_context:
-            query_request.skill_args["context"], *answers = answers
-        query_request.skill_args["answers"] = answers
+            query_request.skill_args["context"], *choices = choices
+        query_request.skill_args["choices"] = choices
 
     response = requests.post(
         f"{skill.url}/query",

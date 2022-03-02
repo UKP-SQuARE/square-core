@@ -21,15 +21,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
     query = request.query
     context = request.skill_args.get("context")
-    answers = request.skill_args["answers"]
+    choices = request.skill_args["choices"]
 
     if request.skill_args.get("skill_type") == "categorical":
         prepared_input = [[context, query]]
     else:
-        if context is not None:
-            prepared_input = [[context, query + " " + answer] for answer in answers]
+        if context is None:
+            prepared_input = [[query, choice] for choice in choices]
         else:
-            prepared_input = [[query, answer] for answer in answers]
+            prepared_input = [[context, query + " " + choice] for choice in choices]
 
     # Call Model API
     model_request = {
@@ -45,5 +45,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_sequence_classification(
-        answers=answers, model_api_output=model_api_output, context=context
+        answers=choices, model_api_output=model_api_output, context=context
     )
