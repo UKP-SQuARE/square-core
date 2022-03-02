@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.security.http import HTTPBearer
 from skill_manager import mongo_client
 from skill_manager.keycloak_api import KeycloakAPI
-from skill_manager.models import Prediction, Skill
+from skill_manager.models import Prediction, Skill, SkillType
 from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
@@ -208,8 +208,7 @@ async def query_skill(
 
     # FIXME: Once UI sends context and answers seperatly, this code block can be deleted
     if (
-        skill.skill_settings.requires_multiple_choices > 0
-        and "answers" not in query_request.skill_args
+        skill.skill_type == SkillType.multiple_choice
     ):
         answers = query_request.skill_args["context"].split("\n")
         if skill.skill_settings.requires_context:
