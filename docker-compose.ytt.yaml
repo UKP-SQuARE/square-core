@@ -86,6 +86,7 @@ services:
       - migrations-data:/app/migrations
     labels:
       - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("backend"))
       - #@ template.replace(traefik_prefix("backend"))
 
   keycloak:
