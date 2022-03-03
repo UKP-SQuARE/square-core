@@ -1,7 +1,7 @@
 #@data/values
 ---
-environment: local #! set this to 'local' or 'prod'
-os: mac #! set this to 'linux', 'mac' or 'windows'
+environment: prod #! set this to 'local' or 'prod'
+os: linux #! set this to 'linux', 'mac' or 'windows'
 
 skills:
   - name: boolq
@@ -12,7 +12,7 @@ skills:
   - name: extractive-qa
   - name: multiple-choice-qa
   - name: generative-qa
-  - name: open-extractive
+  - name: open-extractive-qa
 
 
 square_api_url: 
