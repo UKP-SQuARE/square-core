@@ -63,7 +63,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 ### Adding Via Pull Request
 If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls) with the following changes:
 1. Put your skill function in a file under: `./skills/<skill-name>/skill.py`
-2. Add you skill in the [skill.yaml](../skill.yaml). Give the skill the same name as the folder under skills and use an free port (e.g. simply increment).
+2. Add you skill in the [skill.yaml](../skill.yaml). Give the skill the same name as the folder under skills.
 3. Once you pull request is approved, your skill url will be `http://<skill-name>:<port>`
 
 ### Adding Self-Hosted or Cloud Skills
