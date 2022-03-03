@@ -12,6 +12,7 @@ skills:
   - name: extractive-qa
   - name: multiple-choice-qa
   - name: generative-qa
+  - name: open-extractive-qa
 
 
 square_api_url: 
