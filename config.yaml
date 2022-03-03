@@ -11,6 +11,7 @@ skills:
   - name: open-squad
   - name: extractive-qa
   - name: multiple-choice-qa
+  - name: generative-qa
 
 
 square_api_url: 
