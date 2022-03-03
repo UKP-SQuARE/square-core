@@ -191,7 +191,7 @@ curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
 Get prediction from the deployed model.
 
 ```bash
-curl --request POST 'https://square.ukp-lab.de/api/distilbert/embedding' \
+curl --request POST 'https://square.ukp-lab.de/api/msmarco-distilbert-base-tas-b/embedding' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "input": [
