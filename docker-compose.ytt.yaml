@@ -228,7 +228,7 @@ services:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("model-roberta-base"))
+      - #@ template.replace(traefik_tls("roberta-base"))
       - #@ template.replace(traefik_prefix("roberta-base"))
       
   model_dpr:
@@ -243,11 +243,11 @@ services:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
       - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("model-dpr"))
-      - traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)
-      - traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix
-      - traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base
-      - traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api
+      - #@ template.replace(traefik_tls("dpr"))
+      - traefik.http.routers.dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)
+      - traefik.http.routers.dpr.middlewares=dpr-stripprefix,dpr-addprefix
+      - traefik.http.middlewares.dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base
+      - traefik.http.middlewares.dpr-addprefix.addPrefix.prefix=/api
 
   model_distilbert_st:
     image: ukpsquare/square-model-api-v1:latest
@@ -261,11 +261,11 @@ services:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
       - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("model-distilbert"))
-      - traefik.http.routers.model-distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)
-      - traefik.http.routers.model-distilbert.middlewares=model-distilbert-stripprefix,model-distilbert-addprefix
-      - traefik.http.middlewares.model-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b
-      - traefik.http.middlewares.model-distilbert-addprefix.addPrefix.prefix=/api
+      - #@ template.replace(traefik_tls("distilbert"))
+      - traefik.http.routers.distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)
+      - traefik.http.routers.distilbert.middlewares=distilbert-stripprefix,distilbert-addprefix
+      - traefik.http.middlewares.distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b
+      - traefik.http.middlewares.distilbert-addprefix.addPrefix.prefix=/api
 
   model_bert_onnx:
     image: ukpsquare/square-model-api-v1:latest
@@ -279,7 +279,7 @@ services:
       - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("model-bert-onnx"))
+      - #@ template.replace(traefik_tls("bert-onnx"))
       - #@ template.replace(traefik_prefix("bert-onnx"))
 
   datastore_api:
