@@ -101,7 +101,7 @@ services:
       DB_USER: square
       DB_SCHEMA: public
       DB_DATABASE: keycloak
-      PROXY_ADDRESS_FORWARDING: true
+      PROXY_ADDRESS_FORWARDING: "true"
       KEYCLOAK_HOSTNAME: square.ukp-lab.de
       KEYCLOAK_FRONTEND_URL: https://square.ukp-lab.de/auth
     env_file:
@@ -338,10 +338,10 @@ services:
 
   #@yaml/text-templated-strings
   #@ for skill in data.values.skills:
-    (@= skill.name @):
-      image: #@ skill_image_name(skill)
-      env_file: #@ skill_env_file(skill)
-      environment: #@ skill_environment()
+  (@= skill.name @):
+    image: #@ skill_image_name(skill)
+    env_file: #@ skill_env_file(skill)
+    environment: #@ skill_environment()
   #@ end
 
 volumes:
