@@ -3,4 +3,5 @@ fastapi==0.65.2                 # REST API Framework
 pydantic==1.8.2
 requests
 docker
+celery==5.1.2
 git+https://github.com/UKP-SQuARE/elk-json-formatter.git@v0.0.2

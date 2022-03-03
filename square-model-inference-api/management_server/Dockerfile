@@ -6,6 +6,9 @@ RUN apt-get -y update
 RUN apt-get -y install git
 RUN pip install --upgrade pip
 
+# install rabbit mq backend
+RUN apt-get install -y rabbitmq-server
+
 WORKDIR /app
 
 COPY requirements.txt ./
@@ -18,6 +21,6 @@ COPY main.py main.py
 COPY models.py models.py
 COPY docker_access.py docker_access.py
 COPY logging.conf logging.conf
+COPY ./tasks tasks
 
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "logging.conf"]

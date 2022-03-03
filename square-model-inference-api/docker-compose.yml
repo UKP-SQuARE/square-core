@@ -44,10 +44,28 @@ services:
       # mount volume to store certificates
       - traefik-public-certificates:/certificates
 
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  maintaining_worker:
+    image: ukpsquare/square-model-management:latest
+    command: celery -A tasks worker --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+    links:
+      - rabbit
+    depends_on:
+      - model_dpr
+      - rabbit
 
   maintaining:
-#    image: ukpsquare/square-model-management:latest
-    build: ./management_server
+    image: ukpsquare/square-model-management:latest
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
+#    build: ./management_server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
