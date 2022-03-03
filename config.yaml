@@ -1,25 +1,17 @@
 #@data/values
 ---
-environment: prod #! set this to 'local' or 'prod'
-os: linux #! set this to 'linux', 'mac' or 'windows'
+environment: local #! set this to 'local' or 'prod'
+os: mac #! set this to 'linux', 'mac' or 'windows'
 
 skills:
   - name: boolq
-    port: 8001
   - name: commonsense-qa
-    port: 8002
   - name: squad-v2
-    port: 8003
   - name: open-bioasq
-    port: 8004
   - name: open-squad
-    port: 8005
   - name: extractive-qa
-    port: 8006
   - name: multiple-choice-qa
-    port: 8007
   - name: generative-qa
-    port: 8008
 
 
 square_api_url: 

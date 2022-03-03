@@ -3,6 +3,7 @@ from pydantic import BaseSettings, Field, validator
 
 class MongoSettings(BaseSettings):
     """Utility class for storing connection settings to mongoDB."""
+
     username: str = Field(..., env="MONGO_INITDB_ROOT_USERNAME")
     password: str = Field(..., env="MONGO_INITDB_ROOT_PASSWORD")
     host: str = Field(..., env="MONGO_HOST")

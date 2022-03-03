@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 config = SquareSkillHelpersConfig.from_dotenv()
 model_api = ModelAPI(config)
 
+
 async def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and a set of answer candidates, predicts the most likely answer."""
 
@@ -19,17 +20,17 @@ async def predict(request: QueryRequest) -> QueryOutput:
     if answers is None:
         answers = request.skill_args["context"].split("\n")
 
-    prepared_input = [[request.query, c] for c in answers] 
-    model_request = { 
+    prepared_input = [[request.query, c] for c in answers]
+    model_request = {
         "input": prepared_input,
         "preprocessing_kwargs": {},
         "model_kwargs": {},
-        "adapter_name": "AdapterHub/bert-base-uncased-pf-commonsense_qa"
+        "adapter_name": "AdapterHub/bert-base-uncased-pf-commonsense_qa",
     }
     model_api_output = await model_api(
-        model_name="bert-base-uncased", 
-        pipeline="sequence-classification", 
-        model_request=model_request
+        model_name="bert-base-uncased",
+        pipeline="sequence-classification",
+        model_request=model_request,
     )
     logger.info(f"Model API output:\n{model_api_output}")
 

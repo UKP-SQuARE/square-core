@@ -17,13 +17,17 @@ from skill_manager.models import Skill, SkillSettings
 from skill_manager.routers import client_credentials
 
 keycloak_api_mock = MagicMock()
-keycloak_api_mock.create_client.return_value = {"clientId": "test-client-id", "secret": "test-secret"}
+keycloak_api_mock.create_client.return_value = {
+    "clientId": "test-client-id",
+    "secret": "test-secret",
+}
 keycloak_api_override = lambda: keycloak_api_mock
 app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
 
 client = TestClient(app)
+
 
 @pytest.fixture(scope="module")
 def monkeymodule():
@@ -162,6 +166,7 @@ def test_heartbeat(client):
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 
+
 @pytest.mark.parametrize("is_alive", (True, False), ids=["alive", "dead"])
 @responses.activate
 def test_skill_heartbeat(is_alive, client):
@@ -175,7 +180,7 @@ def test_skill_heartbeat(is_alive, client):
     response = client.get(
         "/api/health/skill-heartbeat", params={"skill_url": skill_url}
     )
-    
+
     assert response.status_code == 200
     assert response.json() == {"is_alive": is_alive}
 
@@ -344,7 +349,7 @@ def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
     saved_prediction = mongo_client.client.skill_manager.predictions.find_one(
         {"query": query}
     )
-    
+
     TestCase().assertDictEqual(
         response.json(), {"predictions": saved_prediction["predictions"]}
     )
