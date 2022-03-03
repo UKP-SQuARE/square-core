@@ -47,7 +47,7 @@ jobs:
           echo "port=${{ matrix.skills[1] }}"
       - uses: actions/checkout@v2
       - name: Create Dockerfile
-        run: cd skills && bash make_dockerfile.sh ${{ matrix.skills[0] }} ${{ matrix.skills[1] }}
+        run: cd skills && bash make_dockerfile.sh ${{ matrix.skills[0] }}
       - name: Display Dockerfile
         run: cat skills/${{ matrix.skills[0] }}.Dockerfile
       - name: Prepare
