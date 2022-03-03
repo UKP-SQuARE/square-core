@@ -340,7 +340,6 @@ services:
   #@ for skill in data.values.skills:
     (@= skill.name @):
       image: #@ skill_image_name(skill)
-      expose: #@ [skill.port]
       env_file: #@ skill_env_file(skill)
       environment: #@ skill_environment()
   #@ end
