@@ -76,27 +76,26 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 </details>
 
 ## Local Installation
-### Setup
-Install [ytt](https://carvel.dev/ytt/docs/latest/install/)
+### Requirements
+For generating the docker-compose file we use [ytt](https://carvel.dev/ytt/) that can installed from [here](https://carvel.dev/ytt/docs/latest/install/) or via brew:
 ```bash
 brew instal ytt
 ```
 ### Environment Configuration
-First, let's initialize the .env files from our examples. Run the following lines:  
+Many of the services requires secrets that are set in environment files. Run the `[init_env_file.sh](./init_env_files.sh)` file:
 ```bash
-mv skill-manager/.env.example skill-manager/.env 
-mv datastore-api/.env.example datastore-api/.env 
-mv skills/.env.example skills/.env 
-mv keycloak/.env.example keycloak/.env 
-mv postgres/.env.example postgres/.env 
-cp square-frontend/.env.production square-frontend/.env.production-backup
-cp square-frontend/.env.development square-frontend/.env.production
+bash init_env_files.sh
 ```
-#### Update .env files
-- For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
-- In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
-- Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
-- For postgres and keycloak, set `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value. Also update the `KEYCLOAK_PASSWORD`
+Next, we need to setup the authentication. For this we need to run a subset of the services. So first we [generate the docker-compose file](#generate-the-docker-compose-file):
+
+Then we start traefik, keylcoak and postgres:
+```bash
+docker-compose up -d traefik keycloak postgres
+```
+Next go to [square.ukp-lab.localhost/auth](https://square.ukp-lab.localhost/auth) and login with the username `admin` and the keycloak password set in `./keycloak/.env`. On the left hand side create a new realm called `square`. Then follow the [instructions in the square-auth package](https://github.com/UKP-SQuARE/square-auth#register-a-client-in-keycloak) to set up clients for the skill-manager, datastores and models. Copy their CLIENT_SECRET and set it in ./skill-manager/.env ./datastore-api./env and ./square-model-inference-api/management_server/.env. Finally bring down the servies again with:
+```bash
+docker-compose down
+```
 
 ### Generate the docker-compose file
 The docker-compose file is generated using the [ytt](https://carvel.dev/ytt/) templating tool. First, we need to update the [config.yaml](config.yaml) to the target platform.
