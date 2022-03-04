@@ -13,7 +13,7 @@ KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
 #@ end
 
 #@ def skill_env_file(skill):
-#@ return ["./skills/.env"]
+#@ return ["./skills/" + skill.name + ".env"]
 #@ end
 
 #@ def traefik_tls(service):
