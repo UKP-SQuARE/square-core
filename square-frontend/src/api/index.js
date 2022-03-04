@@ -81,7 +81,7 @@ export function putSkill(skillId, newSkill) {
 export function postQuery(question, context, options, user_id) {
     let data = {
         query: question,
-        skill_args: options.skillArgs,
+        skill_args: {},
         num_results: options.maxResultsPerSkill,
         user_id: user_id
     }
@@ -105,5 +105,5 @@ export function postSkill(newSkill) {
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
 export function pingSkill(skillUrl) {
-    return axios.get(`${SKILL_URL}/health/heartbeat`, { params: { skill_url: skillUrl } })
+    return axios.get(`${SKILL_URL}/health/skill-heartbeat`, { params: { skill_url: skillUrl } })
 }

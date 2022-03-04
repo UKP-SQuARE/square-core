@@ -5,7 +5,7 @@ from pydantic import BaseConfig, BaseModel
 
 # https://github.com/tiangolo/fastapi/issues/1515
 class MongoModel(BaseModel):
-    """Utility class for loading data from and to mongoDB formats. This should be the 
+    """Utility class for loading data from and to mongoDB formats. This should be the
     base-class for all pydantic models that shall be stored in mongoDB.
     """
 

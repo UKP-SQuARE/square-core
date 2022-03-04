@@ -27,18 +27,9 @@ export default new Vuex.Store({
     availableSkills: [],
     // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
-    queryOptions: {
-      selectedSkills: [],
-      maxResultsPerSkill: 10,
-      skillArgs: {}
-    },
-    explainOptions: {
-      selectedSkill: ''
-    },
-    // Control flags
-    flags: {
-      initialisedQueryOptions: false,
-      initialisedExplainOptions: false
+    skillOptions: {
+      selectedSkills: Array(3).fill('None'),
+      maxResultsPerSkill: 10
     }
   },
   mutations: {
@@ -47,34 +38,10 @@ export default new Vuex.Store({
       state.currentContext = payload.context
       state.currentResults = payload.results
     },
-    initQueryOptions(state, payload) {
-      // Default value for selected skills should be all available skills
-      if (!state.flags.initialisedQueryOptions || payload.forceSkillInit) {
-        if (state.availableSkills.length > 0) {
-          state.queryOptions.selectedSkills = [state.availableSkills[0].id]
-        }
-        state.flags.initialisedQueryOptions = true
-      }
-    },
-    initExplainOptions(state, payload) {
-      // Default value for selected skills should be all available skills
-      if (!state.flags.initialisedExplainOptions || payload.forceSkillInit) {
-        if (state.availableSkills.length > 0) {
-          state.explainOptions.selectedSkill = state.availableSkills[0].id
-        }
-        state.flags.initialisedExplainOptions = true
-      }
-    },
     setSkills(state, payload) {
-      let tmp = state.availableSkills.length
       state.availableSkills = payload.skills
       if (state.user.name) {
         state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.user.name)
-      }
-      // We want to reset selected skills if more skills are available (due to sign in mostly)
-      if (tmp !== state.availableSkills.length) {
-        state.flags.initialisedQueryOptions = false
-        state.flags.initialisedExplainOptions = false
       }
     },
     /**
@@ -88,8 +55,8 @@ export default new Vuex.Store({
         state.user = data.sub
       }
     },
-    setQueryOptions(state, payload) {
-      state.queryOptions = payload.queryOptions
+    setSkillOptions(state, payload) {
+      state.skillOptions = payload.skillOptions
     }
   },
   /**
@@ -107,7 +74,7 @@ export default new Vuex.Store({
               predictions: response.data.predictions
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
-            context.commit('setQueryOptions', { queryOptions: options })
+            context.commit('setSkillOptions', { skillOptions: options })
           }))
     },
     signIn(context, { username, password }) {

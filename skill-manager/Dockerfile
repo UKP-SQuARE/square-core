@@ -25,6 +25,6 @@ COPY tests tests
 COPY pytest.ini pytest.ini
 
 FROM base as build
-EXPOSE 8008
+EXPOSE 8000
 
-CMD ["uvicorn", "skill_manager.main:app", "--host", "0.0.0.0", "--port", "8008", "--log-config", "logging.conf"]
+CMD ["uvicorn", "skill_manager.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "logging.conf"]

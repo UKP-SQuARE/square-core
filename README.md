@@ -38,7 +38,7 @@ Find out more about the project on [UKPs Website](https://www.informatik.tu-darm
 
 ## Get Started
 👉 If you want to use the SQuARE public service online, you can refer to [Online Service](#Online-Service) for using the existing skills and refer to 
-[Add New Skills](#Add-New-Skills?) for adding new skills.
+[Add New Skills](#Add-New-Skills) for adding new skills.
 
 👉 If you want to deploy SQuARE locally yourself, please refer to [Local Installation](#Local-Installation).
 
@@ -76,43 +76,54 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 </details>
 
 ## Local Installation
+### Setup
+Install [ytt](https://carvel.dev/ytt/docs/latest/install/)
+```bash
+brew instal ytt
+```
 ### Environment Configuration
-1. Create .env files from examples
-    - First, let's initialize the .env files from our examples. Run the folling lines:  
-    ```bash
-    mv skill-manager/.env.example skill-manager/.env 
-    mv datastore-api/.env.example datastore-api/.env 
-    mv skills/.env.example skills/.env 
-    mv keycloak/.env.example keycloak/.env 
-    mv postgres/.env.example postgres/.env 
-    cp square-frontend/.env.production square-frontend/.env.production-backup
-    cp square-frontend/.env.development square-frontend/.env.production
-    ```
-    - For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
-    - In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
-    - Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
-    - For postgres and keycloak, set `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value. Also update the `KEYCLOAK_PASSWORD`
-2. Update docker-compose.yaml (staging only)
-    - The `docker-compose.yaml` file contains several mentions of _Development_ and _Production_. For the local setup, we need to enable the development and disable the production settings.
-    - If you have downloaded the huggingface models already and want to avoid downloading them again (which will take some time during application startup), change the .cache directory volume mapping in the model services respectively.
-3. Pull and Build Images
-    - First pull the latest images.
-    ```bash
-    docker-compose pull
-    ```
-    - For the local setup we need to rebuild the frontend image to use the updated env file.
-    ```bash
-    docker-compose build frontend
-    ```
-4. Run
-    ```bash
-    docker-compose up -d
-    ```
-    Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
-    👉 Accept that the browser cannot verify the certificate.
-    👉 enable the flag [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost) in Chrome.
-5. Add Skills
-    Add Skills according to the [Add New Skills](#Add-New-Skills?) section. For open-domain skills the datastore need to created first.
+First, let's initialize the .env files from our examples. Run the following lines:  
+```bash
+mv skill-manager/.env.example skill-manager/.env 
+mv datastore-api/.env.example datastore-api/.env 
+mv skills/.env.example skills/.env 
+mv keycloak/.env.example keycloak/.env 
+mv postgres/.env.example postgres/.env 
+cp square-frontend/.env.production square-frontend/.env.production-backup
+cp square-frontend/.env.development square-frontend/.env.production
+```
+#### Update .env files
+- For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
+- In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
+- Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
+- For postgres and keycloak, set `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value. Also update the `KEYCLOAK_PASSWORD`
+
+### Generate the docker-compose file
+The docker-compose file is generated using the [ytt](https://carvel.dev/ytt/) templating tool. First, we need to update the [config.yaml](config.yaml) to the target platform.
+- Set _environment_ to `local`
+- Set _os_ to your operating system, e.g. `linux`, `mac` or `windows`
+Now we can generate the docker-compose.yaml file by running:
+```bash
+ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml  
+```
+### Get docker images
+We now can pull the existing docker images from docker hub by running:
+```bash
+docker-compose pull
+```
+In order to inject the updated environment variables in the frontend, we need to rebuild it:
+```bash
+docker-compose build frontend
+```
+### Run 
+```bash
+docker-compose up -d
+```
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
+👉 Accept that the browser cannot verify the certificate.
+👉 enable the flag [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost) in Chrome.
+### Add Skills
+Add Skills according to the [Add New Skills](#Add-New-Skills) section. Note that, for open-domain skills the datastore need to created first.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:

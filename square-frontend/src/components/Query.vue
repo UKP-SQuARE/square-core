@@ -1,102 +1,92 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
-  <div class="card border-primary shadow">
-    <div class="card-body p-4">
-      <Alert v-if="showEmptyWarning" class="alert-warning" dismissible>You need to enter a question!</Alert>
-      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
-      <form v-on:submit.prevent="askQuestion">
-        <div class="row">
-          <div class="col-xl">
-            <div class="row">
-              <div class="col">
-                <div class="input-group flex-nowrap">
-                  <div class="form-floating flex-grow-1">
-                    <textarea
-                        v-model="currentQuestion"
-                        @keydown.enter.exact.prevent
-                        @keyup.enter.exact="askQuestion"
-                        class="form-control rounded-0 overflow-hidden"
-                        style="resize: none; white-space: nowrap; border-top-left-radius: 0.25rem !important"
-                        id="question"
-                        placeholder="Enter your question"
-                        required />
-                    <label for="question">Enter your question</label>
-                  </div>
-                  <button
-                      class="btn btn-lg btn-primary rounded-0 d-inline-flex align-items-center"
-                      style="border-top-right-radius: 0.25rem !important"
-                      type="submit"
-                      :disabled="waitingQuery">
-                    <span v-show="waitingQuery" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                    &nbsp;Ask your question
-                  </button>
-                </div>
-                <div class="input-group flex-nowrap">
-                  <div class="form-floating flex-grow-1 mb-2">
-                    <textarea
-                        v-model="inputContext"
-                        class="form-control rounded-0 rounded-bottom border-top-0"
-                        style="resize: none"
-                        :style="{ height: inputContextHeight + 'px'}"
-                        id="context"
-                        :placeholder="contextPlaceholder"
-                        :required="skillSettings.requiresContext" />
-                    <label :class="{ 'text-muted': !skillSettings.requiresContext }" for="context">{{ contextPlaceholder }}</label>
-                  </div>
-                </div>
-                <small class="text-muted">{{ contextHelp }}</small>
-              </div>
-            </div>
-          </div>
-          <div class="col-xl mt-3 mt-xl-0">
-            <div class="row">
-              <div class="col">
-                <label for="skillSelect" class="form-label fs-5">Skill selector</label>
-                <select v-model="options.selectedSkills" v-on:change="changeSkills()" size="5" class="form-select" multiple id="skillSelect">
-                  <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">
-                    {{ skill.name }} — {{ skill.description }}
-                  </option>
-                </select>
-              </div>
-            </div>
+  <form v-on:submit.prevent="askQuestion">
+    <div class="row">
+      <div class="col-md-4 ms-auto">
+        <CompareSkills v-on:input="changeSelectedSkills" class="border-danger" />
+      </div>
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea
+                v-model="currentQuestion"
+                @keydown.enter.exact.prevent
+                class="form-control form-control-lg mb-2"
+                style="resize: none; height: calc(48px * 2.25);"
+                id="question"
+                placeholder="Question"
+                required
+                :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span
+                role="button"
+                v-for="(example, index) in currentExamples"
+                :key="index"
+                v-on:click="selectExample(example)"
+                class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
           </div>
         </div>
-      </form>
+      </div>
+      <div v-if="skillSettings.requiresContext" class="col-md-4 mt-4 mt-md-0">
+        <div class="bg-light border border-warning rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="context" class="form-label">3. Provide context</label>
+            <textarea
+                v-model="inputContext"
+                class="form-control mb-2"
+                style="resize: none; height: calc(38px * 7);"
+                id="context"
+                :placeholder="contextPlaceholder"
+                required />
+            <small class="text-muted">{{ contextHelp }}</small>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+    <div v-if="minSkillsSelected(1)" class="row">
+      <div class="col my-3">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <button
+              type="submit"
+              class="btn btn-danger btn-lg shadow text-white"
+              :disabled="waiting">
+            <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+            &nbsp;Ask your question</button>
+        </div>
+      </div>
+    </div>
+  </form>
 </template>
 
 <script>
 import Vue from 'vue'
-import Alert from '@/components/Alert.vue'
+import CompareSkills from '@/components/CompareSkills.vue'
 
 export default Vue.component('query-skills', {
   data() {
     return {
-      waitingQuery: false,
+      waiting: false,
       options: {
         selectedSkills: []
       },
-      showEmptyWarning: false,
       inputQuestion: '',
       inputContext: '',
       failure: false,
       failureMessage: '',
       skillSettings: {
+        skillType: null,
         requiresContext: false,
         requiresMultipleChoices: 0
       }
     }
   },
   components: {
-    Alert
+    CompareSkills
   },
   computed: {
-    availableSkills() {
-      return this.$store.state.availableSkills
-    },
-    queryOptions() {
-      return this.$store.state.queryOptions
+    selectedSkills() {
+      return this.options.selectedSkills.filter(skill => skill !== 'None')
     },
     currentQuestion: {
       get: function () {
@@ -109,6 +99,16 @@ export default Vue.component('query-skills', {
           this.inputContext = tmp.join('\n')
         }
       }
+    },
+    currentExamples() {
+      // Pseudo random return 3 examples from currently selected skills
+      return this.$store.state.availableSkills
+          .filter(skill => skill.skill_input_examples !== null
+              && skill.skill_input_examples.length > 0
+              && this.selectedSkills.includes(skill.id))
+          .flatMap(skill => skill.skill_input_examples)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3)
     },
     contextPlaceholder() {
       if (this.skillSettings.requiresMultipleChoices) {
@@ -125,68 +125,42 @@ export default Vue.component('query-skills', {
         help = `${choices > 1 ? choices + ' lines' : 'one line'} of`
       }
       return `Your selected skills require ${help} context.`
-    },
-    isValidContext() {
-      return this.inputContext.split('\n').length >= this.skillSettings.requiresMultipleChoices
-    },
-    inputContextHeight() {
-      return 58 + (this.inputContext ? 21 * 6 : 0)
     }
   },
   methods: {
-    askQuestion() {
-      if (this.inputQuestion.length > 0) {
-        this.showEmptyWarning = false
-        this.waitingQuery = true
-        this.$store.dispatch('query', {
-          question: this.inputQuestion,
-          inputContext: this.inputContext,
-          options: this.options
-        }).then(() => {
-          this.failure = false
-          this.failureMessage = ''
-        }).catch(error => {
-          this.failure = true
-          this.failureMessage = error.data.msg
-        }).finally(() => {
-          this.waitingQuery = false
-        })
-      } else {
-        this.showEmptyWarning = true
-      }
+    changeSelectedSkills(options, skillSettings) {
+      this.options = options
+      this.skillSettings = skillSettings
     },
-    changeSkills() {
-      let settings = {
-        requiresContext: false,
-        requiresMultipleChoices: 0
-      }
-      this.availableSkills.forEach(skill => {
-        if (this.options.selectedSkills.includes(skill.id)) {
-          settings.requiresContext = settings.requiresContext || skill.skill_settings.requires_context
-          // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
-          settings.requiresMultipleChoices = Math.max(
-              settings.requiresContext ? 1 : 0,
-              settings.requiresMultipleChoices,
-              skill.skill_settings.requires_multiple_choices)
+    minSkillsSelected(num) {
+      return this.selectedSkills.length >= num
+    },
+    askQuestion() {
+      this.waiting = true
+      this.$store.dispatch('query', {
+        question: this.inputQuestion,
+        inputContext: this.inputContext,
+        options: {
+          selectedSkills: this.selectedSkills,
+          maxResultsPerSkill: this.options.maxResultsPerSkill
         }
+      }).then(() => {
+        this.failure = false
+        this.failureMessage = ''
+      }).catch(error => {
+        this.failure = true
+        this.failureMessage = error.data.msg
+      }).finally(() => {
+        this.waiting = false
       })
-      this.skillSettings = settings
+    },
+    selectExample(example) {
+      this.inputQuestion = example.query
+      if (this.skillSettings.requiresContext) {
+        this.inputContext = example.context
+      }
+      this.askQuestion()
     }
-  },
-  /**
-   * Make the store update the skills and init the query options
-   */
-  beforeMount() {
-    this.$store.dispatch('updateSkills')
-        .then(() => {
-          this.$store.commit('initQueryOptions', {})
-        })
-        .then(() => {
-          // Copy the object so we do not change the state before a query is issued
-          this.options = JSON.parse(
-              JSON.stringify(this.$store.state.queryOptions)
-          )
-        })
   }
 })
 </script>

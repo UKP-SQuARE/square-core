@@ -58,9 +58,7 @@ def import_test_realm(monkeypatch_session: MonkeyPatch, kc_admin_master: Keycloa
     kc_admin_master.import_realm(realm_payload)
     # test-manager and test-manager secret are hard coded into the .json
     monkeypatch_session.setenv("CLIENT_ID", "test-manager")
-    monkeypatch_session.setenv(
-        "CLIENT_SECRET", "test-manager-secret"
-    )
+    monkeypatch_session.setenv("CLIENT_SECRET", "test-manager-secret")
 
 
 def test_create_client(kc_admin_realm_factory, import_test_realm):

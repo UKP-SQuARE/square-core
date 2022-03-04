@@ -25,7 +25,10 @@ to forward requests to the correct inference server and to handle authorization 
 │   ├───main.py                 # Entry point in server
 │   ├───docker_access.py        # Manages docker acces of server
 │   ├───Dockerfile              # Dockerfile for server
-│   └───models.py               # Input modeling of the server
+│   └───app
+│        ├───core               # app config
+│        ├───models             # input and output request models
+│        └───routers            # api routes
 ├───traefik
 │   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
 ├───locust                      # Load testing configuration with Locust
@@ -73,6 +76,11 @@ uninstall `transformers`, and finally install `adapter-transformers`.
    model servers (each with their .env file). See [docker-compose.yml](docker-compose.yml) for an example.
 
 To test whether the api is running you can execute:
+
+```bash
+curl https://square.ukp-lab.de/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
+```
+or if you are running SQuARE in your local machine:
 ```bash
 curl --insecure https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
 ```
@@ -126,16 +134,23 @@ By passing all environment information that would normally be in the `.env` file
 
 The server will automatically create the model-api instance and add it to the docker network. It might take some time 
 until the model is available, since it needs to download and initialize the necessary models and adapters first. 
-To check whether the model is ready, you can retrieve all available models using
-`curl --insecure https://localhost:8443/api/models`
-and check whether the added models is in the list.
+To check whether the model is ready, you can retrieve all available models and check whether the added models are in the list with the following command:
+
+```bash
+curl https://square.ukp-lab.de/api/models/deployed-models
+
+```
+or if you are running SQuARE in your local machine:
+```bash
+curl --insecure https://localhost:8443/api/models/deployed-models`
+```
 
 #### Example deployment request 
 
 Deploy distilbert from sentence-transformers.
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
 --header 'accept: application/json' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -151,12 +166,32 @@ curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
 }'
 ```
 
+Here, `identifier` is the name you want to give to the model in SQuARE. `model_name` is the name of the model in Transformer's ModelHub, and `model_type` can take the values `sentence-transformer`, `adapter`, `transformer`, and `onnx`.
+
+Another example for BART 
+```bash
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "identifier": "bart-base",
+  "model_name": "facebook/bart-base",
+  "model_type": "transformer",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "base",
+  "return_plaintext_arrays": false
+}'
+```
+
 #### Example prediction request 
 
 Get prediction from the deployed model.
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding' \
+curl --request POST 'https://square.ukp-lab.de/api/msmarco-distilbert-base-tas-b/embedding' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "input": [
@@ -228,7 +263,7 @@ volume with the onnx files. Then, simply specify the `model_path` and optionally
 ### Removing models via API
 Removing the deployed distilbert model.
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
+curl --request POST 'https://square.ukp-lab.de/api/models/remove/distilbert'
 ```
 
 ### Update model parameters
@@ -238,7 +273,7 @@ via our update API. An example request to change the `return_plaintext_arrays`
 param to `true` for the dpr model is shown below:
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/update' \
+curl --request POST 'https://square.ukp-lab.de/api/facebook-dpr-question_encoder-single-nq-base/update' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "disable_gpu": true,

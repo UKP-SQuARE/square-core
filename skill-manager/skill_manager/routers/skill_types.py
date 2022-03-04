@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/skill-types")
 
+
 @router.get(
     "",
     response_model=List[str],

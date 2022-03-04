@@ -94,6 +94,7 @@ class AdapterTransformer(Transformer):
         # We only have to change the label2id mapping from config.label2id (what super() uses) to the mapping
         # of the chosen head
         logger.info(f"sequence classification request:\n{request.json()}")
+        self.model.config.prediction_heads[request.adapter_name]["num_choices"] = len(request.input)
         prediction = super()._sequence_classification(request)
 
         label2id = self.model.config.prediction_heads[request.adapter_name]["label2id"]

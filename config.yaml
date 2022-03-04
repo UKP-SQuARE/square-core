@@ -1,0 +1,43 @@
+#@data/values
+---
+environment: prod #! set this to 'local' or 'prod'
+os: linux #! set this to 'linux', 'mac' or 'windows'
+
+skills:
+  - name: boolq
+  - name: commonsense-qa
+  - name: squad-v2
+  - name: open-bioasq
+  - name: open-squad
+  - name: extractive-qa
+  - name: multiple-choice-qa
+  - name: generative-qa
+  - name: open-extractive-qa
+
+
+square_api_url: 
+  prod: https://square.ukp-lab.de/api
+  local: https://host.docker.internal/api
+
+keycloak_base_url:
+  prod: https://square.ukp-lab.de
+  local: http://localhost:8080
+
+verify_ssl:
+  prod: 1
+  local: 0
+
+faiss_url:
+  prod: https://square.ukp-lab.de/api
+  local: https://localhost/api
+
+model_url:
+  prod: https://square.ukp-lab.de/api
+  local: https://localhost/api
+
+docker_host_url:
+  windows: http://host.docker.intneral
+  mac: http://host.docker.intneral
+  linux: https://172.17.0.1
+
+web_concurrency: 2
