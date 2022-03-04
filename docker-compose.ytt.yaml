@@ -336,6 +336,17 @@ services:
       - "traefik.http.routers.datastores-faiss-distilbert.rule=PathPrefix(`/api/msmarco/distilbert`)"
       - "traefik.http.routers.datastores-faiss-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-distilbert-stripprefix.stripprefix.prefixes=/api/msmarco/distilbert"
+  
+  faiss-bioasq-distilbert:
+    image: kwang2049/faiss-instant:latest
+    volumes:
+      - datastore-api-faiss-bioasq-distilbert:/opt/faiss-instant/resources
+    labels:
+      - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("datastores-faiss-bioasq-distilbert"))
+      - "traefik.http.routers.datastores-faiss-bioasq-distilbert.rule=PathPrefix(`/api/bioasq/distilbert`)"
+      - "traefik.http.routers.datastores-faiss-bioasq-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
+      - "traefik.http.middlewares.datastores-faiss-bioasq-distilbert-stripprefix.stripprefix.prefixes=/api/bioasq/distilbert"
 
   #@yaml/text-templated-strings
   #@ for skill in data.values.skills:
@@ -358,6 +369,8 @@ volumes:
   datastore-api-faiss-nq-dpr:
     driver: local
   datastore-api-faiss-msmarco-distilbert:
+    driver: local
+  datastore-api-faiss-bioasq-distilbert:
     driver: local
 
   onnx-models:
