@@ -15,6 +15,7 @@ class Index(BaseModel):
     query_encoder_model: Optional[str] = None
     query_encoder_adapter: Optional[str] = None
     embedding_size: Optional[int] = None
+    embedding_mode: Optional[str] = None  # pooling: cls, max, mean or pooler. This will not work for SBERT model type
 
     class Config:
         schema_extra = {
@@ -24,6 +25,7 @@ class Index(BaseModel):
                 "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
                 "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
                 "embedding_size": 768,
+                "embedding_mode": "pooler"
             }
         }
 
