@@ -58,6 +58,50 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 </details>
 
 ## Add New Skills
+Currently we support four QA formats: `span-extraction`, `abstractive`, `multiple-choice`, `categorical`.
+If your Skill is compatible with any of these formats, you can easily deploy your skill with a API call. Let's deploy a Skill that uses an Adapter for RoBERTa-base to solve HotpotQA. You would need the following fields in the POST API call:
+- `name`: the name of your Skill.
+- `url`: possible values:
+    -  `http://extractive-qa"` if you want span extraction.
+    -  `http://multiple-choice-qa` if you want multiple-choice.
+    -  `http://generative-qa` if you want a generative skill.
+- `skill-type`: possible values:
+    -  `abstractive`
+    -  `span-extraction`
+    -  `multiple-choice`
+    -  `categorical`
+- `skill_settings` is a dictionary with the keys `requires_context` (true/false) and `requires_multiple_choices` (0,1,2,...)
+- `default_skill_args` is the **most important value**. It is a dictionary with the keys: `base_model` (eg: `roberta-base`) and `adapter` (eg: `AdapterHub/roberta-base-pf-hotpotqa`)
+-  `user_id` is your user name
+-  `published` true if you want the Skill to be publicly available.
+-  `skill_input_examples` is a list of QA examples.
+
+Then, the API call to deploy HotpotQA RoBERTa-base Adapter would be:
+```
+{
+  "name": "HotpotQA RoBERTa-base Adapter",
+  "url": "http://extractive-qa",
+  "description": "Extractive QA",
+  "skill_type": "span-extraction",
+  "skill_settings": {
+    "requires_context": true,
+    "requires_multiple_choices": 0
+  },
+  "default_skill_args": {
+      "base_model": "roberta-base",
+      "adapter": "AdapterHub/roberta-base-pf-hotpotqa"
+  },
+  "user_id": "general",
+  "published": true,
+  "skill_input_examples": [
+    {
+      "query": "What arms did Moonwatchers band carry?",
+      "context": "At the water's edge, Moonwatcher and his band stop. They carry their bone clubs and bone knives. Led by One-ear, the Others half-heartly resume the battle-chant. But they are suddenly confrunted with a vision that cuts the sound from their throats, and strikes terror into their hearts."
+    }
+  ]
+}
+
+```
 
 ### Step 1: Hosting New Skills
 - If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it run after code review;
