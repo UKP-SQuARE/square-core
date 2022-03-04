@@ -13,7 +13,7 @@ As mentioned above mainly a predict function, defining the pipeline needs to be 
 First, install the required packages:
 ```bash
 pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.5
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.11 
+pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.16 
 ```
 Next, we can implement the `predict` function:
 ```python3
