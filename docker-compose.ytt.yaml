@@ -160,6 +160,9 @@ services:
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
       REALM: square
       CLIENT_ID: skill-manager
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: skill_manager_mongo
+      MONGO_PORT: 27017
     depends_on:
       - skill_manager_mongo
     labels:
@@ -174,6 +177,10 @@ services:
       - skill-manager-mongo-data:/data/db
     expose:
       - 27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: skill_manager_mongo
+      MONGO_PORT: 27017
     env_file:
       - ./skill-manager/.env
 
