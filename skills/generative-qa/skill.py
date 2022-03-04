@@ -20,9 +20,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
-    context = request.skill_args["context"]
+    context = request.skill_args.get("context")
 
-    prepared_input = [query + " " + context]
+    if context:
+        query_context_seperator = request.skill_args.get("query_context_seperator", " ")
+        prepared_input = [query + query_context_seperator + context]
+    else:
+        prepared_input = [query]
     model_request = { 
         "input": prepared_input,
         "model_kwargs": {"output_scores": True, **request.skill_args.get("model_kwargs", {})},
