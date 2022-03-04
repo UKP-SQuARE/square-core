@@ -15,6 +15,10 @@ class Index(BaseModel):
     query_encoder_model: Optional[str] = None
     query_encoder_adapter: Optional[str] = None
     embedding_size: Optional[int] = None
+    embedding_mode: Optional[str] = None  # pooling: cls, max, mean or pooler. This will not work for SBERT model type
+    index_url: Optional[str] = None
+    index_ids_url: Optional[str] = None
+    index_description: Optional[str] = None
 
     class Config:
         schema_extra = {
@@ -24,6 +28,11 @@ class Index(BaseModel):
                 "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
                 "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
                 "embedding_size": 768,
+                "embedding_mode": "pooler",
+                
+                "index_url": "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.index",
+                "index_ids_url": "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.txt",
+                "index_description": "It uses Faiss-IVF-SQ with nlist = 2^18, nprobe = 512 and 8bit uniform. For the indexing script, please refer to https://gist.github.com/kwang2049/d23550604059ed1576ac6cffb7e09fb2"
             }
         }
 
