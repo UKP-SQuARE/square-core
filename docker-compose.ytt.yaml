@@ -345,7 +345,7 @@ services:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores-faiss-bioasq-distilbert"))
       - "traefik.http.routers.datastores-faiss-bioasq-distilbert.rule=PathPrefix(`/api/bioasq/distilbert`)"
-      - "traefik.http.routers.datastores-faiss-bioasq-distilbert.middlewares=datastores-faiss-distilbert-stripprefix"
+      - "traefik.http.routers.datastores-faiss-bioasq-distilbert.middlewares=datastores-faiss-bioasq-distilbert-stripprefix"
       - "traefik.http.middlewares.datastores-faiss-bioasq-distilbert-stripprefix.stripprefix.prefixes=/api/bioasq/distilbert"
 
   #@yaml/text-templated-strings
