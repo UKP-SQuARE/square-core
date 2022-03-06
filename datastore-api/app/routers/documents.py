@@ -145,6 +145,7 @@ async def upload_documents_from_urls(
         200: {"description": "Number of successfully uploaded documents to the datastore."},
         400: {"model": UploadResponse, "description": "Error during Upload"},
         404: {"model": HTTPError, "description": "The datastore does not exist."},
+        422: {"description": "Cannot instantiate a Document object"}
     },
 )
 async def post_documents(
@@ -223,6 +224,7 @@ async def get_document(
         200: {"description": "The document has been created successfully."},
         201: {"description": "The document has been created successfully."},
         400: {"model": HTTPError, "description": "Failed to update document"},
+        422: {"description": "Cannot instantiate a Document object"}
     },
 )
 async def update_document(

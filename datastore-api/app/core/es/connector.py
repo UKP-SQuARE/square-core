@@ -368,7 +368,7 @@ class ElasticsearchConnector(BaseConnector):
             query (str): Query to search for.
             document_id (str): Id of the document.
         """
-        if not self.has_document(datastore_name, document_id):
+        if not await self.has_document(datastore_name, document_id):
             return None
 
         docs_index = self._datastore_docs_index_name(datastore_name)
@@ -381,7 +381,7 @@ class ElasticsearchConnector(BaseConnector):
         }
         result = await self.es.explain(index=docs_index, id=document_id, body=search_body)
         score = result['explanation']['value']
-        doc: Document = self.get_document(datastore_name, document_id)
+        doc: Document = await self.get_document(datastore_name, document_id)
         return QueryResult(document=doc, score=score, id=document_id)
 
     # --- Management methods ---

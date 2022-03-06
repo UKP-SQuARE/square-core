@@ -7,7 +7,7 @@ from requests_mock import Mocker
 class TestQuery:
     @pytest.fixture
     def query_result(self, query_document):
-        return QueryResult(score=0, document=query_document)
+        return QueryResult(score=0, document=query_document, id=query_document.id)
 
     def test_search_bm25(self, client, datastore_name, query_document, query_result):
         response = client.get(

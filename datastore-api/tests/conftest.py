@@ -83,11 +83,11 @@ def second_index(datastore_name):
 
 @pytest.fixture(scope="package")
 def test_document():
-    return {
+    return Document(__root__={
         "id": "111",
         "title": "test document",
         "text": "this is a test document",
-    }
+    })
 
 
 @pytest.fixture(scope="package")
@@ -97,11 +97,11 @@ def test_document_embedding():
 
 @pytest.fixture(scope="package")
 def query_document():
-    return {
+    return Document(__root__={
         "id": "222",
         "title": "document title",
         "text": "document containing the query word quack",
-    }
+    })
 
 
 @pytest.fixture(scope="package")
@@ -142,8 +142,8 @@ def db_init(datastore_name, wiki_datastore, dpr_index, second_index, test_docume
     )
 
     # add documents
-    es.index(index=datastore_name + "-docs", id=test_document["id"], body=test_document)
-    es.index(index=datastore_name + "-docs", id=query_document["id"], body=query_document)
+    es.index(index=datastore_name + "-docs", id=test_document["id"], body=converter.convert_from_document(test_document))
+    es.index(index=datastore_name + "-docs", id=query_document["id"], body=converter.convert_from_document(query_document))
 
     es.indices.refresh(index="")
 

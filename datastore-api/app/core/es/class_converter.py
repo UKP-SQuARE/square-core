@@ -56,14 +56,16 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         Converts a document object to a backend-specific object.
         """
+        document = dict(document.__root__)
         document.pop(ID_FIELD)  # Because we do not define it in the ES index schema, while relying on the ES's inner ids
-        return document.__root__
+        return document
 
     def convert_to_document(self, obj: Dict[str, Any], document_id: str) -> Document:
         """
         Converts a backend-specific object to a document object.
         """
-        obj.update(ID_FIELD, document_id)
+        obj = dict(obj)  # here the `obj` is `hit['_source']`
+        obj[ID_FIELD] = document_id
         return Document(__root__=obj)
 
     def convert_to_query_results(self, obj: Dict[str, Any]) -> List[QueryResult]:
@@ -72,7 +74,7 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         results = []
         for hit in obj["hits"]["hits"]:
-            doc = self.convert_to_document(hit["_source"])
-            results.append(QueryResult(document=doc, score=hit["_score"], id=hit['_id']))
+            doc = self.convert_to_document(hit["_source"], hit["_id"])
+            results.append(QueryResult(document=doc, score=hit["_score"], id=hit["_id"]))
 
         return results

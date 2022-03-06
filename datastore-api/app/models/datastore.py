@@ -39,6 +39,8 @@ class Datastore(BaseModel):
 
         fields = self.field_names
         for field in document:
+            if field == ID_FIELD:
+                continue
             if field not in fields:
                 return False
 
