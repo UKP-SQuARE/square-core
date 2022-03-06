@@ -123,11 +123,11 @@ class MockConnector(BaseConnector):
     # --- Search ---
 
     async def search(self, datastore_name: str, query: str, n_hits=10) -> List[QueryResult]:
-        return [QueryResult(document=self.query_document, score=1.0)]
+        return [QueryResult(document=self.query_document, score=1.0, id='doc0')]
 
     async def search_for_id(self, datastore_name: str, query: str, document_id: str):
         to_retrieve = [d for d in self.documents if d["id"] == document_id]
-        return QueryResult(document=to_retrieve[0], score=1.0) if to_retrieve else None
+        return QueryResult(document=to_retrieve[0], score=1.0, id='doc0') if to_retrieve else None
 
     # --- Management methods ---
 
