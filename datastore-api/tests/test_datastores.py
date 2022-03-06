@@ -22,7 +22,6 @@ class TestDatastores:
     def test_put_datastore(self, client):
         new_datastore_name = "datastore-test-new_datastore"
         new_datastore_fields = [
-            DatastoreField(name="id", type="long", is_id=True).dict(),
             DatastoreField(name="field1", type="text").dict(),
             DatastoreField(name="field2", type="long").dict(),
         ]
@@ -36,23 +35,13 @@ class TestDatastores:
         assert response.status_code == 200
         assert response.json()["name"] == new_datastore_name
         def sort_by(d):
-            return (d["is_id"], d["name"], d["type"])
+            return (d["name"], d["type"])
         assert sorted(response.json()["fields"], key=sort_by) == sorted(new_datastore_fields,  key=sort_by)
-
-    def test_must_contain_id_field(self, client):
-        new_datastore_name = "datastore-test-new_datastore"
-        new_datastore_fields = [
-            DatastoreField(name="field1", type="text").dict(),
-            DatastoreField(name="field2", type="long").dict(),
-        ]
-        response = client.put("/datastores/{}".format(new_datastore_name), json=new_datastore_fields)
-        assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "At least one field must be an id."
 
     def test_delete_datastore(self, client):
         datastore_name = "datastore-test-for_delete"
         response = client.put(
-            "/datastores/{}".format(datastore_name), json=[{"name": "id", "type": "long", "is_id": True}]
+            "/datastores/{}".format(datastore_name), json=[{"name": "text", "type": "text"}]
         )
         assert response.status_code == 201
         response = client.delete("/datastores/{}".format(datastore_name))

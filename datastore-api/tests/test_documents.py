@@ -14,7 +14,7 @@ class TestDocuments:
         assert response.status_code == 404
 
     def test_put_document(self, client, datastore_name):
-        document = {"id": 42, "title": "a new document", "text": "some content"}
+        document = {"id": "42", "title": "a new document", "text": "some content"}
         response = client.put(f"/datastores/{datastore_name}/documents/42", json=document)
         assert response.status_code == 201
         assert response.headers["Location"].endswith(f"/datastores/{datastore_name}/documents/42")
@@ -28,7 +28,7 @@ class TestDocuments:
         assert response.status_code == 400
 
     def test_delete_document(self, client, datastore_name):
-        document = {"id": 88888, "title": "a new document", "text": "some content"}
+        document = {"id": "88888", "title": "a new document", "text": "some content"}
         response = client.put(f"/datastores/{datastore_name}/documents/88888", json=document)
         assert response.status_code == 201
         response = client.delete(f"/datastores/{datastore_name}/documents/88888")
@@ -40,8 +40,8 @@ class TestDocuments:
 
     def test_post_documents(self, client, datastore_name):
         document = [
-            {"id": 41, "title": "a new document", "text": "some content"},
-            {"id": 4141, "title": "another new document", "text": "some content"},
+            {"id": "41", "title": "a new document", "text": "some content"},
+            {"id": "4141", "title": "another new document", "text": "some content"},
         ]
         response = client.post(f"/datastores/{datastore_name}/documents", json=document)
         assert response.status_code == 201
@@ -54,8 +54,8 @@ class TestDocuments:
 
     def test_post_documents_one_invalid(self, client, datastore_name):
         document = [
-            {"id": 414141, "title": "a new document", "text": "some content"},
-            {"_wrong_id": 41414141, "title": "another new document", "text": "some content"},
+            {"id": "414141", "title": "a new document", "text": "some content"},
+            {"_wrong_id": "41414141", "title": "another new document", "text": "some content"},
         ]
         response = client.post(f"/datastores/{datastore_name}/documents", json=document)
         assert response.status_code == 400
@@ -64,8 +64,8 @@ class TestDocuments:
 
     def test_post_documents_invalid_datastore(self, client):
         document = [
-            {"id": 41, "title": "a new document", "text": "some content"},
-            {"id": 4141, "title": "another new document", "text": "some content"},
+            {"id": "41", "title": "a new document", "text": "some content"},
+            {"id": "4141", "title": "another new document", "text": "some content"},
         ]
         response = client.post("/datastores/datastore-test-invalid_datastore_name/documents", json=document)
         assert response.status_code == 404

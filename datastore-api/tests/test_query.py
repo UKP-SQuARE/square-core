@@ -93,7 +93,7 @@ class TestQuery:
     def test_score_not_found(self, client, datastore_name):
         response = client.get(
             "/datastores/{}/score".format(datastore_name),
-            params={"query": "quack", "doc_id": 99999},
+            params={"query": "quack", "doc_id": "99999"},
         )
         assert response.status_code == 404
         assert "detail" in response.json()

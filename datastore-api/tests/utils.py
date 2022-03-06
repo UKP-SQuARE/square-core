@@ -81,14 +81,14 @@ class MockConnector(BaseConnector):
         for document in self.documents:
             yield document
 
-    async def get_document(self, datastore_name: str, document_id: int) -> Optional[Document]:
+    async def get_document(self, datastore_name: str, document_id: str) -> Optional[Document]:
         retrieved = [d for d in self.documents if d["id"] == document_id]
         return retrieved[0] if retrieved else None
 
-    async def get_document_batch(self, datastore_name: str, document_ids: List[int]) -> List[Document]:
+    async def get_document_batch(self, datastore_name: str, document_ids: List[str]) -> List[Document]:
         return [d for d in self.documents if d["id"] in document_ids]
 
-    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
+    async def add_document(self, datastore_name: str, document_id: str, document: Document) -> Tuple[bool, bool]:
         self.documents.append(document)
         return (True, True)
 
@@ -102,14 +102,14 @@ class MockConnector(BaseConnector):
                 errors += 1
         return successes, errors
 
-    async def update_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
+    async def update_document(self, datastore_name: str, document_id: str, document: Document) -> Tuple[bool, bool]:
         to_update = [d for d in self.documents if d["id"] == document_id]
         if to_update:
             self.documents.remove(to_update[0])
         self.documents.append(document)
         return (True, True)
 
-    async def delete_document(self, datastore_name: str, document_id: int) -> bool:
+    async def delete_document(self, datastore_name: str, document_id: str) -> bool:
         to_remove = [d for d in self.documents if d["id"] == document_id]
         if to_remove:
             self.documents.remove(to_remove[0])
@@ -117,7 +117,7 @@ class MockConnector(BaseConnector):
         else:
             return False
 
-    async def has_document(self, datastore_name: str, document_id: int) -> bool:
+    async def has_document(self, datastore_name: str, document_id: str) -> bool:
         return len([d for d in self.documents if d["id"] == document_id]) > 0
 
     # --- Search ---
@@ -125,7 +125,7 @@ class MockConnector(BaseConnector):
     async def search(self, datastore_name: str, query: str, n_hits=10) -> List[QueryResult]:
         return [QueryResult(document=self.query_document, score=1.0)]
 
-    async def search_for_id(self, datastore_name: str, query: str, document_id: int):
+    async def search_for_id(self, datastore_name: str, query: str, document_id: str):
         to_retrieve = [d for d in self.documents if d["id"] == document_id]
         return QueryResult(document=to_retrieve[0], score=1.0) if to_retrieve else None
 

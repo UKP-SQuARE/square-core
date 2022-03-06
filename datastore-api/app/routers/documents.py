@@ -167,6 +167,7 @@ async def post_documents(
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
+#TODO: Remove this and use the collection_url from the index meta data instead
 @router.get(
     "",
     summary="Get all documents from the datastore",
@@ -204,7 +205,7 @@ async def get_all_documents(
 )
 async def get_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to retrieve"),
+    doc_id: str = Path(..., description="The id of the document to retrieve"),
     conn=Depends(get_storage_connector),
 ):
     result = await conn.get_document(datastore_name, doc_id)
@@ -227,7 +228,7 @@ async def get_document(
 async def update_document(
     request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to update"),
+    doc_id: str = Path(..., description="The id of the document to update"),
     document: Document = Body(..., description="The document to update"),
     conn=Depends(get_storage_connector),
 ):
@@ -242,7 +243,7 @@ async def update_document(
             detail="The given document does not have the correct format.",
         )
     # also check if the doc id in the body matches the path
-    if doc_id != document[datastore.id_field.name]:
+    if doc_id != document.id:
         raise HTTPException(
             status_code=400,
             detail="The document ID specified in the path and in the request body must match.",
@@ -270,7 +271,7 @@ async def update_document(
 )
 async def delete_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to delete"),
+    doc_id: str = Path(..., description="The id of the document to delete"),
     conn=Depends(get_storage_connector),
 ):
     success = await conn.delete_document(datastore_name, doc_id)

@@ -57,7 +57,7 @@ class Index(BaseModel):
 
 
 class IndexRequest(BaseModel):
-    """Models an index as requested by the user."""
+    """Models an index as requested by the user. Used when creating an index"""
 
     doc_encoder_model: Optional[str] = None
     doc_encoder_adapter: Optional[str] = None

@@ -205,7 +205,8 @@ class ElasticsearchConnector(BaseConnector):
             return False
 
     # --- Documents ---
-
+    
+    #TODO: Remove this and use the collection_url from the index meta data instead
     async def get_documents(self, datastore_name: str) -> Iterable[Document]:
         """Returns a list of all documents."""
         docs_index = self._datastore_docs_index_name(datastore_name)
@@ -217,39 +218,39 @@ class ElasticsearchConnector(BaseConnector):
         )
 
         async for hit in results:
-            yield self.converter.convert_to_document(hit["_source"])
+            yield self.converter.convert_to_document(hit["_source"], hit['_id'])
 
-    async def get_document(self, datastore_name: str, document_id: int) -> Optional[Document]:
+    async def get_document(self, datastore_name: str, document_id: str) -> Optional[Document]:
         """Returns a document by id.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         docs_index = self._datastore_docs_index_name(datastore_name)
         try:
             result = await self.es.get(index=docs_index, id=document_id)
-            return self.converter.convert_to_document(result["_source"])
+            return self.converter.convert_to_document(result["_source"], document_id)
         except elasticsearch.exceptions.NotFoundError:
             return None
 
-    async def get_document_batch(self, datastore_name: str, document_ids: List[int]) -> List[Document]:
+    async def get_document_batch(self, datastore_name: str, document_ids: List[str]) -> List[Document]:
         """Returns a batch of documents by id.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_ids (List[int]): Ids of the documents.
+            document_ids (List[str]): Ids of the documents.
         """
         docs_index = self._datastore_docs_index_name(datastore_name)
         results = await self.es.mget(index=docs_index, body={"ids": document_ids})
-        return [self.converter.convert_to_document(doc["_source"]) for doc in results["docs"]]
+        return [self.converter.convert_to_document(doc["_source"], doc['_id']) for doc in results["docs"]]
 
-    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
+    async def add_document(self, datastore_name: str, document_id: str, document: Document) -> Tuple[bool, bool]:
         """Adds a new document.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
             document (Document): Document to add.
 
         Returns:
@@ -285,7 +286,7 @@ class ElasticsearchConnector(BaseConnector):
                 actions.append(
                     {
                         "_index": docs_index,
-                        "_id": document[datastore.id_field.name],
+                        "_id": document.id,
                         "_source": self.converter.convert_from_document(document),
                     }
                 )
@@ -294,12 +295,12 @@ class ElasticsearchConnector(BaseConnector):
         errors += additional_errors
         return sucesses, errors
 
-    async def update_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
+    async def update_document(self, datastore_name: str, document_id: str, document: Document) -> Tuple[bool, bool]:
         """Updates a document.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
             document (Document): Document to update.
 
         Returns:
@@ -313,12 +314,12 @@ class ElasticsearchConnector(BaseConnector):
         )
         return result["_shards"]["successful"] > 0, result["result"] == "created"
 
-    async def delete_document(self, datastore_name: str, document_id: int) -> bool:
+    async def delete_document(self, datastore_name: str, document_id: str) -> bool:
         """Deletes a document.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         docs_index = self._datastore_docs_index_name(datastore_name)
         try:
@@ -327,12 +328,12 @@ class ElasticsearchConnector(BaseConnector):
         except elasticsearch.exceptions.NotFoundError:
             return False
 
-    async def has_document(self, datastore_name: str, document_id: int) -> bool:
+    async def has_document(self, datastore_name: str, document_id: str) -> bool:
         """Checks if a document exists.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         docs_index = self._datastore_docs_index_name(datastore_name)
         return await self.es.exists(index=docs_index, id=document_id)
@@ -359,32 +360,29 @@ class ElasticsearchConnector(BaseConnector):
         result = await self.es.search(index=docs_index, body=search_body)
         return self.converter.convert_to_query_results(result)
 
-    async def search_for_id(self, datastore_name: str, query: str, document_id: int):
+    async def search_for_id(self, datastore_name: str, query: str, document_id: str):
         """Searches for documents and selects the document with the given id from the results.
 
         Args:
             datastore_name (str): Name of the datastore.
             query (str): Query to search for.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
-        datastore = await self.get_datastore(datastore_name)
+        if not self.has_document(datastore_name, document_id):
+            return None
+
         docs_index = self._datastore_docs_index_name(datastore_name)
         search_body = {
             "query": {
                 "multi_match": {
                     "query": query,
                 }
-            },
-            "post_filter": {
-                "term": {datastore.id_field.name: document_id},
-            },
+            }
         }
-        result = await self.es.search(index=docs_index, body=search_body)
-        query_results = self.converter.convert_to_query_results(result)
-
-        if len(query_results) == 0:
-            return None
-        return query_results[0]
+        result = await self.es.explain(index=docs_index, id=document_id, body=search_body)
+        score = result['explanation']['value']
+        doc: Document = self.get_document(datastore_name, document_id)
+        return QueryResult(document=doc, score=score, id=document_id)
 
     # --- Management methods ---
 
