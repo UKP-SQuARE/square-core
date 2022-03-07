@@ -81,12 +81,11 @@ export default Vue.component('nav-bar', {
       return `${base}?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.href}`
     },
     signout() {
-      this.$store.dispatch('signOut')
-          .then(() => {
-            if (this.$route.path !== '/') {
-              this.$router.push('/')
-            }
-          })
+      this.$store.dispatch('signOut').then(() => {
+        if (this.$route.path !== '/') {
+          this.$router.push('/')
+        }
+      })
     }
   }
 })
