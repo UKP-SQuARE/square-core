@@ -1,7 +1,8 @@
 #@data/values
 ---
-environment: prod #! set this to 'local' or 'prod'
-os: linux #! set this to 'linux', 'mac' or 'windows'
+environment: local #! set this to 'local' or 'prod'
+os: mac #! set this to 'linux', 'mac' or 'windows'
+email: baumgaertner.t@gmail.com
 
 skills:
   - name: boolq
@@ -14,18 +15,23 @@ skills:
   - name: generative-qa
   - name: open-extractive-qa
 
+web_concurrency: 2
+
+verify_ssl:
+  prod: 1
+  local: 0
 
 square_api_url: 
   prod: https://square.ukp-lab.de/api
   local: https://host.docker.internal/api
 
 keycloak_base_url:
-  prod: https://square.ukp-lab.de
-  local: http://localhost:8080
+  prod: square.ukp-lab.de
+  local: square.ukp-lab.local
 
-verify_ssl:
-  prod: 1
-  local: 0
+keycloak_base_url_https:
+  prod: https://square.ukp-lab.de
+  local: https://square.ukp-lab.local
 
 faiss_url:
   prod: https://square.ukp-lab.de/api
@@ -39,5 +45,3 @@ docker_host_url:
   windows: http://host.docker.intneral
   mac: http://host.docker.intneral
   linux: https://172.17.0.1
-
-web_concurrency: 2
