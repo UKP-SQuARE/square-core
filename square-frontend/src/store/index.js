@@ -5,11 +5,12 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, postSignIn, getSkills, putSkill, deleteSkill, postSkill } from '@/api'
+import { postQuery, getToken, getSkills, putSkill, deleteSkill, postSkill } from '../api'
 
 Vue.use(Vuex)
 
-const LOCALSTORAGE_KEY_JWT = 'jwt'
+const LOCALSTORAGE_KEY_ACCESS_TOKEN = 'accessToken'
+const LOCALSTORAGE_KEY_REFRESH_TOKEN = 'refreshToken'
 
 export default new Vuex.Store({
   /**
@@ -18,14 +19,15 @@ export default new Vuex.Store({
    * 2) should be restored when a view is changed and later returned to
    */
   state: {
-    user: {},
-    // JWT is also stored in LocalStorage 
-    jwt: '',
+    authentication: {
+      data: {},
+      accessToken: '',
+      refreshToken: ''
+    },
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
     availableSkills: [],
-    // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
     skillOptions: {
       qa: {
@@ -50,14 +52,15 @@ export default new Vuex.Store({
       }
     },
     /**
-     * Set the JWT and all derived values
+     * Set the access token and all derived values
      */
-    setJWT(state, payload) {
-      localStorage.setItem(LOCALSTORAGE_KEY_JWT, payload.jwt)
-      state.jwt = payload.jwt
-      if (payload.jwt && payload.jwt.split('.').length === 3) {
-        let data = JSON.parse(atob(payload.jwt.split('.')[1]))
-        state.user = data.sub
+    setAuthentication(state, payload) {
+      localStorage.setItem(LOCALSTORAGE_KEY_ACCESS_TOKEN, payload.accessToken)
+      localStorage.setItem(LOCALSTORAGE_KEY_REFRESH_TOKEN, payload.refreshToken)
+      state.authentication.accessToken = payload.accessToken
+      state.authentication.refreshToken = payload.refreshToken
+      if (payload.accessToken) {
+        state.authentication.data = JSON.parse(atob(payload.accessToken.split('.')[1]))
       }
     },
     setSkillOptions(state, payload) {
@@ -81,27 +84,31 @@ export default new Vuex.Store({
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
           }))
     },
-    signIn(context, { username, password }) {
-      return postSignIn(username, password)
+    signIn(context, { code, redirectURI, clientId }) {
+      return getToken(code, redirectURI, clientId)
           .then((response) => {
-            context.commit('setJWT', { jwt: response.data.token })
+            context.commit('setAuthentication', {
+              accessToken: response.data.accessToken,
+              refreshToken: response.data.refreshToken
+            })
           }).then(() => context.dispatch('updateSkills'))
     },
     signOut(context) {
-      // Reset JWT and (private) skills
-      context.commit('setJWT', { jwt: '' })
+      // Reset authentication and (private) skills
+      context.commit('setAuthentication', { accessToken: '', refreshToken: '' })
       context.commit('setSkills', { skills: [] })
     },
-    initJWTfromLocalStorage(context) {
-      let jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
-      context.commit('setJWT', { jwt: jwt })
+    authenticationFromLocalStorage(context) {
+      let accessToken = localStorage.getItem(LOCALSTORAGE_KEY_ACCESS_TOKEN) || ''
+      let refreshToken = localStorage.getItem(LOCALSTORAGE_KEY_REFRESH_TOKEN) || ''
+      context.commit('setAuthentication', { accessToken: accessToken, refreshToken: refreshToken })
     },
     selectSkill(context, { skillOptions, selectorTarget }) {
       context.commit('setSkillOptions', { skillOptions: skillOptions, selectorTarget: selectorTarget })
     },
     updateSkills(context) {
-      let user_name = context.state.user.name ? context.state.user.name : ''
-      return getSkills(user_name)
+      let userName = context.state.authentication.data ? context.state.authentication.data.preferred_username : ''
+      return getSkills(userName)
           .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSkill(context, { skill }) {
@@ -122,26 +129,14 @@ export default new Vuex.Store({
    */
   getters: {
     /**
-     * Check if the JWT is valid
+     * Check if the access token is valid
      */
     isAuthenticated: (state) => () => {
-      let jwt = state.jwt
-      if (!jwt || jwt.split('.').length < 3) {
+      if (!state.authentication.accessToken) {
         return false
+      } else {
+        return new Date() < new Date(state.authentication.data.exp * 1000)
       }
-      let data = JSON.parse(atob(jwt.split('.')[1]))
-      return new Date() < new Date(data.exp * 1000)
-    },
-    /**
-     * Check if the JWT is expired
-     */
-    isSessionExpired: (state) => () => {
-      let jwt = state.jwt
-      if (!jwt || jwt.split('.').length < 3) {
-        return false
-      }
-      let data = JSON.parse(atob(jwt.split('.')[1]))
-      return new Date() >= new Date(data.exp * 1000)
     }
   }
 })

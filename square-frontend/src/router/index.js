@@ -9,8 +9,6 @@ import store from '../store'
 const Home = () => import('../views/Home')
 const QA = () => import('../views/QA')
 const Explain = () => import('../views/Explain')
-const Signin = () => import('../views/Signin')
-const Signup = () => import('../views/Signup')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
 const Feedback = () => import('../views/Feedback')
@@ -28,24 +26,6 @@ const routes = [
     path: '/qa',
     name: 'qa',
     component: QA
-  },
-  {
-    path: '/signup',
-    name: 'signup',
-    component: Signup
-  },
-  {
-    path: '/signin',
-    name: 'signin',
-    component: Signin,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next()
-      } else {
-        // If already signed in navigate to root
-        next('/')
-      }
-    }
   },
   {
     path: '/skills',
@@ -98,6 +78,20 @@ const router = new VueRouter({
       return { x: 0, y: 0 }
     }
   }
+})
+
+router.beforeEach((to, from, next) => {
+  if ('state' in to.query && 'session_state' in to.query && 'code' in to.query) {
+    console.log(to.query)
+    store.dispatch('signIn', {
+      code: to.query.code,
+      redirectURI: to.query.redirect_uri,
+      clientId: to.query.client_id
+    }).then(() => {
+      router.replace({ query: {} })
+    })
+  }
+  next()
 })
 
 export default router

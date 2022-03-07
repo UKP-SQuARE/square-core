@@ -30,7 +30,7 @@ export default Vue.component('app', {
     }
   },
   beforeMount() {
-    this.$store.dispatch('initJWTfromLocalStorage')
+    this.$store.dispatch('authenticationFromLocalStorage')
   }
 })
 </script>
