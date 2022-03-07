@@ -1,0 +1,101 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.0, pytest-7.0.1, pluggy-1.0.0
+rootdir: /home/kwang/research/square-core/datastore-api
+plugins: requests-mock-1.9.3
+collected 35 items
+
+tests/test_datastores.py .{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+..{'datastore-test-new_datastore-docs': {'aliases': {}, 'mappings': {'properties': {'field1': {'type': 'text'}, 'field2': {'type': 'long'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-new_datastore-docs', 'creation_date': '1646611124198', 'number_of_replicas': '1', 'uuid': 'HJv9s66yRgKgWgkacgHguw', 'version': {'created': '7160199'}}}}}
+....
+tests/test_documents.py ..{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+..{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+..{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+...{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+.{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+.{'datastore-test-wiki-docs': {'aliases': {}, 'mappings': {'properties': {'text': {'type': 'text'}, 'title': {'type': 'text'}}}, 'settings': {'index': {'routing': {'allocation': {'include': {'_tier_preference': 'data_content'}}}, 'number_of_shards': '1', 'provided_name': 'datastore-test-wiki-docs', 'creation_date': '1646611123613', 'number_of_replicas': '1', 'uuid': 'UxoeIqaCT4aJRda3KZU_5A', 'version': {'created': '7160199'}}}}}
+.b'{"title": "test document", "text": "this is a test document", "id": "111"}'
+b'{"title": "document title", "text": "document containing the query word quack", "id": "222"}'
+.
+tests/test_indices.py ........
+tests/test_query.py .......
+
+=============================== warnings summary ===============================
+tests/test_datastores.py: 7 warnings
+tests/test_documents.py: 11 warnings
+tests/test_indices.py: 8 warnings
+tests/test_query.py: 7 warnings
+  /home/kwang/miniconda3/envs/datastore-api/lib/python3.10/site-packages/elasticsearch/connection/base.py:200: ElasticsearchWarning: Elasticsearch built-in security features are not enabled. Without authentication, your cluster could be accessible to anyone. See https://www.elastic.co/guide/en/elasticsearch/reference/7.16/security-minimal-setup.html to enable security.
+    warnings.warn(message, category=ElasticsearchWarning)
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/miniconda3/envs/datastore-api/lib/python3.10/site-packages/elasticsearch/connection/base.py:200: ElasticsearchWarning: setting [action.destructive_requires_name] will default to true in 8.0, set explicitly to false to preserve current behavior
+    warnings.warn(message, category=ElasticsearchWarning)
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/research/square-core/datastore-api/tests/conftest.py:137: DeprecationWarning: The 'body' parameter is deprecated for the 'create' API and will be removed in a future version. Instead use API parameters directly. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    es.indices.create(index=datastore_name + "-docs", body=converter.convert_from_datastore(wiki_datastore))
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/research/square-core/datastore-api/tests/conftest.py:138: DeprecationWarning: The 'body' parameter is deprecated for the 'create' API and will be removed in a future version. Instead use API parameters directly. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    es.indices.create(index=datastore_name + "-search-indices", body={})
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/research/square-core/datastore-api/tests/conftest.py:139: DeprecationWarning: The 'body' parameter is deprecated for the 'index' API and will be removed in a future version. Instead use the 'document' parameter. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    es.index(index=datastore_name + "-search-indices", id=dpr_index.name, body=converter.convert_from_index(dpr_index))
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/research/square-core/datastore-api/tests/conftest.py:140: DeprecationWarning: The 'body' parameter is deprecated for the 'index' API and will be removed in a future version. Instead use the 'document' parameter. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    es.index(
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/research/square-core/datastore-api/tests/conftest.py:145: DeprecationWarning: The 'body' parameter is deprecated for the 'index' API and will be removed in a future version. Instead use the 'document' parameter. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    es.index(index=datastore_name + "-docs", id=test_document["id"], body=converter.convert_from_document(test_document))
+
+tests/test_datastores.py::TestDatastores::test_get_all_datastores
+  /home/kwang/research/square-core/datastore-api/tests/conftest.py:146: DeprecationWarning: The 'body' parameter is deprecated for the 'index' API and will be removed in a future version. Instead use the 'document' parameter. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    es.index(index=datastore_name + "-docs", id=query_document["id"], body=converter.convert_from_document(query_document))
+
+tests/test_datastores.py: 10 warnings
+tests/test_documents.py: 17 warnings
+tests/test_indices.py: 9 warnings
+tests/test_query.py: 7 warnings
+  /home/kwang/miniconda3/envs/datastore-api/lib/python3.10/site-packages/starlette/testclient.py:234: DeprecationWarning: There is no current event loop
+    loop = asyncio.get_event_loop()
+
+tests/test_datastores.py::TestDatastores::test_put_datastore
+tests/test_datastores.py::TestDatastores::test_delete_datastore
+  /home/kwang/research/square-core/datastore-api/app/core/es/connector.py:76: DeprecationWarning: The 'body' parameter is deprecated for the 'create' API and will be removed in a future version. Instead use API parameters directly. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    resp1 = await self.es.indices.create(
+
+tests/test_datastores.py::TestDatastores::test_put_datastore
+tests/test_datastores.py::TestDatastores::test_delete_datastore
+  /home/kwang/research/square-core/datastore-api/app/core/es/connector.py:81: DeprecationWarning: The 'body' parameter is deprecated for the 'create' API and will be removed in a future version. Instead use API parameters directly. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    resp2 = await self.es.indices.create(index=self._datastore_search_index_name(datastore.name), body={})
+
+tests/test_datastores.py::TestDatastores::test_delete_datastore
+  /home/kwang/research/square-core/datastore-api/app/routers/datastores.py:117: RuntimeWarning: coroutine 'ElasticsearchConnector.commit_changes' was never awaited
+    conn.commit_changes()
+
+tests/test_documents.py::TestDocuments::test_put_document
+tests/test_documents.py::TestDocuments::test_delete_document
+  /home/kwang/research/square-core/datastore-api/app/core/es/connector.py:260: DeprecationWarning: The 'body' parameter is deprecated for the 'index' API and will be removed in a future version. Instead use the 'document' parameter. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    result = await self.es.index(
+
+tests/test_indices.py::TestIndices::test_get_indices
+  /home/kwang/research/square-core/datastore-api/app/core/es/connector.py:138: DeprecationWarning: The 'body' parameter is deprecated for the 'search' API and will be removed in a future version. Instead use API parameters directly. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    results = await self.es.search(
+
+tests/test_indices.py::TestIndices::test_put_index
+tests/test_indices.py::TestIndices::test_delete_index
+  /home/kwang/research/square-core/datastore-api/app/core/es/connector.py:170: DeprecationWarning: The 'body' parameter is deprecated for the 'index' API and will be removed in a future version. Instead use the 'document' parameter. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    result = await self.es.index(
+
+tests/test_query.py::TestQuery::test_search_bm25
+  /home/kwang/research/square-core/datastore-api/app/core/es/connector.py:360: DeprecationWarning: The 'body' parameter is deprecated for the 'search' API and will be removed in a future version. Instead use API parameters directly. See https://github.com/elastic/elasticsearch-py/issues/1698 for more information
+    result = await self.es.search(index=docs_index, body=search_body)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 35 passed, 94 warnings in 1.97s ========================

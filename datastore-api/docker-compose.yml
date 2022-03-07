@@ -7,7 +7,7 @@ services:
     environment:
       - discovery.type=single-node
     volumes:
-      - ./storage/es/data:/usr/share/elasticsearch/data
+      - ./storage:/usr/share/elasticsearch/data
     # Port exposure not needed in production (comment out)
     ports:
       - 7200:9200
