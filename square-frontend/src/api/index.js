@@ -7,8 +7,8 @@ import axios from 'axios'
 /**
  * URLs to the SQuARE backend servers
  */
-let API_URL = process.env.VUE_APP_BACKEND_URL
-let SKILL_URL = process.env.VUE_APP_SKILL_MANAGER_URL
+let API_URL = `${process.env.VUE_APP_URL}/api/backend`
+let SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
 
 /**
  * Register a new user 
