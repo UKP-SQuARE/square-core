@@ -9,7 +9,7 @@ COPY package*.json ./
 RUN npm install -g npm@8.5.2
 RUN npm ci
 
-COPY . ./
+COPY . .
 RUN npm run build
 
 # production stage
