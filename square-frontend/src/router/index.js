@@ -65,6 +65,18 @@ const routes = [
     path: '*',
     name: 'notfound',
     component: NotFound
+  },
+  {
+    path: '/signin',
+    beforeEnter(to, from) {
+      window.location.href = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect/auth?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
+    }
+  },
+  {
+    path: '/signup',
+    beforeEnter(to, from) {
+      window.location.href = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect/registrations?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
+    }
   }
 ]
 

@@ -34,8 +34,8 @@
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <a :href="authURL(true)" role="button" class="btn btn-outline-light me-2">Sign in</a>
-              <a :href="authURL(false)" role="button" class="btn btn-light">Sign up</a>
+              <router-link to="/signin" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
+              <router-link to="/signup" role="button" class="btn btn-light">Sign up</router-link>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
