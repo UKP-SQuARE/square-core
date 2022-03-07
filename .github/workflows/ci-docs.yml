@@ -2,7 +2,7 @@ name: "CI Docs"
 
 on:
   push:
-    branches: [ square-docs ]
+    branches: [ master ]
     paths:
       - "docs/**"
       - ".github/**"
