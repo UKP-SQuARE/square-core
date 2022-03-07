@@ -12,8 +12,8 @@
                     "context": "Caroline is nicer than Marie.",
                     "question": "Is Caroline less nice?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Caroline is nicer than Marie.",
@@ -26,8 +26,8 @@
                     "context": "Harriet is cleaner than Kelly.",
                     "question": "Is Harriet less clean?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Harriet is cleaner than Kelly.",
@@ -40,8 +40,8 @@
                     "context": "Keith is higher than Alice.",
                     "question": "Is Keith less high?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Keith is higher than Alice.",
@@ -80,10 +80,10 @@
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 5,
-            "success_cases": 5,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 2,
+            "success_cases": 8,
+            "failure_rate": 20.0,
+            "success_rate": 80.0
         },
         {
             "test_type": "MFT",
@@ -104,8 +104,8 @@
                     "context": "Andrew is super upbeat about the project. Ian is upbeat about the project.",
                     "question": "Is Ian the least upbeat about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Andrew is super upbeat about the project. Ian is upbeat about the project.",
@@ -118,8 +118,8 @@
                     "context": "Andrew is super upbeat about the project. Ian is upbeat about the project.",
                     "question": "Is Andrew the least upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ian is upbeat about the project. Andrew is super upbeat about the project.",
@@ -132,22 +132,22 @@
                     "context": "Ian is upbeat about the project. Andrew is super upbeat about the project.",
                     "question": "Is Ian the least upbeat about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ian is upbeat about the project. Andrew is super upbeat about the project.",
                     "question": "Is Ian the most upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ian is upbeat about the project. Andrew is super upbeat about the project.",
                     "question": "Is Andrew the least upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Andrew is upbeat about the project. Ian is a little upbeat about the project.",
@@ -174,8 +174,8 @@
                     "context": "Andrew is upbeat about the project. Ian is a little upbeat about the project.",
                     "question": "Is Andrew the least upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ian is a little upbeat about the project. Andrew is upbeat about the project.",
@@ -188,29 +188,29 @@
                     "context": "Ian is a little upbeat about the project. Andrew is upbeat about the project.",
                     "question": "Is Ian the least upbeat about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ian is a little upbeat about the project. Andrew is upbeat about the project.",
                     "question": "Is Ian the most upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ian is a little upbeat about the project. Andrew is upbeat about the project.",
                     "question": "Is Andrew the least upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Andrew is super upbeat about the project. Ian is a little upbeat about the project.",
                     "question": "Is Andrew the most upbeat about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Andrew is super upbeat about the project. Ian is a little upbeat about the project.",
@@ -230,8 +230,8 @@
                     "context": "Andrew is super upbeat about the project. Ian is a little upbeat about the project.",
                     "question": "Is Andrew the least upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ian is a little upbeat about the project. Andrew is super upbeat about the project.",
@@ -244,50 +244,50 @@
                     "context": "Ian is a little upbeat about the project. Andrew is super upbeat about the project.",
                     "question": "Is Ian the least upbeat about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ian is a little upbeat about the project. Andrew is super upbeat about the project.",
                     "question": "Is Ian the most upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ian is a little upbeat about the project. Andrew is super upbeat about the project.",
                     "question": "Is Andrew the least upbeat about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lawrence is really curious about the project. Fiona is curious about the project.",
                     "question": "Is Lawrence the most curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lawrence is really curious about the project. Fiona is curious about the project.",
                     "question": "Is Fiona the least curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lawrence is really curious about the project. Fiona is curious about the project.",
                     "question": "Is Fiona the most curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lawrence is really curious about the project. Fiona is curious about the project.",
                     "question": "Is Lawrence the least curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Fiona is curious about the project. Lawrence is really curious about the project.",
@@ -300,50 +300,50 @@
                     "context": "Fiona is curious about the project. Lawrence is really curious about the project.",
                     "question": "Is Fiona the least curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Fiona is curious about the project. Lawrence is really curious about the project.",
-                    "question": "Is Fiona the most curious about the project?",
-                    "answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "success_failed": "failed"
                 },
                 {
                     "context": "Fiona is curious about the project. Lawrence is really curious about the project.",
+                    "question": "Is Fiona the most curious about the project?",
+                    "answer": "No",
+                    "prediction": "No",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Fiona is curious about the project. Lawrence is really curious about the project.",
                     "question": "Is Lawrence the least curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lawrence is curious about the project. Fiona is a little curious about the project.",
                     "question": "Is Lawrence the most curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lawrence is curious about the project. Fiona is a little curious about the project.",
                     "question": "Is Fiona the least curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lawrence is curious about the project. Fiona is a little curious about the project.",
                     "question": "Is Fiona the most curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lawrence is curious about the project. Fiona is a little curious about the project.",
                     "question": "Is Lawrence the least curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Fiona is a little curious about the project. Lawrence is curious about the project.",
@@ -356,78 +356,78 @@
                     "context": "Fiona is a little curious about the project. Lawrence is curious about the project.",
                     "question": "Is Fiona the least curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
+                    "prediction": "No",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Fiona is a little curious about the project. Lawrence is curious about the project.",
+                    "question": "Is Fiona the most curious about the project?",
+                    "answer": "No",
+                    "prediction": "No",
                     "success_failed": "success"
                 },
                 {
                     "context": "Fiona is a little curious about the project. Lawrence is curious about the project.",
+                    "question": "Is Lawrence the least curious about the project?",
+                    "answer": "No",
+                    "prediction": "No",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
+                    "question": "Is Lawrence the most curious about the project?",
+                    "answer": "Yes",
+                    "prediction": "No",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
+                    "question": "Is Fiona the least curious about the project?",
+                    "answer": "Yes",
+                    "prediction": "No",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
                     "question": "Is Fiona the most curious about the project?",
                     "answer": "No",
                     "prediction": "Yes",
                     "success_failed": "failed"
                 },
                 {
-                    "context": "Fiona is a little curious about the project. Lawrence is curious about the project.",
+                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
                     "question": "Is Lawrence the least curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
-                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
+                    "context": "Fiona is a little curious about the project. Lawrence is really curious about the project.",
                     "question": "Is Lawrence the most curious about the project?",
                     "answer": "Yes",
                     "prediction": "Yes",
                     "success_failed": "success"
                 },
                 {
-                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
-                    "question": "Is Fiona the least curious about the project?",
-                    "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
-                    "question": "Is Fiona the most curious about the project?",
-                    "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Lawrence is really curious about the project. Fiona is a little curious about the project.",
-                    "question": "Is Lawrence the least curious about the project?",
-                    "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Fiona is a little curious about the project. Lawrence is really curious about the project.",
-                    "question": "Is Lawrence the most curious about the project?",
-                    "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
                     "context": "Fiona is a little curious about the project. Lawrence is really curious about the project.",
                     "question": "Is Fiona the least curious about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Fiona is a little curious about the project. Lawrence is really curious about the project.",
                     "question": "Is Fiona the most curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Fiona is a little curious about the project. Lawrence is really curious about the project.",
                     "question": "Is Lawrence the least curious about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Patricia is incredibly particular about the project. Edward is particular about the project.",
@@ -440,8 +440,8 @@
                     "context": "Patricia is incredibly particular about the project. Edward is particular about the project.",
                     "question": "Is Edward the least particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patricia is incredibly particular about the project. Edward is particular about the project.",
@@ -454,8 +454,8 @@
                     "context": "Patricia is incredibly particular about the project. Edward is particular about the project.",
                     "question": "Is Patricia the least particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Edward is particular about the project. Patricia is incredibly particular about the project.",
@@ -468,8 +468,8 @@
                     "context": "Edward is particular about the project. Patricia is incredibly particular about the project.",
                     "question": "Is Edward the least particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Edward is particular about the project. Patricia is incredibly particular about the project.",
@@ -482,22 +482,22 @@
                     "context": "Edward is particular about the project. Patricia is incredibly particular about the project.",
                     "question": "Is Patricia the least particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Patricia is particular about the project. Edward is somewhat particular about the project.",
                     "question": "Is Patricia the most particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patricia is particular about the project. Edward is somewhat particular about the project.",
                     "question": "Is Edward the least particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patricia is particular about the project. Edward is somewhat particular about the project.",
@@ -531,8 +531,8 @@
                     "context": "Edward is somewhat particular about the project. Patricia is particular about the project.",
                     "question": "Is Edward the most particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Edward is somewhat particular about the project. Patricia is particular about the project.",
@@ -545,29 +545,29 @@
                     "context": "Patricia is incredibly particular about the project. Edward is somewhat particular about the project.",
                     "question": "Is Patricia the most particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patricia is incredibly particular about the project. Edward is somewhat particular about the project.",
                     "question": "Is Edward the least particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patricia is incredibly particular about the project. Edward is somewhat particular about the project.",
                     "question": "Is Edward the most particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Patricia is incredibly particular about the project. Edward is somewhat particular about the project.",
                     "question": "Is Patricia the least particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Edward is somewhat particular about the project. Patricia is incredibly particular about the project.",
@@ -580,36 +580,36 @@
                     "context": "Edward is somewhat particular about the project. Patricia is incredibly particular about the project.",
                     "question": "Is Edward the least particular about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Edward is somewhat particular about the project. Patricia is incredibly particular about the project.",
                     "question": "Is Edward the most particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Edward is somewhat particular about the project. Patricia is incredibly particular about the project.",
                     "question": "Is Patricia the least particular about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is positive about the project.",
                     "question": "Is Sam the most positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is positive about the project.",
                     "question": "Is Mike the least positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is positive about the project.",
@@ -622,8 +622,8 @@
                     "context": "Sam is super positive about the project. Mike is positive about the project.",
                     "question": "Is Sam the least positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mike is positive about the project. Sam is super positive about the project.",
@@ -636,50 +636,50 @@
                     "context": "Mike is positive about the project. Sam is super positive about the project.",
                     "question": "Is Mike the least positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Mike is positive about the project. Sam is super positive about the project.",
-                    "question": "Is Mike the most positive about the project?",
-                    "answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "success_failed": "failed"
                 },
                 {
                     "context": "Mike is positive about the project. Sam is super positive about the project.",
-                    "question": "Is Sam the least positive about the project?",
-                    "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
-                    "question": "Is Sam the most positive about the project?",
-                    "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
-                    "question": "Is Mike the least positive about the project?",
-                    "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
                     "question": "Is Mike the most positive about the project?",
                     "answer": "No",
                     "prediction": "Yes",
                     "success_failed": "failed"
                 },
                 {
+                    "context": "Mike is positive about the project. Sam is super positive about the project.",
+                    "question": "Is Sam the least positive about the project?",
+                    "answer": "No",
+                    "prediction": "No",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
+                    "question": "Is Sam the most positive about the project?",
+                    "answer": "Yes",
+                    "prediction": "No",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
+                    "question": "Is Mike the least positive about the project?",
+                    "answer": "Yes",
+                    "prediction": "No",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
+                    "question": "Is Mike the most positive about the project?",
+                    "answer": "No",
+                    "prediction": "No",
+                    "success_failed": "success"
+                },
+                {
                     "context": "Sam is positive about the project. Mike is somewhat positive about the project.",
                     "question": "Is Sam the least positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is positive about the project.",
@@ -692,253 +692,253 @@
                     "context": "Mike is somewhat positive about the project. Sam is positive about the project.",
                     "question": "Is Mike the least positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is positive about the project.",
                     "question": "Is Mike the most positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is positive about the project.",
                     "question": "Is Sam the least positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is somewhat positive about the project.",
                     "question": "Is Sam the most positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is somewhat positive about the project.",
                     "question": "Is Mike the least positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is somewhat positive about the project.",
                     "question": "Is Mike the most positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sam is super positive about the project. Mike is somewhat positive about the project.",
                     "question": "Is Sam the least positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is super positive about the project.",
                     "question": "Is Sam the most positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is super positive about the project.",
                     "question": "Is Mike the least positive about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is super positive about the project.",
                     "question": "Is Mike the most positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mike is somewhat positive about the project. Sam is super positive about the project.",
                     "question": "Is Sam the least positive about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is open about the project.",
                     "question": "Is Mary the most open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is open about the project.",
                     "question": "Is Don the least open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is open about the project.",
                     "question": "Is Don the most open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is open about the project.",
                     "question": "Is Mary the least open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don is open about the project. Mary is quite open about the project.",
                     "question": "Is Mary the most open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Don is open about the project. Mary is quite open about the project.",
-                    "question": "Is Don the least open about the project?",
-                    "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Don is open about the project. Mary is quite open about the project.",
-                    "question": "Is Don the most open about the project?",
-                    "answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "success_failed": "failed"
                 },
                 {
                     "context": "Don is open about the project. Mary is quite open about the project.",
+                    "question": "Is Don the least open about the project?",
+                    "answer": "Yes",
+                    "prediction": "No",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Don is open about the project. Mary is quite open about the project.",
+                    "question": "Is Don the most open about the project?",
+                    "answer": "No",
+                    "prediction": "No",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Don is open about the project. Mary is quite open about the project.",
                     "question": "Is Mary the least open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is open about the project. Don is slightly open about the project.",
                     "question": "Is Mary the most open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is open about the project. Don is slightly open about the project.",
                     "question": "Is Don the least open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is open about the project. Don is slightly open about the project.",
                     "question": "Is Don the most open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is open about the project. Don is slightly open about the project.",
                     "question": "Is Mary the least open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is open about the project.",
                     "question": "Is Mary the most open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is open about the project.",
                     "question": "Is Don the least open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is open about the project.",
                     "question": "Is Don the most open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is open about the project.",
                     "question": "Is Mary the least open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is slightly open about the project.",
                     "question": "Is Mary the most open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is slightly open about the project.",
                     "question": "Is Don the least open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is slightly open about the project.",
                     "question": "Is Don the most open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is quite open about the project. Don is slightly open about the project.",
                     "question": "Is Mary the least open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is quite open about the project.",
                     "question": "Is Mary the most open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is quite open about the project.",
                     "question": "Is Don the least open about the project?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is quite open about the project.",
                     "question": "Is Don the most open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don is slightly open about the project. Mary is quite open about the project.",
                     "question": "Is Mary the least open about the project?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 120,
-            "failed_cases": 59,
-            "success_cases": 61,
-            "failure_rate": 49.17,
-            "success_rate": 50.83
+            "failed_cases": 53,
+            "success_cases": 67,
+            "failure_rate": 44.17,
+            "success_rate": 55.83
         },
         {
             "test_type": "MFT",
@@ -959,22 +959,22 @@
                     "context": "There is a tiny blue painting in the room.",
                     "question": "Is the color of the painting blue?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a tiny blue painting in the room.",
                     "question": "size of the painting is not tiny, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a tiny blue painting in the room.",
                     "question": "color of the painting is not blue, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a painting in the room. The painting is tiny and blue.",
@@ -987,22 +987,22 @@
                     "context": "There is a painting in the room. The painting is tiny and blue.",
                     "question": "Is the color of the painting blue?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a painting in the room. The painting is tiny and blue.",
                     "question": "size of the painting is not tiny, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a painting in the room. The painting is tiny and blue.",
                     "question": "color of the painting is not blue, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is an old orange toy in the room.",
@@ -1015,22 +1015,22 @@
                     "context": "There is an old orange toy in the room.",
                     "question": "Is the color of the toy orange?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is an old orange toy in the room.",
                     "question": "age of the toy is not old, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is an old orange toy in the room.",
                     "question": "color of the toy is not orange, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is old and orange.",
@@ -1043,22 +1043,22 @@
                     "context": "There is a toy in the room. The toy is old and orange.",
                     "question": "Is the color of the toy orange?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a toy in the room. The toy is old and orange.",
                     "question": "age of the toy is not old, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is old and orange.",
                     "question": "color of the toy is not orange, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a new red toy in the room.",
@@ -1071,8 +1071,8 @@
                     "context": "There is a new red toy in the room.",
                     "question": "Is the color of the toy red?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a new red toy in the room.",
@@ -1085,8 +1085,8 @@
                     "context": "There is a new red toy in the room.",
                     "question": "color of the toy is not red, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is new and red.",
@@ -1106,29 +1106,29 @@
                     "context": "There is a toy in the room. The toy is new and red.",
                     "question": "age of the toy is not new, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is new and red.",
                     "question": "color of the toy is not red, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a square yellow sculpture in the room.",
                     "question": "Is the shape of the sculpture square?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a square yellow sculpture in the room.",
                     "question": "Is the color of the sculpture yellow?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a square yellow sculpture in the room.",
@@ -1141,15 +1141,15 @@
                     "context": "There is a square yellow sculpture in the room.",
                     "question": "color of the sculpture is not yellow, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a sculpture in the room. The sculpture is square and yellow.",
                     "question": "Is the shape of the sculpture square?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a sculpture in the room. The sculpture is square and yellow.",
@@ -1176,43 +1176,43 @@
                     "context": "There is a round yellow toy in the room.",
                     "question": "Is the shape of the toy round?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a round yellow toy in the room.",
                     "question": "Is the color of the toy yellow?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a round yellow toy in the room.",
                     "question": "shape of the toy is not round, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a round yellow toy in the room.",
                     "question": "color of the toy is not yellow, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is round and yellow.",
                     "question": "Is the shape of the toy round?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a toy in the room. The toy is round and yellow.",
                     "question": "Is the color of the toy yellow?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a toy in the room. The toy is round and yellow.",
@@ -1230,10 +1230,10 @@
                 }
             ],
             "total_cases": 40,
-            "failed_cases": 15,
-            "success_cases": 25,
-            "failure_rate": 37.5,
-            "success_rate": 62.5
+            "failed_cases": 13,
+            "success_cases": 27,
+            "failure_rate": 32.5,
+            "success_rate": 67.5
         },
         {
             "test_type": "MFT",
@@ -1261,15 +1261,15 @@
                     "context": "Daniel is an Indonesian academic.",
                     "question": "Daniel is not an academic, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is an Indonesian academic.",
                     "question": "Daniel is not Indonesian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is an academic. Daniel is Indonesian.",
@@ -1289,15 +1289,15 @@
                     "context": "Daniel is an academic. Daniel is Indonesian.",
                     "question": "Daniel is not an academic, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is an academic. Daniel is Indonesian.",
                     "question": "Daniel is not Indonesian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is Indonesian. Daniel is an academic.",
@@ -1317,15 +1317,15 @@
                     "context": "Daniel is Indonesian. Daniel is an academic.",
                     "question": "Daniel is not an academic, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is Indonesian. Daniel is an academic.",
                     "question": "Daniel is not Indonesian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is Indonesian and an academic.",
@@ -1345,15 +1345,15 @@
                     "context": "Daniel is Indonesian and an academic.",
                     "question": "Daniel is not an academic, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is Indonesian and an academic.",
                     "question": "Daniel is not Indonesian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is an academic and Indonesian.",
@@ -1373,15 +1373,15 @@
                     "context": "Daniel is an academic and Indonesian.",
                     "question": "Daniel is not an academic, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Daniel is an academic and Indonesian.",
                     "question": "Daniel is not Indonesian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is a Pakistani escort.",
@@ -1401,15 +1401,15 @@
                     "context": "Robin is a Pakistani escort.",
                     "question": "Robin is not an escort, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is a Pakistani escort.",
                     "question": "Robin is not Pakistani, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is an escort. Robin is Pakistani.",
@@ -1429,15 +1429,15 @@
                     "context": "Robin is an escort. Robin is Pakistani.",
                     "question": "Robin is not an escort, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is an escort. Robin is Pakistani.",
                     "question": "Robin is not Pakistani, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is Pakistani. Robin is an escort.",
@@ -1457,15 +1457,15 @@
                     "context": "Robin is Pakistani. Robin is an escort.",
                     "question": "Robin is not an escort, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is Pakistani. Robin is an escort.",
                     "question": "Robin is not Pakistani, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is Pakistani and an escort.",
@@ -1485,15 +1485,15 @@
                     "context": "Robin is Pakistani and an escort.",
                     "question": "Robin is not an escort, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is Pakistani and an escort.",
                     "question": "Robin is not Pakistani, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is an escort and Pakistani.",
@@ -1513,15 +1513,15 @@
                     "context": "Robin is an escort and Pakistani.",
                     "question": "Robin is not an escort, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Robin is an escort and Pakistani.",
                     "question": "Robin is not Pakistani, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is an Indian journalist.",
@@ -1541,15 +1541,15 @@
                     "context": "Bill is an Indian journalist.",
                     "question": "Bill is not a journalist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is an Indian journalist.",
                     "question": "Bill is not Indian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is a journalist. Bill is Indian.",
@@ -1569,15 +1569,15 @@
                     "context": "Bill is a journalist. Bill is Indian.",
                     "question": "Bill is not a journalist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is a journalist. Bill is Indian.",
                     "question": "Bill is not Indian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is Indian. Bill is a journalist.",
@@ -1597,15 +1597,15 @@
                     "context": "Bill is Indian. Bill is a journalist.",
                     "question": "Bill is not a journalist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is Indian. Bill is a journalist.",
                     "question": "Bill is not Indian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is Indian and a journalist.",
@@ -1625,15 +1625,15 @@
                     "context": "Bill is Indian and a journalist.",
                     "question": "Bill is not a journalist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is Indian and a journalist.",
                     "question": "Bill is not Indian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is a journalist and Indian.",
@@ -1653,15 +1653,15 @@
                     "context": "Bill is a journalist and Indian.",
                     "question": "Bill is not a journalist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Bill is a journalist and Indian.",
                     "question": "Bill is not Indian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is an American DJ.",
@@ -1681,15 +1681,15 @@
                     "context": "George is an American DJ.",
                     "question": "George is not a DJ, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is an American DJ.",
                     "question": "George is not American, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is a DJ. George is American.",
@@ -1709,15 +1709,15 @@
                     "context": "George is a DJ. George is American.",
                     "question": "George is not a DJ, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is a DJ. George is American.",
                     "question": "George is not American, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is American. George is a DJ.",
@@ -1737,15 +1737,15 @@
                     "context": "George is American. George is a DJ.",
                     "question": "George is not a DJ, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is American. George is a DJ.",
                     "question": "George is not American, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is American and a DJ.",
@@ -1765,15 +1765,15 @@
                     "context": "George is American and a DJ.",
                     "question": "George is not a DJ, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is American and a DJ.",
                     "question": "George is not American, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is a DJ and American.",
@@ -1793,15 +1793,15 @@
                     "context": "George is a DJ and American.",
                     "question": "George is not a DJ, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George is a DJ and American.",
                     "question": "George is not American, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is a Japanese secretary.",
@@ -1821,15 +1821,15 @@
                     "context": "Francis is a Japanese secretary.",
                     "question": "Francis is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is a Japanese secretary.",
                     "question": "Francis is not Japanese, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is a secretary. Francis is Japanese.",
@@ -1849,15 +1849,15 @@
                     "context": "Francis is a secretary. Francis is Japanese.",
                     "question": "Francis is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is a secretary. Francis is Japanese.",
                     "question": "Francis is not Japanese, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is Japanese. Francis is a secretary.",
@@ -1877,15 +1877,15 @@
                     "context": "Francis is Japanese. Francis is a secretary.",
                     "question": "Francis is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is Japanese. Francis is a secretary.",
                     "question": "Francis is not Japanese, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is Japanese and a secretary.",
@@ -1905,15 +1905,15 @@
                     "context": "Francis is Japanese and a secretary.",
                     "question": "Francis is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is Japanese and a secretary.",
                     "question": "Francis is not Japanese, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is a secretary and Japanese.",
@@ -1933,22 +1933,22 @@
                     "context": "Francis is a secretary and Japanese.",
                     "question": "Francis is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis is a secretary and Japanese.",
                     "question": "Francis is not Japanese, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 100,
-            "failed_cases": 50,
-            "success_cases": 50,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 0,
+            "success_cases": 100,
+            "failure_rate": 0.0,
+            "success_rate": 100.0
         },
         {
             "test_type": "MFT",
@@ -1983,8 +1983,8 @@
                     "context": "Howard has a guinea pig and a SUV.",
                     "question": "Howard has a guinea pig but not a SUV, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Howard has a SUV and a guinea pig.",
@@ -2011,8 +2011,8 @@
                     "context": "Howard has a SUV and a guinea pig.",
                     "question": "Howard has a guinea pig but not a SUV, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don has a cow and a train.",
@@ -2039,8 +2039,8 @@
                     "context": "Don has a cow and a train.",
                     "question": "Don has a cow but not a train, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Don has a train and a cow.",
@@ -2067,8 +2067,8 @@
                     "context": "Don has a train and a cow.",
                     "question": "Don has a cow but not a train, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Tom has a hamster and a motorcycle.",
@@ -2095,8 +2095,8 @@
                     "context": "Tom has a hamster and a motorcycle.",
                     "question": "Tom has a hamster but not a motorcycle, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Tom has a motorcycle and a hamster.",
@@ -2123,8 +2123,8 @@
                     "context": "Tom has a motorcycle and a hamster.",
                     "question": "Tom has a hamster but not a motorcycle, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ann has a duck and a car.",
@@ -2151,8 +2151,8 @@
                     "context": "Ann has a duck and a car.",
                     "question": "Ann has a duck but not a car, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ann has a car and a duck.",
@@ -2179,8 +2179,8 @@
                     "context": "Ann has a car and a duck.",
                     "question": "Ann has a duck but not a car, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ryan has a hamster and a car.",
@@ -2207,8 +2207,8 @@
                     "context": "Ryan has a hamster and a car.",
                     "question": "Ryan has a hamster but not a car, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ryan has a car and a hamster.",
@@ -2235,15 +2235,15 @@
                     "context": "Ryan has a car and a hamster.",
                     "question": "Ryan has a hamster but not a car, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 40,
-            "failed_cases": 10,
-            "success_cases": 30,
-            "failure_rate": 25.0,
-            "success_rate": 75.0
+            "failed_cases": 0,
+            "success_cases": 40,
+            "failure_rate": 0.0,
+            "success_rate": 100.0
         },
         {
             "test_type": "MFT",
@@ -2552,8 +2552,8 @@
                     "context": "Roy is very intelligent. Wendy is very humble.",
                     "question": "Is Roy smart?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Roy is very intelligent. Wendy is very humble.",
@@ -2573,8 +2573,8 @@
                     "context": "Wendy is very humble. Roy is very intelligent.",
                     "question": "Is Wendy smart?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Kevin is very spiritual. Katherine is very happy.",
@@ -2587,22 +2587,22 @@
                     "context": "Kevin is very spiritual. Katherine is very happy.",
                     "question": "Is Katherine religious?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Katherine is very happy. Kevin is very spiritual.",
                     "question": "Is Kevin religious?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Katherine is very happy. Kevin is very spiritual.",
                     "question": "Is Katherine religious?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patricia is very scared. Alexandra is very spiritual.",
@@ -2692,8 +2692,8 @@
                     "context": "Dorothy is very modest. Arthur is very joyful.",
                     "question": "Is Dorothy is humble?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dorothy is very modest. Arthur is very joyful.",
@@ -2706,8 +2706,8 @@
                     "context": "Arthur is very joyful. Dorothy is very modest.",
                     "question": "Is Dorothy is humble?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Arthur is very joyful. Dorothy is very modest.",
@@ -2720,8 +2720,8 @@
                     "context": "Elaine is very modest. Sue is very joyful.",
                     "question": "Is Elaine is humble?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Elaine is very modest. Sue is very joyful.",
@@ -2734,8 +2734,8 @@
                     "context": "Sue is very joyful. Elaine is very modest.",
                     "question": "Is Elaine is humble?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sue is very joyful. Elaine is very modest.",
@@ -2774,10 +2774,10 @@
                 }
             ],
             "total_cases": 32,
-            "failed_cases": 4,
-            "success_cases": 28,
-            "failure_rate": 12.5,
-            "success_rate": 87.5
+            "failed_cases": 5,
+            "success_cases": 27,
+            "failure_rate": 15.62,
+            "success_rate": 84.38
         },
         {
             "test_type": "MFT",
@@ -2875,8 +2875,8 @@
                     "context": "Barbara is worse than Sue.",
                     "question": "Is Sue better than Barbara?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Barbara is worse than Sue.",
@@ -2910,8 +2910,8 @@
                     "context": "Steven is darker than Dave.",
                     "question": "Is Dave lighter than Steven?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Steven is darker than Dave.",
@@ -3069,10 +3069,10 @@
                 }
             ],
             "total_cases": 40,
-            "failed_cases": 20,
-            "success_cases": 20,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 22,
+            "success_cases": 18,
+            "failure_rate": 55.0,
+            "success_rate": 45.0
         },
         {
             "test_type": "MFT",
@@ -3107,22 +3107,22 @@
                     "context": "Nancy is more defensive than Emma.",
                     "question": "Is Emma less offensive than Nancy?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Emma is more offensive than Nancy.",
                     "question": "Is Nancy more defensive than Emma?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Emma is more offensive than Nancy.",
                     "question": "Is Emma more defensive than Nancy?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Emma is more offensive than Nancy.",
@@ -3142,15 +3142,15 @@
                     "context": "Nancy is less offensive than Emma.",
                     "question": "Is Nancy more defensive than Emma?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Nancy is less offensive than Emma.",
                     "question": "Is Emma more defensive than Nancy?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Nancy is less offensive than Emma.",
@@ -3212,29 +3212,29 @@
                     "context": "Sandra is more defensive than Ryan.",
                     "question": "Is Sandra less offensive than Ryan?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sandra is more defensive than Ryan.",
                     "question": "Is Ryan less offensive than Sandra?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ryan is more offensive than Sandra.",
                     "question": "Is Sandra more defensive than Ryan?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ryan is more offensive than Sandra.",
                     "question": "Is Ryan more defensive than Sandra?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ryan is more offensive than Sandra.",
@@ -3254,15 +3254,15 @@
                     "context": "Sandra is less offensive than Ryan.",
                     "question": "Is Sandra more defensive than Ryan?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sandra is less offensive than Ryan.",
                     "question": "Is Ryan more defensive than Sandra?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sandra is less offensive than Ryan.",
@@ -3436,15 +3436,15 @@
                     "context": "Joe is more active than Suzanne.",
                     "question": "Is Joe less passive than Suzanne?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Joe is more active than Suzanne.",
                     "question": "Is Suzanne less passive than Joe?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Suzanne is more passive than Joe.",
@@ -3485,8 +3485,8 @@
                     "context": "Joe is less passive than Suzanne.",
                     "question": "Is Suzanne more active than Joe?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Joe is less passive than Suzanne.",
@@ -3506,15 +3506,15 @@
                     "context": "Suzanne is less active than Joe.",
                     "question": "Is Joe more active than Suzanne?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Suzanne is less active than Joe.",
                     "question": "Is Suzanne more active than Joe?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Suzanne is less active than Joe.",
@@ -3548,15 +3548,15 @@
                     "context": "Jerry is more active than Lisa.",
                     "question": "Is Jerry less passive than Lisa?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jerry is more active than Lisa.",
                     "question": "Is Lisa less passive than Jerry?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lisa is more passive than Jerry.",
@@ -3590,15 +3590,15 @@
                     "context": "Jerry is less passive than Lisa.",
                     "question": "Is Jerry more active than Lisa?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jerry is less passive than Lisa.",
                     "question": "Is Lisa more active than Jerry?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jerry is less passive than Lisa.",
@@ -3618,15 +3618,15 @@
                     "context": "Lisa is less active than Jerry.",
                     "question": "Is Jerry more active than Lisa?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lisa is less active than Jerry.",
                     "question": "Is Lisa more active than Jerry?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lisa is less active than Jerry.",
@@ -3644,10 +3644,10 @@
                 }
             ],
             "total_cases": 80,
-            "failed_cases": 40,
-            "success_cases": 40,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 38,
+            "success_cases": 42,
+            "failure_rate": 47.5,
+            "success_rate": 52.5
         },
         {
             "test_type": "INV",
@@ -3888,12 +3888,12 @@
                     "question": "does steph curry have an olympic gold medal",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "span": [
                         695,
                         774
                     ],
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "The series was renewed for a fourth season and it premiered on March 16, 2018. Curry's first experience with the United States national team came at the 2007 FIBA Under-19 World Championship, where he helped Team USA capture the silver medal. In 2010, he was selected to the senior squad, playing limited minutes at the 2010 FIBA World Championship (known later as FIBA Basketball World Cup) as the United States won the gold medal in an undefeated tournament. In 2014, he took on a larger role with the team, helping them to another undefeated tournament at the 2014 World Cup and scoring 10 points in the final game. On June 6, 2016, Curry withdrew from consideration for the 2016 Olympics in Brazil, citing ankle and knee ailments as the major reason behind the decision.",
@@ -3934,21 +3934,21 @@
                 {
                     "context": "In the United States, there is no federal law regulating the practice of tattooing. However, all 50 states and the District of Columbia have statutory laws requiring a person receiving a tattoo be 18 years or older. This is partially based on the legal principle that a minor cannot enter into a legal contract or otherwise render informed consent for a procedure. Most states permit a person under the age of 18 to receive a tattoo with permission of a parent or guardian, but some states outright prohibit tattooing under a certain age regardless of permission, with the exception of medical necessity (such as markings placed for radiation therapy).On 5 June 2015 during a T20 Blast game between the Worcestershire Rapids and the Northamptonshire Steelbacks, Worcestershire chose not to play a wicket-keeper in the 16th over of the match. ",
                     "question": "can you get a tattoo at any age",
-                    "prediction_before_change": "Yes",
+                    "prediction_before_change": "No",
                     "gold_answer": "No",
                     "prediction": "Yes",
                     "span": [
                         652,
                         842
                     ],
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "On 5 June 2015 during a T20 Blast game between the Worcestershire Rapids and the Northamptonshire Steelbacks, Worcestershire chose not to play a wicket-keeper in the 16th over of the match. In the United States, there is no federal law regulating the practice of tattooing. However, all 50 states and the District of Columbia have statutory laws requiring a person receiving a tattoo be 18 years or older. This is partially based on the legal principle that a minor cannot enter into a legal contract or otherwise render informed consent for a procedure. Most states permit a person under the age of 18 to receive a tattoo with permission of a parent or guardian, but some states outright prohibit tattooing under a certain age regardless of permission, with the exception of medical necessity (such as markings placed for radiation therapy).",
                     "question": "can you get a tattoo at any age",
-                    "prediction_before_change": "Yes",
+                    "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "span": [
                         0,
                         190
@@ -3958,9 +3958,9 @@
                 {
                     "context": "Due to the use of contemporary music in each episode, none of the seasons are presently available on DVD, due to music licensing issues. However, the entire series, incorporating the contemporary music, was previously released on DVD as Cold Case: The Complete Edition, by CBS Productions (ISBN 8-5857-9659-6), on 44 dual-layer disks, in a single boxed set. This set is out of print.In the Time of the Butterflies is a historical novel by Julia Alvarez, relating an account of the Mirabal sisters during the time of the Trujillo dictatorship in the Dominican Republic. ",
                     "question": "will cold case ever be released on dvd",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "span": [
                         383,
                         569
@@ -3970,9 +3970,9 @@
                 {
                     "context": "In the Time of the Butterflies is a historical novel by Julia Alvarez, relating an account of the Mirabal sisters during the time of the Trujillo dictatorship in the Dominican Republic. Due to the use of contemporary music in each episode, none of the seasons are presently available on DVD, due to music licensing issues. However, the entire series, incorporating the contemporary music, was previously released on DVD as Cold Case: The Complete Edition, by CBS Productions (ISBN 8-5857-9659-6), on 44 dual-layer disks, in a single boxed set. This set is out of print.",
                     "question": "will cold case ever be released on dvd",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "span": [
                         0,
                         186
@@ -3981,10 +3981,10 @@
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 0,
-            "success_cases": 10,
-            "failure_rate": 0.0,
-            "success_rate": 100.0
+            "failed_cases": 2,
+            "success_cases": 8,
+            "failure_rate": 20.0,
+            "success_rate": 80.0
         },
         {
             "test_type": "INV",
@@ -4237,21 +4237,21 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for Michael Wood, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "Michael Wood"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for Christopher Gray, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "Christopher Gray"
@@ -4261,9 +4261,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for Matthew Miller, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "Matthew Miller"
@@ -4273,9 +4273,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for David Gonzalez, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "David Gonzalez"
@@ -4285,9 +4285,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for James Gomez, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "James Gomez"
@@ -4297,9 +4297,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for John Taylor, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "John Taylor"
@@ -4309,9 +4309,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for Joshua Smith, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "Joshua Smith"
@@ -4321,9 +4321,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for Daniel Sanchez, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "Daniel Sanchez"
@@ -4333,9 +4333,9 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for Joseph Adams, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "Joseph Adams"
@@ -4345,14 +4345,14 @@
                 {
                     "context": "The film received positive reviews from critics, and was nominated for four Academy Awards: Best Picture, Best Supporting Actor for William Kelly, Best Sound, and Best Screenplay Based on Material Previously Produced or Published.",
                     "question": "was the green mile nominated for any oscars",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "Yes",
                     "changed": {
                         "from": "Michael Clarke Duncan",
                         "to": "William Kelly"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "The film was adapted by Wesley Strick from the original screenplay by Michael Watson, which was an adaptation from the novel The Executioners by John D. MacDonald.",
@@ -4596,10 +4596,10 @@
                 }
             ],
             "total_cases": 50,
-            "failed_cases": 2,
-            "success_cases": 48,
-            "failure_rate": 4.0,
-            "success_rate": 96.0
+            "failed_cases": 0,
+            "success_cases": 50,
+            "failure_rate": 0.0,
+            "success_rate": 100.0
         },
         {
             "test_type": "INV",
@@ -4732,21 +4732,21 @@
                 {
                     "context": "Korea won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Korea"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "China won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Colombia",
                         "to": "China"
@@ -4756,9 +4756,9 @@
                 {
                     "context": "Angola won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Colombia",
                         "to": "Angola"
@@ -4768,33 +4768,33 @@
                 {
                     "context": "Spain won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Spain"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Malaysia won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Malaysia"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sudan won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "Colombia",
                         "to": "Sudan"
@@ -4804,57 +4804,57 @@
                 {
                     "context": "Ukraine won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Ukraine"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Russian Federation won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Russian Federation"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Malaysia won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Malaysia"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ethiopia won 2--0 with both goals from James Rodr\u00edguez, the first in the 28th minute, where he controlled Abel Aguilar's headed ball on his chest before volleying left-footed from 25 yards out with the ball going in off the underside of the crossbar, which won the 2014 FIFA Pusk\u00e1s Award later in the year. The second goal, in the 50th minute, was a close-range shot from six yards out after receiving the ball from a header by Juan Cuadrado on the right.",
                     "question": "did colombia make it to the round of 16",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "Yes",
                     "prediction": "No",
                     "changed": {
                         "from": "Colombia",
                         "to": "Ethiopia"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Bangladesh broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Bangladesh"
@@ -4864,9 +4864,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Madagascar broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Madagascar"
@@ -4876,9 +4876,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Yemen broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Yemen"
@@ -4888,9 +4888,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Iran broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Iran"
@@ -4900,9 +4900,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Poland broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Poland"
@@ -4912,9 +4912,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Bangladesh broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Bangladesh"
@@ -4924,9 +4924,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Myanmar broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Myanmar"
@@ -4936,9 +4936,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Philippines broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Philippines"
@@ -4948,9 +4948,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Turkey broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Turkey"
@@ -4960,9 +4960,9 @@
                 {
                     "context": "In 1998 EchoStar purchased the broadcasting assets of a satellite broadcasting joint venture of News Corporation and MCI Worldcom, called ASkyB (for American Sky Broadcasting, named after News Corp's BSkyB service in Britain); the two companies had nearly merged (which called for Dish Network being renamed Sky) before it was called off due to Charlie Ergen's clashes with News Corp. executives. With this purchase EchoStar obtained 28 of the 32 transponder licenses in the 110\u00b0 West orbital slot, more than doubling existing continental Tanzania broadcasting capacity at a value of $682.5 million; some of the other assets were picked up by rival PrimeStar, which was sold to DirecTV in 1999. The acquisition (which also included an uplink center in Gilbert, Arizona) inspired the company to introduce a multi satellite system called Dish 500, theoretically capable of receiving more than 500 channels on one Dish. In the same year, EchoStar, partnering with Bell Canada, launched Dish Network Canada.",
                     "question": "is directv and dish network owned by the same company",
-                    "prediction_before_change": "No",
+                    "prediction_before_change": "Yes",
                     "gold_answer": "No",
-                    "prediction": "No",
+                    "prediction": "Yes",
                     "changed": {
                         "from": "United States",
                         "to": "Tanzania"
@@ -5094,12 +5094,12 @@
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "Kenya"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Angola that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Angola began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Angola (P.A.T) sanctioned by The Sports Authority of Angola (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
@@ -5118,36 +5118,36 @@
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "France"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Ukraine that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Ukraine began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Ukraine (P.A.T) sanctioned by The Sports Authority of Ukraine (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "Ukraine"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Peru that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Peru began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Peru (P.A.T) sanctioned by The Sports Authority of Peru (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "Peru"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Philippines that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Philippines began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Philippines (P.A.T) sanctioned by The Sports Authority of Philippines (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
@@ -5166,36 +5166,36 @@
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "Indonesia"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Uzbekistan that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Uzbekistan began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Uzbekistan (P.A.T) sanctioned by The Sports Authority of Uzbekistan (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "Uzbekistan"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Malaysia that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Malaysia began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Malaysia (P.A.T) sanctioned by The Sports Authority of Malaysia (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
                     "question": "is there a difference between muay thai and thai boxing",
                     "prediction_before_change": "No",
                     "gold_answer": "No",
-                    "prediction": "Yes",
+                    "prediction": "No",
                     "changed": {
                         "from": "Thailand",
                         "to": "Malaysia"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "Muay Thai (Thai: \u0e21\u0e27\u0e22\u0e44\u0e17\u0e22, RTGS: Muai Thai, pronounced (m\u016ba\u032fj th\u0101j) ( listen)) or Thai boxing is a combat sport of Korea that uses stand-up striking along with various clinching techniques. This discipline is known as the ``Art of Eight Limbs'' because it is characterized by the combined use of fists, elbows, knees and shins. Muay Thai became widespread internationally in the twentieth century, when practitioners from Korea began competing in Kickboxing, mixed rules matches, as well as matches under Muay Thai rules around the world. The professional league is governed by The Professional Boxing Association of Korea (P.A.T) sanctioned by The Sports Authority of Korea (S.A.T.), and World Professional Muaythai Federation (WMF) overseas.",
@@ -5277,8 +5277,8 @@
                     "context": "Both Heather and Sharon were waitresss, but there was a change in Sharon, who is now a model.",
                     "question": "Is Heather a waitress?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Steven and Larry were investors, but there was a change in Steven, who is now an architect.",
@@ -5305,8 +5305,8 @@
                     "context": "Both Steven and Larry were investors, but there was a change in Steven, who is now an architect.",
                     "question": "Is Larry an investor?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Larry and Steven were investors, but there was a change in Steven, who is now an architect.",
@@ -5333,8 +5333,8 @@
                     "context": "Both Larry and Steven were investors, but there was a change in Steven, who is now an architect.",
                     "question": "Is Larry an investor?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Benjamin and Bruce were attorneys, but there was a change in Benjamin, who is now an accountant.",
@@ -5389,8 +5389,8 @@
                     "context": "Both Bruce and Benjamin were attorneys, but there was a change in Benjamin, who is now an accountant.",
                     "question": "Is Bruce an attorney?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Carolyn and Linda were agents, but there was a change in Carolyn, who is now an investor.",
@@ -5410,15 +5410,15 @@
                     "context": "Both Carolyn and Linda were agents, but there was a change in Carolyn, who is now an investor.",
                     "question": "Is Carolyn an agent?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Both Carolyn and Linda were agents, but there was a change in Carolyn, who is now an investor.",
                     "question": "Is Linda an agent?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Linda and Carolyn were agents, but there was a change in Carolyn, who is now an investor.",
@@ -5445,8 +5445,8 @@
                     "context": "Both Linda and Carolyn were agents, but there was a change in Carolyn, who is now an investor.",
                     "question": "Is Linda an agent?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both David and Annie were entrepreneurs, but there was a change in David, who is now a photographer.",
@@ -5473,8 +5473,8 @@
                     "context": "Both David and Annie were entrepreneurs, but there was a change in David, who is now a photographer.",
                     "question": "Is Annie an entrepreneur?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Annie and David were entrepreneurs, but there was a change in David, who is now a photographer.",
@@ -5501,15 +5501,15 @@
                     "context": "Both Annie and David were entrepreneurs, but there was a change in David, who is now a photographer.",
                     "question": "Is Annie an entrepreneur?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 }
             ],
             "total_cases": 40,
-            "failed_cases": 20,
-            "success_cases": 20,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 27,
+            "success_cases": 13,
+            "failure_rate": 67.5,
+            "success_rate": 32.5
         },
         {
             "test_type": "MFT",
@@ -5544,8 +5544,8 @@
                     "context": "Barbara became a attorney after Lynn did.",
                     "question": "Did Barbara become a attorney last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Helen became a actress before Matt did.",
@@ -5558,8 +5558,8 @@
                     "context": "Helen became a actress before Matt did.",
                     "question": "Did Matt become a actress last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Matt became a actress after Helen did.",
@@ -5572,8 +5572,8 @@
                     "context": "Matt became a actress after Helen did.",
                     "question": "Did Matt become a actress last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ben became a advisor before Kelly did.",
@@ -5600,8 +5600,8 @@
                     "context": "Kelly became a advisor after Ben did.",
                     "question": "Did Kelly become a advisor last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Betty became a educator before Charlotte did.",
@@ -5614,8 +5614,8 @@
                     "context": "Betty became a educator before Charlotte did.",
                     "question": "Did Charlotte become a educator last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Charlotte became a educator after Betty did.",
@@ -5628,8 +5628,8 @@
                     "context": "Charlotte became a educator after Betty did.",
                     "question": "Did Charlotte become a educator last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Michael became a entrepreneur before Jane did.",
@@ -5656,15 +5656,15 @@
                     "context": "Jane became a entrepreneur after Michael did.",
                     "question": "Did Jane become a entrepreneur last?",
                     "answer": "Yes",
-                    "prediction": "No",
-                    "success_failed": "failed"
+                    "prediction": "Yes",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 7,
-            "success_cases": 13,
-            "failure_rate": 35.0,
-            "success_rate": 65.0
+            "failed_cases": 0,
+            "success_cases": 20,
+            "failure_rate": 0.0,
+            "success_rate": 100.0
         },
         {
             "test_type": "MFT",
@@ -5678,22 +5678,22 @@
                     "context": "Kenneth is not a photographer. Thomas is.",
                     "question": "Is Thomas a photographer?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Kenneth is not a photographer. Thomas is.",
                     "question": "Kenneth is not a photographer, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Kenneth is not a photographer. Thomas is.",
                     "question": "Is Kenneth a photographer?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Kenneth is not a photographer. Thomas is.",
@@ -5720,8 +5720,8 @@
                     "context": "Thomas is a photographer. Kenneth is not.",
                     "question": "Is Kenneth a photographer?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Thomas is a photographer. Kenneth is not.",
@@ -5734,8 +5734,8 @@
                     "context": "Colin is not an educator. Chris is.",
                     "question": "Is Chris an educator?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Colin is not an educator. Chris is.",
@@ -5748,8 +5748,8 @@
                     "context": "Colin is not an educator. Chris is.",
                     "question": "Is Colin an educator?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Colin is not an educator. Chris is.",
@@ -5762,8 +5762,8 @@
                     "context": "Chris is an educator. Colin is not.",
                     "question": "Is Chris an educator?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Chris is an educator. Colin is not.",
@@ -5776,8 +5776,8 @@
                     "context": "Chris is an educator. Colin is not.",
                     "question": "Is Colin an educator?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Chris is an educator. Colin is not.",
@@ -5797,8 +5797,8 @@
                     "context": "Judith is not an editor. Amy is.",
                     "question": "Judith is not an editor, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Judith is not an editor. Amy is.",
@@ -5818,50 +5818,50 @@
                     "context": "Amy is an editor. Judith is not.",
                     "question": "Is Amy an editor?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Amy is an editor. Judith is not.",
                     "question": "Judith is not an editor, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Amy is an editor. Judith is not.",
                     "question": "Is Judith an editor?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Amy is an editor. Judith is not.",
                     "question": "Amy is not an editor, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ken is not a journalist. Johnny is.",
                     "question": "Is Johnny a journalist?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ken is not a journalist. Johnny is.",
                     "question": "Ken is not a journalist, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ken is not a journalist. Johnny is.",
                     "question": "Is Ken a journalist?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ken is not a journalist. Johnny is.",
@@ -5888,8 +5888,8 @@
                     "context": "Johnny is a journalist. Ken is not.",
                     "question": "Is Ken a journalist?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Johnny is a journalist. Ken is not.",
@@ -5902,22 +5902,22 @@
                     "context": "Karen is not a producer. Dorothy is.",
                     "question": "Is Dorothy a producer?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Karen is not a producer. Dorothy is.",
                     "question": "Karen is not a producer, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Karen is not a producer. Dorothy is.",
                     "question": "Is Karen a producer?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Karen is not a producer. Dorothy is.",
@@ -5930,36 +5930,36 @@
                     "context": "Dorothy is a producer. Karen is not.",
                     "question": "Is Dorothy a producer?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dorothy is a producer. Karen is not.",
                     "question": "Karen is not a producer, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dorothy is a producer. Karen is not.",
                     "question": "Is Karen a producer?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dorothy is a producer. Karen is not.",
                     "question": "Dorothy is not a producer, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 40,
-            "failed_cases": 20,
-            "success_cases": 20,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 22,
+            "success_cases": 18,
+            "failure_rate": 55.0,
+            "success_rate": 45.0
         },
         {
             "test_type": "MFT",
@@ -5973,141 +5973,141 @@
                     "context": "Joseph is an artist. Amanda is an organizer.",
                     "question": "Amanda is not an artist, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Joseph is an artist. Amanda is an organizer.",
                     "question": "Joseph is not an artist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Amanda is an organizer. Joseph is an artist.",
                     "question": "Amanda is not an artist, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Amanda is an organizer. Joseph is an artist.",
                     "question": "Joseph is not an artist, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Christine is a secretary. Charles is an intern.",
                     "question": "Charles is not a secretary, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Christine is a secretary. Charles is an intern.",
                     "question": "Christine is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Charles is an intern. Christine is a secretary.",
                     "question": "Charles is not a secretary, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Charles is an intern. Christine is a secretary.",
                     "question": "Christine is not a secretary, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Maria is an actor. Jerry is an author.",
                     "question": "Jerry is not an actor, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Maria is an actor. Jerry is an author.",
                     "question": "Maria is not an actor, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jerry is an author. Maria is an actor.",
                     "question": "Jerry is not an actor, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jerry is an author. Maria is an actor.",
                     "question": "Maria is not an actor, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Tony is a historian. Sarah is an advisor.",
                     "question": "Sarah is not a historian, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Tony is a historian. Sarah is an advisor.",
                     "question": "Tony is not a historian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sarah is an advisor. Tony is a historian.",
                     "question": "Sarah is not a historian, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sarah is an advisor. Tony is a historian.",
                     "question": "Tony is not a historian, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Charles is an educator. Jennifer is an accountant.",
                     "question": "Jennifer is not an educator, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Charles is an educator. Jennifer is an accountant.",
                     "question": "Charles is not an educator, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jennifer is an accountant. Charles is an educator.",
                     "question": "Jennifer is not an educator, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jennifer is an accountant. Charles is an educator.",
                     "question": "Charles is not an educator, right?",
                     "answer": "No",
-                    "prediction": "Yes",
-                    "success_failed": "failed"
+                    "prediction": "No",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 20,
@@ -6135,43 +6135,43 @@
                     "context": "Emma is not a doctor, George is.",
                     "question": "Is George a doctor?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Patrick is not a CEO, Ellen is.",
                     "question": "Is Ellen a CEO?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ellen is not a CEO, Patrick is.",
                     "question": "Is Patrick a CEO?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Scott is not a doctor, Rose is.",
                     "question": "Is Rose a doctor?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Rose is not a doctor, Scott is.",
                     "question": "Is Scott a doctor?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "John is not a secretary, Angela is.",
                     "question": "Is Angela a secretary?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Angela is not a secretary, John is.",
@@ -6184,22 +6184,22 @@
                     "context": "Patrick is not a CEO, Maria is.",
                     "question": "Is Maria a CEO?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Maria is not a CEO, Patrick is.",
                     "question": "Is Patrick a CEO?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 1,
-            "success_cases": 9,
-            "failure_rate": 10.0,
-            "success_rate": 90.0
+            "failed_cases": 9,
+            "success_cases": 1,
+            "failure_rate": 90.0,
+            "success_rate": 10.0
         },
         {
             "test_type": "MFT",
@@ -6922,8 +6922,8 @@
                     "context": "Kathryn and Dick are friends. The former is a nurse.",
                     "question": "Is Dick a nurse?",
                     "answer": "No",
-                    "prediction": "No",
-                    "success_failed": "success"
+                    "prediction": "Yes",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick and Kathryn are friends. The latter is a nurse.",
@@ -6950,8 +6950,8 @@
                     "context": "Kathryn and Dick are friends. The former is a nurse and the latter is a journalist.",
                     "question": "Is Dick a nurse?",
                     "answer": "No",
-                    "prediction": "No",
-                    "success_failed": "success"
+                    "prediction": "Yes",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick and Kathryn are friends. The former is a journalist and the latter is a nurse.",
@@ -6964,8 +6964,8 @@
                     "context": "Dick and Kathryn are friends. The former is a journalist and the latter is a nurse.",
                     "question": "Is Dick a nurse?",
                     "answer": "No",
-                    "prediction": "No",
-                    "success_failed": "success"
+                    "prediction": "Yes",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lucy and Pamela are friends. The former is a producer.",
@@ -7025,10 +7025,10 @@
                 }
             ],
             "total_cases": 32,
-            "failed_cases": 13,
-            "success_cases": 19,
-            "failure_rate": 40.62,
-            "success_rate": 59.38
+            "failed_cases": 16,
+            "success_cases": 16,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -7337,8 +7337,8 @@
                     "context": "Jill believes Ralph. Ralph believes Ken.",
                     "question": "Jill believes Ralph, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jill believes Ralph. Ralph believes Ken.",
@@ -7449,15 +7449,15 @@
                     "context": "Dick blames Jean. Jean blames Harold.",
                     "question": "Dick blames Jean, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick blames Jean. Jean blames Harold.",
                     "question": "Jean blames Harold, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick blames Jean. Jean blames Harold.",
@@ -7470,22 +7470,22 @@
                     "context": "Dick blames Jean. Jean blames Harold.",
                     "question": "Is Harold blamed by Jean?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick blames Jean. Harold is blamed by Jean.",
                     "question": "Dick blames Jean, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick blames Jean. Harold is blamed by Jean.",
                     "question": "Jean blames Harold, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick blames Jean. Harold is blamed by Jean.",
@@ -7505,15 +7505,15 @@
                     "context": "Jean is blamed by Dick. Jean blames Harold.",
                     "question": "Dick blames Jean, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jean is blamed by Dick. Jean blames Harold.",
                     "question": "Jean blames Harold, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jean is blamed by Dick. Jean blames Harold.",
@@ -7533,8 +7533,8 @@
                     "context": "Jean is blamed by Dick. Harold is blamed by Jean.",
                     "question": "Dick blames Jean, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jean is blamed by Dick. Harold is blamed by Jean.",
@@ -7561,8 +7561,8 @@
                     "context": "Tim likes Victoria. Victoria likes Kathryn.",
                     "question": "Tim likes Victoria, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Tim likes Victoria. Victoria likes Kathryn.",
@@ -7785,8 +7785,8 @@
                     "context": "Katherine likes Joe. Joe likes Alice.",
                     "question": "Katherine likes Joe, right?",
                     "answer": "Yes",
-                    "prediction": "Yes",
-                    "success_failed": "success"
+                    "prediction": "No",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Katherine likes Joe. Joe likes Alice.",
@@ -7895,10 +7895,10 @@
                 }
             ],
             "total_cases": 80,
-            "failed_cases": 0,
-            "success_cases": 80,
-            "failure_rate": 0.0,
-            "success_rate": 100.0
+            "failed_cases": 11,
+            "success_cases": 69,
+            "failure_rate": 13.75,
+            "success_rate": 86.25
         }
     ]
 }

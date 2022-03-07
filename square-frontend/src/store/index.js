@@ -28,8 +28,13 @@ export default new Vuex.Store({
     // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
     skillOptions: {
-      selectedSkills: Array(3).fill('None'),
-      maxResultsPerSkill: 10
+      qa: {
+        selectedSkills: Array(3).fill('None'),
+        maxResultsPerSkill: 10
+      },
+      explain: {
+        selectedSkills: Array(3).fill('None')
+      }
     }
   },
   mutations: {
@@ -56,7 +61,7 @@ export default new Vuex.Store({
       }
     },
     setSkillOptions(state, payload) {
-      state.skillOptions = payload.skillOptions
+      state.skillOptions[payload.selectorTarget] = payload.skillOptions
     }
   },
   /**
@@ -74,7 +79,6 @@ export default new Vuex.Store({
               predictions: response.data.predictions
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
-            context.commit('setSkillOptions', { skillOptions: options })
           }))
     },
     signIn(context, { username, password }) {
@@ -91,6 +95,9 @@ export default new Vuex.Store({
     initJWTfromLocalStorage(context) {
       let jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
       context.commit('setJWT', { jwt: jwt })
+    },
+    selectSkill(context, { skillOptions, selectorTarget }) {
+      context.commit('setSkillOptions', { skillOptions: skillOptions, selectorTarget: selectorTarget })
     },
     updateSkills(context) {
       let user_name = context.state.user.name ? context.state.user.name : ''
