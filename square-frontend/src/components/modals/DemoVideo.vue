@@ -21,7 +21,7 @@
                 aria-label="Close" />
           </div>
           <div class="modal-body p-0 d-flex align-items-center">
-            <video controls preload="none" class="w-100" ref="demoVideo">
+            <video controls preload="none" class="w-100 mh-100" ref="demoVideo">
               <source :src="`${publicPath}demo.mp4`"
                       type="video/mp4">
               Sorry, your browser doesn't support embedded videos.

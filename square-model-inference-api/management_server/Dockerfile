@@ -17,10 +17,10 @@ RUN pip install -r requirements.txt
 # Deployment stage
 FROM base as build
 
+COPY ./app app
 COPY main.py main.py
-COPY models.py models.py
 COPY docker_access.py docker_access.py
 COPY logging.conf logging.conf
 COPY ./tasks tasks
 
-EXPOSE 8000
+EXPOSE 9001

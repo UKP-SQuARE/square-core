@@ -1,7 +1,8 @@
 uvicorn==0.13.4                 # ASGI server
-fastapi==0.65.2                 # REST API Framework
-pydantic==1.8.2
-requests
-docker
+fastapi>=0.73.0                 # REST API Framework
+pydantic==1.8.2                 # models
+requests>=2.26.0                # requests
+docker                          # docker client
+square-auth                     # keycloak authentication
 celery==5.1.2
-git+https://github.com/UKP-SQuARE/elk-json-formatter.git@v0.0.2
+git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # elk-json logger

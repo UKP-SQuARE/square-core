@@ -4,3 +4,6 @@ pytest-cov>=3.0.0
 testcontainers>=3.4.2
 python-dotenv>=0.19.2
 responses>=0.16.0
+testcontainers>=3.4.2
+python-keycloak>=0.26.1
+pytest-env>=0.6.2

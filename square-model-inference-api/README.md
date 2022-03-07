@@ -25,7 +25,11 @@ to forward requests to the correct inference server and to handle authorization 
 │   ├───main.py                 # Entry point in server
 │   ├───docker_access.py        # Manages docker acces of server
 │   ├───Dockerfile              # Dockerfile for server
-│   └───models.py               # Input modeling of the server
+│   ├───tasks                   # Tasks for queueing with celery 
+│   └───app
+│        ├───core               # app config
+│        ├───models             # input and output request models
+│        └───routers            # api routes
 ├───traefik
 │   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
 ├───locust                      # Load testing configuration with Locust
@@ -127,7 +131,7 @@ By passing all environment information that would normally be in the `.env` file
 The server will automatically create the model-api instance and add it to the docker network. It might take some time 
 until the model is available, since it needs to download and initialize the necessary models and adapters first. 
 To check whether the model is ready, you can retrieve all available models using
-`curl --insecure https://localhost:8443/api/models`
+`curl --insecure https://localhost:8443/api/models/deployed-models`
 and check whether the added models is in the list.
 
 #### Example deployment request 
