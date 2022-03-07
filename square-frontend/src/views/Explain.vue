@@ -4,9 +4,10 @@
       <div class="row">
         <div class="col">
           <CompareSkills
+              selector-target="explain"
+              :skill-filter="skillId => skillId in checklistData"
               v-on:input="changeSelectedSkills"
-              class="border-success"
-              :skill-filter="skillId => skillId in checklistData" />
+              class="border-success" />
         </div>
       </div>
       <div v-if="selectedSkills.length > 0" class="row">

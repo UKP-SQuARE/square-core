@@ -9,7 +9,7 @@
         </label>
         <SkillSelector
             v-model="options.selectedSkills[0]"
-            v-on:input="$emit('input', options, skillSettings)"
+            v-on:input="selectSkill"
             :skills="availableSkills"
             id="skill1"
             :disabled="waiting" />
@@ -21,7 +21,7 @@
         </label>
         <SkillSelector
             v-model="options.selectedSkills[1]"
-            v-on:input="$emit('input', options, skillSettings)"
+            v-on:input="selectSkill"
             :skills="availableSkillsBasedOnSettings"
             id="skill2"
             :disabled="!minSkillsSelected(1)" />
@@ -29,7 +29,7 @@
       <div class="mb-3">
         <SkillSelector
             v-model="options.selectedSkills[2]"
-            v-on:input="$emit('input', options, skillSettings)"
+            v-on:input="selectSkill"
             :skills="availableSkillsBasedOnSettings"
             id="skill3"
             :disabled="!minSkillsSelected(2)" />
@@ -43,7 +43,7 @@ import Vue from 'vue'
 import SkillSelector from '@/components/SkillSelector.vue'
 
 export default Vue.component('compare-skills', {
-  props: ['skillFilter'],
+  props: ['selectorTarget', 'skillFilter'],
   data() {
     return {
       waiting: false,
@@ -97,6 +97,10 @@ export default Vue.component('compare-skills', {
   methods: {
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
+    },
+    selectSkill() {
+      this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
+      this.$emit('input', this.options, this.skillSettings)
     }
   },
   beforeMount() {
@@ -104,7 +108,7 @@ export default Vue.component('compare-skills', {
     this.$store.dispatch('updateSkills')
         .then(() => {
           // Copy the object so we do not change the state before a query is issued
-          this.options = JSON.parse(JSON.stringify(this.$store.state.skillOptions))
+          this.options = JSON.parse(JSON.stringify(this.$store.state.skillOptions[this.selectorTarget]))
         }).finally(() => {
           this.waiting = false
         })
