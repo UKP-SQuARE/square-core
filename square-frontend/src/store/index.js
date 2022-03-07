@@ -47,8 +47,8 @@ export default new Vuex.Store({
     },
     setSkills(state, payload) {
       state.availableSkills = payload.skills
-      if (state.user.name) {
-        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.user.name)
+      if (state.authentication.data) {
+        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.authentication.data.preferred_username)
       }
     },
     /**
@@ -73,8 +73,8 @@ export default new Vuex.Store({
   actions: {
     query(context, { question, inputContext, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      let user_id = context.state.user.name ? context.state.user.name : ''
-      return postQuery(question, inputContext, options, user_id)
+      let userId = context.state.authentication.data ? context.state.authentication.data.preferred_username : ''
+      return postQuery(context.getters.authenticationHeader(), question, inputContext, options, userId)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
@@ -107,20 +107,20 @@ export default new Vuex.Store({
       context.commit('setSkillOptions', { skillOptions: skillOptions, selectorTarget: selectorTarget })
     },
     updateSkills(context) {
-      let userName = context.state.authentication.data ? context.state.authentication.data.preferred_username : ''
-      return getSkills(userName)
+      let userId = context.state.authentication.data ? context.state.authentication.data.preferred_username : ''
+      return getSkills(context.getters.authenticationHeader(), userId)
           .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSkill(context, { skill }) {
-      return putSkill(skill.id, skill)
+      return putSkill(context.getters.authenticationHeader(), skill.id, skill)
           .then(() => context.dispatch('updateSkills'))
     },
     createSkill(context, { skill }) {
-      return postSkill(skill)
+      return postSkill(context.getters.authenticationHeader(), skill)
           .then(() => context.dispatch('updateSkills'))
     },
     deleteSkill(context, { skillId }) {
-      return deleteSkill(skillId)
+      return deleteSkill(context.getters.authenticationHeader(), skillId)
           .then(() => context.dispatch('updateSkills'))
     }
   },
@@ -136,6 +136,13 @@ export default new Vuex.Store({
         return false
       } else {
         return new Date() < new Date(state.authentication.data.exp * 1000)
+      }
+    },
+    authenticationHeader: (state, getters) => () => {
+      if (!getters.isAuthenticated()) {
+        return {}
+      } else {
+        return {'Authorization': `${state.authentication.data.typ} ${state.authentication.accessToken}`}
       }
     }
   }

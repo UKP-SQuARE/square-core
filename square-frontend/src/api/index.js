@@ -10,14 +10,6 @@ import axios from 'axios'
 let AUTH_URL = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect`
 let SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
 
-function getAuthenticationHeader() {
-    if (!this.$store.getters.isAuthenticated()) {
-        return {}
-    } else {
-        return {'Authorization': `${this.$store.authentication.data.typ} ${this.$store.authentication.accessToken}`}
-    }
-}
-
 /**
  * Retrieve the access token from the authentication server.
  * @param {String} code
@@ -39,54 +31,60 @@ export function getToken(code, redirectURI, clientId) {
 
 /**
  * Get a list of available skill types.
+ * @param {Object} headers optional authentication header
  */
-export function getSkillTypes() {
-    return axios.get(`${SKILL_URL}/skill-types`, { headers: getAuthenticationHeader() })
+export function getSkillTypes(headers) {
+    return axios.get(`${SKILL_URL}/skill-types`, { headers: headers })
 }
 
 /**
  * Get a list of available skills. 
  * The user name is only required for unpublished skills of the user. Published skills are available without.
+ * @param {Object} headers optional authentication header
  * @param {String} userName optional username for skill selection
  */
-export function getSkills(userName) {
-    return axios.get(`${SKILL_URL}/skill?user_id=${userName}`, { headers: getAuthenticationHeader() })
+export function getSkills(headers, userName) {
+    return axios.get(`${SKILL_URL}/skill?user_id=${userName}`, { headers: headers })
 }
 
 /**
  * Get a single skill.
+ * @param {Object} headers optional authentication header
  * @param {String} skillId ID of the skill
  */
-export function getSkill(skillId) {
-    return axios.get(`${SKILL_URL}/skill/${skillId}`, { headers: getAuthenticationHeader() })
+export function getSkill(headers, skillId) {
+    return axios.get(`${SKILL_URL}/skill/${skillId}`, { headers: headers })
 }
 
 /**
  * Permanently deletes the skill with the given ID.
+ * @param {Object} headers optional authentication header
  * @param {String} skillId ID of the skill that will be deleted
  */
-export function deleteSkill(skillId) {
-    return axios.delete(`${SKILL_URL}/skill/${skillId}`, { headers: getAuthenticationHeader() })
+export function deleteSkill(headers, skillId) {
+    return axios.delete(`${SKILL_URL}/skill/${skillId}`, { headers: headers })
 }
 
 /**
  * Updates the skill with the given ID with the new values. 
  * Only skills with owner ID as specified in access token can be updated.
+ * @param {Object} headers optional authentication header
  * @param {String} skillId ID of the skill that will be updated
  * @param {Object} newSkill the new values for the skill. All fields need to be present. If a value should not be updated, then set the old value there.
  */
-export function putSkill(skillId, newSkill) {
-    return axios.put(`${SKILL_URL}/skill/${skillId}`, newSkill, { headers: getAuthenticationHeader() })
+export function putSkill(headers, skillId, newSkill) {
+    return axios.put(`${SKILL_URL}/skill/${skillId}`, newSkill, { headers: headers })
 }
 
 /**
  * Sends a question to the backend and receives the resulting answers
+ * @param {Object} headers optional authentication header
  * @param {String} question the asked question
  * @param {String} context the provided context
  * @param {Object} options the options for the request
  * @param {String} userId the user id (if available)
  */
-export function postQuery(question, context, options, userId) {
+export function postQuery(headers, question, context, options, userId) {
     let data = {
         query: question,
         skill_args: {},
@@ -97,25 +95,26 @@ export function postQuery(question, context, options, userId) {
         data.skill_args.context = context
     }
     let results = options.selectedSkills.map(skillId => {
-        axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: getAuthenticationHeader() })
+        axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: headers })
     })
     return axios.all(results)
 }
 
 /**
  * Creates a new skill for the owner as specified in the authentication header.
+ * @param {Object} headers optional authentication header
  * @param {Object} newSkill the values for the new skill
  */
-export function postSkill(newSkill) {
-    return axios.post(`${SKILL_URL}/skill`, newSkill, { headers: getAuthenticationHeader() })
+export function postSkill(headers, newSkill) {
+    return axios.post(`${SKILL_URL}/skill`, newSkill, { headers: headers })
 }
 
 /**
  * Ping skill server to check for availability.
+ * @param {Object} headers optional authentication header
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
-export function pingSkill(skillUrl) {
-    let headers = getAuthenticationHeader()
+export function pingSkill(headers, skillUrl) {
     headers.params = { skill_url: skillUrl }
     return axios.get(`${SKILL_URL}/health/skill-heartbeat`, headers)
 }
