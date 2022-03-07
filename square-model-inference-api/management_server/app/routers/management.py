@@ -4,26 +4,29 @@ import requests
 
 from typing import List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException,Depends
 
 from app.models.management import GetModelsResult, DeployRequest, DeployResult, RemoveResult
 from app.core.config import settings
 
 from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container
 
+from square_auth.client_credentials import ClientCredentials
+client_credentials = ClientCredentials()
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.get("/deployed-models", response_model=List[GetModelsResult], name="get-deployed-models")
-async def get_all_models():  # token: str = Depends(client_credentials)):
+async def get_all_models(token: str = Depends(client_credentials)):
     lst_prefix, port = get_all_model_prefixes()
     lst_models = []
 
     for prefix in lst_prefix:
         r = requests.get(
             url="{}:{}{}/stats".format(settings.API_URL, port, prefix),
-            # headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
