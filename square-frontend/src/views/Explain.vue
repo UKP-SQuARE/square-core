@@ -86,9 +86,9 @@
                 <div class="text-center">
                   <h3 class="my-3">{{ getTest(index, row).test_name }}</h3>
                   <p class="d-inline-flex align-items-center">
-                    <span class="badge bg-primary d-inline-flex align-items-center me-2 py-2">{{ mapTestType(getTest(index, row).test_type) }}</span>
+                    <BadgePopover :popover-title="mapTestType(getTest(index, row).test_type)" :popover-content="getTest(index, row).test_type_description" />
                     test on
-                    <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ getTest(index, row).capability }}</span>
+                    <BadgePopover :popover-title="getTest(index, row).capability" :popover-content="getTest(index, row).capability_description" />
                   </p>
                   <div>
                   <a
@@ -131,6 +131,7 @@
 
 <script>
 import Vue from 'vue'
+import BadgePopover from '../components/BadgePopover'
 import CompareSkills from '../components/CompareSkills'
 import ExplainDetail from '../components/modals/ExplainDetail'
 import mixin from '../components/results/mixin'
@@ -151,6 +152,7 @@ export default Vue.component('explainability-page', {
   },
   components: {
     ExplainDetail,
+    BadgePopover,
     CompareSkills
   },
   computed: {

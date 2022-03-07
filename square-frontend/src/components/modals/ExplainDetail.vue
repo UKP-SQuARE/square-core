@@ -8,10 +8,11 @@
         <div class="modal-body">
           <div class="text-center">
             <h3 class="card-title mb-3">{{ test.test_name }}</h3>
+            <p class="card-text">{{ test.test_name_description }}</p>
             <p class="d-inline-flex align-items-center">
-              <span class="badge bg-primary d-inline-flex align-items-center me-2 py-2">{{ mapTestType(test.test_type) }}</span>
+              <BadgePopover :popover-title="mapTestType(test.test_type)" :popover-content="test.test_type_description" />
               test on
-              <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ test.capability }}</span>
+              <BadgePopover :popover-title="test.capability" :popover-content="test.capability_description" />
             </p>
             <p>
               Failure rate <sup class="text-danger">{{ test.failed_cases }}</sup>&frasl;<sub>{{ test.total_cases }}</sub> = <strong class="text-danger">{{ roundScore(test.failed_cases / test.total_cases, false) }}%</strong>
@@ -94,11 +95,15 @@
 
 <script>
 import Vue from 'vue'
+import BadgePopover from '../BadgePopover'
 import mixin from '@/components/results/mixin.vue'
 
 export default Vue.component('explain-detail', {
   props: ['test'],
   mixins: [mixin],
+  components: {
+    BadgePopover
+  },
   methods: {
     prepareRegExp(token) {
       return new RegExp('([^\\w])' + token + '([^\\w])', 'ig')
