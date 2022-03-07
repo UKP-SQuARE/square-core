@@ -15,6 +15,6 @@ RUN npm run build
 # production stage
 FROM nginx:stable-alpine as production-stage
 COPY --from=docs-build-stage /square-docs/build /www/data/docs
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 9002
 CMD ["nginx", "-g", "daemon off;"]
