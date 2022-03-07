@@ -17,8 +17,8 @@
                         "None"
                     ],
                     "answer": "Susan",
-                    "prediction": "Susan",
-                    "success_failed": "success"
+                    "prediction": "Marie",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Marie is weaker than Susan.",
@@ -41,8 +41,8 @@
                         "None"
                     ],
                     "answer": "Dan",
-                    "prediction": "Dan",
-                    "success_failed": "success"
+                    "prediction": "Kelly",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Kelly is older than Dan.",
@@ -53,8 +53,8 @@
                         "None"
                     ],
                     "answer": "Kelly",
-                    "prediction": "Dan",
-                    "success_failed": "failed"
+                    "prediction": "Kelly",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Alice is stranger than Victoria.",
@@ -65,8 +65,8 @@
                         "None"
                     ],
                     "answer": "Victoria",
-                    "prediction": "Victoria",
-                    "success_failed": "success"
+                    "prediction": "Alice",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Alice is stranger than Victoria.",
@@ -77,8 +77,8 @@
                         "None"
                     ],
                     "answer": "Alice",
-                    "prediction": "Victoria",
-                    "success_failed": "failed"
+                    "prediction": "Alice",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jean is younger than Sophie.",
@@ -89,8 +89,8 @@
                         "None"
                     ],
                     "answer": "Sophie",
-                    "prediction": "Sophie",
-                    "success_failed": "success"
+                    "prediction": "Jean",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jean is younger than Sophie.",
@@ -130,10 +130,10 @@
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 3,
-            "success_cases": 7,
-            "failure_rate": 30.0,
-            "success_rate": 70.0
+            "failed_cases": 5,
+            "success_cases": 5,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -476,8 +476,8 @@
                         "None"
                     ],
                     "answer": "Andrew",
-                    "prediction": "Andrew",
-                    "success_failed": "success"
+                    "prediction": "Ian",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ian is upbeat about the project. Andrew is a little upbeat about the project.",
@@ -865,10 +865,10 @@
                 }
             ],
             "total_cases": 60,
-            "failed_cases": 29,
-            "success_cases": 31,
-            "failure_rate": 48.33,
-            "success_rate": 51.67
+            "failed_cases": 30,
+            "success_cases": 30,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -887,8 +887,8 @@
                         "None"
                     ],
                     "answer": "new",
-                    "prediction": "purple",
-                    "success_failed": "failed"
+                    "prediction": "new",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a new purple toy in the room.",
@@ -899,8 +899,8 @@
                         "None"
                     ],
                     "answer": "purple",
-                    "prediction": "purple",
-                    "success_failed": "success"
+                    "prediction": "new",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a toy in the room. The toy is new and purple.",
@@ -911,8 +911,8 @@
                         "None"
                     ],
                     "answer": "new",
-                    "prediction": "purple",
-                    "success_failed": "failed"
+                    "prediction": "new",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is new and purple.",
@@ -923,8 +923,8 @@
                         "None"
                     ],
                     "answer": "purple",
-                    "prediction": "purple",
-                    "success_failed": "success"
+                    "prediction": "new",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is an old blue toy in the room.",
@@ -935,8 +935,8 @@
                         "None"
                     ],
                     "answer": "old",
-                    "prediction": "blue",
-                    "success_failed": "failed"
+                    "prediction": "old",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is an old blue toy in the room.",
@@ -959,8 +959,8 @@
                         "None"
                     ],
                     "answer": "old",
-                    "prediction": "blue",
-                    "success_failed": "failed"
+                    "prediction": "old",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is old and blue.",
@@ -983,8 +983,8 @@
                         "None"
                     ],
                     "answer": "round",
-                    "prediction": "grey",
-                    "success_failed": "failed"
+                    "prediction": "round",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a round grey object in the room.",
@@ -1007,8 +1007,8 @@
                         "None"
                     ],
                     "answer": "round",
-                    "prediction": "grey",
-                    "success_failed": "failed"
+                    "prediction": "round",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is an object in the room. The object is round and grey.",
@@ -1031,8 +1031,8 @@
                         "None"
                     ],
                     "answer": "round",
-                    "prediction": "old",
-                    "success_failed": "failed"
+                    "prediction": "round",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a round old toy in the room.",
@@ -1043,8 +1043,8 @@
                         "None"
                     ],
                     "answer": "old",
-                    "prediction": "round",
-                    "success_failed": "failed"
+                    "prediction": "old",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is round and old.",
@@ -1055,8 +1055,8 @@
                         "None"
                     ],
                     "answer": "round",
-                    "prediction": "old",
-                    "success_failed": "failed"
+                    "prediction": "round",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is round and old.",
@@ -1079,8 +1079,8 @@
                         "None"
                     ],
                     "answer": "small",
-                    "prediction": "small",
-                    "success_failed": "success"
+                    "prediction": "square",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "There is a small square toy in the room.",
@@ -1091,8 +1091,8 @@
                         "None"
                     ],
                     "answer": "square",
-                    "prediction": "small",
-                    "success_failed": "failed"
+                    "prediction": "square",
+                    "success_failed": "success"
                 },
                 {
                     "context": "There is a toy in the room. The toy is small and square.",
@@ -1120,10 +1120,10 @@
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 16,
-            "success_cases": 4,
-            "failure_rate": 80.0,
-            "success_rate": 20.0
+            "failed_cases": 9,
+            "success_cases": 11,
+            "failure_rate": 45.0,
+            "success_rate": 55.0
         },
         {
             "test_type": "MFT",
@@ -1322,8 +1322,8 @@
                         "None"
                     ],
                     "answer": "American",
-                    "prediction": "intern",
-                    "success_failed": "failed"
+                    "prediction": "American",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Marilyn is American and an intern.",
@@ -1346,8 +1346,8 @@
                         "None"
                     ],
                     "answer": "American",
-                    "prediction": "intern",
-                    "success_failed": "failed"
+                    "prediction": "American",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Marilyn is an intern and American.",
@@ -1370,8 +1370,8 @@
                         "None"
                     ],
                     "answer": "American",
-                    "prediction": "intern",
-                    "success_failed": "failed"
+                    "prediction": "American",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Samuel is a Japanese escort.",
@@ -1735,10 +1735,10 @@
                 }
             ],
             "total_cases": 50,
-            "failed_cases": 29,
-            "success_cases": 21,
-            "failure_rate": 58.0,
-            "success_rate": 42.0
+            "failed_cases": 26,
+            "success_cases": 24,
+            "failure_rate": 52.0,
+            "success_rate": 48.0
         },
         {
             "test_type": "MFT",
@@ -1757,8 +1757,8 @@
                         "None"
                     ],
                     "answer": "bull",
-                    "prediction": "car",
-                    "success_failed": "failed"
+                    "prediction": "bull",
+                    "success_failed": "success"
                 },
                 {
                     "context": "George has a bull and a car.",
@@ -1817,8 +1817,8 @@
                         "None"
                     ],
                     "answer": "tractor",
-                    "prediction": "cow",
-                    "success_failed": "failed"
+                    "prediction": "tractor",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Francis has a tractor and a cow.",
@@ -1829,8 +1829,8 @@
                         "None"
                     ],
                     "answer": "cow",
-                    "prediction": "cow",
-                    "success_failed": "success"
+                    "prediction": "tractor",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Francis has a tractor and a cow.",
@@ -1841,8 +1841,8 @@
                         "None"
                     ],
                     "answer": "tractor",
-                    "prediction": "cow",
-                    "success_failed": "failed"
+                    "prediction": "tractor",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Emily has a dog and a motorcycle.",
@@ -1865,8 +1865,8 @@
                         "None"
                     ],
                     "answer": "motorcycle",
-                    "prediction": "dog",
-                    "success_failed": "failed"
+                    "prediction": "motorcycle",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Emily has a motorcycle and a dog.",
@@ -1877,8 +1877,8 @@
                         "None"
                     ],
                     "answer": "dog",
-                    "prediction": "dog",
-                    "success_failed": "success"
+                    "prediction": "motorcycle",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Emily has a motorcycle and a dog.",
@@ -1889,8 +1889,8 @@
                         "None"
                     ],
                     "answer": "motorcycle",
-                    "prediction": "dog",
-                    "success_failed": "failed"
+                    "prediction": "motorcycle",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dave has a dog and a motorcycle.",
@@ -1913,8 +1913,8 @@
                         "None"
                     ],
                     "answer": "motorcycle",
-                    "prediction": "dog",
-                    "success_failed": "failed"
+                    "prediction": "motorcycle",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dave has a motorcycle and a dog.",
@@ -1925,8 +1925,8 @@
                         "None"
                     ],
                     "answer": "dog",
-                    "prediction": "dog",
-                    "success_failed": "success"
+                    "prediction": "motorcycle",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dave has a motorcycle and a dog.",
@@ -1937,8 +1937,8 @@
                         "None"
                     ],
                     "answer": "motorcycle",
-                    "prediction": "dog",
-                    "success_failed": "failed"
+                    "prediction": "motorcycle",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Barbara has a snake and a SUV.",
@@ -1949,8 +1949,8 @@
                         "None"
                     ],
                     "answer": "snake",
-                    "prediction": "SUV",
-                    "success_failed": "failed"
+                    "prediction": "snake",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Barbara has a snake and a SUV.",
@@ -1973,8 +1973,8 @@
                         "None"
                     ],
                     "answer": "snake",
-                    "prediction": "SUV",
-                    "success_failed": "failed"
+                    "prediction": "snake",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Barbara has a SUV and a snake.",
@@ -1990,10 +1990,10 @@
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 16,
-            "success_cases": 4,
-            "failure_rate": 80.0,
-            "success_rate": 20.0
+            "failed_cases": 10,
+            "success_cases": 10,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -2036,8 +2036,8 @@
                         "None"
                     ],
                     "answer": "Johnny",
-                    "prediction": "Johnny",
-                    "success_failed": "success"
+                    "prediction": "Eric",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Eric bought a train. Johnny bought a bull.",
@@ -2048,8 +2048,8 @@
                         "None"
                     ],
                     "answer": "Eric",
-                    "prediction": "Johnny",
-                    "success_failed": "failed"
+                    "prediction": "Eric",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jean bought a hamster. Ann bought a motorcycle.",
@@ -2132,8 +2132,8 @@
                         "None"
                     ],
                     "answer": "Frank",
-                    "prediction": "Frank",
-                    "success_failed": "success"
+                    "prediction": "Betty",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Betty bought a train. Frank bought a fish.",
@@ -2144,8 +2144,8 @@
                         "None"
                     ],
                     "answer": "Betty",
-                    "prediction": "Frank",
-                    "success_failed": "failed"
+                    "prediction": "Betty",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Joseph bought a cow. Eric bought a car.",
@@ -2240,15 +2240,15 @@
                         "None"
                     ],
                     "answer": "Carl",
-                    "prediction": "Sue",
-                    "success_failed": "failed"
+                    "prediction": "Carl",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 11,
-            "success_cases": 9,
-            "failure_rate": 55.0,
-            "success_rate": 45.0
+            "failed_cases": 10,
+            "success_cases": 10,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -2303,8 +2303,8 @@
                         "None"
                     ],
                     "answer": "Katherine",
-                    "prediction": "Johnny",
-                    "success_failed": "failed"
+                    "prediction": "Katherine",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Stephanie is very spiritual. Alexandra is very grateful.",
@@ -2387,8 +2387,8 @@
                         "None"
                     ],
                     "answer": "Jonathan",
-                    "prediction": "Jonathan",
-                    "success_failed": "success"
+                    "prediction": "Dave",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dave is very vocal. Jonathan is very happy.",
@@ -2399,8 +2399,8 @@
                         "None"
                     ],
                     "answer": "Dave",
-                    "prediction": "Jonathan",
-                    "success_failed": "failed"
+                    "prediction": "Dave",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Wendy is very intelligent. Roy is very humble.",
@@ -2411,8 +2411,8 @@
                         "None"
                     ],
                     "answer": "Wendy",
-                    "prediction": "Roy",
-                    "success_failed": "failed"
+                    "prediction": "Wendy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Wendy is very intelligent. Roy is very humble.",
@@ -2423,8 +2423,8 @@
                         "None"
                     ],
                     "answer": "Roy",
-                    "prediction": "Roy",
-                    "success_failed": "success"
+                    "prediction": "Wendy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Roy is very humble. Wendy is very intelligent.",
@@ -2507,8 +2507,8 @@
                         "None"
                     ],
                     "answer": "Grace",
-                    "prediction": "Joseph",
-                    "success_failed": "failed"
+                    "prediction": "Grace",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Grace is very organised. Joseph is very smart.",
@@ -2603,8 +2603,8 @@
                         "None"
                     ],
                     "answer": "Jonathan",
-                    "prediction": "Elizabeth",
-                    "success_failed": "failed"
+                    "prediction": "Jonathan",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jonathan is very modest. Elizabeth is very joyful.",
@@ -2627,8 +2627,8 @@
                         "None"
                     ],
                     "answer": "Jonathan",
-                    "prediction": "Jonathan",
-                    "success_failed": "success"
+                    "prediction": "Elizabeth",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Elizabeth is very joyful. Jonathan is very modest.",
@@ -2651,51 +2651,51 @@
                         "None"
                     ],
                     "answer": "Arthur",
-                    "prediction": "Dorothy",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Arthur is very modest. Dorothy is very joyful.",
-                    "question": "Who is happy?",
-                    "options": [
-                        "Arthur",
-                        "Dorothy",
-                        "None"
-                    ],
-                    "answer": "Dorothy",
-                    "prediction": "Dorothy",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Dorothy is very joyful. Arthur is very modest.",
-                    "question": "Who is humble?",
-                    "options": [
-                        "Arthur",
-                        "Dorothy",
-                        "None"
-                    ],
-                    "answer": "Arthur",
-                    "prediction": "Dorothy",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Dorothy is very joyful. Arthur is very modest.",
-                    "question": "Who is happy?",
-                    "options": [
-                        "Arthur",
-                        "Dorothy",
-                        "None"
-                    ],
-                    "answer": "Dorothy",
                     "prediction": "Arthur",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Arthur is very modest. Dorothy is very joyful.",
+                    "question": "Who is happy?",
+                    "options": [
+                        "Arthur",
+                        "Dorothy",
+                        "None"
+                    ],
+                    "answer": "Dorothy",
+                    "prediction": "Dorothy",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Dorothy is very joyful. Arthur is very modest.",
+                    "question": "Who is humble?",
+                    "options": [
+                        "Arthur",
+                        "Dorothy",
+                        "None"
+                    ],
+                    "answer": "Arthur",
+                    "prediction": "Dorothy",
                     "success_failed": "failed"
+                },
+                {
+                    "context": "Dorothy is very joyful. Arthur is very modest.",
+                    "question": "Who is happy?",
+                    "options": [
+                        "Arthur",
+                        "Dorothy",
+                        "None"
+                    ],
+                    "answer": "Dorothy",
+                    "prediction": "Dorothy",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 36,
-            "failed_cases": 18,
-            "success_cases": 18,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 14,
+            "success_cases": 22,
+            "failure_rate": 38.89,
+            "success_rate": 61.11
         },
         {
             "test_type": "MFT",
@@ -2738,8 +2738,8 @@
                         "None"
                     ],
                     "answer": "Kelly",
-                    "prediction": "Elaine",
-                    "success_failed": "failed"
+                    "prediction": "Kelly",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Kelly is smaller than Elaine.",
@@ -2750,8 +2750,8 @@
                         "None"
                     ],
                     "answer": "Elaine",
-                    "prediction": "Elaine",
-                    "success_failed": "success"
+                    "prediction": "Kelly",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sophie is smarter than Sue.",
@@ -2786,8 +2786,8 @@
                         "None"
                     ],
                     "answer": "Sue",
-                    "prediction": "Sophie",
-                    "success_failed": "failed"
+                    "prediction": "Sue",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sue is dumber than Sophie.",
@@ -2798,8 +2798,8 @@
                         "None"
                     ],
                     "answer": "Sophie",
-                    "prediction": "Sophie",
-                    "success_failed": "success"
+                    "prediction": "Sue",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Emily is richer than Steven.",
@@ -2810,8 +2810,8 @@
                         "None"
                     ],
                     "answer": "Steven",
-                    "prediction": "Steven",
-                    "success_failed": "success"
+                    "prediction": "Emily",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Emily is richer than Steven.",
@@ -2822,8 +2822,8 @@
                         "None"
                     ],
                     "answer": "Emily",
-                    "prediction": "Steven",
-                    "success_failed": "failed"
+                    "prediction": "Emily",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Steven is poorer than Emily.",
@@ -2906,8 +2906,8 @@
                         "None"
                     ],
                     "answer": "William",
-                    "prediction": "William",
-                    "success_failed": "success"
+                    "prediction": "Barbara",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Barbara is louder than William.",
@@ -2918,8 +2918,8 @@
                         "None"
                     ],
                     "answer": "Barbara",
-                    "prediction": "William",
-                    "success_failed": "failed"
+                    "prediction": "Barbara",
+                    "success_failed": "success"
                 },
                 {
                     "context": "William is quieter than Barbara.",
@@ -3017,8 +3017,8 @@
                         "None"
                     ],
                     "answer": "Dan",
-                    "prediction": "Dan",
-                    "success_failed": "success"
+                    "prediction": "Linda",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Linda is more active than Dan.",
@@ -3029,8 +3029,8 @@
                         "None"
                     ],
                     "answer": "Linda",
-                    "prediction": "Dan",
-                    "success_failed": "failed"
+                    "prediction": "Linda",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Linda is more active than Dan.",
@@ -3041,8 +3041,8 @@
                         "None"
                     ],
                     "answer": "Linda",
-                    "prediction": "Dan",
-                    "success_failed": "failed"
+                    "prediction": "Linda",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Linda is more active than Dan.",
@@ -3053,8 +3053,8 @@
                         "None"
                     ],
                     "answer": "Dan",
-                    "prediction": "Dan",
-                    "success_failed": "success"
+                    "prediction": "Linda",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dan is less active than Linda.",
@@ -3113,8 +3113,8 @@
                         "None"
                     ],
                     "answer": "Dan",
-                    "prediction": "Dan",
-                    "success_failed": "success"
+                    "prediction": "Linda",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Linda is less passive than Dan.",
@@ -3125,8 +3125,8 @@
                         "None"
                     ],
                     "answer": "Linda",
-                    "prediction": "Dan",
-                    "success_failed": "failed"
+                    "prediction": "Linda",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Linda is less passive than Dan.",
@@ -3137,8 +3137,8 @@
                         "None"
                     ],
                     "answer": "Linda",
-                    "prediction": "Dan",
-                    "success_failed": "failed"
+                    "prediction": "Linda",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Linda is less passive than Dan.",
@@ -3149,8 +3149,8 @@
                         "None"
                     ],
                     "answer": "Dan",
-                    "prediction": "Dan",
-                    "success_failed": "success"
+                    "prediction": "Linda",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Suzanne is more courageous than Jill.",
@@ -3197,59 +3197,11 @@
                         "None"
                     ],
                     "answer": "Suzanne",
-                    "prediction": "Jill",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Jill is more fearful than Suzanne.",
-                    "question": "Who is more courageous?",
-                    "options": [
-                        "Jill",
-                        "Suzanne",
-                        "None"
-                    ],
-                    "answer": "Suzanne",
                     "prediction": "Suzanne",
                     "success_failed": "success"
                 },
                 {
                     "context": "Jill is more fearful than Suzanne.",
-                    "question": "Who is less courageous?",
-                    "options": [
-                        "Jill",
-                        "Suzanne",
-                        "None"
-                    ],
-                    "answer": "Jill",
-                    "prediction": "Suzanne",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Jill is more fearful than Suzanne.",
-                    "question": "Who is more fearful?",
-                    "options": [
-                        "Jill",
-                        "Suzanne",
-                        "None"
-                    ],
-                    "answer": "Jill",
-                    "prediction": "Suzanne",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Jill is more fearful than Suzanne.",
-                    "question": "Who is less fearful?",
-                    "options": [
-                        "Jill",
-                        "Suzanne",
-                        "None"
-                    ],
-                    "answer": "Suzanne",
-                    "prediction": "Suzanne",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Suzanne is less fearful than Jill.",
                     "question": "Who is more courageous?",
                     "options": [
                         "Jill",
@@ -3261,7 +3213,7 @@
                     "success_failed": "failed"
                 },
                 {
-                    "context": "Suzanne is less fearful than Jill.",
+                    "context": "Jill is more fearful than Suzanne.",
                     "question": "Who is less courageous?",
                     "options": [
                         "Jill",
@@ -3273,7 +3225,7 @@
                     "success_failed": "success"
                 },
                 {
-                    "context": "Suzanne is less fearful than Jill.",
+                    "context": "Jill is more fearful than Suzanne.",
                     "question": "Who is more fearful?",
                     "options": [
                         "Jill",
@@ -3285,7 +3237,7 @@
                     "success_failed": "success"
                 },
                 {
-                    "context": "Suzanne is less fearful than Jill.",
+                    "context": "Jill is more fearful than Suzanne.",
                     "question": "Who is less fearful?",
                     "options": [
                         "Jill",
@@ -3297,7 +3249,7 @@
                     "success_failed": "failed"
                 },
                 {
-                    "context": "Jill is less courageous than Suzanne.",
+                    "context": "Suzanne is less fearful than Jill.",
                     "question": "Who is more courageous?",
                     "options": [
                         "Jill",
@@ -3309,7 +3261,7 @@
                     "success_failed": "success"
                 },
                 {
-                    "context": "Jill is less courageous than Suzanne.",
+                    "context": "Suzanne is less fearful than Jill.",
                     "question": "Who is less courageous?",
                     "options": [
                         "Jill",
@@ -3321,7 +3273,7 @@
                     "success_failed": "failed"
                 },
                 {
-                    "context": "Jill is less courageous than Suzanne.",
+                    "context": "Suzanne is less fearful than Jill.",
                     "question": "Who is more fearful?",
                     "options": [
                         "Jill",
@@ -3333,7 +3285,7 @@
                     "success_failed": "failed"
                 },
                 {
-                    "context": "Jill is less courageous than Suzanne.",
+                    "context": "Suzanne is less fearful than Jill.",
                     "question": "Who is less fearful?",
                     "options": [
                         "Jill",
@@ -3343,6 +3295,54 @@
                     "answer": "Suzanne",
                     "prediction": "Suzanne",
                     "success_failed": "success"
+                },
+                {
+                    "context": "Jill is less courageous than Suzanne.",
+                    "question": "Who is more courageous?",
+                    "options": [
+                        "Jill",
+                        "Suzanne",
+                        "None"
+                    ],
+                    "answer": "Suzanne",
+                    "prediction": "Jill",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Jill is less courageous than Suzanne.",
+                    "question": "Who is less courageous?",
+                    "options": [
+                        "Jill",
+                        "Suzanne",
+                        "None"
+                    ],
+                    "answer": "Jill",
+                    "prediction": "Jill",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Jill is less courageous than Suzanne.",
+                    "question": "Who is more fearful?",
+                    "options": [
+                        "Jill",
+                        "Suzanne",
+                        "None"
+                    ],
+                    "answer": "Jill",
+                    "prediction": "Jill",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Jill is less courageous than Suzanne.",
+                    "question": "Who is less fearful?",
+                    "options": [
+                        "Jill",
+                        "Suzanne",
+                        "None"
+                    ],
+                    "answer": "Suzanne",
+                    "prediction": "Jill",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lisa is more pessimistic than Julie.",
@@ -3353,8 +3353,8 @@
                         "None"
                     ],
                     "answer": "Lisa",
-                    "prediction": "Julie",
-                    "success_failed": "failed"
+                    "prediction": "Lisa",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lisa is more pessimistic than Julie.",
@@ -3377,8 +3377,8 @@
                         "None"
                     ],
                     "answer": "Julie",
-                    "prediction": "Julie",
-                    "success_failed": "success"
+                    "prediction": "Lisa",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lisa is more pessimistic than Julie.",
@@ -3389,8 +3389,8 @@
                         "None"
                     ],
                     "answer": "Lisa",
-                    "prediction": "Julie",
-                    "success_failed": "failed"
+                    "prediction": "Lisa",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Julie is more optimistic than Lisa.",
@@ -3449,8 +3449,8 @@
                         "None"
                     ],
                     "answer": "Lisa",
-                    "prediction": "Julie",
-                    "success_failed": "failed"
+                    "prediction": "Lisa",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lisa is less optimistic than Julie.",
@@ -3461,8 +3461,8 @@
                         "None"
                     ],
                     "answer": "Julie",
-                    "prediction": "Julie",
-                    "success_failed": "success"
+                    "prediction": "Lisa",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lisa is less optimistic than Julie.",
@@ -3473,8 +3473,8 @@
                         "None"
                     ],
                     "answer": "Julie",
-                    "prediction": "Julie",
-                    "success_failed": "success"
+                    "prediction": "Lisa",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lisa is less optimistic than Julie.",
@@ -3485,8 +3485,8 @@
                         "None"
                     ],
                     "answer": "Lisa",
-                    "prediction": "Julie",
-                    "success_failed": "failed"
+                    "prediction": "Lisa",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Julie is less pessimistic than Lisa.",
@@ -3605,8 +3605,8 @@
                         "None"
                     ],
                     "answer": "Nancy",
-                    "prediction": "Janet",
-                    "success_failed": "failed"
+                    "prediction": "Nancy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Nancy is more active than Janet.",
@@ -3701,8 +3701,8 @@
                         "None"
                     ],
                     "answer": "Nancy",
-                    "prediction": "Janet",
-                    "success_failed": "failed"
+                    "prediction": "Nancy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Nancy is less passive than Janet.",
@@ -3713,8 +3713,8 @@
                         "None"
                     ],
                     "answer": "Nancy",
-                    "prediction": "Janet",
-                    "success_failed": "failed"
+                    "prediction": "Nancy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Nancy is less passive than Janet.",
@@ -3737,8 +3737,8 @@
                         "None"
                     ],
                     "answer": "Dorothy",
-                    "prediction": "Sandra",
-                    "success_failed": "failed"
+                    "prediction": "Dorothy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dorothy is more bad than Sandra.",
@@ -3749,8 +3749,8 @@
                         "None"
                     ],
                     "answer": "Sandra",
-                    "prediction": "Sandra",
-                    "success_failed": "success"
+                    "prediction": "Dorothy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dorothy is more bad than Sandra.",
@@ -3761,8 +3761,8 @@
                         "None"
                     ],
                     "answer": "Sandra",
-                    "prediction": "Sandra",
-                    "success_failed": "success"
+                    "prediction": "Dorothy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dorothy is more bad than Sandra.",
@@ -3773,8 +3773,8 @@
                         "None"
                     ],
                     "answer": "Dorothy",
-                    "prediction": "Sandra",
-                    "success_failed": "failed"
+                    "prediction": "Dorothy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sandra is more good than Dorothy.",
@@ -3833,8 +3833,8 @@
                         "None"
                     ],
                     "answer": "Dorothy",
-                    "prediction": "Sandra",
-                    "success_failed": "failed"
+                    "prediction": "Dorothy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dorothy is less good than Sandra.",
@@ -3845,8 +3845,8 @@
                         "None"
                     ],
                     "answer": "Sandra",
-                    "prediction": "Sandra",
-                    "success_failed": "success"
+                    "prediction": "Dorothy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dorothy is less good than Sandra.",
@@ -3857,8 +3857,8 @@
                         "None"
                     ],
                     "answer": "Sandra",
-                    "prediction": "Sandra",
-                    "success_failed": "success"
+                    "prediction": "Dorothy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dorothy is less good than Sandra.",
@@ -3869,8 +3869,8 @@
                         "None"
                     ],
                     "answer": "Dorothy",
-                    "prediction": "Sandra",
-                    "success_failed": "failed"
+                    "prediction": "Dorothy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sandra is less bad than Dorothy.",
@@ -3922,10 +3922,10 @@
                 }
             ],
             "total_cases": 80,
-            "failed_cases": 41,
-            "success_cases": 39,
-            "failure_rate": 51.25,
-            "success_rate": 48.75
+            "failed_cases": 36,
+            "success_cases": 44,
+            "failure_rate": 45.0,
+            "success_rate": 55.0
         },
         {
             "test_type": "INV",
@@ -3990,8 +3990,8 @@
                         "disciplining",
                         "a father"
                     ],
-                    "prediction_before_change": "a father",
-                    "prediction": "a father",
+                    "prediction_before_change": "disciplining",
+                    "prediction": "disciplining",
                     "changed": {
                         "from": [
                             "you"
@@ -4074,8 +4074,8 @@
                         "in a concert hall",
                         "in a recording studio"
                     ],
-                    "prediction_before_change": "in a concert hall",
-                    "prediction": "in a concert hall",
+                    "prediction_before_change": "in a karaoke bar",
+                    "prediction": "in a karaoke bar",
                     "changed": {
                         "from": [
                             "Where did"
@@ -4097,8 +4097,8 @@
                         "Frustrated",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Happy",
-                    "prediction": "Happy",
+                    "prediction_before_change": "'OK, well if you want we can take you to the hospital, get you checked out if you'd like?'",
+                    "prediction": "'OK, well if you want we can take you to the hospital, get you checked out if you'd like?'",
                     "changed": {
                         "from": [
                             "How did"
@@ -4120,8 +4120,8 @@
                         "None of the above choices .",
                         "They are not hiding"
                     ],
-                    "prediction_before_change": "They are not being bullied",
-                    "prediction": "They are not being bullied",
+                    "prediction_before_change": "They are hiding and scared",
+                    "prediction": "They are hiding and scared",
                     "changed": {
                         "from": [
                             "What is"
@@ -4143,7 +4143,7 @@
                         "I cut the nails too short and it causes her pain because the nail line is sensitive on her fingers",
                         "She wants her nails longer and hates that I make it hard for her to grow them"
                     ],
-                    "prediction_before_change": "I cut the nails too short and it causes her pain because the nail line is sensitive on her fingers",
+                    "prediction_before_change": "She wants to have pretty , womanly nails and feels that when I cut them I prevent her from having her nails done well",
                     "prediction": "I cut the nails too short and it causes her pain because the nail line is sensitive on her fingers",
                     "changed": {
                         "from": [
@@ -4153,7 +4153,7 @@
                             "What's"
                         ]
                     },
-                    "success_failed": "success",
+                    "success_failed": "failed",
                     "where": "question"
                 },
                 {
@@ -4166,8 +4166,8 @@
                         "everything can be bought with money",
                         "only rich always bring happiness"
                     ],
-                    "prediction_before_change": "In fact, happiness is always around you if you put your heart into it. When you are in trouble at school, your friends will help you; when you study hard at your lessons, your parents are always taking good care of your life and your health; when you get success, your friends will say congratulations to you; when you  do something good to others, you will feel happy, too.All these are your happiness. If you notice them, you can see that happiness is always around you.",
-                    "prediction": "money always brings happiness",
+                    "prediction_before_change": "money doesn't always bring happiness",
+                    "prediction": "money doesn't always bring happiness",
                     "changed": {
                         "from": [
                             "is not"
@@ -4176,7 +4176,7 @@
                             "isn't"
                         ]
                     },
-                    "success_failed": "failed",
+                    "success_failed": "success",
                     "where": "question"
                 }
             ],
@@ -4203,9 +4203,9 @@
                         "a pig farmer",
                         "not enough information"
                     ],
-                    "prediction_before_change": "she pays the bills",
+                    "prediction_before_change": "not enough information",
                     "gold_answer": "not enough information",
-                    "prediction": "she pays the bills",
+                    "prediction": "not enough information",
                     "span": [
                         1638,
                         1664
@@ -4221,9 +4221,9 @@
                         "a pig farmer",
                         "not enough information"
                     ],
-                    "prediction_before_change": "she pays the bills",
+                    "prediction_before_change": "not enough information",
                     "gold_answer": "not enough information",
-                    "prediction": "she pays the bills",
+                    "prediction": "not enough information",
                     "span": [
                         0,
                         26
@@ -4259,12 +4259,12 @@
                     ],
                     "prediction_before_change": "blue",
                     "gold_answer": "orange",
-                    "prediction": "blue",
+                    "prediction": "\"How much do I need to pay for a single  room a night?\". Look! Here's a pencil box, it's orange, it's my pencil box, it's on the desk. Look! This is a pen, it's black. And this is an eraser, it's blue and white. They're both in the pencil box. This is a ruler, it's red, it's on the pencil box. That is a ruler, too. It's yellow. It's in the drawer. Where's my math book? Ah, it's there, under the sofa.",
                     "span": [
                         0,
                         58
                     ],
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Who knows how long I sat like that , just staring off into space with my knitting in my hands . The thing that 's worrisome to me is that this medicine is also used to treat chronic pain and depression , so I do n't know how this is going to affect me that way . Prolly be a lil less snarky now .So they gave me a shot , and popped it back into place . ",
@@ -4370,10 +4370,10 @@
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 0,
-            "success_cases": 10,
-            "failure_rate": 0.0,
-            "success_rate": 100.0
+            "failed_cases": 1,
+            "success_cases": 9,
+            "failure_rate": 10.0,
+            "success_rate": 90.0
         },
         {
             "test_type": "INV",
@@ -4562,14 +4562,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Joshua when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joshua thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Joshua"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Kyle really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Kyle when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Kyle thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Kyle told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Kyle's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Kyle the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4580,14 +4580,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Kyle when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Kyle thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Kyle"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Aiden really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Aiden when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Aiden thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Aiden told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Aiden's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Aiden the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4598,14 +4598,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Aiden when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Aiden thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Aiden"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Antonio really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Antonio when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Antonio thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Antonio told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Antonio's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Antonio the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4616,14 +4616,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Antonio when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Antonio thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Antonio"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Justin really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Justin when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Justin thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Justin told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Justin's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Justin the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4634,14 +4634,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Justin when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Justin thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Justin"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Connor really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Connor when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Connor thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Connor told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Connor's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Connor the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4652,14 +4652,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Connor when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Connor thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Connor"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jesse really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Jesse when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Jesse thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Jesse told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Jesse's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Jesse the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4670,14 +4670,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Jesse when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Jesse thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Jesse"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Matthew really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Matthew when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Matthew thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Matthew told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Matthew's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Matthew the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4688,14 +4688,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Matthew when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Matthew thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Matthew"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Benjamin really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Benjamin when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Benjamin thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Benjamin told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Benjamin's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Benjamin the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4706,14 +4706,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Benjamin when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Benjamin thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Benjamin"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jeremy really felt very happy. When he arrived at his seat in the classroom that morning, he found an invitation on his desk. It was from several of his classmates asking him to join them on a camping trip. This was the first time he was asked to join in an out-of school activity. Why were they asking him now? Nobody seemed to like him. In fact, he had been so lonely _ . As a result, he had put on a lot of weight, and this gave the kids something more to make fun of him.\nCelina, who was standing near Jeremy when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Jeremy thought that was true. But there was no camping trip. The whole thing was made up.\nAt first, Celina thought it was fun. But later, when Jeremy told her that he was going to buy a sleeping bag with his savings, Celina had a second idea. She knew that Jeremy's family had little money, and she hated to see him spend his savings on something he would never use. Celina also hated to tell Jeremy the truth. Her close friends would be angry with her.\nWhat could she do now?",
@@ -4724,14 +4724,14 @@
                         "A happy camping trip for Joseph",
                         "An Invitation to Joseph"
                     ],
-                    "prediction_before_change": "Celina, who was standing near Joseph when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Joseph thought that was true. But there was no camping trip. The whole thing was made up.",
+                    "prediction_before_change": "A happy camping trip for Joseph",
                     "gold_answer": "An Invitation to Joseph",
                     "prediction": "Celina, who was standing near Jeremy when he read the invitation, went out quickly to tell the others that the trick had worked. Everyone was pleased that Jeremy thought that was true. But there was no camping trip. The whole thing was made up.",
                     "changed": {
                         "from": "Joseph",
                         "to": "Jeremy"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Bradley proudly displayed their new watch by putting it on their wrist.",
@@ -4741,9 +4741,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Bradley"
@@ -4758,9 +4758,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Adrian"
@@ -4775,9 +4775,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Jacob"
@@ -4792,9 +4792,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Sean"
@@ -4809,9 +4809,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Cameron"
@@ -4826,9 +4826,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Henry"
@@ -4843,9 +4843,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Bradley"
@@ -4860,9 +4860,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Kenneth"
@@ -4877,9 +4877,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Evan"
@@ -4894,9 +4894,9 @@
                         "learn to tell time",
                         "show off the watch"
                     ],
-                    "prediction_before_change": "get a new watch band",
+                    "prediction_before_change": "show off the watch",
                     "gold_answer": "get a new watch band",
-                    "prediction": "get a new watch band",
+                    "prediction": "show off the watch",
                     "changed": {
                         "from": "Kai",
                         "to": "Ethan"
@@ -4912,9 +4912,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Ethan"
@@ -4930,9 +4930,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Jacob"
@@ -4948,9 +4948,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Austin"
@@ -4966,9 +4966,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Hunter"
@@ -4984,9 +4984,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Nathan"
@@ -5002,9 +5002,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Brandon"
@@ -5020,9 +5020,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Timothy"
@@ -5038,9 +5038,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "John"
@@ -5056,9 +5056,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Joseph"
@@ -5074,9 +5074,9 @@
                         "She ate a healthy diet .",
                         "She visited a cat and had an allergic reaction with lots of wheezing ."
                     ],
-                    "prediction_before_change": "She ate a healthy diet .",
+                    "prediction_before_change": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "gold_answer": "She visited a cat and had an allergic reaction with lots of wheezing .",
-                    "prediction": "She ate a healthy diet .",
+                    "prediction": "She visited a cat and had an allergic reaction with lots of wheezing .",
                     "changed": {
                         "from": "Jordan",
                         "to": "Joseph"
@@ -5265,10 +5265,10 @@
                 }
             ],
             "total_cases": 50,
-            "failed_cases": 0,
-            "success_cases": 50,
-            "failure_rate": 0.0,
-            "success_rate": 100.0
+            "failed_cases": 10,
+            "success_cases": 40,
+            "failure_rate": 20.0,
+            "success_rate": 80.0
         },
         {
             "test_type": "INV",
@@ -5289,12 +5289,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "polite",
+                    "prediction": "impolite",
                     "changed": {
                         "from": "Poland",
                         "to": "Nigeria"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in India,the very sign is considered to be rude.In Poland,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5307,12 +5307,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Brazil",
                         "to": "India"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Iraq,the very sign is considered to be rude.In Poland,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5325,12 +5325,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Brazil",
                         "to": "Iraq"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Argentina,the very sign is considered to be rude.In Poland,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5343,12 +5343,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Brazil",
                         "to": "Argentina"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Brazil,the very sign is considered to be rude.In Poland,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Brazil.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5361,12 +5361,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Brazil.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Bulgaria",
                         "to": "Brazil"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Kenya,the very sign is considered to be rude.In Poland,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5379,12 +5379,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Brazil",
                         "to": "Kenya"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Brazil,the very sign is considered to be rude.In Poland,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Indonesia.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5397,12 +5397,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Indonesia.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Bulgaria",
                         "to": "Indonesia"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Brazil,the very sign is considered to be rude.In Turkey,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5433,12 +5433,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "Usually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in France.",
+                    "prediction": "polite",
                     "changed": {
                         "from": "Bulgaria",
                         "to": "France"
                     },
-                    "success_failed": "failed"
+                    "success_failed": "success"
                 },
                 {
                     "context": "If an American is satisfied with you,he will put his thumb and forefinger into a circle.That means OK.But in Brazil,the very sign is considered to be rude.In Venezuela,a guest usually presents flowers to his hostess.The number must be an odd one.Besides,the hostess isn't expected to remove the cover of the bunch of flowers.And usually,the red rose is a sign of love.\nUsually we nod to express our agreement and shake our heads to show disagreement.To our surprise these body movements mean the opposite in Bulgaria.\nThe differences in customs and cultures in the world are really noticeable.We should learn more about them to avoid embarrassment .Then,would you please remember:When in Rome,do as the Romans do.",
@@ -5451,12 +5451,12 @@
                     ],
                     "prediction_before_change": "polite",
                     "gold_answer": "impolite",
-                    "prediction": "polite",
+                    "prediction": "impolite",
                     "changed": {
                         "from": "Poland",
                         "to": "Venezuela"
                     },
-                    "success_failed": "success"
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dr. Sharon M. Draper is an excellent teacher as well as a successful writer. She is a woman of achievements.\nShe had been honored  as the National Teacher of the Year, is a five-time winner of the Coretta Scott King Literary Awards, and is a New York Times bestselling writer. Tears of a Tiger has received many awards. It was one of the top 100 books for young adults.\nShe was chosen as Ohio's Outstanding High School Language Arts Educator, Ohio Teacher of the Year, and as a NCNW Excellence in Teaching Award winner.\nShe is a Milken Family Foundation National Educator Award winner.\nShe is a YWCA Career Woman of Achievement, and is the recipient  if the Dean's Award from Howard University School of Education.\n5 years ago she was named Ohio Pioneer in Education by the Ohio State Department of Education, and received the Beacon of Light Humanitarian Award, as well as the Doctor of Laws Degree from Pepperdine University.\nShe has been honored at the White House six times, and was chosen as one of only four writers in the country to speak at National Book Festival Gala in Washington, D.C. Her book Copper Sun has been chosen by the US State Department and the International Reading Association as the United States novel for the international reading project. Students in the US, Nigeria, and Angola are reading the book and sharing the ideas.\nShe has worked all over the United States, as well as in Russia, Angola, Togo, Kenya, Ethiopia, Bermuda, and Guam, spreading the word about the power of successful teaching and excellence in education.\nShe became known when she won first prize in a literary  competition. She was given $5000 and her short story, One Small Torch, came out. Besides her short stories, poems, articles can often be read in literary journals . Her books are also very popular in America, too. Here are some:\nWe Beat the Street (Dutton, 2005)\nCopper Sun (Simon and Schuster, 2006)\nFire from the Rock (Dutton, 2007)\nJust Another Hero (Simon and Schuster, 2009)\nOut of my Mind (Simon and Schuster, 2010)",
@@ -5647,9 +5647,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Columbus"
@@ -5665,9 +5665,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "St. Louis"
@@ -5683,9 +5683,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Seattle"
@@ -5701,9 +5701,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "San Francisco"
@@ -5719,9 +5719,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Columbus"
@@ -5737,9 +5737,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Plano"
@@ -5755,9 +5755,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Boise City"
@@ -5773,9 +5773,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Atlanta"
@@ -5791,9 +5791,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Denver"
@@ -5809,9 +5809,9 @@
                         "Japan",
                         "Australia"
                     ],
-                    "prediction_before_change": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction_before_change": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "gold_answer": "America",
-                    "prediction": "The reporter then turned to the owner of the very large company. \"Do you agree with that?\" she asked.",
+                    "prediction": "The reporter was talking to them about being important. \"How do we know if someone is really important?\" the reporter asked the banker.",
                     "changed": {
                         "from": "New York",
                         "to": "Long Beach"
@@ -5827,9 +5827,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Washington"
@@ -5845,9 +5845,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Boise City"
@@ -5863,9 +5863,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Atlanta"
@@ -5881,9 +5881,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "New York"
@@ -5899,9 +5899,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Long Beach"
@@ -5917,9 +5917,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Los Angeles"
@@ -5935,9 +5935,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Durham"
@@ -5953,9 +5953,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "San Antonio"
@@ -5971,9 +5971,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Arlington"
@@ -5989,9 +5989,9 @@
                         "Oliver returns to Arlen",
                         "not enough information"
                     ],
-                    "prediction_before_change": "Oliver returns to Arlen",
+                    "prediction_before_change": "Oliver follows the Owl's instructions",
                     "gold_answer": "Oliver follows the Owl's instructions",
-                    "prediction": "Oliver returns to Arlen",
+                    "prediction": "Oliver follows the Owl's instructions",
                     "changed": {
                         "from": "Philadelphia",
                         "to": "Henderson"
@@ -6180,10 +6180,10 @@
                 }
             ],
             "total_cases": 50,
-            "failed_cases": 7,
-            "success_cases": 43,
-            "failure_rate": 14.0,
-            "success_rate": 86.0
+            "failed_cases": 2,
+            "success_cases": 48,
+            "failure_rate": 4.0,
+            "success_rate": 96.0
         },
         {
             "test_type": "MFT",
@@ -6214,8 +6214,8 @@
                         "None"
                     ],
                     "answer": "Jim",
-                    "prediction": "Jim",
-                    "success_failed": "success"
+                    "prediction": "Jane",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Both Ed and Lauren were auditors, but there was a change in Ed, who is now an administrator.",
@@ -6226,8 +6226,8 @@
                         "None"
                     ],
                     "answer": "Ed",
-                    "prediction": "Lauren",
-                    "success_failed": "failed"
+                    "prediction": "Ed",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Both Lauren and Ed were auditors, but there was a change in Ed, who is now an administrator.",
@@ -6238,8 +6238,8 @@
                         "None"
                     ],
                     "answer": "Ed",
-                    "prediction": "Lauren",
-                    "success_failed": "failed"
+                    "prediction": "Ed",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Both Francis and Marie were ushers, but there was a change in Francis, who is now an employee.",
@@ -6274,8 +6274,8 @@
                         "None"
                     ],
                     "answer": "Wendy",
-                    "prediction": "Jessica",
-                    "success_failed": "failed"
+                    "prediction": "Wendy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Both Jessica and Wendy were inventors, but there was a change in Wendy, who is now an auditor.",
@@ -6286,8 +6286,8 @@
                         "None"
                     ],
                     "answer": "Wendy",
-                    "prediction": "Jessica",
-                    "success_failed": "failed"
+                    "prediction": "Wendy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Both Benjamin and George were ushers, but there was a change in Benjamin, who is now an assistant.",
@@ -6310,15 +6310,15 @@
                         "None"
                     ],
                     "answer": "Benjamin",
-                    "prediction": "Benjamin",
-                    "success_failed": "success"
+                    "prediction": "George",
+                    "success_failed": "failed"
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 4,
-            "success_cases": 6,
-            "failure_rate": 40.0,
-            "success_rate": 60.0
+            "failed_cases": 2,
+            "success_cases": 8,
+            "failure_rate": 20.0,
+            "success_rate": 80.0
         },
         {
             "test_type": "MFT",
@@ -6397,8 +6397,8 @@
                         "None"
                     ],
                     "answer": "Elizabeth",
-                    "prediction": "Elizabeth",
-                    "success_failed": "success"
+                    "prediction": "Frederick",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Elizabeth became a actress after Frederick did.",
@@ -6409,8 +6409,8 @@
                         "None"
                     ],
                     "answer": "Frederick",
-                    "prediction": "Frederick",
-                    "success_failed": "success"
+                    "prediction": "Elizabeth",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Elizabeth became a actress after Frederick did.",
@@ -6421,35 +6421,11 @@
                         "None"
                     ],
                     "answer": "Elizabeth",
-                    "prediction": "Frederick",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Stephanie became a orderly before Harold did.",
-                    "question": "Who became a orderly first?",
-                    "options": [
-                        "Stephanie",
-                        "Harold",
-                        "None"
-                    ],
-                    "answer": "Stephanie",
-                    "prediction": "Harold",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Stephanie became a orderly before Harold did.",
-                    "question": "Who became a orderly last?",
-                    "options": [
-                        "Stephanie",
-                        "Harold",
-                        "None"
-                    ],
-                    "answer": "Harold",
-                    "prediction": "Harold",
+                    "prediction": "Elizabeth",
                     "success_failed": "success"
                 },
                 {
-                    "context": "Harold became a orderly after Stephanie did.",
+                    "context": "Stephanie became a orderly before Harold did.",
                     "question": "Who became a orderly first?",
                     "options": [
                         "Stephanie",
@@ -6461,7 +6437,7 @@
                     "success_failed": "success"
                 },
                 {
-                    "context": "Harold became a orderly after Stephanie did.",
+                    "context": "Stephanie became a orderly before Harold did.",
                     "question": "Who became a orderly last?",
                     "options": [
                         "Stephanie",
@@ -6471,6 +6447,30 @@
                     "answer": "Harold",
                     "prediction": "Stephanie",
                     "success_failed": "failed"
+                },
+                {
+                    "context": "Harold became a orderly after Stephanie did.",
+                    "question": "Who became a orderly first?",
+                    "options": [
+                        "Stephanie",
+                        "Harold",
+                        "None"
+                    ],
+                    "answer": "Stephanie",
+                    "prediction": "Harold",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Harold became a orderly after Stephanie did.",
+                    "question": "Who became a orderly last?",
+                    "options": [
+                        "Stephanie",
+                        "Harold",
+                        "None"
+                    ],
+                    "answer": "Harold",
+                    "prediction": "Harold",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Alan became a academic before David did.",
@@ -6529,8 +6529,8 @@
                         "None"
                     ],
                     "answer": "Heather",
-                    "prediction": "Robert",
-                    "success_failed": "failed"
+                    "prediction": "Heather",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Heather became a engineer before Robert did.",
@@ -6541,8 +6541,8 @@
                         "None"
                     ],
                     "answer": "Robert",
-                    "prediction": "Robert",
-                    "success_failed": "success"
+                    "prediction": "Heather",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Robert became a engineer after Heather did.",
@@ -6553,8 +6553,8 @@
                         "None"
                     ],
                     "answer": "Heather",
-                    "prediction": "Heather",
-                    "success_failed": "success"
+                    "prediction": "Robert",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Robert became a engineer after Heather did.",
@@ -6565,15 +6565,15 @@
                         "None"
                     ],
                     "answer": "Robert",
-                    "prediction": "Heather",
-                    "success_failed": "failed"
+                    "prediction": "Robert",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 9,
-            "success_cases": 11,
-            "failure_rate": 45.0,
-            "success_rate": 55.0
+            "failed_cases": 10,
+            "success_cases": 10,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -6604,8 +6604,8 @@
                         "None"
                     ],
                     "answer": "Robin",
-                    "prediction": "Robin",
-                    "success_failed": "success"
+                    "prediction": "Ann",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ann is an administrator. Robin is not.",
@@ -6616,8 +6616,8 @@
                         "None"
                     ],
                     "answer": "Ann",
-                    "prediction": "Robin",
-                    "success_failed": "failed"
+                    "prediction": "Ann",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ann is an administrator. Robin is not.",
@@ -6628,8 +6628,8 @@
                         "None"
                     ],
                     "answer": "Robin",
-                    "prediction": "Robin",
-                    "success_failed": "success"
+                    "prediction": "Ann",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Keith is not an editor. Al is.",
@@ -6688,8 +6688,8 @@
                         "None"
                     ],
                     "answer": "Amanda",
-                    "prediction": "Amanda",
-                    "success_failed": "success"
+                    "prediction": "Nicole",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Nicole is not an academic. Amanda is.",
@@ -6748,8 +6748,8 @@
                         "None"
                     ],
                     "answer": "Linda",
-                    "prediction": "Ron",
-                    "success_failed": "failed"
+                    "prediction": "Linda",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ron is an assassin. Linda is not.",
@@ -6760,8 +6760,8 @@
                         "None"
                     ],
                     "answer": "Ron",
-                    "prediction": "Linda",
-                    "success_failed": "failed"
+                    "prediction": "Ron",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ron is an assassin. Linda is not.",
@@ -6772,8 +6772,8 @@
                         "None"
                     ],
                     "answer": "Linda",
-                    "prediction": "Linda",
-                    "success_failed": "success"
+                    "prediction": "Ron",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Eleanor is not an economist. Jennifer is.",
@@ -6784,8 +6784,8 @@
                         "None"
                     ],
                     "answer": "Jennifer",
-                    "prediction": "Jennifer",
-                    "success_failed": "success"
+                    "prediction": "Eleanor",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Eleanor is not an economist. Jennifer is.",
@@ -6796,8 +6796,8 @@
                         "None"
                     ],
                     "answer": "Eleanor",
-                    "prediction": "Jennifer",
-                    "success_failed": "failed"
+                    "prediction": "Eleanor",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jennifer is an economist. Eleanor is not.",
@@ -6808,8 +6808,8 @@
                         "None"
                     ],
                     "answer": "Jennifer",
-                    "prediction": "Jennifer",
-                    "success_failed": "success"
+                    "prediction": "Eleanor",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jennifer is an economist. Eleanor is not.",
@@ -6820,15 +6820,15 @@
                         "None"
                     ],
                     "answer": "Eleanor",
-                    "prediction": "Jennifer",
-                    "success_failed": "failed"
+                    "prediction": "Eleanor",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 8,
-            "success_cases": 12,
-            "failure_rate": 40.0,
-            "success_rate": 60.0
+            "failed_cases": 9,
+            "success_cases": 11,
+            "failure_rate": 45.0,
+            "success_rate": 55.0
         },
         {
             "test_type": "MFT",
@@ -6859,8 +6859,8 @@
                         "None"
                     ],
                     "answer": "William",
-                    "prediction": "William",
-                    "success_failed": "success"
+                    "prediction": "Lucy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Lucy is a model. William is an activist.",
@@ -6871,8 +6871,8 @@
                         "None"
                     ],
                     "answer": "Lucy",
-                    "prediction": "William",
-                    "success_failed": "failed"
+                    "prediction": "Lucy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Lucy is a model. William is an activist.",
@@ -6883,8 +6883,8 @@
                         "None"
                     ],
                     "answer": "William",
-                    "prediction": "William",
-                    "success_failed": "success"
+                    "prediction": "Lucy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Walter is a model. Carl is an actor.",
@@ -6895,8 +6895,8 @@
                         "None"
                     ],
                     "answer": "Carl",
-                    "prediction": "Walter",
-                    "success_failed": "failed"
+                    "prediction": "Carl",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Walter is a model. Carl is an actor.",
@@ -6907,8 +6907,8 @@
                         "None"
                     ],
                     "answer": "Walter",
-                    "prediction": "Walter",
-                    "success_failed": "success"
+                    "prediction": "Carl",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Carl is an actor. Walter is a model.",
@@ -6919,8 +6919,8 @@
                         "None"
                     ],
                     "answer": "Carl",
-                    "prediction": "Walter",
-                    "success_failed": "failed"
+                    "prediction": "Carl",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Carl is an actor. Walter is a model.",
@@ -6931,8 +6931,8 @@
                         "None"
                     ],
                     "answer": "Walter",
-                    "prediction": "Walter",
-                    "success_failed": "success"
+                    "prediction": "Carl",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Benjamin is a photographer. Joe is an activist.",
@@ -6967,8 +6967,8 @@
                         "None"
                     ],
                     "answer": "Joe",
-                    "prediction": "Benjamin",
-                    "success_failed": "failed"
+                    "prediction": "Joe",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Joe is an activist. Benjamin is a photographer.",
@@ -6979,8 +6979,8 @@
                         "None"
                     ],
                     "answer": "Benjamin",
-                    "prediction": "Benjamin",
-                    "success_failed": "success"
+                    "prediction": "Joe",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Robin is a historian. Nicole is an escort.",
@@ -7027,8 +7027,8 @@
                         "None"
                     ],
                     "answer": "Robin",
-                    "prediction": "Robin",
-                    "success_failed": "success"
+                    "prediction": "Nicole",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sophie is a DJ. Frank is an analyst.",
@@ -7080,10 +7080,10 @@
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 10,
-            "success_cases": 10,
-            "failure_rate": 50.0,
-            "success_rate": 50.0
+            "failed_cases": 12,
+            "success_cases": 8,
+            "failure_rate": 60.0,
+            "success_rate": 40.0
         },
         {
             "test_type": "MFT",
@@ -7114,8 +7114,8 @@
                         "None"
                     ],
                     "answer": "Robert",
-                    "prediction": "Robert",
-                    "success_failed": "success"
+                    "prediction": "Alice",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Daniel is not a CEO, Katherine is.",
@@ -7186,8 +7186,8 @@
                         "None"
                     ],
                     "answer": "Edwin",
-                    "prediction": "Edwin",
-                    "success_failed": "success"
+                    "prediction": "Michelle",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick is not a CEO, Martha is.",
@@ -7198,8 +7198,8 @@
                         "None"
                     ],
                     "answer": "Martha",
-                    "prediction": "Martha",
-                    "success_failed": "success"
+                    "prediction": "Dick",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Martha is not a CEO, Dick is.",
@@ -7210,15 +7210,15 @@
                         "None"
                     ],
                     "answer": "Dick",
-                    "prediction": "Dick",
-                    "success_failed": "success"
+                    "prediction": "Martha",
+                    "success_failed": "failed"
                 }
             ],
             "total_cases": 10,
-            "failed_cases": 4,
-            "success_cases": 6,
-            "failure_rate": 40.0,
-            "success_rate": 60.0
+            "failed_cases": 8,
+            "success_cases": 2,
+            "failure_rate": 80.0,
+            "success_rate": 20.0
         },
         {
             "test_type": "MFT",
@@ -7333,8 +7333,8 @@
                         "None"
                     ],
                     "answer": "Keith",
-                    "prediction": "Keith",
-                    "success_failed": "success"
+                    "prediction": "Jane",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Keith and Jane are friends. He is an agent, and she is an analyst.",
@@ -7345,8 +7345,8 @@
                         "None"
                     ],
                     "answer": "Jane",
-                    "prediction": "Keith",
-                    "success_failed": "failed"
+                    "prediction": "Jane",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jane and Keith are friends. He is an agent, and she is an analyst.",
@@ -7381,8 +7381,8 @@
                         "None"
                     ],
                     "answer": "Keith",
-                    "prediction": "Keith",
-                    "success_failed": "success"
+                    "prediction": "Jane",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Keith and Jane are friends. She is an analyst, and he is an agent.",
@@ -7393,8 +7393,8 @@
                         "None"
                     ],
                     "answer": "Jane",
-                    "prediction": "Keith",
-                    "success_failed": "failed"
+                    "prediction": "Jane",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jane and Keith are friends. She is an analyst, and he is an agent.",
@@ -7405,8 +7405,8 @@
                         "None"
                     ],
                     "answer": "Keith",
-                    "prediction": "Keith",
-                    "success_failed": "success"
+                    "prediction": "Jane",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jane and Keith are friends. She is an analyst, and he is an agent.",
@@ -7417,8 +7417,8 @@
                         "None"
                     ],
                     "answer": "Jane",
-                    "prediction": "Keith",
-                    "success_failed": "failed"
+                    "prediction": "Jane",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Richard and Sarah are friends. He is an administrator, and she is a historian.",
@@ -7429,8 +7429,8 @@
                         "None"
                     ],
                     "answer": "Richard",
-                    "prediction": "Richard",
-                    "success_failed": "success"
+                    "prediction": "Sarah",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Richard and Sarah are friends. He is an administrator, and she is a historian.",
@@ -7441,8 +7441,8 @@
                         "None"
                     ],
                     "answer": "Sarah",
-                    "prediction": "Richard",
-                    "success_failed": "failed"
+                    "prediction": "Sarah",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sarah and Richard are friends. He is an administrator, and she is a historian.",
@@ -7453,8 +7453,8 @@
                         "None"
                     ],
                     "answer": "Richard",
-                    "prediction": "Richard",
-                    "success_failed": "success"
+                    "prediction": "Sarah",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sarah and Richard are friends. He is an administrator, and she is a historian.",
@@ -7465,8 +7465,8 @@
                         "None"
                     ],
                     "answer": "Sarah",
-                    "prediction": "Richard",
-                    "success_failed": "failed"
+                    "prediction": "Sarah",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Richard and Sarah are friends. She is a historian, and he is an administrator.",
@@ -7477,8 +7477,8 @@
                         "None"
                     ],
                     "answer": "Richard",
-                    "prediction": "Richard",
-                    "success_failed": "success"
+                    "prediction": "Sarah",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Richard and Sarah are friends. She is a historian, and he is an administrator.",
@@ -7489,8 +7489,8 @@
                         "None"
                     ],
                     "answer": "Sarah",
-                    "prediction": "Richard",
-                    "success_failed": "failed"
+                    "prediction": "Sarah",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sarah and Richard are friends. She is a historian, and he is an administrator.",
@@ -7501,8 +7501,8 @@
                         "None"
                     ],
                     "answer": "Richard",
-                    "prediction": "Richard",
-                    "success_failed": "success"
+                    "prediction": "Sarah",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sarah and Richard are friends. She is a historian, and he is an administrator.",
@@ -7513,8 +7513,8 @@
                         "None"
                     ],
                     "answer": "Sarah",
-                    "prediction": "Richard",
-                    "success_failed": "failed"
+                    "prediction": "Sarah",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Dick and Judy are friends. He is an investor, and she is an interpreter.",
@@ -7573,8 +7573,8 @@
                         "None"
                     ],
                     "answer": "Dick",
-                    "prediction": "Dick",
-                    "success_failed": "success"
+                    "prediction": "Judy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Dick and Judy are friends. She is an interpreter, and he is an investor.",
@@ -7597,8 +7597,8 @@
                         "None"
                     ],
                     "answer": "Dick",
-                    "prediction": "Dick",
-                    "success_failed": "success"
+                    "prediction": "Judy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Judy and Dick are friends. She is an interpreter, and he is an investor.",
@@ -7609,8 +7609,8 @@
                         "None"
                     ],
                     "answer": "Judy",
-                    "prediction": "Dick",
-                    "success_failed": "failed"
+                    "prediction": "Judy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Hugh and Ann are friends. He is an activist, and she is a waitress.",
@@ -7621,8 +7621,8 @@
                         "None"
                     ],
                     "answer": "Hugh",
-                    "prediction": "Hugh",
-                    "success_failed": "success"
+                    "prediction": "Ann",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Hugh and Ann are friends. He is an activist, and she is a waitress.",
@@ -7633,8 +7633,8 @@
                         "None"
                     ],
                     "answer": "Ann",
-                    "prediction": "Hugh",
-                    "success_failed": "failed"
+                    "prediction": "Ann",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ann and Hugh are friends. He is an activist, and she is a waitress.",
@@ -7645,8 +7645,8 @@
                         "None"
                     ],
                     "answer": "Hugh",
-                    "prediction": "Hugh",
-                    "success_failed": "success"
+                    "prediction": "Ann",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ann and Hugh are friends. He is an activist, and she is a waitress.",
@@ -7657,8 +7657,8 @@
                         "None"
                     ],
                     "answer": "Ann",
-                    "prediction": "Hugh",
-                    "success_failed": "failed"
+                    "prediction": "Ann",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Hugh and Ann are friends. She is a waitress, and he is an activist.",
@@ -7669,8 +7669,8 @@
                         "None"
                     ],
                     "answer": "Hugh",
-                    "prediction": "Hugh",
-                    "success_failed": "success"
+                    "prediction": "Ann",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Hugh and Ann are friends. She is a waitress, and he is an activist.",
@@ -7681,8 +7681,8 @@
                         "None"
                     ],
                     "answer": "Ann",
-                    "prediction": "Hugh",
-                    "success_failed": "failed"
+                    "prediction": "Ann",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ann and Hugh are friends. She is a waitress, and he is an activist.",
@@ -7693,8 +7693,8 @@
                         "None"
                     ],
                     "answer": "Hugh",
-                    "prediction": "Hugh",
-                    "success_failed": "success"
+                    "prediction": "Ann",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ann and Hugh are friends. She is a waitress, and he is an activist.",
@@ -7705,15 +7705,15 @@
                         "None"
                     ],
                     "answer": "Ann",
-                    "prediction": "Hugh",
-                    "success_failed": "failed"
+                    "prediction": "Ann",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 40,
-            "failed_cases": 19,
-            "success_cases": 21,
-            "failure_rate": 47.5,
-            "success_rate": 52.5
+            "failed_cases": 20,
+            "success_cases": 20,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -7780,8 +7780,8 @@
                         "None"
                     ],
                     "answer": "Colin",
-                    "prediction": "Kathryn",
-                    "success_failed": "failed"
+                    "prediction": "Colin",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Kathryn and Colin are friends. His mom is an intern.",
@@ -7804,8 +7804,8 @@
                         "None"
                     ],
                     "answer": "Jack",
-                    "prediction": "Anne",
-                    "success_failed": "failed"
+                    "prediction": "Jack",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Anne and Jack are friends. His mom is an interpreter.",
@@ -7864,8 +7864,8 @@
                         "None"
                     ],
                     "answer": "Alexandra",
-                    "prediction": "Larry",
-                    "success_failed": "failed"
+                    "prediction": "Alexandra",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Scott and Kelly are friends. Her mom is an administrator.",
@@ -7912,8 +7912,8 @@
                         "None"
                     ],
                     "answer": "Caroline",
-                    "prediction": "Ray",
-                    "success_failed": "failed"
+                    "prediction": "Caroline",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Martin and Nicole are friends. Her mom is a historian.",
@@ -7948,8 +7948,8 @@
                         "None"
                     ],
                     "answer": "Jane",
-                    "prediction": "Matt",
-                    "success_failed": "failed"
+                    "prediction": "Jane",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jane and Matt are friends. Her mom is a secretary.",
@@ -7960,15 +7960,15 @@
                         "None"
                     ],
                     "answer": "Jane",
-                    "prediction": "Matt",
-                    "success_failed": "failed"
+                    "prediction": "Jane",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 13,
-            "success_cases": 7,
-            "failure_rate": 65.0,
-            "success_rate": 35.0
+            "failed_cases": 7,
+            "success_cases": 13,
+            "failure_rate": 35.0,
+            "success_rate": 65.0
         },
         {
             "test_type": "MFT",
@@ -8222,8 +8222,8 @@
                         "None"
                     ],
                     "answer": "Don",
-                    "prediction": "Don",
-                    "success_failed": "success"
+                    "prediction": "Ralph",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Don recognizes Ralph.",
@@ -8234,8 +8234,8 @@
                         "None"
                     ],
                     "answer": "Ralph",
-                    "prediction": "Don",
-                    "success_failed": "failed"
+                    "prediction": "Ralph",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ralph is recognized by Don.",
@@ -8246,8 +8246,8 @@
                         "None"
                     ],
                     "answer": "Don",
-                    "prediction": "Don",
-                    "success_failed": "success"
+                    "prediction": "Ralph",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ralph is recognized by Don.",
@@ -8258,8 +8258,8 @@
                         "None"
                     ],
                     "answer": "Ralph",
-                    "prediction": "Don",
-                    "success_failed": "failed"
+                    "prediction": "Ralph",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Benjamin believes Ken.",
@@ -8270,8 +8270,8 @@
                         "None"
                     ],
                     "answer": "Benjamin",
-                    "prediction": "Benjamin",
-                    "success_failed": "success"
+                    "prediction": "Ken",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Benjamin believes Ken.",
@@ -8282,8 +8282,8 @@
                         "None"
                     ],
                     "answer": "Ken",
-                    "prediction": "Benjamin",
-                    "success_failed": "failed"
+                    "prediction": "Ken",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Ken is believed by Benjamin.",
@@ -8294,8 +8294,8 @@
                         "None"
                     ],
                     "answer": "Benjamin",
-                    "prediction": "Benjamin",
-                    "success_failed": "success"
+                    "prediction": "Ken",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Ken is believed by Benjamin.",
@@ -8306,8 +8306,8 @@
                         "None"
                     ],
                     "answer": "Ken",
-                    "prediction": "Benjamin",
-                    "success_failed": "failed"
+                    "prediction": "Ken",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Louise bothers Amy.",
@@ -8330,8 +8330,8 @@
                         "None"
                     ],
                     "answer": "Amy",
-                    "prediction": "Amy",
-                    "success_failed": "success"
+                    "prediction": "Louise",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Amy is bothered by Louise.",
@@ -8390,8 +8390,8 @@
                         "None"
                     ],
                     "answer": "Greg",
-                    "prediction": "Greg",
-                    "success_failed": "success"
+                    "prediction": "Melissa",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Melissa is recognized by Greg.",
@@ -8455,10 +8455,10 @@
                 }
             ],
             "total_cases": 20,
-            "failed_cases": 8,
-            "success_cases": 12,
-            "failure_rate": 40.0,
-            "success_rate": 60.0
+            "failed_cases": 10,
+            "success_cases": 10,
+            "failure_rate": 50.0,
+            "success_rate": 50.0
         },
         {
             "test_type": "MFT",
@@ -8569,8 +8569,8 @@
                         "None"
                     ],
                     "answer": "Albert",
-                    "prediction": "Anthony",
-                    "success_failed": "failed"
+                    "prediction": "Albert",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Jimmy dislikes Albert.",
@@ -8582,8 +8582,8 @@
                         "None"
                     ],
                     "answer": "Anthony",
-                    "prediction": "Anthony",
-                    "success_failed": "success"
+                    "prediction": "Albert",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Jimmy dislikes Albert.",
@@ -8595,8 +8595,8 @@
                         "None"
                     ],
                     "answer": "Jimmy",
-                    "prediction": "Anthony",
-                    "success_failed": "failed"
+                    "prediction": "Jimmy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Jimmy dislikes Albert.",
@@ -8608,8 +8608,8 @@
                         "None"
                     ],
                     "answer": "Jimmy",
-                    "prediction": "Albert",
-                    "success_failed": "failed"
+                    "prediction": "Jimmy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Jimmy dislikes Albert.",
@@ -8634,8 +8634,8 @@
                         "None"
                     ],
                     "answer": "Anthony",
-                    "prediction": "Anthony",
-                    "success_failed": "success"
+                    "prediction": "Albert",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Albert is disliked by Jimmy.",
@@ -8647,8 +8647,8 @@
                         "None"
                     ],
                     "answer": "Jimmy",
-                    "prediction": "Anthony",
-                    "success_failed": "failed"
+                    "prediction": "Jimmy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Albert is disliked by Jimmy.",
@@ -8660,8 +8660,8 @@
                         "None"
                     ],
                     "answer": "Jimmy",
-                    "prediction": "Albert",
-                    "success_failed": "failed"
+                    "prediction": "Jimmy",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Jimmy is disliked by Anthony. Albert is disliked by Jimmy.",
@@ -8673,8 +8673,8 @@
                         "None"
                     ],
                     "answer": "Albert",
-                    "prediction": "Anthony",
-                    "success_failed": "failed"
+                    "prediction": "Albert",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Heather attacks Ray. Ray attacks Paul.",
@@ -8686,8 +8686,8 @@
                         "None"
                     ],
                     "answer": "Heather",
-                    "prediction": "Heather",
-                    "success_failed": "success"
+                    "prediction": "Ray",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Heather attacks Ray. Ray attacks Paul.",
@@ -8699,8 +8699,8 @@
                         "None"
                     ],
                     "answer": "Ray",
-                    "prediction": "Heather",
-                    "success_failed": "failed"
+                    "prediction": "Ray",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Heather attacks Ray. Ray attacks Paul.",
@@ -8725,8 +8725,8 @@
                         "None"
                     ],
                     "answer": "Paul",
-                    "prediction": "Paul",
-                    "success_failed": "success"
+                    "prediction": "Ray",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Heather attacks Ray. Paul is attacked by Ray.",
@@ -8738,7 +8738,7 @@
                         "None"
                     ],
                     "answer": "Heather",
-                    "prediction": "Paul",
+                    "prediction": "Ray",
                     "success_failed": "failed"
                 },
                 {
@@ -8769,110 +8769,6 @@
                 },
                 {
                     "context": "Heather attacks Ray. Paul is attacked by Ray.",
-                    "question": "Who is attacked by Ray?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Paul",
-                    "prediction": "Paul",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
-                    "question": "Who attacks Ray?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Heather",
-                    "prediction": "Heather",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
-                    "question": "Who attacks Paul?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Ray",
-                    "prediction": "Ray",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
-                    "question": "Who is attacked by Heather?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Ray",
-                    "prediction": "Ray",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
-                    "question": "Who is attacked by Ray?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Paul",
-                    "prediction": "Paul",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
-                    "question": "Who attacks Ray?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Heather",
-                    "prediction": "Paul",
-                    "success_failed": "failed"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
-                    "question": "Who attacks Paul?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Ray",
-                    "prediction": "Ray",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
-                    "question": "Who is attacked by Heather?",
-                    "options": [
-                        "Heather",
-                        "Ray",
-                        "Paul",
-                        "None"
-                    ],
-                    "answer": "Ray",
-                    "prediction": "Ray",
-                    "success_failed": "success"
-                },
-                {
-                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
                     "question": "Who is attacked by Ray?",
                     "options": [
                         "Heather",
@@ -8883,6 +8779,110 @@
                     "answer": "Paul",
                     "prediction": "Heather",
                     "success_failed": "failed"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
+                    "question": "Who attacks Ray?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Heather",
+                    "prediction": "Ray",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
+                    "question": "Who attacks Paul?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Ray",
+                    "prediction": "Ray",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
+                    "question": "Who is attacked by Heather?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Ray",
+                    "prediction": "Ray",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Ray attacks Paul.",
+                    "question": "Who is attacked by Ray?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Paul",
+                    "prediction": "Ray",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
+                    "question": "Who attacks Ray?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Heather",
+                    "prediction": "Ray",
+                    "success_failed": "failed"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
+                    "question": "Who attacks Paul?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Ray",
+                    "prediction": "Ray",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
+                    "question": "Who is attacked by Heather?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Ray",
+                    "prediction": "Ray",
+                    "success_failed": "success"
+                },
+                {
+                    "context": "Ray is attacked by Heather. Paul is attacked by Ray.",
+                    "question": "Who is attacked by Ray?",
+                    "options": [
+                        "Heather",
+                        "Ray",
+                        "Paul",
+                        "None"
+                    ],
+                    "answer": "Paul",
+                    "prediction": "Paul",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sara understands Alfred. Alfred understands Marie.",
@@ -8894,8 +8894,8 @@
                         "None"
                     ],
                     "answer": "Sara",
-                    "prediction": "Marie",
-                    "success_failed": "failed"
+                    "prediction": "Sara",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sara understands Alfred. Alfred understands Marie.",
@@ -8907,8 +8907,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Alfred",
-                    "success_failed": "success"
+                    "prediction": "Sara",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sara understands Alfred. Alfred understands Marie.",
@@ -8920,8 +8920,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Marie",
-                    "success_failed": "failed"
+                    "prediction": "Alfred",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sara understands Alfred. Alfred understands Marie.",
@@ -8933,8 +8933,8 @@
                         "None"
                     ],
                     "answer": "Marie",
-                    "prediction": "Marie",
-                    "success_failed": "success"
+                    "prediction": "Sara",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sara understands Alfred. Marie is understood by Alfred.",
@@ -8946,8 +8946,8 @@
                         "None"
                     ],
                     "answer": "Sara",
-                    "prediction": "Marie",
-                    "success_failed": "failed"
+                    "prediction": "Sara",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Sara understands Alfred. Marie is understood by Alfred.",
@@ -8959,8 +8959,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Alfred",
-                    "success_failed": "success"
+                    "prediction": "Sara",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sara understands Alfred. Marie is understood by Alfred.",
@@ -8972,8 +8972,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Alfred",
-                    "success_failed": "success"
+                    "prediction": "Marie",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Sara understands Alfred. Marie is understood by Alfred.",
@@ -8998,8 +8998,8 @@
                         "None"
                     ],
                     "answer": "Sara",
-                    "prediction": "Marie",
-                    "success_failed": "failed"
+                    "prediction": "Sara",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Alfred is understood by Sara. Alfred understands Marie.",
@@ -9011,8 +9011,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Sara",
-                    "success_failed": "failed"
+                    "prediction": "Alfred",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Alfred is understood by Sara. Alfred understands Marie.",
@@ -9024,8 +9024,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Marie",
-                    "success_failed": "failed"
+                    "prediction": "Alfred",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Alfred is understood by Sara. Alfred understands Marie.",
@@ -9050,8 +9050,8 @@
                         "None"
                     ],
                     "answer": "Sara",
-                    "prediction": "Marie",
-                    "success_failed": "failed"
+                    "prediction": "Sara",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Alfred is understood by Sara. Marie is understood by Alfred.",
@@ -9063,8 +9063,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Alfred",
-                    "success_failed": "success"
+                    "prediction": "Sara",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Alfred is understood by Sara. Marie is understood by Alfred.",
@@ -9076,8 +9076,8 @@
                         "None"
                     ],
                     "answer": "Alfred",
-                    "prediction": "Alfred",
-                    "success_failed": "success"
+                    "prediction": "Marie",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Alfred is understood by Sara. Marie is understood by Alfred.",
@@ -9102,8 +9102,8 @@
                         "None"
                     ],
                     "answer": "Pamela",
-                    "prediction": "Sophie",
-                    "success_failed": "failed"
+                    "prediction": "Pamela",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Pamela blames Mary. Mary blames Sophie.",
@@ -9128,7 +9128,7 @@
                         "None"
                     ],
                     "answer": "Mary",
-                    "prediction": "Sophie",
+                    "prediction": "Pamela",
                     "success_failed": "failed"
                 },
                 {
@@ -9141,8 +9141,8 @@
                         "None"
                     ],
                     "answer": "Sophie",
-                    "prediction": "Sophie",
-                    "success_failed": "success"
+                    "prediction": "Pamela",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Pamela blames Mary. Sophie is blamed by Mary.",
@@ -9180,7 +9180,7 @@
                         "None"
                     ],
                     "answer": "Mary",
-                    "prediction": "Sophie",
+                    "prediction": "Pamela",
                     "success_failed": "failed"
                 },
                 {
@@ -9232,8 +9232,8 @@
                         "None"
                     ],
                     "answer": "Mary",
-                    "prediction": "Sophie",
-                    "success_failed": "failed"
+                    "prediction": "Mary",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is blamed by Pamela. Mary blames Sophie.",
@@ -9284,8 +9284,8 @@
                         "None"
                     ],
                     "answer": "Mary",
-                    "prediction": "Sophie",
-                    "success_failed": "failed"
+                    "prediction": "Mary",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is blamed by Pamela. Sophie is blamed by Mary.",
@@ -9427,8 +9427,8 @@
                         "None"
                     ],
                     "answer": "Mary",
-                    "prediction": "Lynn",
-                    "success_failed": "failed"
+                    "prediction": "Mary",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is recognized by Lynn. Mary recognizes Kathy.",
@@ -9466,8 +9466,8 @@
                         "None"
                     ],
                     "answer": "Lynn",
-                    "prediction": "Lynn",
-                    "success_failed": "success"
+                    "prediction": "Kathy",
+                    "success_failed": "failed"
                 },
                 {
                     "context": "Mary is recognized by Lynn. Kathy is recognized by Mary.",
@@ -9479,8 +9479,8 @@
                         "None"
                     ],
                     "answer": "Mary",
-                    "prediction": "Lynn",
-                    "success_failed": "failed"
+                    "prediction": "Mary",
+                    "success_failed": "success"
                 },
                 {
                     "context": "Mary is recognized by Lynn. Kathy is recognized by Mary.",
@@ -9505,15 +9505,15 @@
                         "None"
                     ],
                     "answer": "Kathy",
-                    "prediction": "Lynn",
-                    "success_failed": "failed"
+                    "prediction": "Kathy",
+                    "success_failed": "success"
                 }
             ],
             "total_cases": 80,
-            "failed_cases": 48,
-            "success_cases": 32,
-            "failure_rate": 60.0,
-            "success_rate": 40.0
+            "failed_cases": 42,
+            "success_cases": 38,
+            "failure_rate": 52.5,
+            "success_rate": 47.5
         }
     ]
 }

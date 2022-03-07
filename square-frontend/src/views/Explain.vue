@@ -6,7 +6,7 @@
           <CompareSkills
               v-on:input="changeSelectedSkills"
               class="border-success"
-              :skill-filter="skillId => skillId in data" />
+              :skill-filter="skillId => skillId in checklistData" />
         </div>
       </div>
       <div v-if="selectedSkills.length > 0" class="row">
@@ -134,9 +134,6 @@ import CompareSkills from '../components/CompareSkills'
 import ExplainDetail from '../components/modals/ExplainDetail'
 import mixin from '../components/results/mixin'
 import { getSkill } from '../api'
-import squad2 from '../../checklist/61a9f57935adbbf1f2433073'
-import boolq from '../../checklist/61a9f66935adbbf1f2433077'
-import commonsense from '../../checklist/61a9f6d035adbbf1f243307d'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -148,12 +145,7 @@ export default Vue.component('explainability-page', {
       },
       currentSkills: [],
       currentTests: [],
-      selectedTest: -1,
-      data: {
-        '61a9f57935adbbf1f2433073': squad2,
-        '61a9f66935adbbf1f2433077': boolq,
-        '61a9f6d035adbbf1f243307d': commonsense
-      }
+      selectedTest: -1
     }
   },
   components: {
@@ -166,6 +158,12 @@ export default Vue.component('explainability-page', {
     },
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
+    },
+    checklistData() {
+      // Dynamically require available CheckList data
+      let requireComponent = require.context('../../checklist', false, /[a-z0-9]+\.json$/)
+      return Object.assign({}, ...requireComponent.keys().map(
+          fileName => ({[fileName.substr(2, fileName.length - 7)]: requireComponent(fileName).tests})))
     }
   },
   methods: {
@@ -177,13 +175,13 @@ export default Vue.component('explainability-page', {
       this.waiting = true
       let currentSkills = []
       let currentTests = []
-      this.selectedSkills.forEach(skill => {
-        if (skill in this.data) {
-          getSkill(skill)
+      this.selectedSkills.forEach(skillId => {
+        if (skillId in this.checklistData) {
+          getSkill(skillId)
               .then((response) => {
                 currentSkills.push(response.data)
               })
-          let tests = this.data[skill].tests
+          let tests = this.checklistData[skillId]
           // FIXME: Sort all tests the same
           tests.sort((a, b) => b.failure_rate - a.failure_rate)
           tests.forEach(test => test.test_cases = test.test_cases.filter(
@@ -200,7 +198,7 @@ export default Vue.component('explainability-page', {
     },
     downloadExamples(skillIndex) {
       let skill = this.currentSkills[skillIndex - 1]
-      let data = JSON.stringify(this.data[skill.id], null, 2)
+      let data = JSON.stringify(this.checklistData[skill.id], null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
       // FIXME: Does not download
       this.$refs[`downloadButton${skillIndex}`].href = URL.createObjectURL(blob)
