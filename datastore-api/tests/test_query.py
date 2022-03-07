@@ -28,7 +28,6 @@ class TestQuery:
             f"{settings.FAISS_URL}/{datastore_name}/{dpr_index.name}/search",
             json=[{query_document["id"]: -5}],  # use an impossible score to test that this return value is used
         )
-
         response = client.get(
             "/datastores/{}/search".format(datastore_name),
             params={"index_name": "dpr", "query": "quack"},

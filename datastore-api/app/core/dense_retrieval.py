@@ -61,7 +61,7 @@ class DenseRetrieval:
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
         logger.debug(f"Queried Faiss, returned {len(queried)} docs.")
         # 3. Lookup the retrieved doc ids in the ES index.
-        docs: List[Document] = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
+        docs: List[Document] = await self.conn.get_document_batch(datastore_name, list(queried.keys()))
         results = []
         for doc in docs:
             doc_id = str(doc["id"])
@@ -90,7 +90,7 @@ class DenseRetrieval:
         # 1. Search for the query in the FAISS store. This will return ids of matched docs.
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
         # 2. Lookup the retrieved doc ids in the ES index.
-        docs: List[Document] = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
+        docs: List[Document] = await self.conn.get_document_batch(datastore_name, list(queried.keys()))
         results = []
         for doc in docs:
             doc_id = str(doc["id"])

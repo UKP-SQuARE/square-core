@@ -23,7 +23,6 @@ file_dir = os.path.dirname(__file__)
 
 MOCK_DEPENDENCIES = os.environ.get("MOCK_DEPENDENCIES", "0") == "1"
 
-
 @pytest.fixture
 def documents_file():
     f = open(file_dir + "/fixtures/0.jsonl", "rb")
