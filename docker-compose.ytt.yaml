@@ -106,7 +106,7 @@ services:
       KEYCLOAK_HOSTNAME: square.ukp-lab.de
       KEYCLOAK_FRONTEND_URL: https://square.ukp-lab.de/auth
     env_file:
-      - ./keycloak/.env
+      - keycloak/.env.example
     depends_on:
       - db
     labels:
