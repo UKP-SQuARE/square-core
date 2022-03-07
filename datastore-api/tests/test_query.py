@@ -7,7 +7,7 @@ from requests_mock import Mocker
 class TestQuery:
     @pytest.fixture
     def query_result(self, query_document):
-        return QueryResult(score=0, document=query_document)
+        return QueryResult(score=0, document=query_document, id=query_document.id)
 
     def test_search_bm25(self, client, datastore_name, query_document, query_result):
         response = client.get(
@@ -28,7 +28,6 @@ class TestQuery:
             f"{settings.FAISS_URL}/{datastore_name}/{dpr_index.name}/search",
             json=[{query_document["id"]: -5}],  # use an impossible score to test that this return value is used
         )
-
         response = client.get(
             "/datastores/{}/search".format(datastore_name),
             params={"index_name": "dpr", "query": "quack"},
@@ -93,7 +92,7 @@ class TestQuery:
     def test_score_not_found(self, client, datastore_name):
         response = client.get(
             "/datastores/{}/score".format(datastore_name),
-            params={"query": "quack", "doc_id": 99999},
+            params={"query": "quack", "doc_id": "99999"},
         )
         assert response.status_code == 404
         assert "detail" in response.json()

@@ -23,7 +23,6 @@ file_dir = os.path.dirname(__file__)
 
 MOCK_DEPENDENCIES = os.environ.get("MOCK_DEPENDENCIES", "0") == "1"
 
-
 @pytest.fixture
 def documents_file():
     f = open(file_dir + "/fixtures/0.jsonl", "rb")
@@ -53,7 +52,6 @@ def wiki_datastore(datastore_name):
     return Datastore(
         name=datastore_name,
         fields=[
-            DatastoreField(name="id", type="long", is_id=True),
             DatastoreField(name="text", type="text"),
             DatastoreField(name="title", type="text"),
         ],
@@ -84,11 +82,11 @@ def second_index(datastore_name):
 
 @pytest.fixture(scope="package")
 def test_document():
-    return {
-        "id": 111,
+    return Document(__root__={
+        "id": "111",
         "title": "test document",
         "text": "this is a test document",
-    }
+    })
 
 
 @pytest.fixture(scope="package")
@@ -98,11 +96,11 @@ def test_document_embedding():
 
 @pytest.fixture(scope="package")
 def query_document():
-    return {
-        "id": 222,
+    return Document(__root__={
+        "id": "222",
         "title": "document title",
         "text": "document containing the query word quack",
-    }
+    })
 
 
 @pytest.fixture(scope="package")
@@ -132,6 +130,7 @@ def db_init(datastore_name, wiki_datastore, dpr_index, second_index, test_docume
     converter = ElasticsearchClassConverter()
     es = Elasticsearch(hosts=[settings.ES_URL])
 
+    #TODO: Reuse existing source code
     # configure indices
     es.indices.delete(index="datastore-test-*")
     es.indices.create(index=datastore_name + "-docs", body=converter.convert_from_datastore(wiki_datastore))
@@ -142,8 +141,8 @@ def db_init(datastore_name, wiki_datastore, dpr_index, second_index, test_docume
     )
 
     # add documents
-    es.index(index=datastore_name + "-docs", id=test_document["id"], body=test_document)
-    es.index(index=datastore_name + "-docs", id=query_document["id"], body=query_document)
+    es.index(index=datastore_name + "-docs", id=test_document["id"], body=converter.convert_from_document(test_document))
+    es.index(index=datastore_name + "-docs", id=query_document["id"], body=converter.convert_from_document(query_document))
 
     es.indices.refresh(index="")
 
