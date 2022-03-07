@@ -34,8 +34,8 @@
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <router-link to="/signin" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
-              <router-link to="/signup" role="button" class="btn btn-light">Sign up</router-link>
+              <a :href="authURL(true)" role="button" class="btn btn-outline-light me-2">Sign in</a>
+              <a :href="authURL(false)" role="button" class="btn btn-light">Sign up</a>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -75,6 +75,11 @@ export default Vue.component('nav-bar', {
     }
   },
   methods: {
+    authURL(signIn) {
+      let base = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect/`
+      base += signIn ? 'auth' : 'registrations'
+      return `${base}?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.href}`
+    },
     signout() {
       this.$store.dispatch('signOut')
           .then(() => {
