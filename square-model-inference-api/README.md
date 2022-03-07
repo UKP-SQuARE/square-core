@@ -265,3 +265,10 @@ The password can be hashed using wither MD5, SHA-1 or BCrypt.
 It is easiest to use `htpasswd` to obtain the necessary hash.
 
 The default `admin` user has the password `example_key`.
+
+## Queueing
+The management server queues background tasks for deploying and removing models. The response to a 
+request for deploying or removing a model returns the `task_id`, which can be used to request the 
+status of the task. By sending a GET request to:
+`/api/models/task/<task_id>`
+you can see whether the task has been executed and the results of the task.

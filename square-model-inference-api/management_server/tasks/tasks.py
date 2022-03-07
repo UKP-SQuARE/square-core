@@ -1,7 +1,10 @@
 import logging
+import requests
+import time
+import os
 from .celery import app
-from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container
-
+from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +19,23 @@ def deploy_task(identifier, env):
             result = {
                 "success": True,
                 "container": container.id,
-                "message": "Model deployment in progress. Check the `/api/models/deployed-models` "
+                "message": "Model deployed. Check the `/api/models/deployed-models` "
                            "endpoint for more info."
             }
-            return result
+            response = None
+            while container.status in ["created", "running"] and (response is None or response.status_code != 200):
+                time.sleep(20)
+                response = requests.get(
+                    url="{}:{}/api/{}/stats".format(settings.API_URL, get_port(), identifier),
+                    verify=os.getenv("VERIFY_SSL", 1) == 1,
+                )
+
+                if response.status_code == 200:
+                    return result
+            return {
+                "success": False,
+                "container_status": container.status,
+            }
     except:
         logger.exception("Deployment failed", exc_info=True)
     return {"success": False}

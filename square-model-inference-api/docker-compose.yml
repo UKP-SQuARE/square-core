@@ -57,6 +57,9 @@ services:
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1
+      - VERIFY_SSL=0
     links:
       - rabbit
     depends_on:
@@ -64,9 +67,9 @@ services:
       - rabbit
 
   maintaining:
-    image: ukpsquare/square-model-management:latest
+#    image: ukpsquare/square-model-management:latest
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
-#    build: ./management_server
+    build: ./management_server
     ports:
       - 9001:9001
     volumes:

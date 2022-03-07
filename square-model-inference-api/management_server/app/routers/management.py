@@ -38,7 +38,7 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return lst_models
 
 
-@router.post("/deploy", )  # response_model=DeployResult, name="deploy-model")
+@router.post("/deploy", name="deploy-model")
 async def deploy_new_model(model_params: DeployRequest):
     """
     deploy a new model to the platform
@@ -78,4 +78,4 @@ async def get_task_status(task_id):
     if not task.ready():
         return JSONResponse(status_code=202, content={'task_id': str(task_id), 'status': 'Processing'})
     result = task.get()
-    return result
+    return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
