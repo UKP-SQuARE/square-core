@@ -195,7 +195,7 @@ services:
       CLIENT_ID: models
     labels:
       - "traefik.enable=true"
-      #@ template.replace(traefik_tls("maintaining"))
+      - #@ template.replace(traefik_tls("maintaining"))
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
