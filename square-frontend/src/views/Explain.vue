@@ -207,9 +207,8 @@ export default Vue.component('explainability-page', {
       let skill = this.currentSkills[skillIndex - 1]
       let data = JSON.stringify(this.checklistData[skill.id], null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
-      // FIXME: Does not download
-      this.$refs[`downloadButton${skillIndex}`].href = URL.createObjectURL(blob)
-      this.$refs[`downloadButton${skillIndex}`].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
+      this.$refs[`downloadButton${skillIndex}`][0].href = URL.createObjectURL(blob)
+      this.$refs[`downloadButton${skillIndex}`][0].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
     }
   }
 })
