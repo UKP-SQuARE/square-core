@@ -129,9 +129,7 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build:
-      context: .
-      dockerfile: ./square-frontend/Dockerfile
+    build: ./square-frontend
     image: ukpsquare/square-frontend:latest
     restart: always
     expose:
