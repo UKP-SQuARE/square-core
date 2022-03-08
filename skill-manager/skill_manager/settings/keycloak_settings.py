@@ -1,5 +1,6 @@
 from pydantic import BaseSettings, Field, SecretStr
 
+
 class KeycloakSettings(BaseSettings):
     """Utility class for storing connection settings to Keycloak."""
 

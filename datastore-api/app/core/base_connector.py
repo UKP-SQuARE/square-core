@@ -123,32 +123,32 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def get_document(self, datastore_name: str, document_id: int) -> Optional[Document]:
+    async def get_document(self, datastore_name: str, document_id: str) -> Optional[Document]:
         """Returns a document by id.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         pass
 
     @abstractmethod
-    async def get_document_batch(self, datastore_name: str, document_ids: List[int]) -> List[Document]:
+    async def get_document_batch(self, datastore_name: str, document_ids: List[str]) -> List[Document]:
         """Returns a batch of documents by id.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_ids (List[int]): Ids of the documents.
+            document_ids (List[str]): Ids of the documents.
         """
         pass
 
     @abstractmethod
-    async def add_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
+    async def add_document(self, datastore_name: str, document_id: str, document: Document) -> Tuple[bool, bool]:
         """Adds a new document.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
             document (Document): Document to add.
 
         Returns:
@@ -170,12 +170,12 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def update_document(self, datastore_name: str, document_id: int, document: Document) -> Tuple[bool, bool]:
+    async def update_document(self, datastore_name: str, document_id: str, document: Document) -> Tuple[bool, bool]:
         """Updates a document.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
             document (Document): Document to update.
 
         Returns:
@@ -184,22 +184,22 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def delete_document(self, datastore_name: str, document_id: int) -> bool:
+    async def delete_document(self, datastore_name: str, document_id: str) -> bool:
         """Deletes a document.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         pass
 
     @abstractmethod
-    async def has_document(self, datastore_name: str, document_id: int) -> bool:
+    async def has_document(self, datastore_name: str, document_id: str) -> bool:
         """Checks if a document exists.
 
         Args:
             datastore_name (str): Name of the datastore.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         pass
 
@@ -217,13 +217,13 @@ class BaseConnector(ABC):
         pass
 
     @abstractmethod
-    async def search_for_id(self, datastore_name: str, query: str, document_id: int):
+    async def search_for_id(self, datastore_name: str, query: str, document_id: str):
         """Searches for documents and selects the document with the given id from the results.
 
         Args:
             datastore_name (str): Name of the datastore.
             query (str): Query to search for.
-            document_id (int): Id of the document.
+            document_id (str): Id of the document.
         """
         pass
 

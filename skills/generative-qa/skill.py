@@ -21,21 +21,29 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
-    context = request.skill_args["context"]
+    context = request.skill_args.get("context", "")
 
-    prepared_input = [[query, context]]
+    if context:
+        query_context_seperator = request.skill_args.get("query_context_seperator", " ")
+        prepared_input = [query + query_context_seperator + context]
+    else:
+        prepared_input = [query]
     model_request = {
         "input": prepared_input,
-        "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
+        "model_kwargs": {
+            "output_scores": True,
+            **request.skill_args.get("model_kwargs", {}),
+        },
         "adapter_name": request.skill_args["adapter"],
     }
+
     model_api_output = await model_api(
         model_name=request.skill_args["base_model"],
-        pipeline="question-answering",
+        pipeline="generation",
         model_request=model_request,
     )
     logger.info(f"Model API output:\n{model_api_output}")
 
-    return QueryOutput.from_question_answering(
+    return QueryOutput.from_generation(
         model_api_output=model_api_output, context=context
     )

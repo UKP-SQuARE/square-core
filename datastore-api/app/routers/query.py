@@ -93,7 +93,7 @@ async def score(
     datastore_name: str = Path(..., description="Name of the datastore."),
     index_name: Optional[str] = Query(None, description="Index name."),
     query: str = Query(..., description="The query string."),
-    doc_id: int = Query(..., description="Document ID to retrieve."),
+    doc_id: str = Query(..., description="Document ID to retrieve."),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
 ):
