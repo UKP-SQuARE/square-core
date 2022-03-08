@@ -1,5 +1,6 @@
 import logging
 from typing import List
+from ..models.document import Document
 
 from ..models.query import QueryResult
 from .base_connector import BaseConnector
@@ -52,6 +53,7 @@ class DenseRetrieval:
         if index is None:
             raise ValueError("Datastore or index not found.")
 
+        #TODO: Reuse search_by_vector
         # 1. Get the query embedding from the model api
         query_vector = self.model_api.encode_query(query, index)
         logger.debug(f"Received query embedding:{query_vector}")
@@ -59,10 +61,11 @@ class DenseRetrieval:
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
         logger.debug(f"Queried Faiss, returned {len(queried)} docs.")
         # 3. Lookup the retrieved doc ids in the ES index.
-        docs = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
+        docs: List[Document] = await self.conn.get_document_batch(datastore_name, list(queried.keys()))
         results = []
         for doc in docs:
-            results.append(QueryResult(document=doc, score=queried[str(doc["id"])]))
+            doc_id = str(doc["id"])
+            results.append(QueryResult(document=doc, score=queried[doc_id], id=doc_id))
 
         return sorted(results, key=lambda x: x.score, reverse=True)
 
@@ -87,21 +90,22 @@ class DenseRetrieval:
         # 1. Search for the query in the FAISS store. This will return ids of matched docs.
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
         # 2. Lookup the retrieved doc ids in the ES index.
-        docs = await self.conn.get_document_batch(datastore_name, [int(k) for k in queried.keys()])
+        docs: List[Document] = await self.conn.get_document_batch(datastore_name, list(queried.keys()))
         results = []
         for doc in docs:
-            results.append(QueryResult(document=doc, score=queried[str(doc["id"])]))
+            doc_id = str(doc["id"])
+            results.append(QueryResult(document=doc, score=queried[doc_id], id=doc_id))
 
         return sorted(results, key=lambda x: x.score, reverse=True)
 
-    async def score(self, datastore_name: str, index_name: str, query: str, document_id: int) -> QueryResult:
+    async def score(self, datastore_name: str, index_name: str, query: str, document_id: str) -> QueryResult:
         """Scores a document by the given query string.
 
         Args:
             datastore_name (str): The datastore in which to search.
             index_name (str): The index to be used.
             query (str): The query string.
-            document_id (int): The id of the document to be scored.
+            document_id (str): The id of the document to be scored.
 
         Returns:
             QueryResult: The scored document.
@@ -116,15 +120,15 @@ class DenseRetrieval:
         queried = self.faiss.explain(datastore_name, index_name, query_vector, document_id)
         # 3. Lookup the retrieved doc ids in the ES index.
         doc = await self.conn.get_document(datastore_name, document_id)
-        return QueryResult(document=doc, score=queried["score"])
+        return QueryResult(document=doc, score=queried["score"], id=document_id)
 
-    async def get_document_embedding(self, datastore_name: str, index_name: str, document_id: int) -> List[float]:
+    async def get_document_embedding(self, datastore_name: str, index_name: str, document_id: str) -> List[float]:
         """Gets the embedding of a document.
 
         Args:
             datastore_name (str): The datastore in which to search.
             index_name (str): The index to be used.
-            document_id (int): The id of the document.
+            document_id (str): The id of the document.
 
         Returns:
             list: The embedding of the document.

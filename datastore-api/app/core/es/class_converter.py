@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from ...models.datastore import Datastore, DatastoreField
-from ...models.document import Document
+from ...models.document import ID_FIELD, Document
 from ...models.index import Index
 from ...models.query import QueryResult
 from ..base_class_converter import BaseClassConverter
@@ -16,6 +16,7 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         Converts a datastore object to a backend-specific object.
         """
+        # https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html#indices-create-api-request-body
         index = {
             "mappings": {
                 "properties": {},
@@ -24,8 +25,6 @@ class ElasticsearchClassConverter(BaseClassConverter):
         for field in datastore.fields:
             index["mappings"]["properties"][field.name] = {
                 "type": field.type,
-                # We store additional datastore information in the meta mapping of ES.
-                "meta": {"is_id": "1" if field.is_id else "0"},
             }
 
         return index
@@ -36,11 +35,8 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         fields = []
         for prop_name, prop_kwargs in obj["mappings"]["properties"].items():
-            is_id = False
-            if "meta" in prop_kwargs:
-                is_id = prop_kwargs["meta"].get("is_id", None) == "1"
             fields.append(
-                DatastoreField(name=prop_name, type=prop_kwargs["type"], is_id=is_id)
+                DatastoreField(name=prop_name, type=prop_kwargs["type"])
             )
         return Datastore(name=datastore_name, fields=fields)
 
@@ -60,12 +56,16 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         Converts a document object to a backend-specific object.
         """
-        return document.__root__
+        document = dict(document.__root__)
+        document.pop(ID_FIELD)  # Because we do not define it in the ES index schema, while relying on the ES's inner ids
+        return document
 
-    def convert_to_document(self, obj: Dict[str, Any]) -> Document:
+    def convert_to_document(self, obj: Dict[str, Any], document_id: str) -> Document:
         """
         Converts a backend-specific object to a document object.
         """
+        obj = dict(obj)  # here the `obj` is `hit['_source']`
+        obj[ID_FIELD] = document_id
         return Document(__root__=obj)
 
     def convert_to_query_results(self, obj: Dict[str, Any]) -> List[QueryResult]:
@@ -74,7 +74,7 @@ class ElasticsearchClassConverter(BaseClassConverter):
         """
         results = []
         for hit in obj["hits"]["hits"]:
-            doc = self.convert_to_document(hit["_source"])
-            results.append(QueryResult(document=doc, score=hit["_score"]))
+            doc = self.convert_to_document(hit["_source"], hit["_id"])
+            results.append(QueryResult(document=doc, score=hit["_score"], id=hit["_id"]))
 
         return results

@@ -14,7 +14,7 @@ class SkillType(str, Enum):
 
     abstractive = "abstractive"
     span_extraction = "span-extraction"
-    multiple_choiche = "multiple-choice"
+    multiple_choice = "multiple-choice"
     categorical = "categorical"
 
 
