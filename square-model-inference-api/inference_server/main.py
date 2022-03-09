@@ -1,3 +1,4 @@
+import os
 import logging
 from logging.config import fileConfig
 
@@ -54,9 +55,10 @@ def custom_openapi():
         routes=app.routes,
     )
     replaced_keys = dict()
+    prefix = os.getenv("API_PREFIX", "{model_identifier}")
     for api in openapi_schema["paths"].keys():
         api_split = list(api.split("/"))
-        api_split.insert(2, "{model_identifier}")
+        api_split.insert(2, prefix)
         api_mod = "/".join(api_split)
         replaced_keys[api] = api_mod
 
