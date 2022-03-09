@@ -3,7 +3,6 @@ sidebar_position: 3
 ---
 
 # Skills
-
 Skills define how the user query should be processed by the Datastores and Models services and how the answers are obtained. For question answering, this might involve retrieving background knowledge from the Datastores and/or extracting spans from context using a particular Model and Adapter.
 
 Skills can be added dynamically to UKP-SQuARE. Check out the 👉 [Add New Skills](#Add-New-Skills) for details.
@@ -13,6 +12,7 @@ For a list of available skills, see 👉 [Publicly Available Skills](#Publicly-A
 <a name="Add-New-Skills"></a>
 
 ## Add New Skills
+
 ### The Predict Function
 To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [*SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [*SQuARE-skill-api*](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
@@ -20,7 +20,7 @@ As mentioned above mainly a predict function, defining the pipeline needs to be 
 First, install the required packages:
 ```bash
 pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.4
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.6 
+pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.11 
 ```
 Next, we can implement the `predict` function:
 ```python3
@@ -68,18 +68,33 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
 ```
 ### Adding Via Pull Request
-If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). For the skill to work, a couple of additional files are required, these can be copied from an existing skill, for example, the retrieve-span skill.
-* **Dockerfile** -> just copy and paste this file
-* **logging.conf** -> just copy and paste this file
-* **main.py** -> import your predict function here and pass it to the `get_app` function
-* **requirements.txt** -> Add additional requirements that your skill has
+If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls) with the following changes:
+1. Put your skill function in a file under: `./skills/<skill-name>/skill.py`
+2. Add you skill in the [skill.yaml](../skill.yaml). Give the skill the same name as the folder under skills.
+3. Once you pull request is approved, your skill url will be `http://<skill-name>:<port>`
 
 ### Adding Self-Hosted or Cloud Skills
 
+#### Azure Functions
+1. Login to [Azure](https://portal.azure.com/)
+2. Create a new function app
+    - Select to publish _Code_
+    - Select _Python_ as runtime stack.
+3. Once the deployment is complete, under Next Steps, click _create function_ and follow the setup instructions according to your development environment.
+4. During the setup:
+    - Use the _HTTP Trigger_ template
+    - Name the function _query_ (*This is very important, since this will determine the url under which your function will be available.*)
+    - Select _anonymous_ as authorization level.
+5. Develop your skill in the __init__.py
+6. Add environment variables to the `local.settings.json` file under `Values`.
+6. Deploy your skill according to the instructions
+7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
+An example repository can also be found at [UKP-SQuARE/cloud-example-azure](https://github.com/UKP-SQuARE/cloud-example-azure)
+
 <a name="Publicly-Available-Skills"></a>
 
-🚧
-## Publicly Available Skills
+### Publicly Available Skills
+
 ### boolq
 *Description*: A categorical QA skill answering boolean questions given a context with yes or no.
 *Base-Model*: [bert-base-uncased](https://huggingface.co/bert-base-uncased)
