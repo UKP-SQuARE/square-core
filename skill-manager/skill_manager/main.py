@@ -42,5 +42,5 @@ def on_startup():
 
 
 @app.on_event("shutdown")
-def on_startup():
+def on_shutdown():
     mongo_client.close()
