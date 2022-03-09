@@ -22,18 +22,34 @@ app.add_middleware(
 
 app.include_router(router=router, prefix="/api")
 
-# add API_PREFIX to routes in openapi.json
-prefix = os.getenv("API_PREFIX", "skill-manager")
-openapi_schema = get_openapi(
-    title="Skill-Manager API",
-    version="0.0.1",
-    description="API reference for skill-manager.",
-    routes=app.routes,
-)
-openapi_schema["paths"] = {
-    "/".join(k.split("/").insert(2, prefix)): v for k, v in openapi_schema["paths"]
-}
-app.openapi_schema = openapi_schema
+
+def add_prefix_to_openapi():
+    global app
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    prefix = os.getenv("API_PREFIX", "skill-manager")
+    openapi_schema = get_openapi(
+        title="Skill-Manager API",
+        version="0.0.1",
+        description="API reference for skill-manager.",
+        routes=app.routes,
+    )
+    replaced_keys = {}
+    for api_route in openapi_schema["paths"].keys():
+        api_route_prefix = api_route.split("/")
+        api_route_prefix.insert(2, prefix)
+        api_route_prefix = "/".join(api_route_prefix)
+
+        logging.debug(f"replacing: {api_route} with {api_route_prefix}")
+        replaced_keys[api_route] = api_route_prefix
+
+    openapi_schema["paths"] = {
+        replaced_keys[k]: v for k, v in openapi_schema["paths"].items()
+    }
+    return openapi_schema
+
+app.openapi_schema = add_prefix_to_openapi()
 
 
 @app.on_event("startup")
