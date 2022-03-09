@@ -1,7 +1,9 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 from skill_manager import mongo_client
 from skill_manager.routers.api import router
@@ -18,7 +20,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router=router)
+app.include_router(router=router, prefix="/api")
+
+# add API_PREFIX to routes in openapi.json
+prefix = os.getenv("API_PREFIX", "skill-manager")
+openapi_schema = get_openapi(
+    title="Skill-Manager API",
+    version="0.0.1",
+    description="API reference for skill-manager.",
+    routes=app.routes,
+)
+openapi_schema["paths"] = {
+    "/".join(k.split("/").insert(2, prefix)): v for k, v in openapi_schema["paths"]
+}
+app.openapi_schema = openapi_schema
 
 
 @app.on_event("startup")
