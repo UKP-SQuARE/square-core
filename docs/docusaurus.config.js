@@ -66,6 +66,14 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      announcementBar: {
+          id: 'beta',
+          content:
+            'The <b>model management</b> service is currently in beta. The stable version will be released soon.',
+          backgroundColor: '#fafbfc',
+          textColor: '#091E42',
+          isCloseable: true,
+     },
       navbar: {
         title: 'UKP-SQuARE',
         logo: {
@@ -109,11 +117,10 @@ const config = {
          },
             {
             type: 'doc',
-            docId: 'changelog',
+            docId: 'versioning/changelog',
             position: 'left',
             label: 'Changelog',
           },
-          // {to: '/versions/changelog', label: 'Changelog', position: 'left'},
           {
             href: 'https://github.com/UKP-SQuARE/square-core/tree/master',
             label: 'GitHub',
