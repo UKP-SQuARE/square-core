@@ -3,7 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
+# use env vars
 app = Celery('tasks',
              backend='rpc://',
              broker="amqp://guest:guest@rabbit:5672//",
