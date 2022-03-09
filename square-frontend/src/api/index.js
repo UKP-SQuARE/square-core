@@ -17,16 +17,13 @@ let SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
  * @param {String} clientId
  */
 export function getToken(code, redirectURI, clientId) {
-    return axios.post(`${AUTH_URL}/token`, {
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: redirectURI,
-        client_id: clientId
-    }, {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    })
+
+    let data = new URLSearchParams();
+    data.append('grant_type', 'authorization_code');
+    data.append('code', code);
+    data.append('redirect_uri', redirectURI);
+    data.append('client_id', clientId);
+    return axios.post(`${AUTH_URL}/token`, data)
 }
 
 /**
