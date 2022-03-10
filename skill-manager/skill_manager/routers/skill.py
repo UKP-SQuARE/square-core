@@ -52,6 +52,7 @@ async def get_skill_by_id(request: Request, id: str = None):
         payload = await get_payload_from_token(request)
         user_id = payload["username"]
         if not skill.published and not skill.user_id == user_id:
+            logger.debug(f"skill.published={skill.published}, skill.user_id={skill.user_id}, user_id={user_id}")
             raise HTTPException(403)
 
     return skill
@@ -68,8 +69,9 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
     if user_id or has_auth_header(request):
         if has_auth_header(request):
             payload = await get_payload_from_token(request)
-            user_id = ["username"]
+            user_id = payload["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
+        logger.debug(f"Retrieving Skills for user_id={user_id} with query={mongo_query}")
 
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
@@ -92,6 +94,7 @@ async def create_skill(
         payload = await get_payload_from_token(request)
         realm = payload["realm"]
         username = payload["username"]
+        skill.user_id = username
     else:
         realm = "square"
         username = skill.user_id
