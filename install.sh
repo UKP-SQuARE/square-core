@@ -241,6 +241,7 @@ cd ..
 # bring up services required to setup authentication
 ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml
 sleep 1
+docker-compose pull
 docker-compose up -d traefik db keycloak
 
 echo "Setting up Authorizaton."
