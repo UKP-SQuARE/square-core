@@ -43,7 +43,8 @@ keycloak_create_realm () {
 		}
 		EOF
 	)
-	curl -s -k -L --fail-with-body -X POST "https://$SQUARE_URL/auth/admin/realms" \
+	curl -s -k -L --fail-with-body -o /dev/null -X POST \
+		"https://$SQUARE_URL/auth/admin/realms" \
 		-H "Authorization: Bearer $ADMIN_TOKEN" \
 		-H 'Content-Type: application/json' \
 		--data-raw "$PAYLOAD"
@@ -67,7 +68,7 @@ keycloak_get_client_token () {
 	# returns an access token obtained by the client credentials flow
 	CLIENT_ID=$1
 	CLIENT_SECRET=$2
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST 
+	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
 		"https://$SQUARE_URL/auth/realms/$REALM/protocol/openid-connect/token" \
 		-H 'Content-Type: application/x-www-form-urlencoded' \
 		--data-urlencode 'grant_type=client_credentials' \
@@ -144,7 +145,7 @@ keycloak_create_client_registration_client () {
 	)
 
 	# ===== Assign the service account the `create-client` role from the realm-management  =====
-	curl -s -k -L --fail-with-body -X POST \
+	curl -s -k -L --fail-with-body -o /dev/null -X POST \
 	"https://$SQUARE_URL/auth/admin/realms/$REALM/users/$SERVICE_ACCOUNT_ID/role-mappings/clients/$REALM_MANAGEMENT_ID" \
 	-H "Authorization: Bearer $ADMIN_TOKEN" \
 	-H 'Content-Type: application/json' \
@@ -153,10 +154,13 @@ keycloak_create_client_registration_client () {
 }
 
 keycloak_create_client () {
+	# create any client for clients credentials flow
+	# these clients are used for machine to machine authentication
 	CLIENT_ID=$1
 	SKILL_MANAGER_SECRET=$2
-	TOKEN=$(keycloak_get_client_token "skill-manager" "$SKILL_MANAGER_SECRET")
+	TOKEN=$(keycloak_get_client_token "skill-manager" $SKILL_MANAGER_SECRET)
 	SECRET=$(generate_password)
+	echo $SECRET
 
 	PAYLOAD=$(cat <<- EOF
 		{
@@ -170,16 +174,41 @@ keycloak_create_client () {
 		EOF
 	)
 
-	curl -s -k -L --fail-with-body -g -X POST \
+	curl -s -k -L --fail-with-body -o /dev/null -g -X POST \
 	"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 	-H "Authorization: Bearer $TOKEN" \
 	-H "Content-Type: application/json" \
 	--data-raw "$PAYLOAD"
-	
-	echo $SECRET
+
 }
 
-# replace vars in env files
+keycloak_create_frontend_client () {
+	# creates client for the frontend
+	SKILL_MANAGER_SECRET=$1
+	TOKEN=$(keycloak_get_client_token "skill-manager" $SKILL_MANAGER_SECRET)
+
+	PAYLOAD=$(cat <<- EOF
+		{
+			"clientId": "web-app",
+			"redirectUris": ["https://$SQUARE_URL"],
+			"webOrigins": ["+"],
+			"implicitFlowEnabled": false,
+			"standardFlowEnabled": true,
+			"serviceAccountsEnabled": false,
+			"publicClient": true,
+			"fullScopeAllowed": false
+		}
+		EOF
+	)
+
+	curl -s -k -L --fail-with-body -o /dev/null -g -X POST \
+	"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
+	-H "Authorization: Bearer $TOKEN" \
+	-H "Content-Type: application/json" \
+	--data-raw "$PAYLOAD"
+}
+
+# replace passwords in env files
 if [ -f ./keycloak/.env ]; then
 	echo "./keycloak/.env already exists. Skipping."
 else
@@ -198,7 +227,7 @@ cp ./square-model-inference-api/management_server/.env.example ./square-model-in
 cp ./datastore-api/.env.example ./datastore-api/.env 
 
 # get all servies that need to be registered as clients keycloak
-CLIENTS=("models" "datastores" )
+CLIENTS=( "models" "datastores" ) 
 cd ./skills
 for SKILL_DIR in ./*; do
 	if [[ -d $SKILL_DIR ]]; then
@@ -209,10 +238,10 @@ for SKILL_DIR in ./*; do
 done
 cd ..
 
-# ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml
-
-# sleep 3
-# docker-compose up -d traefik db keycloak
+# bring up services required to setup authentication
+ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml
+sleep 1
+docker-compose up -d traefik db keycloak
 
 echo "Setting up Authorizaton."
 while [ $(curl -s -k -L -o /dev/null -w "%{http_code}" "https://$SQUARE_URL/auth") -ne "200" ]; do
@@ -222,13 +251,15 @@ done
 
 keycloak_create_realm
 
+# create the skill-manager client that is able to create other clients
 SKILL_MANAGER_SECRET=$(keycloak_create_client_registration_client)
 echo "SKILL_MANAGER_SECRET=$SKILL_MANAGER_SECRET"
 sed -e "s/%%CLIENT_SECRET%%/$SKILL_MANAGER_SECRET/g" ./skill-manager/.env > ./skill-manager/.env.tmp
 mv ./skill-manager/.env.tmp ./skill-manager/.env
 
-for CLIENT_ID in "${CLIENTS[@]}"; do
-	CLIENT_SECRET=$(keycloak_create_client "$CLIENT_ID" "$SKILL_MANAGER_SECRET")
+# create clients in keycloak and save client secret
+for CLIENT_ID in ${CLIENTS[@]}; do
+	CLIENT_SECRET=$(keycloak_create_client $CLIENT_ID $SKILL_MANAGER_SECRET)
 	echo "CLIENT_ID=$CLIENT_ID CLIENT_SECRET=$CLIENT_SECRET"
 	
 	if [[ $CLIENT_ID == "models" ]]; then
@@ -241,11 +272,17 @@ for CLIENT_ID in "${CLIENTS[@]}"; do
 		CLIENT_PATH="skills/$CLIENT_ID"
 	fi
 	
-	sed -e "s/%%CLIENT_SECRET%%/$CLIENT_SECRET/g" "./$CLIENT_PATH/.env.example" > "./$CLIENT_PATH/.env"
+	sed -e "s/%%CLIENT_SECRET%%/$CLIENT_SECRET/g" ./$CLIENT_PATH/.env > ./$CLIENT_PATH/.env.tmp
+	mv ./$CLIENT_PATH/.env.tmp ./$CLIENT_PATH/.env
 done
 
-# docker-compose down
+keycloak_create_frontend_client $SKILL_MANAGER_SECRET
+
+docker-compose down
+echo "Authorization setup complete."
 
 # build frontend with updated env file
 cp square-frontend/.env.production square-frontend/.env.production-backup
 cp square-frontend/.env.development square-frontend/.env.production
+
+docker-compose build frontend
