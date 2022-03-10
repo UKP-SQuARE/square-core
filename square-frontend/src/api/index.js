@@ -7,23 +7,7 @@ import axios from 'axios'
 /**
  * URLs to the SQuARE backend servers
  */
-const AUTH_URL = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect`
 const SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
-
-/**
- * Retrieve the access token from the authentication server.
- * @param {String} code
- * @param {String} redirectURI
- * @param {String} clientId
- */
-export function getToken(code, redirectURI, clientId) {
-    let data = new URLSearchParams()
-    data.append('grant_type', 'authorization_code')
-    data.append('code', code)
-    data.append('redirect_uri', redirectURI)
-    data.append('client_id', clientId)
-    return axios.post(`${AUTH_URL}/token`, data)
-}
 
 /**
  * Get a list of available skill types.
@@ -37,10 +21,9 @@ export function getSkillTypes(headers) {
  * Get a list of available skills. 
  * The user name is only required for unpublished skills of the user. Published skills are available without.
  * @param {Object} headers optional authentication header
- * @param {String} userName optional username for skill selection
  */
-export function getSkills(headers, userName) {
-    return axios.get(`${SKILL_URL}/skill?user_id=${userName}`, { headers: headers })
+export function getSkills(headers) {
+    return axios.get(`${SKILL_URL}/skill`, { headers: headers })
 }
 
 /**
@@ -78,14 +61,12 @@ export function putSkill(headers, skillId, newSkill) {
  * @param {String} question the asked question
  * @param {String} context the provided context
  * @param {Object} options the options for the request
- * @param {String} userId the user id (if available)
  */
-export function postQuery(headers, question, context, options, userId) {
+export function postQuery(headers, question, context, options) {
     let data = {
         query: question,
         skill_args: {},
-        num_results: options.maxResultsPerSkill,
-        user_id: userId
+        num_results: options.maxResultsPerSkill
     }
     if (context.length > 0) {
         data.skill_args.context = context

@@ -34,25 +34,21 @@
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <router-link to="/signin" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
-              <router-link to="/signup" role="button" class="btn btn-light">Sign up</router-link>
+              <a v-on:click.prevent="signIn" href="#" role="button" class="btn btn-outline-light me-2">Sign in</a>
+              <a v-on:click.prevent="signUp" href="#" role="button" class="btn btn-light">Sign up</a>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
                   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
                 </svg>
-                &nbsp;{{ user.preferred_username }}
+                &nbsp;{{ userInfo.preferred_username }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
-                <li>
-                  <a href="/auth/realms/square/account/" target="_blank" class="dropdown-item">
-                    Manage account
-                  </a>
-                </li>
+                <li><a v-on:click.prevent="account" href="#" class="dropdown-item">Manage account</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><router-link class="dropdown-item" to="/signout">Sign out</router-link></li>
+                <li><a v-on:click.prevent="signOut" href="#" class="dropdown-item">Sign out</a></li>
               </ul>
             </div>
           </div>
@@ -66,18 +62,45 @@
 import Vue from 'vue'
 
 export default Vue.component('nav-bar', {
+  props: ['keycloak'],
   data() {
     return {
       publicPath: process.env.BASE_URL
     }
   },
   computed: {
-    user() {
-      return this.$store.state.authentication.data
+    userInfo() {
+      return this.$store.state.userInfo
     },
     isAuthenticated() {
-      return this.$store.getters.isAuthenticated()
+      return Object.keys(this.$store.state.userInfo).length > 0
     }
+  },
+  methods: {
+    updateUserInfo() {
+      if (this.keycloak.authenticated) {
+        this.keycloak.loadUserInfo().then(userInfo => {
+          this.$store.dispatch('signIn', { userInfo: userInfo })
+        })
+      } else {
+        this.$store.dispatch('signOut')
+      }
+    },
+    signIn() {
+      this.keycloak.login({ redirectUri: `${window.location.href}` })
+    },
+    signUp() {
+      this.keycloak.register({ redirectUri: `${window.location.href}` })
+    },
+    signOut() {
+      this.keycloak.logout({ redirectUri: `${window.location.href}` })
+    },
+    account() {
+      this.keycloak.accountManagement()
+    }
+  },
+  beforeMount() {
+      this.updateUserInfo()
   }
 })
 </script>

@@ -1,7 +1,7 @@
 <!-- The Main View -->
 <template>
   <div id="app" class="d-flex flex-column h-100">
-    <NavBar />
+    <NavBar :keycloak="keycloak" />
     <main class="flex-fill" :class="{ 'my-4': !isLandingPage }">
       <router-view class="h-100" :class="{ 'container-xxl': !isLandingPage }" />
     </main>
@@ -15,6 +15,7 @@ import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
 
 export default Vue.component('app', {
+  props: ['keycloak'],
   components: {
     NavBar,
     Footer
@@ -28,9 +29,6 @@ export default Vue.component('app', {
     isLandingPage() {
       return this.$route.name === 'home'
     }
-  },
-  beforeMount() {
-    this.$store.dispatch('authenticationFromLocalStorage')
   }
 })
 </script>

@@ -5,12 +5,9 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, getToken, getSkills, putSkill, deleteSkill, postSkill } from '../api'
+import { postQuery, getSkills, putSkill, deleteSkill, postSkill } from '../api'
 
 Vue.use(Vuex)
-
-const LOCALSTORAGE_KEY_ACCESS_TOKEN = 'accessToken'
-const LOCALSTORAGE_KEY_REFRESH_TOKEN = 'refreshToken'
 
 export default new Vuex.Store({
   /**
@@ -19,11 +16,8 @@ export default new Vuex.Store({
    * 2) should be restored when a view is changed and later returned to
    */
   state: {
-    authentication: {
-      data: {},
-      accessToken: '',
-      refreshToken: ''
-    },
+    userInfo: {},
+    token: '',
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
@@ -47,21 +41,16 @@ export default new Vuex.Store({
     },
     setSkills(state, payload) {
       state.availableSkills = payload.skills
-      if (state.authentication.data) {
-        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.authentication.data.preferred_username)
+      if (state.userInfo.preferred_username) {
+        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.userInfo.preferred_username)
       }
     },
-    /**
-     * Set the access token and all derived values
-     */
     setAuthentication(state, payload) {
-      localStorage.setItem(LOCALSTORAGE_KEY_ACCESS_TOKEN, payload.accessToken)
-      localStorage.setItem(LOCALSTORAGE_KEY_REFRESH_TOKEN, payload.refreshToken)
-      state.authentication.accessToken = payload.accessToken
-      state.authentication.refreshToken = payload.refreshToken
-      if (payload.accessToken) {
-        state.authentication.data = JSON.parse(atob(payload.accessToken.split('.')[1]))
+      console.log(payload)
+      if (payload.userInfo) {
+        state.userInfo = payload.userInfo
       }
+      state.token = payload.token
     },
     setSkillOptions(state, payload) {
       state.skillOptions[payload.selectorTarget] = payload.skillOptions
@@ -73,8 +62,7 @@ export default new Vuex.Store({
   actions: {
     query(context, { question, inputContext, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      let userId = context.state.authentication.data ? context.state.authentication.data.preferred_username : ''
-      return postQuery(context.getters.authenticationHeader(), question, inputContext, options, userId)
+      return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
@@ -84,31 +72,22 @@ export default new Vuex.Store({
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
           }))
     },
-    signIn(context, { code, redirectURI, clientId }) {
-      return getToken(code, redirectURI, clientId)
-          .then((response) => {
-            context.commit('setAuthentication', {
-              accessToken: response.data.access_token,
-              refreshToken: response.data.refresh_token
-            })
-          }).then(() => context.dispatch('updateSkills'))
+    signIn(context, { userInfo, token }) {
+      context.commit('setAuthentication', { userInfo: userInfo, token: token })
+    },
+    refreshToken(context, { token }) {
+      context.commit('setAuthentication', { token: token })
     },
     signOut(context) {
-      // Reset authentication and (private) skills
-      context.commit('setAuthentication', { accessToken: '', refreshToken: '' })
+      // Reset user info and (private) skills
+      context.commit('setAuthentication', { userInfo: {}, token: '' })
       context.commit('setSkills', { skills: [] })
-    },
-    authenticationFromLocalStorage(context) {
-      let accessToken = localStorage.getItem(LOCALSTORAGE_KEY_ACCESS_TOKEN) || ''
-      let refreshToken = localStorage.getItem(LOCALSTORAGE_KEY_REFRESH_TOKEN) || ''
-      context.commit('setAuthentication', { accessToken: accessToken, refreshToken: refreshToken })
     },
     selectSkill(context, { skillOptions, selectorTarget }) {
       context.commit('setSkillOptions', { skillOptions: skillOptions, selectorTarget: selectorTarget })
     },
     updateSkills(context) {
-      let userId = context.state.authentication.data ? context.state.authentication.data.preferred_username : ''
-      return getSkills(context.getters.authenticationHeader(), userId)
+      return getSkills(context.getters.authenticationHeader())
           .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSkill(context, { skill }) {
@@ -124,25 +103,12 @@ export default new Vuex.Store({
           .then(() => context.dispatch('updateSkills'))
     }
   },
-  /**
-   * Getters for information not stored as state variables
-   */
   getters: {
-    /**
-     * Check if the access token is valid
-     */
-    isAuthenticated: (state) => () => {
-      if (!state.authentication.accessToken) {
-        return false
+    authenticationHeader: (state) => () => {
+      if (state.token) {
+        return {'Authorization': `Bearer ${state.token}`}
       } else {
-        return new Date() < new Date(state.authentication.data.exp * 1000)
-      }
-    },
-    authenticationHeader: (state, getters) => () => {
-      if (!getters.isAuthenticated()) {
         return {}
-      } else {
-        return {'Authorization': `${state.authentication.data.typ} ${state.authentication.accessToken}`}
       }
     }
   }
