@@ -5,11 +5,12 @@
 #@ return "ukpsquare/skills-"+skill.name
 #@ end
 
-#@ def skill_environment():
+#@ def skill_environment(skill):
 WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
 VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 SQUARE_API_URL: #@ data.values.square_api_url[data.values.environment]
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
 #@ def skill_env_file(skill):
@@ -367,7 +368,7 @@ services:
   (@= skill.name @):
     image: #@ skill_image_name(skill)
     env_file: #@ skill_env_file(skill)
-    environment: #@ skill_environment()
+    environment: #@ skill_environment(skill)
   #@ end
 
 volumes:
