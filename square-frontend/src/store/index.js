@@ -46,7 +46,6 @@ export default new Vuex.Store({
       }
     },
     setAuthentication(state, payload) {
-      console.log(payload)
       if (payload.userInfo) {
         state.userInfo = payload.userInfo
       }

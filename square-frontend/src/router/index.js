@@ -3,7 +3,6 @@
  */
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '../store'
 
 // Use lazy loading to improve page size
 const Home = () => import('../views/Home')
@@ -31,24 +30,16 @@ const routes = [
     path: '/skills',
     name: 'skills',
     component: Skills,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next('/signin')
-      } else {
-        next()
-      }
+    meta: {
+      requiresAuthentication: true
     }
   },
   {
     path: '/skills/:id',
     name: 'skill',
     component: Skill,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next('/signin')
-      } else {
-        next()
-      }
+    meta: {
+      requiresAuthentication: true
     }
   },
   {

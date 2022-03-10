@@ -19,7 +19,7 @@ import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
 
 export default Vue.component('app', {
-  props: ['keycloak'],
+  props: ['keycloak', 'requiresAuthentication'],
   components: {
     NavBar,
     Footer
@@ -51,14 +51,24 @@ export default Vue.component('app', {
       this.keycloak.register({ redirectUri: `${window.location.href}` })
     },
     signOut() {
-      this.keycloak.logout({ redirectUri: `${window.location.href}` })
+      this.$store.dispatch('signOut').then(() => {
+        this.keycloak.logout({ redirectUri: `${window.location.origin}` })
+      })
     },
     account() {
       this.keycloak.accountManagement()
     }
   },
-  beforeMount() {
-    this.updateUserInfo()
+  beforeUpdate() {
+    if (this.keycloak.authenticated) {
+      this.keycloak.loadUserInfo().then(userInfo => {
+        this.$store.dispatch('signIn', { userInfo: userInfo })
+      })
+    } else if ('requiresAuthentication' in this.$route.meta && this.$route.meta.requiresAuthentication) {
+      this.signIn()
+    } else {
+      this.$store.dispatch('signOut')
+    }
   }
 })
 </script>
