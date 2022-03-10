@@ -14,13 +14,16 @@ let initOptions = {
   url: `${process.env.VUE_APP_URL}/auth`,
   realm: 'square',
   clientId: 'web-app',
-  checkLoginIframe: false,
+  onLoad: 'check-sso',
+  silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+  tokenStore: 'cookie'
 }
 
 let keycloak = Keycloak(initOptions)
 
 keycloak.init({
-  checkLoginIframe: initOptions.checkLoginIframe
+  onLoad: initOptions.onLoad,
+  silentCheckSsoRedirectUri: initOptions.silentCheckSsoRedirectUri
 }).then((authenticated) => {
   if (authenticated) {
     keycloak.loadUserInfo().then(userInfo => {
