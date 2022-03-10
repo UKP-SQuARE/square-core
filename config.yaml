@@ -30,6 +30,8 @@ verify_ssl:
   prod: 1
   local: 0
 
+realm: square
+
 square_api_url: 
   prod: https://square.ukp-lab.de/api
   local: https://host.docker.internal/api
