@@ -77,50 +77,24 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 
 ## Local Installation
 ### Requirements
-For generating the docker-compose file we use [ytt](https://carvel.dev/ytt/) that can installed from [here](https://carvel.dev/ytt/docs/latest/install/) or via brew:
-```bash
-brew instal ytt
-```
-### Environment Configuration
-Many of the services requires secrets that are set in environment files. Run the `[init_env_file.sh](./init_env_files.sh)` file:
-```bash
-bash init_env_files.sh
-```
-Next, we need to setup the authentication. For this we need to run a subset of the services. So first we [generate the docker-compose file](#generate-the-docker-compose-file):
+To run UKP-SQuARE locally, you need the following tools:
+* [docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/#install-compose)
+* [ytt](https://carvel.dev/ytt/)
+* [jq](https://stedolan.github.io/jq/download/)
 
-Then we start traefik, keylcoak and postgres:
+### Install
+We provide an installation script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
 ```bash
-docker-compose up -d traefik keycloak postgres
-```
-Next go to [square.ukp-lab.localhost/auth](https://square.ukp-lab.localhost/auth) and login with the username `admin` and the keycloak password set in `./keycloak/.env`. On the left hand side create a new realm called `square`. Then follow the [instructions in the square-auth package](https://github.com/UKP-SQuARE/square-auth#register-a-client-in-keycloak) to set up clients for the skill-manager, datastores and models. Copy their CLIENT_SECRET and set it in ./skill-manager/.env ./datastore-api./env and ./square-model-inference-api/management_server/.env. Finally bring down the servies again with:
-```bash
-docker-compose down
-```
-
-### Generate the docker-compose file
-The docker-compose file is generated using the [ytt](https://carvel.dev/ytt/) templating tool. First, we need to update the [config.yaml](config.yaml) to the target platform.
-- Set _environment_ to `local`
-- Set _os_ to your operating system, e.g. `linux`, `mac` or `windows`
-Now we can generate the docker-compose.yaml file by running:
-```bash
-ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml  
-```
-### Get docker images
-We now can pull the existing docker images from docker hub by running:
-```bash
-docker-compose pull
-```
-In order to inject the updated environment variables in the frontend, we need to rebuild it:
-```bash
-docker-compose build frontend
+bash install.sh
 ```
 ### Run 
+Finally, you can run the full system with docker-compose.
 ```bash
 docker-compose up -d
 ```
-Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.local](https://square.ukp-lab.local).
 👉 Accept that the browser cannot verify the certificate.
-👉 enable the flag [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost) in Chrome.
 ### Add Skills
 Add Skills according to the [Add New Skills](#Add-New-Skills) section. Note that, for open-domain skills the datastore need to created first.
 
