@@ -81,7 +81,7 @@ docker-compose up -d
 Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.local](https://square.ukp-lab.local).
 👉 Accept that the browser cannot verify the certificate.
 ### Add Skills
-Add Skills according to the [Add New Skills](#Add-New-Skills) section. Note that, for open-domain skills the datastore need to created first.
+Add Skills according to the [Add New Skills](./skills/README.md#add-new-skills) section. Note that, for open-domain skills the datastore need to created first.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:
