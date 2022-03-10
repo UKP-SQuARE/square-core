@@ -7,7 +7,7 @@ For a list of available skills, see 👉 [Publicly Available Skills](Publicly-Av
 
 ## Add New Skills
 ### The Predict Function
-To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [*SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [*SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
+To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
