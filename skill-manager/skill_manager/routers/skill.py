@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/skill")
 
 
-def get_user_from_token(request: Request):
-    token = HTTPBearer()(request).credentials
+async def get_user_from_token(request: Request):
+    token = await HTTPBearer()(request).credentials
     payload = jwt.decode(token, options=dict(verify_signature=False))
     realm = Auth.get_realm_from_token(token)
     return {"realm": realm, "user_id": payload["preferred_username"]}
@@ -47,7 +47,7 @@ async def get_skill_by_id(request: Request, id: str = None):
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
 
     if has_auth_header(request):
-        user_id = get_user_from_token(request)["username"]
+        user_id = await get_user_from_token(request)["username"]
         if not skill.published and not skill.user_id == user_id:
             raise HTTPException(403)
 
@@ -64,7 +64,7 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
     mongo_query = {"published": True}
     if user_id or has_auth_header(request):
         if has_auth_header(request):
-            user_id = get_user_from_token(request)["username"]
+            user_id = await get_user_from_token(request)["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
@@ -85,7 +85,7 @@ async def create_skill(
     """Creates a new skill and saves it."""
 
     if has_auth_header(request):
-        payload = get_user_from_token(request)
+        payload = await get_user_from_token(request)
         realm = payload["realm"]
         username = payload["username"]
     else:
