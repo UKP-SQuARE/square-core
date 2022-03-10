@@ -4,9 +4,10 @@
       <div class="row">
         <div class="col">
           <CompareSkills
+              selector-target="explain"
+              :skill-filter="skillId => skillId in checklistData"
               v-on:input="changeSelectedSkills"
-              class="border-success"
-              :skill-filter="skillId => skillId in data" />
+              class="border-success" />
         </div>
       </div>
       <div v-if="selectedSkills.length > 0" class="row">
@@ -85,9 +86,9 @@
                 <div class="text-center">
                   <h3 class="my-3">{{ getTest(index, row).test_name }}</h3>
                   <p class="d-inline-flex align-items-center">
-                    <span class="badge bg-primary d-inline-flex align-items-center me-2 py-2">{{ mapTestType(getTest(index, row).test_type) }}</span>
+                    <BadgePopover :popover-title="mapTestType(getTest(index, row).test_type)" :popover-content="getTest(index, row).test_type_description" />
                     test on
-                    <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ getTest(index, row).capability }}</span>
+                    <BadgePopover :popover-title="getTest(index, row).capability" :popover-content="getTest(index, row).capability_description" />
                   </p>
                   <div>
                   <a
@@ -130,13 +131,11 @@
 
 <script>
 import Vue from 'vue'
+import BadgePopover from '../components/BadgePopover'
 import CompareSkills from '../components/CompareSkills'
 import ExplainDetail from '../components/modals/ExplainDetail'
 import mixin from '../components/results/mixin'
 import { getSkill } from '../api'
-import squad2 from '../../checklist/61a9f57935adbbf1f2433073'
-import boolq from '../../checklist/61a9f66935adbbf1f2433077'
-import commonsense from '../../checklist/61a9f6d035adbbf1f243307d'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -148,16 +147,12 @@ export default Vue.component('explainability-page', {
       },
       currentSkills: [],
       currentTests: [],
-      selectedTest: -1,
-      data: {
-        '61a9f57935adbbf1f2433073': squad2,
-        '61a9f66935adbbf1f2433077': boolq,
-        '61a9f6d035adbbf1f243307d': commonsense
-      }
+      selectedTest: -1
     }
   },
   components: {
     ExplainDetail,
+    BadgePopover,
     CompareSkills
   },
   computed: {
@@ -166,6 +161,12 @@ export default Vue.component('explainability-page', {
     },
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
+    },
+    checklistData() {
+      // Dynamically require available CheckList data
+      let requireComponent = require.context('../../checklist', false, /[a-z0-9]+\.json$/)
+      return Object.assign({}, ...requireComponent.keys().map(
+          fileName => ({[fileName.substr(2, fileName.length - 7)]: requireComponent(fileName).tests})))
     }
   },
   methods: {
@@ -177,15 +178,19 @@ export default Vue.component('explainability-page', {
       this.waiting = true
       let currentSkills = []
       let currentTests = []
-      this.selectedSkills.forEach(skill => {
-        if (skill in this.data) {
-          getSkill(skill)
+      this.selectedSkills.forEach(skillId => {
+        if (skillId in this.checklistData) {
+          getSkill(skillId)
               .then((response) => {
                 currentSkills.push(response.data)
               })
-          let tests = this.data[skill].tests
-          // FIXME: Sort all tests the same
-          tests.sort((a, b) => b.failure_rate - a.failure_rate)
+          let tests = this.checklistData[skillId]
+          // Sort first skill by failure rate and subsequent skills based on the sorting of the first one
+          if (currentTests.length === 0) {
+            tests.sort((a, b) => b.failure_rate - a.failure_rate)
+          } else {
+            tests.sort((a, b) => currentTests[0].findIndex(e => e.test_name === a.test_name) - currentTests[0].findIndex(e => e.test_name === b.test_name))
+          }
           tests.forEach(test => test.test_cases = test.test_cases.filter(
               test_case => test_case['success_failed'] === 'failed'))
           currentTests.push(tests)
@@ -200,11 +205,10 @@ export default Vue.component('explainability-page', {
     },
     downloadExamples(skillIndex) {
       let skill = this.currentSkills[skillIndex - 1]
-      let data = JSON.stringify(this.data[skill.id], null, 2)
+      let data = JSON.stringify(this.checklistData[skill.id], null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
-      // FIXME: Does not download
-      this.$refs[`downloadButton${skillIndex}`].href = URL.createObjectURL(blob)
-      this.$refs[`downloadButton${skillIndex}`].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
+      this.$refs[`downloadButton${skillIndex}`][0].href = URL.createObjectURL(blob)
+      this.$refs[`downloadButton${skillIndex}`][0].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
     }
   }
 })

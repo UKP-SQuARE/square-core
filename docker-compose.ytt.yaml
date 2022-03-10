@@ -123,9 +123,7 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build:
-      context: .
-      dockerfile: ./square-frontend/Dockerfile_production
+    build: ./square-frontend
     image: ukpsquare/square-frontend:latest
     restart: always
     expose:
@@ -139,6 +137,19 @@ services:
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
       - #@ template.replace(traefik_tls("frontend"))
+
+  documentation:
+    image: ukpsquare/square-docs:latest
+    build: ./docs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.documentation.rule=PathPrefix(`/docs/`)"
+      - "traefik.http.services.documentation.loadbalancer.server.port=9002"
+      - #@ template.replace(traefik_tls("documentation"))
 
   skill_manager:
     image: ukpsquare/skill-manager:latest
@@ -198,7 +209,7 @@ services:
       CLIENT_ID: models
     labels:
       - "traefik.enable=true"
-      #@ template.replace(traefik_tls("maintaining"))
+      - #@ template.replace(traefik_tls("maintaining"))
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"

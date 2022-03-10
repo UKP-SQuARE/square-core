@@ -3,7 +3,7 @@
   <form v-on:submit.prevent="askQuestion">
     <div class="row">
       <div class="col-md-4 ms-auto">
-        <CompareSkills v-on:input="changeSelectedSkills" class="border-danger" />
+        <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="border-danger" />
       </div>
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
