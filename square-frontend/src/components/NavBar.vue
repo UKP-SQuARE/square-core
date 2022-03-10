@@ -52,7 +52,7 @@
                   </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" v-on:click.prevent="signout" href="#">Sign out</a></li>
+                <li><router-link class="dropdown-item" to="/signout">Sign out</router-link></li>
               </ul>
             </div>
           </div>
@@ -77,15 +77,6 @@ export default Vue.component('nav-bar', {
     },
     isAuthenticated() {
       return this.$store.getters.isAuthenticated()
-    }
-  },
-  methods: {
-    signout() {
-      this.$store.dispatch('signOut').then(() => {
-        if (this.$route.path !== '/') {
-          this.$router.push('/')
-        }
-      })
     }
   }
 })

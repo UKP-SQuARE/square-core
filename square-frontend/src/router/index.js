@@ -80,6 +80,14 @@ const routes = [
     beforeEnter(to, from) {
       window.location.href = `${AUTH_URL}/registrations?response_type=code&client_id=${CLIENT_ID}&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
     }
+  },
+  {
+    path: '/signout',
+    beforeEnter(to, from) {
+      store.dispatch('signOut').then(() => {
+        window.location.href = `${AUTH_URL}/logout?&redirect_uri=${window.location.origin}${from.path}`
+      })
+    }
   }
 ]
 
