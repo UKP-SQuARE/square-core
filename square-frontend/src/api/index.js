@@ -7,8 +7,8 @@ import axios from 'axios'
 /**
  * URLs to the SQuARE backend servers
  */
-let AUTH_URL = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect`
-let SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
+const AUTH_URL = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect`
+const SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
 
 /**
  * Retrieve the access token from the authentication server.
@@ -17,12 +17,11 @@ let SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
  * @param {String} clientId
  */
 export function getToken(code, redirectURI, clientId) {
-
-    let data = new URLSearchParams();
-    data.append('grant_type', 'authorization_code');
-    data.append('code', code);
-    data.append('redirect_uri', redirectURI);
-    data.append('client_id', clientId);
+    let data = new URLSearchParams()
+    data.append('grant_type', 'authorization_code')
+    data.append('code', code)
+    data.append('redirect_uri', redirectURI)
+    data.append('client_id', clientId)
     return axios.post(`${AUTH_URL}/token`, data)
 }
 

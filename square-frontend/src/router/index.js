@@ -16,6 +16,9 @@ const NotFound = () => import('../views/NotFound')
 
 Vue.use(VueRouter)
 
+const AUTH_URL = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect`
+const CLIENT_ID = 'web-app'
+
 const routes = [
   {
     path: '/',
@@ -69,13 +72,13 @@ const routes = [
   {
     path: '/signin',
     beforeEnter(to, from) {
-      window.location.href = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect/auth?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
+      window.location.href = `${AUTH_URL}/auth?response_type=code&client_id=${CLIENT_ID}&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
     }
   },
   {
     path: '/signup',
     beforeEnter(to, from) {
-      window.location.href = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect/registrations?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
+      window.location.href = `${AUTH_URL}/registrations?response_type=code&client_id=${CLIENT_ID}&state=hbdfv98234bf&redirect_uri=${window.location.origin}${from.path}`
     }
   }
 ]
@@ -94,11 +97,10 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if ('state' in to.query && 'session_state' in to.query && 'code' in to.query) {
-    console.log(to.query)
     store.dispatch('signIn', {
       code: to.query.code,
-      redirectURI: to.query.redirect_uri,
-      clientId: to.query.client_id
+      redirectURI: `${window.location.origin}${to.path}`,
+      clientId: CLIENT_ID
     }).then(() => {
       router.replace({ query: {} })
     })
