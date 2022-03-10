@@ -7,3 +7,4 @@ class QueryResult(BaseModel):
     """Represents one retrieved document in a list of query results."""
     document: Document
     score: float
+    id: str

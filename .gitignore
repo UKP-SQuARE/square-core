@@ -34,3 +34,4 @@ square-skill-api
 square-skill-helpers
 
 **/.env
+docker-compose.yaml

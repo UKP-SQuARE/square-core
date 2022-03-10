@@ -52,6 +52,9 @@ class ModelAPIClient:
         data = {
             "input": [query],
             "adapter_name": index.query_encoder_adapter,
+            "task_kwargs": {
+                "embedding_mode": index.embedding_mode
+            }
         }
         logger.info(f"{request_url} : {data}")
         response = requests.post(request_url, json=data)

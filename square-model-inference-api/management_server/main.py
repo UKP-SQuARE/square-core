@@ -8,10 +8,8 @@ from app.core.config import settings
 from app.routers.api import api_router
 
 
-# from square_auth.auth import Auth
-# from square_auth.client_credentials import ClientCredentials
-# auth = Auth()
-# client_credentials = ClientCredentials()
+from square_auth.auth import Auth
+auth = Auth()
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ def get_app() -> FastAPI:
     fast_app = FastAPI(title=settings.APP_NAME,
                        version=settings.APP_VERSION,
                        openapi_url=settings.OPENAPI_URL,
-                       # dependencies=[Depends(auth)]
+                       dependencies=[Depends(auth)]
                        )
 
     fast_app.add_middleware(

@@ -48,7 +48,7 @@ class BaseClassConverter(ABC):
         pass
 
     @abstractmethod
-    def convert_to_document(self, obj: Dict[str, Any]) -> Document:
+    def convert_to_document(self, obj: Dict[str, Any], document_id: str) -> Document:
         """
         Converts a backend-specific object to a document object.
         """
