@@ -251,7 +251,7 @@ docker-compose up -d traefik db keycloak
 echo "Setting up Authorizaton."
 while [ $(curl -s -k -L -o /dev/null -w "%{http_code}" "https://$SQUARE_URL/auth") -ne "200" ]; do
 	echo "Waiting for Keycloak to be ready."
-	sleep 3
+	sleep 8
 done
 
 keycloak_create_realm
