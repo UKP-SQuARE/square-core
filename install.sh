@@ -258,14 +258,12 @@ keycloak_create_realm
 
 # create the skill-manager client that is able to create other clients
 SKILL_MANAGER_SECRET=$(keycloak_create_client_registration_client)
-echo "SKILL_MANAGER_SECRET=$SKILL_MANAGER_SECRET"
 sed -e "s/%%CLIENT_SECRET%%/$SKILL_MANAGER_SECRET/g" ./skill-manager/.env > ./skill-manager/.env.tmp
 mv ./skill-manager/.env.tmp ./skill-manager/.env
 
 # create clients in keycloak and save client secret
 for CLIENT_ID in ${CLIENTS[@]}; do
 	CLIENT_SECRET=$(keycloak_create_client $CLIENT_ID $SKILL_MANAGER_SECRET)
-	echo "CLIENT_ID=$CLIENT_ID CLIENT_SECRET=$CLIENT_SECRET"
 	
 	if [[ $CLIENT_ID == "models" ]]; then
 		CLIENT_PATH="square-model-inference-api/management_server"
