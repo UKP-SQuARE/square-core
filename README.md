@@ -58,26 +58,11 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 </details>
 
 ## Add New Skills
-
-### Step 1: Hosting New Skills
-- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it run after code review;
-- It is also OK to host the skill yourself somewhere else. The only thing that matters here is to provide a URL and also match the argument formats.
-
-### Step 2: Register the Skill
-Go to your user profile and click on "My Skills" and "New" buttons. Fill out the form and link it to the hosted skills:
-
-<details open>
-    <summary>Example: Skill Form Filling</summary>
-    <p align="center">
-        <br>
-        <img src="images/link_skill.png" width="800"/>
-        <br>
-    <p>
-</details>
+To add new skills, please see the [skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills#add-new-skills) section.
 
 ## Local Installation
 ### Requirements
-To run UKP-SQuARE locally, you need the following tools:
+To run UKP-SQuARE locally, you need the following software:
 * [docker](https://docs.docker.com/get-docker/)
 * [docker-compose](https://docs.docker.com/compose/install/#install-compose)
 * [ytt](https://carvel.dev/ytt/)
