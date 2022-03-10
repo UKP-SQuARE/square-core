@@ -35,15 +35,6 @@ export default Vue.component('app', {
     }
   },
   methods: {
-    updateUserInfo() {
-      if (this.keycloak.authenticated) {
-        this.keycloak.loadUserInfo().then(userInfo => {
-          this.$store.dispatch('signIn', { userInfo: userInfo })
-        })
-      } else {
-        this.$store.dispatch('signOut')
-      }
-    },
     signIn() {
       this.keycloak.login({ redirectUri: `${window.location.href}` })
     },
