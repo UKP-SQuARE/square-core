@@ -42,10 +42,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
                   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
                 </svg>
-                &nbsp;{{ user.name }}
+                &nbsp;{{ user.preferred_username }}
               </a>
-              <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+              <ul class="dropdown-menu dropdown-menu-end">
                 <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
+                <li>
+                  <a href="/auth/realms/square/account/" target="_blank" class="dropdown-item">
+                    Manage account
+                  </a>
+                </li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" v-on:click.prevent="signout" href="#">Sign out</a></li>
               </ul>
@@ -68,18 +73,13 @@ export default Vue.component('nav-bar', {
   },
   computed: {
     user() {
-      return this.$store.state.user
+      return this.$store.state.authentication.data
     },
     isAuthenticated() {
       return this.$store.getters.isAuthenticated()
     }
   },
   methods: {
-    authURL(signIn) {
-      let base = `${process.env.VUE_APP_URL}/auth/realms/square/protocol/openid-connect/`
-      base += signIn ? 'auth' : 'registrations'
-      return `${base}?response_type=code&client_id=web-app&state=hbdfv98234bf&redirect_uri=${window.location.href}`
-    },
     signout() {
       this.$store.dispatch('signOut').then(() => {
         if (this.$route.path !== '/') {
