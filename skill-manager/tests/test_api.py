@@ -214,6 +214,17 @@ def test_get_skill_by_id(pers_client, skill_factory):
 
     assert_skills_equal_from_response(test_skill, response)
 
+@pytest.mark.asyncio
+def test_get_skill_by_id_token(pers_client: TestClient, skill_factory, token):
+    test_skill = skill_factory(user_id="test-user")
+    response = pers_client.post("/api/skill", data=test_skill.json())
+    added_skill_id = response.json()["id"]
+
+    response = pers_client.get(
+        f"/api/skill/{added_skill_id}", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+
 
 def test_get_all_skills(pers_client, skill_factory):
 
