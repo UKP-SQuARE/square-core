@@ -7,7 +7,7 @@
         v-on:account="account"
         v-on:sign-out="signOut" />
     <main class="flex-fill" :class="{ 'my-4': !isLandingPage }">
-      <router-view class="h-100" :class="{ 'container-xxl': !isLandingPage }" />
+      <router-view :keycloak="keycloak" class="h-100" :class="{ 'container-xxl': !isLandingPage }" />
     </main>
     <Footer />
   </div>
@@ -36,10 +36,10 @@ export default Vue.component('app', {
   },
   methods: {
     signIn() {
-      this.keycloak.login({ redirectUri: `${window.location.href}` })
+      this.keycloak.login({ redirectUri: `${window.location.origin}` })
     },
     signUp() {
-      this.keycloak.register({ redirectUri: `${window.location.href}` })
+      this.keycloak.register({ redirectUri: `${window.location.origin}` })
     },
     signOut() {
       this.$store.dispatch('signOut').then(() => {
@@ -50,13 +50,21 @@ export default Vue.component('app', {
       this.keycloak.accountManagement()
     }
   },
-  beforeUpdate() {
+  watch: {
+    $route() {
+      // Users do not have a visible link to protected sites so they usually will never see this redirect
+      // Using browser history or entering a direct URL can result in this view
+      // The redirect to an intermediate site is required to protect against some infinite redirect cycles
+      if (!this.keycloak.authenticated && 'requiresAuthentication' in this.$route.meta && this.$route.meta.requiresAuthentication) {
+        this.$router.push('/signin')
+      }
+    }
+  },
+  beforeMount() {
     if (this.keycloak.authenticated) {
       this.keycloak.loadUserInfo().then(userInfo => {
         this.$store.dispatch('signIn', { userInfo: userInfo })
       })
-    } else if ('requiresAuthentication' in this.$route.meta && this.$route.meta.requiresAuthentication) {
-      this.signIn()
     } else {
       this.$store.dispatch('signOut')
     }

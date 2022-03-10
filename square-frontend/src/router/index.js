@@ -11,6 +11,7 @@ const Explain = () => import('../views/Explain')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
 const Feedback = () => import('../views/Feedback')
+const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
 
 Vue.use(VueRouter)
@@ -51,6 +52,11 @@ const routes = [
     path: '/feedback',
     name: 'feedback',
     component: Feedback
+  },
+  {
+    path: '/signin',
+    name: 'signIn',
+    component: SignIn
   },
   {
     path: '*',
