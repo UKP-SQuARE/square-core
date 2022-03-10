@@ -104,7 +104,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if ('state' in to.query && 'session_state' in to.query && 'code' in to.query) {
+  if (!store.getters.isAuthenticated() && 'state' in to.query && 'session_state' in to.query && 'code' in to.query) {
     store.dispatch('signIn', {
       code: to.query.code,
       redirectURI: `${window.location.origin}${to.path}`,
