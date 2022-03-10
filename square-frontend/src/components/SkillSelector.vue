@@ -3,7 +3,6 @@
   <select
       v-bind:value="value"
       v-on:input="$emit('input', $event.target.value)"
-      v-on:change="$emit('change-skills')"
       class="form-select form-select-lg">
     <option>None</option>
     <option v-for="skill in skills" v-bind:value="skill.id" v-bind:key="skill.id">

@@ -1,7 +1,11 @@
 <!-- The Main View -->
 <template>
   <div id="app" class="d-flex flex-column h-100">
-    <NavBar :keycloak="keycloak" />
+    <NavBar
+        v-on:sign-in="signIn"
+        v-on:sign-up="signUp"
+        v-on:account="account"
+        v-on:sign-out="signOut" />
     <main class="flex-fill" :class="{ 'my-4': !isLandingPage }">
       <router-view class="h-100" :class="{ 'container-xxl': !isLandingPage }" />
     </main>
@@ -29,6 +33,32 @@ export default Vue.component('app', {
     isLandingPage() {
       return this.$route.name === 'home'
     }
+  },
+  methods: {
+    updateUserInfo() {
+      if (this.keycloak.authenticated) {
+        this.keycloak.loadUserInfo().then(userInfo => {
+          this.$store.dispatch('signIn', { userInfo: userInfo })
+        })
+      } else {
+        this.$store.dispatch('signOut')
+      }
+    },
+    signIn() {
+      this.keycloak.login({ redirectUri: `${window.location.href}` })
+    },
+    signUp() {
+      this.keycloak.register({ redirectUri: `${window.location.href}` })
+    },
+    signOut() {
+      this.keycloak.logout({ redirectUri: `${window.location.href}` })
+    },
+    account() {
+      this.keycloak.accountManagement()
+    }
+  },
+  beforeMount() {
+    this.updateUserInfo()
   }
 })
 </script>

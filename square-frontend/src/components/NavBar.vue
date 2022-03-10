@@ -34,8 +34,8 @@
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <a v-on:click.prevent="signIn" href="#" role="button" class="btn btn-outline-light me-2">Sign in</a>
-              <a v-on:click.prevent="signUp" href="#" role="button" class="btn btn-light">Sign up</a>
+              <a v-on:click.prevent="$emit('sign-in')" href="#" role="button" class="btn btn-outline-light me-2">Sign in</a>
+              <a v-on:click.prevent="$emit('sign-up')" href="#" role="button" class="btn btn-light">Sign up</a>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -46,9 +46,9 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
-                <li><a v-on:click.prevent="account" href="#" class="dropdown-item">Manage account</a></li>
+                <li><a v-on:click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a v-on:click.prevent="signOut" href="#" class="dropdown-item">Sign out</a></li>
+                <li><a v-on:click.prevent="$emit('sign-out')" href="#" class="dropdown-item">Sign out</a></li>
               </ul>
             </div>
           </div>
@@ -62,7 +62,6 @@
 import Vue from 'vue'
 
 export default Vue.component('nav-bar', {
-  props: ['keycloak'],
   data() {
     return {
       publicPath: process.env.BASE_URL
@@ -75,32 +74,6 @@ export default Vue.component('nav-bar', {
     isAuthenticated() {
       return Object.keys(this.$store.state.userInfo).length > 0
     }
-  },
-  methods: {
-    updateUserInfo() {
-      if (this.keycloak.authenticated) {
-        this.keycloak.loadUserInfo().then(userInfo => {
-          this.$store.dispatch('signIn', { userInfo: userInfo })
-        })
-      } else {
-        this.$store.dispatch('signOut')
-      }
-    },
-    signIn() {
-      this.keycloak.login({ redirectUri: `${window.location.href}` })
-    },
-    signUp() {
-      this.keycloak.register({ redirectUri: `${window.location.href}` })
-    },
-    signOut() {
-      this.keycloak.logout({ redirectUri: `${window.location.href}` })
-    },
-    account() {
-      this.keycloak.accountManagement()
-    }
-  },
-  beforeMount() {
-      this.updateUserInfo()
   }
 })
 </script>
