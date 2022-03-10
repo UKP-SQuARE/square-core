@@ -24,11 +24,13 @@ from square_skill_api.models.request import QueryRequest
 from square_skill_helpers import ModelAPI, DataAPI
 
 
-# create instances of the DataAPI and ModelAPI for interacting with SQuAREs Datastores and Models
+# create instances of the DataAPI and ModelAPI for interacting 
+# with SQuAREs Datastores and Models
 data_api = DataAPI()
 model_api = ModelAPI()
 
-# this is the standard input that will be given to every predict function. See the details in the `square_skill_api` package for all available inputs.
+# this is the standard input that will be given to every predict function. 
+# See the details in the `square_skill_api` package for all available inputs.
 async def predict(request: QueryRequest) -> QueryOutput:
 
     # Call the Datastores using the `data_api` object
@@ -50,7 +52,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
         model_request=model_request
     )
 
-    # return an QueryOutput object created using the question-answering constructor
+    # return an QueryOutput object created using the 
+    # question-answering constructor
     return QueryOutput.from_question_answering(
         model_api_output=model_api_output,
         context=context,
