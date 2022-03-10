@@ -110,7 +110,7 @@ services:
       - #@ template.replace(traefik_tls("keycloak"))
 
   db:
-    image: postgres
+    image: postgres:13.6
     restart: always
     ports:
       - 5432:5432
