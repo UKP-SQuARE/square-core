@@ -101,7 +101,7 @@ router.beforeEach((to, from, next) => {
       code: to.query.code,
       redirectURI: `${window.location.origin}${to.path}`,
       clientId: CLIENT_ID
-    }).then(() => {
+    }).finally(() => {
       router.replace({ query: {} })
     })
   }

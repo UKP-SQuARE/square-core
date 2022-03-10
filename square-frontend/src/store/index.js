@@ -88,8 +88,8 @@ export default new Vuex.Store({
       return getToken(code, redirectURI, clientId)
           .then((response) => {
             context.commit('setAuthentication', {
-              accessToken: response.data.accessToken,
-              refreshToken: response.data.refreshToken
+              accessToken: response.data.access_token,
+              refreshToken: response.data.refresh_token
             })
           }).then(() => context.dispatch('updateSkills'))
     },
