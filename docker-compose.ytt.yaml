@@ -10,6 +10,7 @@ WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
 VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 SQUARE_API_URL: #@ data.values.square_api_url[data.values.environment]
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+REALM:  #@ data.values.realm
 CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
@@ -164,7 +165,7 @@ services:
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-      REALM: square
+      REALM: #@ data.values.realm
       CLIENT_ID: skill-manager
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: skill_manager_mongo
@@ -206,7 +207,7 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       MODEL_API_IMAGE: ukpsquare/square-model-api-v1:latest
       ONNX_VOLUME: square-model-inference-api_onnx-models
-      REALM: Models-test
+      REALM: #@ data.values.realm
       CLIENT_ID: models
     labels:
       - "traefik.enable=true"
