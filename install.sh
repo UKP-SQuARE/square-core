@@ -282,10 +282,27 @@ done
 keycloak_create_frontend_client $SKILL_MANAGER_SECRET
 
 docker-compose down
-echo "Authorization setup complete."
 
+echo "Building frontend."
 # build frontend with updated env file
 cp square-frontend/.env.production square-frontend/.env.production-backup
 cp square-frontend/.env.development square-frontend/.env.production
 
-docker-compose build frontend
+docker-compose build -q frontend
+
+E=$(cat <<- EOF
+	H4sIAERZKmIAA5VTQQ7DMAi79xU8dYcedlykJpMm7XO8ZKRqBoHUTSUOyCkY2yqX
+	J0vlNxFx61lBj9nah0gH4zNEe87w7dV4eFhal8zepGDrNs5f079q9YL861FhygxC
+	bs8yizdeqEwdqMKGnhnFxq8zHy9sBBcA/OQGIpza1oUz8kcU54/PySFBBJdVak6d
+	T2k6VTlN1Mkp2I1KOvSe8N+V0OpbrAlgIbEl2N2FIJr/rcFUzGDapVgetdyyW2wB
+	8wt+SX8/uvYEAAA=
+	EOF
+)
+WELCOME="$(echo "$E" | base64 -d | gunzip)"
+echo "$WELCOME"
+echo "$(cat <<-EOF
+	Congrats! UKP-SQuARE has been sucessfully installed! 
+	You can run it with: docker-compose up -d
+	Then visit: https://$SQUARE_URL
+EOF
+)"
