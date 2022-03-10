@@ -211,6 +211,8 @@ keycloak_create_frontend_client () {
 # replace passwords in env files
 if [ -f ./keycloak/.env ]; then
 	echo "./keycloak/.env already exists. Skipping."
+	eval "$(grep ^KEYCLOAK_PASSWORD= ./keycloak/.env)"
+	eval "$(grep ^POSTGRES_PASSWORD= ./postgres/.env)"
 else
 	sed -e "s/%%KEYCLOAK_PASSWORD%%/$KEYCLOAK_PASSWORD/g" -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./keycloak/.env.example > ./keycloak/.env 
 	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.example > ./postgres/.env 
@@ -218,6 +220,7 @@ fi
 
 if [ -f ./skill-manager/.env ]; then
 	echo "./skill-manager/.env already exists. Skipping."
+	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./skill-manager/.env)"    
 else
 	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.example > ./skill-manager/.env
 fi
