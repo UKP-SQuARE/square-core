@@ -5,11 +5,9 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, postSignIn, getSkills, putSkill, deleteSkill, postSkill } from '@/api'
+import { postQuery, getSkills, putSkill, deleteSkill, postSkill } from '../api'
 
 Vue.use(Vuex)
-
-const LOCALSTORAGE_KEY_JWT = 'jwt'
 
 export default new Vuex.Store({
   /**
@@ -18,18 +16,21 @@ export default new Vuex.Store({
    * 2) should be restored when a view is changed and later returned to
    */
   state: {
-    user: {},
-    // JWT is also stored in LocalStorage 
-    jwt: '',
+    userInfo: {},
+    token: '',
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
     availableSkills: [],
-    // Subset of availableSkills with owner_id equal to id in jwt
     mySkills: [],
     skillOptions: {
-      selectedSkills: Array(3).fill('None'),
-      maxResultsPerSkill: 10
+      qa: {
+        selectedSkills: Array(3).fill('None'),
+        maxResultsPerSkill: 10
+      },
+      explain: {
+        selectedSkills: Array(3).fill('None')
+      }
     }
   },
   mutations: {
@@ -40,23 +41,18 @@ export default new Vuex.Store({
     },
     setSkills(state, payload) {
       state.availableSkills = payload.skills
-      if (state.user.name) {
-        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.user.name)
+      if (state.userInfo.preferred_username) {
+        state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.userInfo.preferred_username)
       }
     },
-    /**
-     * Set the JWT and all derived values
-     */
-    setJWT(state, payload) {
-      localStorage.setItem(LOCALSTORAGE_KEY_JWT, payload.jwt)
-      state.jwt = payload.jwt
-      if (payload.jwt && payload.jwt.split('.').length === 3) {
-        let data = JSON.parse(atob(payload.jwt.split('.')[1]))
-        state.user = data.sub
+    setAuthentication(state, payload) {
+      if (payload.userInfo) {
+        state.userInfo = payload.userInfo
       }
+      state.token = payload.token
     },
     setSkillOptions(state, payload) {
-      state.skillOptions = payload.skillOptions
+      state.skillOptions[payload.selectorTarget] = payload.skillOptions
     }
   },
   /**
@@ -65,8 +61,7 @@ export default new Vuex.Store({
   actions: {
     query(context, { question, inputContext, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      let user_id = context.state.user.name ? context.state.user.name : ''
-      return postQuery(question, inputContext, options, user_id)
+      return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
@@ -74,67 +69,46 @@ export default new Vuex.Store({
               predictions: response.data.predictions
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
-            context.commit('setSkillOptions', { skillOptions: options })
           }))
     },
-    signIn(context, { username, password }) {
-      return postSignIn(username, password)
-          .then((response) => {
-            context.commit('setJWT', { jwt: response.data.token })
-          }).then(() => context.dispatch('updateSkills'))
+    signIn(context, { userInfo, token }) {
+      context.commit('setAuthentication', { userInfo: userInfo, token: token })
+    },
+    refreshToken(context, { token }) {
+      context.commit('setAuthentication', { token: token })
     },
     signOut(context) {
-      // Reset JWT and (private) skills
-      context.commit('setJWT', { jwt: '' })
+      // Reset user info and (private) skills
+      context.commit('setAuthentication', { userInfo: {}, token: '' })
       context.commit('setSkills', { skills: [] })
     },
-    initJWTfromLocalStorage(context) {
-      let jwt = localStorage.getItem(LOCALSTORAGE_KEY_JWT) || ''
-      context.commit('setJWT', { jwt: jwt })
+    selectSkill(context, { skillOptions, selectorTarget }) {
+      context.commit('setSkillOptions', { skillOptions: skillOptions, selectorTarget: selectorTarget })
     },
     updateSkills(context) {
-      let user_name = context.state.user.name ? context.state.user.name : ''
-      return getSkills(user_name)
+      return getSkills(context.getters.authenticationHeader())
           .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSkill(context, { skill }) {
-      return putSkill(skill.id, skill)
+      return putSkill(context.getters.authenticationHeader(), skill.id, skill)
           .then(() => context.dispatch('updateSkills'))
     },
     createSkill(context, { skill }) {
-      return postSkill(skill)
+      return postSkill(context.getters.authenticationHeader(), skill)
           .then(() => context.dispatch('updateSkills'))
     },
     deleteSkill(context, { skillId }) {
-      return deleteSkill(skillId)
+      return deleteSkill(context.getters.authenticationHeader(), skillId)
           .then(() => context.dispatch('updateSkills'))
     }
   },
-  /**
-   * Getters for information not stored as state variables
-   */
   getters: {
-    /**
-     * Check if the JWT is valid
-     */
-    isAuthenticated: (state) => () => {
-      let jwt = state.jwt
-      if (!jwt || jwt.split('.').length < 3) {
-        return false
+    authenticationHeader: (state) => () => {
+      if (state.token) {
+        return {'Authorization': `Bearer ${state.token}`}
+      } else {
+        return {}
       }
-      let data = JSON.parse(atob(jwt.split('.')[1]))
-      return new Date() < new Date(data.exp * 1000)
-    },
-    /**
-     * Check if the JWT is expired
-     */
-    isSessionExpired: (state) => () => {
-      let jwt = state.jwt
-      if (!jwt || jwt.split('.').length < 3) {
-        return false
-      }
-      let data = JSON.parse(atob(jwt.split('.')[1]))
-      return new Date() >= new Date(data.exp * 1000)
     }
   }
 })

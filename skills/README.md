@@ -7,7 +7,7 @@ For a list of available skills, see 👉 [Publicly Available Skills](Publicly-Av
 
 ## Add New Skills
 ### The Predict Function
-To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [*SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [*SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
+To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
@@ -24,11 +24,13 @@ from square_skill_api.models.request import QueryRequest
 from square_skill_helpers import ModelAPI, DataAPI
 
 
-# create instances of the DataAPI and ModelAPI for interacting with SQuAREs Datastores and Models
+# create instances of the DataAPI and ModelAPI for interacting 
+# with SQuAREs Datastores and Models
 data_api = DataAPI()
 model_api = ModelAPI()
 
-# this is the standard input that will be given to every predict function. See the details in the `square_skill_api` package for all available inputs.
+# this is the standard input that will be given to every predict function. 
+# See the details in the `square_skill_api` package for all available inputs.
 async def predict(request: QueryRequest) -> QueryOutput:
 
     # Call the Datastores using the `data_api` object
@@ -50,7 +52,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
         model_request=model_request
     )
 
-    # return an QueryOutput object created using the question-answering constructor
+    # return an QueryOutput object created using the 
+    # question-answering constructor
     return QueryOutput.from_question_answering(
         model_api_output=model_api_output,
         context=context,
@@ -61,8 +64,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
 ### Adding Via Pull Request
 If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls) with the following changes:
 1. Put your skill function in a file under: `./skills/<skill-name>/skill.py`
-2. Add you skill in the [skill.yaml](../skill.yaml). Give the skill the same name as the folder under skills.
-3. Once you pull request is approved, your skill url will be `http://<skill-name>:<port>`
+2. Add you skill in the [config.yaml](../config.yaml). Give the skill the same name as the folder under skills. Add your username as author.
+3. Once you pull request is approved, your skill url will be `http://<skill-name>`
 
 ### Adding Self-Hosted or Cloud Skills
 #### Azure Functions
