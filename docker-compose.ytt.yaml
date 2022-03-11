@@ -154,7 +154,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.documentation.rule=PathPrefix(`/docs/`)"
-      - "traefik.http.services.documentation.loadbalancer.server.port=9002"
       - #@ template.replace(traefik_tls("documentation"))
 
   skill_manager:
