@@ -313,6 +313,7 @@ services:
       FAISS_URL: #@ data.values.faiss_url[data.values.environment]
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       ES_URL: http://datastore_es:9200
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores"))

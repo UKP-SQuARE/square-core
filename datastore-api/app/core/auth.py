@@ -16,6 +16,8 @@ def verify_api_key(api_key_header: str = Security(api_key_header)):
     """
     Verify API key.
     """
+    logger.warning("This authorization has been deprecated. Now it uses keycloak and SQuARE-Auth")
+
     if api_key_header is None:
         logger.info("No API key provided")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No API key provided.")

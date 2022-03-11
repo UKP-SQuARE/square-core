@@ -7,7 +7,7 @@ from fastapi.param_functions import Body, Path
 from ..models.embedding import DocumentEmbedding
 from ..models.httperror import HTTPError
 from ..models.index import Index, IndexRequest, IndexStatus
-from .dependencies import get_search_client, get_storage_connector
+from .dependencies import get_search_client, get_storage_connector, client_credentials
 
 
 logger = logging.getLogger(__name__)
@@ -110,12 +110,13 @@ async def get_index_status(
     index_name: str = Path(..., description="Name of the index"),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
+    credential_token=Depends(client_credentials)
 ):
     index = await conn.get_index(datastore_name, index_name)
     if index is None:
         raise HTTPException(status_code=404, detail="Index not found.")
     else:
-        is_available = await dense_retrieval.status(datastore_name, index_name)
+        is_available = await dense_retrieval.status(datastore_name, index_name, credential_token)
         return IndexStatus(is_available=is_available)
 
 

@@ -7,6 +7,8 @@ from ..core.es.connector import ElasticsearchConnector
 from ..core.faiss import FaissClient
 from ..core.model_api import ModelAPIClient
 
+from square_auth.client_credentials import ClientCredentials
+client_credentials = ClientCredentials()  # For getting tokens and enable access to **other** servicess
 
 # IMPORTANT: When altering this, make sure to also alter the corresponding mock in conftest.py!
 @lru_cache()

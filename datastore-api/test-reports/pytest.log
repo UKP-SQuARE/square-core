@@ -1,11 +1,32 @@
+cp .env.test .env
+PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest -s -v tests/
 ============================= test session starts ==============================
-platform linux -- Python 3.10.0, pytest-7.0.1, pluggy-1.0.0
-rootdir: /home/kwang/research/square-core/datastore-api
-plugins: requests-mock-1.9.3
-collected 35 items
+platform linux -- Python 3.10.0, pytest-7.0.1, pluggy-1.0.0 -- /home/kwang/miniconda3/envs/datastore-api/bin/python
+cachedir: .pytest_cache
+rootdir: /home/kwang/research/square-core/datastore-api, configfile: pytest.ini
+plugins: anyio-3.5.0, env-0.6.2, requests-mock-1.9.3
+collecting ... collected 35 items
 
-tests/test_datastores.py .......
-tests/test_documents.py ............b'{"id": "111", "title": "test document", "text": "this is a test document"}'
+tests/test_datastores.py::TestDatastores::test_get_all_datastores PASSED
+tests/test_datastores.py::TestDatastores::test_get_datastore PASSED
+tests/test_datastores.py::TestDatastores::test_get_datastore_not_found PASSED
+tests/test_datastores.py::TestDatastores::test_put_datastore PASSED
+tests/test_datastores.py::TestDatastores::test_delete_datastore PASSED
+tests/test_datastores.py::TestDatastores::test_delete_datastore_not_found PASSED
+tests/test_datastores.py::TestDatastores::test_get_datastore_stats PASSED
+tests/test_documents.py::TestDocuments::test_get_document PASSED
+tests/test_documents.py::TestDocuments::test_get_document_not_found PASSED
+tests/test_documents.py::TestDocuments::test_put_document PASSED
+tests/test_documents.py::TestDocuments::test_put_document_invalid PASSED
+tests/test_documents.py::TestDocuments::test_delete_document PASSED
+tests/test_documents.py::TestDocuments::test_delete_document_not_found PASSED
+tests/test_documents.py::TestDocuments::test_post_documents PASSED
+tests/test_documents.py::TestDocuments::test_post_documents_one_invalid PASSED
+tests/test_documents.py::TestDocuments::test_post_documents_invalid_datastore PASSED
+tests/test_documents.py::TestDocuments::test_upload_documents_from_file PASSED
+tests/test_documents.py::TestDocuments::test_upload_documents_from_urls PASSED
+tests/test_documents.py::TestDocuments::test_upload_documents_from_urls_invalid PASSED
+tests/test_documents.py::TestDocuments::test_download_documents b'{"id": "111", "title": "test document", "text": "this is a test document"}'
 b'{"id": "222", "title": "document title", "text": "document containing the query word quack"}'
 b'{"id": "42", "title": "a new document", "text": "some content"}'
 b'{"id": "41", "title": "a new document", "text": "some content"}'
@@ -30,21 +51,27 @@ b'{"id": 7, "title": "Aaron", "text": "in literature dating to the Babylonian ca
 b'{"id": 8, "title": "Aaron", "text": "priests claiming Aaronide descent dominated the Second Temple period. Most scholars think the Torah reached its final form early in this period, which may account for Aaron\'s prominence in Exodus, Leviticus and Numbers. Aaron plays a leading role in several stories of conflicts during Israel\'s wilderness wanderings. During the prolonged absence of Moses on Mount Sinai, the people provoked Aaron to make a golden calf. (Exodus 32:1-6). This incident nearly caused God to destroy the Israelites (Exodus 32:10). Moses successfully intervened, but then led the loyal Levites in executing many of the culprits; a plague afflicted those who were left"}'
 b'{"id": 9, "title": "Aaron", "text": "(Exodus 32:25-35). Aaron, however, escaped punishment for his role in the affair, because of the intercession of Moses according to Deuteronomy 9:20. Later retellings of this story almost always excuse Aaron for his role. For example, in rabbinic sources and in the Quran, Aaron was not the idol-maker and upon Moses\' return begged his pardon because he felt mortally threatened by the Israelites (Quran 7:142-152). On the day of Aaron\'s consecration, his oldest sons, Nadab and Abihu, were burned up by divine fire because they offered \\"strange\\" incense (Leviticus 10:1-3). Most interpreters think this story reflects a conflict between priestly"}'
 b'{"id": 10, "title": "Aaron", "text": "families some time in Israel\'s past. Others argue that the story simply shows what can happen if the priests do not follow God\'s instructions given through Moses. The Torah generally depicts the siblings, Moses, Aaron, and Miriam, as the leaders of Israel after the Exodus, a view also reflected in the biblical Book of Micah. Numbers 12, however, reports that on one occasion, Aaron and Miriam complained about Moses\' exclusive claim to be the \'s prophet. Their presumption was rebuffed by God who affirmed Moses\' uniqueness as the one with whom the spoke face to face. Miriam was punished with"}'
-.
-tests/test_indices.py ........
-tests/test_query.py .......
+PASSED
+tests/test_indices.py::TestIndices::test_get_indices PASSED
+tests/test_indices.py::TestIndices::test_get_index PASSED
+tests/test_indices.py::TestIndices::test_get_index_not_found PASSED
+tests/test_indices.py::TestIndices::test_get_index_status PASSED
+tests/test_indices.py::TestIndices::test_put_index PASSED
+tests/test_indices.py::TestIndices::test_delete_index PASSED
+tests/test_indices.py::TestIndices::test_delete_index_not_found PASSED
+tests/test_indices.py::TestIndices::test_get_document_embedding PASSED
+tests/test_query.py::TestQuery::test_search_bm25 PASSED
+tests/test_query.py::TestQuery::test_search_dpr PASSED
+tests/test_query.py::TestQuery::test_search_not_found PASSED
+tests/test_query.py::TestQuery::test_search_by_vector PASSED
+tests/test_query.py::TestQuery::test_score PASSED
+tests/test_query.py::TestQuery::test_score_dpr PASSED
+tests/test_query.py::TestQuery::test_score_not_found PASSED
 
 =============================== warnings summary ===============================
-tests/test_datastores.py: 10 warnings
-tests/test_documents.py: 17 warnings
-tests/test_indices.py: 9 warnings
-tests/test_query.py: 7 warnings
-  /home/kwang/miniconda3/envs/datastore-api/lib/python3.10/site-packages/starlette/testclient.py:234: DeprecationWarning: There is no current event loop
-    loop = asyncio.get_event_loop()
-
 tests/test_datastores.py::TestDatastores::test_delete_datastore
   /home/kwang/research/square-core/datastore-api/app/routers/datastores.py:117: RuntimeWarning: coroutine 'MockConnector.commit_changes' was never awaited
     conn.commit_changes()
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================= 35 passed, 44 warnings in 0.12s ========================
+======================== 35 passed, 1 warning in 0.22s =========================

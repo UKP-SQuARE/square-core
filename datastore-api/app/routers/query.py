@@ -5,8 +5,7 @@ from fastapi.param_functions import Body, Path, Query
 
 from ..models.httperror import HTTPError
 from ..models.query import QueryResult
-from .dependencies import get_search_client, get_storage_connector
-
+from .dependencies import get_search_client, get_storage_connector, client_credentials
 
 router = APIRouter(tags=["Query"])
 
@@ -31,11 +30,18 @@ async def search(
     top_k: int = Query(40, description="Number of documents to retrieve."),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
+    credential_token=Depends(client_credentials)
 ):
     # do dense retrieval
     if index_name:
         try:
-            return await dense_retrieval.search(datastore_name, index_name, query, top_k)
+            return await dense_retrieval.search(
+                datastore_name, 
+                index_name, 
+                query, 
+                top_k,
+                credential_token
+            )
         except ValueError as ex:
             raise HTTPException(status_code=404, detail=str(ex))
         except Exception as other_ex:
@@ -96,11 +102,18 @@ async def score(
     doc_id: str = Query(..., description="Document ID to retrieve."),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
+    credential_token=Depends(client_credentials)
 ):
     # do dense retrieval
     if index_name:
         try:
-            result = await dense_retrieval.score(datastore_name, index_name, query, doc_id)
+            result = await dense_retrieval.score(
+                datastore_name, 
+                index_name, 
+                query, 
+                doc_id, 
+                credential_token
+            )
         except ValueError as ex:
             raise HTTPException(status_code=404, detail=str(ex))
         except Exception as other_ex:
