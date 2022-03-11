@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="card border-primary shadow mt-3">
-      <div class="card-header p-2">
+    <div class="card bg-light border border-danger rounded shadow mt-3">
+      <div class="card-header bg-transparent p-2">
         <div class="row m-0">
           <div class="col d-flex justify-content-start p-0">
             <slot name="leftItem" />
@@ -14,7 +14,7 @@
           </div>
         </div>
       </div>
-      <div class="card-body">
+      <div class="card-body bg-light">
         <slot />
       </div>
     </div>

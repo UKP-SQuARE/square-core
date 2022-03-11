@@ -22,7 +22,7 @@
             <p class="lead fs-2">Use or create skills to <span class="text-danger">query</span> and <span class="text-danger">compare</span> models and datastores</p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
               <router-link class="btn btn-outline-danger btn-lg px-4" to="/qa">Get started</router-link>
-              <a href="/docs/pages/components/skills.html" class="btn btn-outline-danger btn-lg px-4">Learn more</a>
+              <a href="/docs/home/components/skills" target="_blank" class="btn btn-outline-danger btn-lg px-4">Learn more</a>
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
           <div class="my-3 py-3">
             <h2 class="display-5">Models</h2>
             <p class="lead fs-4">Our platform supports <strong>HuggingFace Transformers</strong>, <strong>Adapters</strong>, <strong>Sentence-Transformers</strong>, and a selection of <strong>ONNX</strong> models</p>
-            <a href="/docs/pages/components/models.html" class="btn btn-light btn-lg px-4">Learn more</a>
+            <a href="/docs/home/components/models" target="_blank" class="btn btn-light btn-lg px-4">Learn more</a>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
           <div class="my-3 py-3">
             <h2 class="display-5">Datastores</h2>
             <p class="lead fs-4">We provide datastores for <strong>Wikipedia</strong>, <strong>PubMed</strong>, and <strong>Bing web documents</strong> with more to come</p>
-            <a href="/docs/pages/components/datastores.html" class="btn btn-light btn-lg px-4">Learn more</a>
+            <a href="/docs/home/components/datastores" target="_blank" class="btn btn-light btn-lg px-4">Learn more</a>
           </div>
         </div>
         <div class="bg-light flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
@@ -53,7 +53,7 @@
             <p class="lead fs-3">Compare skills through pre-defined <span class="text-success">behavioural tests</span> via CheckList</p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
               <router-link class="btn btn-outline-success btn-lg px-4" to="/explain">Get started</router-link>
-              <a href="/docs/pages/components/explainability.html" class="btn btn-outline-success btn-lg px-4">Learn more</a>
+              <a href="/docs/home/components/explainability" target="_blank" class="btn btn-outline-success btn-lg px-4">Learn more</a>
             </div>
           </div>
         </div>
