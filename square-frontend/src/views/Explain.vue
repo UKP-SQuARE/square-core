@@ -180,7 +180,7 @@ export default Vue.component('explainability-page', {
       let currentTests = []
       this.selectedSkills.forEach(skillId => {
         if (skillId in this.checklistData) {
-          getSkill(skillId)
+          getSkill(this.$store.getters.authenticationHeader(), skillId)
               .then((response) => {
                 currentSkills.push(response.data)
               })

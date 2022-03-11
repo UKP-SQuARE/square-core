@@ -200,12 +200,12 @@ export default Vue.component('edit-skill', {
     }
   },
   beforeMount() {
-    getSkillTypes()
+    getSkillTypes(this.$store.getters.authenticationHeader())
         .then((response) => {
           this.skillTypes = response.data
         })
     if (!this.isCreateSkill) {
-      getSkill(this.$route.params.id)
+      getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
           .then((response) => {
             this.skill = response.data
             this.originalName = this.skill.name
@@ -217,7 +217,7 @@ export default Vue.component('edit-skill', {
     } else {
       this.addInputExampleFields()
     }
-    this.skill.user_id = this.$store.state.user.name
+    this.skill.user_id = this.$store.state.userInfo.preferred_username
   }
 })
 </script>
