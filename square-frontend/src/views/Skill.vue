@@ -3,7 +3,7 @@
   <form v-on:submit.prevent="onSubmit">
     <Card :title="originalName ? originalName : 'New skill'">
       <template #leftItem>
-        <router-link to="/skills" class="btn btn-outline-primary d-inline-flex align-items-center" role="button">
+        <router-link to="/skills" class="btn btn-outline-danger d-inline-flex align-items-center" role="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-caret-left-square" viewBox="0 0 16 16">
             <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
             <path d="M10.205 12.456A.5.5 0 0 0 10.5 12V4a.5.5 0 0 0-.832-.374l-4.5 4a.5.5 0 0 0 0 .748l4.5 4a.5.5 0 0 0 .537.082z"/>
@@ -12,7 +12,7 @@
         </router-link>
       </template>
       <template #rightItem>
-        <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit">
+        <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
             <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
           </svg>
@@ -200,12 +200,12 @@ export default Vue.component('edit-skill', {
     }
   },
   beforeMount() {
-    getSkillTypes()
+    getSkillTypes(this.$store.getters.authenticationHeader())
         .then((response) => {
           this.skillTypes = response.data
         })
     if (!this.isCreateSkill) {
-      getSkill(this.$route.params.id)
+      getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
           .then((response) => {
             this.skill = response.data
             this.originalName = this.skill.name
@@ -217,7 +217,7 @@ export default Vue.component('edit-skill', {
     } else {
       this.addInputExampleFields()
     }
-    this.skill.user_id = this.$store.state.user.name
+    this.skill.user_id = this.$store.state.userInfo.preferred_username
   }
 })
 </script>
