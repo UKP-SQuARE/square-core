@@ -50,6 +50,15 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=user
+
+  redishost:
+    hostname: redishost
+    image: redis:latest
+    ports:
+      - '6379:6379'
 
   maintaining_worker:
     image: ukpsquare/square-model-management:latest
@@ -60,16 +69,20 @@ services:
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1
       - VERIFY_SSL=0
+      - USERNAME=user
+      - PASSWORD=user
     links:
       - rabbit
+      - redishost
     depends_on:
-      - model_dpr
+      - maintaining
       - rabbit
+      - redishost
 
   maintaining:
-#    image: ukpsquare/square-model-management:latest
+    image: ukpsquare/square-model-management:latest
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
-    build: ./management_server
+#    build: ./management_server
     ports:
       - 9001:9001
     volumes:

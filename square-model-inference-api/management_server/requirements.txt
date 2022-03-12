@@ -5,4 +5,5 @@ requests>=2.26.0                # requests
 docker                          # docker client
 square-auth                     # keycloak authentication
 celery==5.1.2
+redis==4.1.4
 git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # elk-json logger
