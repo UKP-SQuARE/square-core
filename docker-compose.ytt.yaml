@@ -5,6 +5,10 @@
 #@ return "ukpsquare/skills-" + skill.name + ":" + data.values.tag
 #@ end
 
+#@ def skill_build(skill):
+#@ return {"dockerfile": "./skills/" + skill.name + ".Dockerfile", "context": "./skills"}
+#@ end
+
 #@ def skill_environment(skill):
 WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
 VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -141,7 +145,9 @@ services:
 
   skill_manager:
     image: #@ "ukpsquare/skill-manager:" + data.values.tag
-    build: ./skill-manager
+    build: 
+      context: ./skill-manager
+      target: build
     ports:
       - 8000:8000
     expose:
@@ -180,7 +186,9 @@ services:
 
   maintaining:
     image: #@ "ukpsquare/square-model-management:" + data.values.tag
-    build: ./square-model-inference-api/management_server
+    build: 
+      context: ./square-model-inference-api/management_server
+      target: build
     ports:
       - 9001:9001
     volumes:
@@ -206,7 +214,9 @@ services:
   
   model_bert_adapter:
     image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: ./square-model-inference-api/inference_server
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
@@ -221,7 +231,9 @@ services:
   
   model_roberta_adapter:
     image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: ./square-model-inference-api/inference_server
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.roberta_adapter
     environment:
@@ -236,7 +248,9 @@ services:
       
   model_dpr:
     image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: ./square-model-inference-api/inference_server
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
@@ -254,7 +268,9 @@ services:
 
   model_distilbert_st:
     image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: ./square-model-inference-api/inference_server
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
@@ -272,6 +288,9 @@ services:
 
   model_bert_onnx:
     image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
@@ -288,7 +307,9 @@ services:
   datastore_api:
     privileged: true
     image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
-    build: ./datastore-api
+    build: 
+      context: ./datastore-api
+      target: build
     depends_on:
       - datastore_es
     ports:
@@ -357,6 +378,7 @@ services:
   #@ for skill in data.values.skills:
   (@= skill.name @):
     image: #@ skill_image_name(skill)
+    build: #@ skill_build(skill)
     env_file: #@ skill_env_file(skill)
     environment: #@ skill_environment(skill)
   #@ end
