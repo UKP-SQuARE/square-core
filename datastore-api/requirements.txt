@@ -2,7 +2,6 @@ Jinja2==3.0.1
 elasticsearch[async]==7.16.1
 fastapi==0.73.0
 filelock==3.0.12
-# h5py == 3.3.0
 pydantic==1.8.2
 python-dotenv==0.18.0
 python-multipart==0.0.5
