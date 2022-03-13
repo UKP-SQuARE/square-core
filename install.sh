@@ -214,27 +214,27 @@ if [ -f ./keycloak/.env ]; then
 	eval "$(grep ^KEYCLOAK_PASSWORD= ./keycloak/.env)"
 	eval "$(grep ^POSTGRES_PASSWORD= ./postgres/.env)"
 else
-	sed -e "s/%%KEYCLOAK_PASSWORD%%/$KEYCLOAK_PASSWORD/g" -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./keycloak/.env.example > ./keycloak/.env 
-	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.example > ./postgres/.env 
+	sed -e "s/%%KEYCLOAK_PASSWORD%%/$KEYCLOAK_PASSWORD/g" -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./keycloak/.env.template > ./keycloak/.env 
+	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.template > ./postgres/.env 
 fi
 
 if [ -f ./skill-manager/.env ]; then
 	echo "./skill-manager/.env already exists. Skipping."
 	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./skill-manager/.env)"    
 else
-	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.example > ./skill-manager/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.template > ./skill-manager/.env
 fi
 
 # initilize env files for model management service and datastore
-cp ./square-model-inference-api/management_server/.env.example ./square-model-inference-api/management_server/.env 
-cp ./datastore-api/.env.example ./datastore-api/.env 
+cp ./square-model-inference-api/management_server/.env.template ./square-model-inference-api/management_server/.env 
+cp ./datastore-api/.env.template ./datastore-api/.env 
 
 # get all servies that need to be registered as clients keycloak
 CLIENTS=( "models" "datastores" ) 
 cd ./skills
 for SKILL_DIR in ./*; do
 	if [[ -d $SKILL_DIR ]]; then
-		cp ./.env.example "$SKILL_DIR/.env"
+		cp ./.env.template "$SKILL_DIR/.env"
 		SKILL=$(echo "$SKILL_DIR" | sed -e "s/\.\///")
 		CLIENTS+=( "$SKILL" )
 	fi
