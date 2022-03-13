@@ -7,9 +7,7 @@ pydantic==1.8.2
 python-dotenv==0.18.0
 python-multipart==0.0.5
 requests==2.25.1
-# torch == 1.9.0
-# transformers == 4.8.2
-numpy==1.22.2
+numpy==1.21.5
 pytest==7.0.1
 pytest-env==0.6.2
 requests-mock==1.9.3
