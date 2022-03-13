@@ -15,4 +15,4 @@ pytest-env==0.6.2
 requests-mock==1.9.3
 uvicorn[standard]==0.14.0
 git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2
-square-auth
+square-auth>=0.0.3
