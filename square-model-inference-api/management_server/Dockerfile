@@ -22,5 +22,6 @@ COPY main.py main.py
 COPY docker_access.py docker_access.py
 COPY logging.conf logging.conf
 COPY ./tasks tasks
+COPY ./mongo_access.py mongo_access.py
 
 EXPOSE 9001

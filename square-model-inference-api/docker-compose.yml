@@ -67,7 +67,7 @@ services:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DOCKER_HOST_URL=https://172.17.0.1
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
       - VERIFY_SSL=0
       - USERNAME=user
       - PASSWORD=user
@@ -87,10 +87,14 @@ services:
       - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - mongo
+    depends_on:
+      - mongo
     env_file:
       - ./management_server/.env
     environment:
-      - DOCKER_HOST_URL=https://172.17.0.1
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
       - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=1
@@ -151,6 +155,26 @@ services:
       - "traefik.http.middlewares.model-bart-base-adapter-stripprefix.stripprefix.prefixes=/api/facebook-bart-base"
       - "traefik.http.middlewares.model-bart-base-adapter-addprefix.addPrefix.prefix=/api"
 
+  mongo:
+    hostname: mongo
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+      - skill-manager-mongo-data:/data/db
+    ports:
+      - 27017:27017
+    env_file:
+      - ../skill-manager/.env.example
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongo:27017
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+    ports:
+      - 8081:8081
   # --------- Example config for onnx model server ---------
 #  model_bert_onnx:
 ##    image: ukpsquare/square-model-api-v1:latest
@@ -196,6 +220,9 @@ services:
 
 volumes:
   traefik-public-certificates:
+
+  skill-manager-mongo-data:
+    driver: local
 
   # onnx-model folder on the vm
   onnx-models:

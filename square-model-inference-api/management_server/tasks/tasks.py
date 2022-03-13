@@ -26,7 +26,7 @@ def deploy_task(identifier, env):
             while container.status in ["created", "running"] and (response is None or response.status_code != 200):
                 time.sleep(20)
                 response = requests.get(
-                    url="{}:{}/api/{}/stats".format(settings.API_URL, get_port(), identifier),
+                    url="{}/api/{}/stats".format(settings.API_URL, identifier),
                     verify=os.getenv("VERIFY_SSL", 1) == 1,
                 )
 

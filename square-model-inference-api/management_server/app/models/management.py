@@ -6,7 +6,7 @@ from pydantic import Field, BaseModel
 
 class GetModelsResult(BaseModel):
     """list the deployed models on the platform"""
-
+    identifier: str = Field(description="The identifier to reach the model")
     model_type: str = Field(description="transformer, adapter, onnx, etc.")
     model_name: str = Field(description="name of the model.")
     disable_gpu: bool = Field(description="input batch size")
@@ -15,6 +15,11 @@ class GetModelsResult(BaseModel):
                                        "for valid names and corresponding class")
     model_class: str = Field(description="whether to use gpu for inference")
     return_plaintext_arrays: bool = Field(description="whether to encode outputs")
+
+
+class GetModelsHealth(BaseModel):
+    identifier:str
+    is_alive: bool
 
 
 class DeployRequest(BaseModel):
@@ -44,3 +49,10 @@ class RemoveResult(BaseModel):
     """Response model for model removal"""
     success: bool = Field(..., description="True if the model removal is successful")
     message: str = Field(..., description="Error or success message")
+
+
+class UpdateModel(BaseModel):
+    disable_gpu: Optional[bool] = None
+    batch_size: Optional[int] = None
+    max_input: Optional[int] = None
+    return_plaintext_arrays: Optional[bool] = None

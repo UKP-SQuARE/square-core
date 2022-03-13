@@ -7,12 +7,12 @@ from typing import List
 from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException
 
-from app.models.management import GetModelsResult, DeployRequest, DeployResult, RemoveResult
+from app.models.management import GetModelsResult, DeployRequest, DeployResult, RemoveResult, GetModelsHealth, UpdateModel
 from app.core.config import settings
 from starlette.responses import JSONResponse
 from tasks.tasks import deploy_task, remove_model_task
 
-from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container
+from mongo_access import add_model_db, remove_model_dm, get_models_db, update_model_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -20,20 +20,37 @@ router = APIRouter()
 
 @router.get("/deployed-models", response_model=List[GetModelsResult], name="get-deployed-models")
 async def get_all_models():  # token: str = Depends(client_credentials)):
-    lst_prefix, port = get_all_model_prefixes()
-    lst_models = []
+    models = await get_models_db()
+    result = []
+    for m in models:
+        result.append(GetModelsResult(
+            identifier=m["identifier"],
+            model_type=m["MODEL_TYPE"],
+            model_name=m["MODEL_NAME"],
+            disable_gpu=m["DISABLE_GPU"],
+            batch_size=m["BATCH_SIZE"],
+            max_input=m["MAX_INPUT_SIZE"],
+            model_class=m["MODEL_CLASS"],
+            return_plaintext_arrays=m["RETURN_PLAINTEXT_ARRAYS"],
+        ))
+    return result
 
-    for prefix in lst_prefix:
+@router.get("/deployed-models-health", response_model=List[GetModelsHealth], name="get-deployed-models-health")
+async def get_all_models():  # token: str = Depends(client_credentials)):
+    port = 8443
+    models = await get_models_db()
+    lst_models = []
+    for m in models:
         r = requests.get(
-            url="{}:{}{}/stats".format(settings.API_URL, port, prefix),
+            url="{}/api/{}/health/heartbeat".format(settings.API_URL, m["identifier"]),
             # headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
         if r.status_code == 200:
-            lst_models.append(r.json())
+            lst_models.append({"identifier": m["identifier"], "is_alive": r.json()["is_alive"]})
         else:
-            logger.debug(f"Model not up yet:\n{r.content}")
+            lst_models.append({"identifier": m["identifier"], "is_alive": False})
 
     return lst_models
 
@@ -58,6 +75,10 @@ async def deploy_new_model(model_params: DeployRequest):
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
         # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
     }
+
+    identifier_new = await(add_model_db(identifier, env))
+    if not identifier_new:
+        raise HTTPException(status_code=401, detail="A model with that identifier already exists")
     res = deploy_task.delay(identifier, env)
     logger.info(res.id)
     return {"message": f"Queued deploying {identifier}", "task_id": res.id}
@@ -68,8 +89,22 @@ async def remove_model(identifier):
     """
     Remove a model from the platform
     """
+    await(remove_model_dm(identifier))
     res = remove_model_task.delay(identifier)
     return {"message": "Queued removing model.", "task_id": res.id}
+
+
+@router.post("/update/{identifier}")
+async def update_model(identifier: str, update_parameters: UpdateModel):
+    await(update_model_db(identifier, update_parameters))
+    logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
+    r = requests.post(
+        url="{}/api/{}/update".format(settings.API_URL, identifier),
+        json=update_parameters.dict(),
+        # headers={"Authorization": f"Bearer {token}"},
+        verify=os.getenv("VERIFY_SSL", 1) == 1,
+    )
+    return {"status_code": r.status_code, "content": r.json()}
 
 
 @router.get("/task/{task_id}", name="task-status")
