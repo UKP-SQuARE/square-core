@@ -2,7 +2,7 @@
 #@ load("@ytt:template", "template")
 ---
 #@ def skill_image_name(skill):
-#@ return "ukpsquare/skills-"+skill.name
+#@ return "ukpsquare/skills-" + skill.name + ":" + data.values.tag
 #@ end
 
 #@ def skill_environment(skill):
@@ -113,7 +113,7 @@ services:
 
   frontend:
     build: ./square-frontend
-    image: ukpsquare/square-frontend:latest
+    image: #@ "ukpsquare/square-frontend:" + data.values.tag
     restart: always
     expose:
       - 80
@@ -128,7 +128,7 @@ services:
       - #@ template.replace(traefik_tls("frontend"))
 
   documentation:
-    image: ukpsquare/square-docs:latest
+    image: #@ "ukpsquare/square-docs:" + data.values.tag
     build: ./docs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -140,7 +140,7 @@ services:
       - #@ template.replace(traefik_tls("documentation"))
 
   skill_manager:
-    image: ukpsquare/skill-manager:latest
+    image: #@ "ukpsquare/skill-manager:" + data.values.tag
     build: ./skill-manager
     ports:
       - 8000:8000
@@ -179,7 +179,7 @@ services:
       - ./skill-manager/.env
 
   maintaining:
-    image: ukpsquare/square-model-management:latest
+    image: #@ "ukpsquare/square-model-management:" + data.values.tag
     build: ./square-model-inference-api/management_server
     ports:
       - 9001:9001
@@ -192,7 +192,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_IMAGE: ukpsquare/square-model-api-v1:latest
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
       ONNX_VOLUME: square-model-inference-api_onnx-models
       REALM: #@ data.values.realm
       CLIENT_ID: models
@@ -205,7 +205,7 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
   
   model_bert_adapter:
-    image: ukpsquare/square-model-api-v1:latest
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
     build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
@@ -220,7 +220,7 @@ services:
       - #@ template.replace(traefik_prefix("bert-base-uncased"))
   
   model_roberta_adapter:
-    image: ukpsquare/square-model-api-v1:latest
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
     build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.roberta_adapter
@@ -235,7 +235,7 @@ services:
       - #@ template.replace(traefik_prefix("roberta-base"))
       
   model_dpr:
-    image: ukpsquare/square-model-api-v1:latest
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
     build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
@@ -253,7 +253,7 @@ services:
       - traefik.http.middlewares.dpr-addprefix.addPrefix.prefix=/api
 
   model_distilbert_st:
-    image: ukpsquare/square-model-api-v1:latest
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
     build: ./square-model-inference-api/inference_server
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
@@ -271,7 +271,7 @@ services:
       - traefik.http.middlewares.distilbert-addprefix.addPrefix.prefix=/api
 
   model_bert_onnx:
-    image: ukpsquare/square-model-api-v1:latest
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
@@ -287,7 +287,7 @@ services:
 
   datastore_api:
     privileged: true
-    image: ukpsquare/square-datastore-api:latest
+    image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
     build: ./datastore-api
     depends_on:
       - datastore_es

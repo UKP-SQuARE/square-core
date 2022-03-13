@@ -1,8 +1,9 @@
 #@data/values
 ---
-environment: local #! set this to 'local' or 'prod'
-os: mac #! set this to 'linux', 'mac' or 'windows'
-email: baumgaertner.t@gmail.com
+environment: prod #! set this to 'local' or 'prod'
+os: linux #! set this to 'linux', 'mac' or 'windows'
+email: square@example.com #! add your email here to obtain certifcates from let's encrypt
+tag: latest
 
 skills:
   - name: boolq
