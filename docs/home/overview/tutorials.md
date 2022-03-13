@@ -174,18 +174,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
 ### Local Testing
 
-In order to test the skill locally with the datastores and models in SQuARE, we first need to register the skill in SQuARE to obtain some credentials. For this, we go to [square.ukp-lab.de](https://square.ukp-lab.de), sign in and go to My Skills. We create a new Skill by entering a name, selecting a Skill Type (for this tutorial it would be `span-extraction`) and provide an URL. Right now, we do not have a working URL yet, however, eventually the skill will be running under the skill name. So we can already put it `http://open_domain_extractive_qa_tut`. Once you save the Skill, you will see a `Client ID` and `Client Secret`.  These are the credentials for the Skill.
-
-Using the Client ID and the Client Secret, we can obtain tokens from Keycloak to query our Skill. Note that tokens are valid for 5 minutes.
-
-```bash
-curl -X POST \ 
--H "Content-Type: application/x-www-form-urlencoded" \
--d "grant_type=client_credentials" \
--d "client_id=<your-client-id>" \
--d "client_secret=<your-client-secret>" \            
-https://square.ukp-lab.de/auth/realms/square/protocol/openid-connect/token | jq -r '.access_token'
-```
+In order to test the skill locally with the datastores and models in SQuARE, we first need to register the skill in SQuARE to obtain some credentials. For this, we go to [square.ukp-lab.de](https://square.ukp-lab.de), sign in and go to My Skills. We create a new Skill by entering a name, selecting a Skill Type (for this tutorial it would be `span-extraction`) and provide an URL. Right now, we do not have a working URL yet, however, eventually the skill will be running under the skill name. So we can already put it `http://open_domain_extractive_qa_tut`. Once you save the Skill, you will see a `Client ID` and `Client Secret`.  These are the credentials for the Skill to access SQuARE Datastores and Models. We will provide them later as environment variables when we start the API.
 
 To run the entire API locally, we need to change the `main.py` file, to import the predict function from the correct file. See the example below. 
 
@@ -198,13 +187,13 @@ from open_domain_extractive_qa_tut.skill import predict
 # ...
 ```
 
-We can now run the Skill locally with the command below. This will start a uvicorn server, running an API to the predict function.
+Now we can run the Skill locally with the command below. This will start a uvicorn server, running an API to the predict function.
 
 ```bash
 SQUARE_API_URL=https://square.ukp-lab.de/api KEYCLOAK_BASE_URL=https://square.ukp-lab.de REALM=square CLIENT_ID=<your-client-id> CLIENT_SECRET=<your-client-secret> uvicorn main:app --reload
 ```
 
-The best way to test the Skill is to go to [localhost:8000/docs](http://127.0.0.1:8000/docs). On the upper right corner, we click on Authorize and enter the token. 
+The best way to test the Skill is to go to [localhost:8000/docs](http://127.0.0.1:8000/docs).
 
 Finally, we can go to the [/query](http://localhost:8000/docs#/query/Skill_Query_query_post) endpoint and enter a query. For example:
 
