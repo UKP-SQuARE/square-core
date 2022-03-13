@@ -75,19 +75,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-public-certificates:/certificates
 
-  backend:
-    image: ukpsquare/square-backend:latest
-    expose:
-      - 5000
-    depends_on:
-      - db
-    volumes:
-      - migrations-data:/app/migrations
-    labels:
-      - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("backend"))
-      - #@ template.replace(traefik_prefix("backend"))
-
   keycloak:
     image: jboss/keycloak:16.1.1
     environment:
