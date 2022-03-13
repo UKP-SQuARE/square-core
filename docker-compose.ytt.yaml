@@ -221,7 +221,7 @@ services:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -238,7 +238,7 @@ services:
       - ./square-model-inference-api/inference_server/.env.roberta_adapter
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -321,8 +321,9 @@ services:
       FAISS_URL: #@ data.values.faiss_url[data.values.environment]
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       ES_URL: http://datastore_es:9200
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       CLIENT_ID: datastores-to-internal-services
+      REALM: square
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores"))
