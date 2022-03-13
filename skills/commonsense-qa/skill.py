@@ -1,8 +1,6 @@
 import logging
-import uuid
 
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, QueryRequest
 
 from square_skill_helpers import ModelAPI
 
@@ -14,7 +12,7 @@ model_api = ModelAPI()
 async def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and a set of answer candidates, predicts the most likely answer."""
 
-    answers = request.skill_args.get("answers")
+    answers = request.skill_args.get("choices")
     if answers is None:
         answers = request.skill_args["context"].split("\n")
 

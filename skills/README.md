@@ -13,16 +13,14 @@ As mentioned above mainly a predict function, defining the pipeline needs to be 
 First, install the required packages:
 ```bash
 pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.5
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.16 
+pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.18  
 ```
 Next, we can implement the `predict` function:
 ```python3
 
 # import utility classes from `square_skill_api` and `square_skill_helpers`
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, QueryRequest
 from square_skill_helpers import ModelAPI, DataAPI
-
 
 # create instances of the DataAPI and ModelAPI for interacting 
 # with SQuAREs Datastores and Models

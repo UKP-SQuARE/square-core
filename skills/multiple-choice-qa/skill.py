@@ -1,8 +1,7 @@
 import logging
 import uuid
 
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, QueryRequest
 
 from square_skill_helpers import ModelAPI
 
