@@ -38,7 +38,7 @@ export default Vue.component('skill-status', {
   methods: {
     testSkillUrl() {
       this.status = 'checking'
-      pingSkill(this.url).then((response) => {
+      pingSkill(this.$store.getters.authenticationHeader(), this.url).then((response) => {
         this.status = response.data.is_alive ? 'available' : 'unavailable'
       }).catch(() => {
         this.status = 'unavailable'

@@ -72,7 +72,7 @@ export function postQuery(headers, question, context, options) {
         data.skill_args.context = context
     }
     let results = options.selectedSkills.map(skillId => {
-        axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: headers })
+        return axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: headers })
     })
     return axios.all(results)
 }
