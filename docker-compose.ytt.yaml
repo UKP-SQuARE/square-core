@@ -301,6 +301,7 @@ services:
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       ES_URL: http://datastore_es:9200
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      CLIENT_ID: datastores-to-internal-services
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores"))
