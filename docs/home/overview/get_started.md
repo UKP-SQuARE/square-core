@@ -40,38 +40,25 @@ Go to your user profile and click on "My Skills" and "New" buttons. Fill out the
 <a name="Local-Installation"></a>
 
 ## Local Installation
-### Environment Configuration
-1. Create .env files from examples
-    - First, let's initialize the .env files from our examples. Run the following lines:  
-    ```bash
-    mv skill-manager/.env.example skill-manager/.env 
-    mv datastore-api/.env.example datastore-api/.env 
-    mv skills/.env.example skills/.env 
-    cp square-frontend/.env.production square-frontend/.env.production-backup
-    cp square-frontend/.env.development square-frontend/.env.production
-    ```
-    - For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
-    - In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
-    - Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
-2. Update docker-compose.yaml (staging only)
-    - The `docker-compose.yaml` file contains several mentions of _Development_ and _Production_. For the local setup, we need to enable the development and disable the production settings.
-    - If you have downloaded the huggingface models already and want to avoid downloading them again (which will take some time during application startup), change the .cache directory volume mapping in the model services respectively.
-3. Pull and Build Images
-    - First pull the latest images.
-    ```bash
-    docker-compose pull
-    ```
-    - For the local setup we need to rebuild the frontend image to use the updated env file.
-    ```bash
-    docker-compose build frontend
-    ```
-4. Run
-    ```bash
-    docker-compose up -d
-    ```
-    Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
-    👉 Accept that the browser cannot verify the certificate.
+### Requirements
+To run UKP-SQuARE locally, you need the following software:
+* [docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/#install-compose)
+* [ytt](https://carvel.dev/ytt/)
+* [jq](https://stedolan.github.io/jq/download/)
 
+### Install
+We provide an installation script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
+```bash
+bash install.sh
+```
+### Run 
+Finally, you can run the full system with docker-compose.
+```bash
+docker-compose up -d
+```
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.local](https://square.ukp-lab.local).
+👉 Accept that the browser cannot verify the certificate.
 ## Citation
 
 Coming soon!
