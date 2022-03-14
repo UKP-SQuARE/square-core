@@ -123,8 +123,9 @@ const config = {
           },
           {
             href: 'https://github.com/UKP-SQuARE/square-core/tree/master',
-            label: 'GitHub',
             position: 'right',
+            'aria-label': 'GitHub repository',
+            className: 'header-github-link',
           },
         ],
       },
