@@ -7,7 +7,10 @@ from typing import List
 from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException
 
-from app.models.management import GetModelsResult, DeployRequest, DeployResult, RemoveResult, GetModelsHealth, UpdateModel
+from app.models.management import GetModelsResult,\
+                                  DeployRequest,\
+                                  TaskGenericModel,\
+                                  TaskResultModel
 from app.core.config import settings
 from starlette.responses import JSONResponse
 from tasks.tasks import deploy_task, remove_model_task
@@ -20,8 +23,11 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/deployed-models", response_model=List[GetModelsResult], name="get-deployed-models")
+@router.get("/deployed-models", name="get-deployed-models", response_model=List[GetModelsResult])
 async def get_all_models():  # token: str = Depends(client_credentials)):
+    """
+    Get all the models deployed on the platform in list format
+    """
     models = await get_models_db()
     result = []
     for m in models:
@@ -57,7 +63,7 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return lst_models
 
 
-@router.post("/deploy", name="deploy-model")
+@router.post("/deploy", name="deploy-model", response_model=TaskGenericModel)
 async def deploy_new_model(model_params: DeployRequest):
     """
     deploy a new model to the platform
@@ -86,7 +92,7 @@ async def deploy_new_model(model_params: DeployRequest):
     return {"message": f"Queued deploying {identifier}", "task_id": res.id}
 
 
-@router.post("/remove/{identifier}", name="remove-model")
+@router.post("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
 async def remove_model(identifier):
     """
     Remove a model from the platform
@@ -109,8 +115,11 @@ async def update_model(identifier: str, update_parameters: UpdateModel):
     return {"status_code": r.status_code, "content": r.json()}
 
 
-@router.get("/task/{task_id}", name="task-status")
+@router.get("/task/{task_id}", name="task-status", response_model=TaskResultModel)
 async def get_task_status(task_id):
+    """
+    Get results from a celery task
+    """
     task = AsyncResult(task_id)
     if not task.ready():
         return JSONResponse(status_code=202, content={'task_id': str(task_id), 'status': 'Processing'})

@@ -61,7 +61,8 @@ services:
       - '6379:6379'
 
   maintaining_worker:
-    image: ukpsquare/square-model-management:latest
+#    image: ukpsquare/square-model-management:latest
+    build: ./management_server
     command: celery -A tasks worker --loglevel=info
     volumes:
       - ./:/usr/src/app

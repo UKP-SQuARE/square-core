@@ -199,7 +199,7 @@ class Transformer(Model):
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
 
-        # We cannot batch generate so we have to to it separately for each input prompt.
+        # We cannot batch generate, so we have to do it separately for each input prompt.
         for prompt in request.input:
             features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
             input_ids = features["input_ids"]
@@ -219,8 +219,9 @@ class Transformer(Model):
                     res[key] = res[key].cpu()
                 model_outputs[key].append(res[key])
 
-            generated_texts = [self.tokenizer.decode(seq, skip_special_tokens=True,
-                                         clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
+            generated_texts = [self.tokenizer.decode(seq,
+                                                     skip_special_tokens=True,
+                                                     clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
                                for seq in res["sequences"]]
             task_outputs["generated_texts"].append(generated_texts)
         return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
