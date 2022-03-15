@@ -1,16 +1,12 @@
 import logging
-import uuid
 
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, QueryRequest
 
-from square_skill_helpers.config import SquareSkillHelpersConfig
-from square_skill_helpers.square_api import ModelAPI
+from square_skill_helpers import ModelAPI
 
 logger = logging.getLogger(__name__)
 
-config = SquareSkillHelpersConfig.from_dotenv()
-model_api = ModelAPI(config)
+model_api = ModelAPI()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:

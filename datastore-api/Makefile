@@ -7,4 +7,5 @@ test:
 	PYTHONPATH="." python -m pytest -s -v tests/
 
 test-api:
+	cp .env.test .env
 	PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest -s -v tests/

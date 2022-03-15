@@ -2,18 +2,24 @@
 #@ load("@ytt:template", "template")
 ---
 #@ def skill_image_name(skill):
-#@ return "ukpsquare/skills-"+skill.name
+#@ return "ukpsquare/skills-" + skill.name + ":" + data.values.tag
 #@ end
 
-#@ def skill_environment():
+#@ def skill_build(skill):
+#@ return {"context": "./skills", "dockerfile": "./" + skill.name + ".Dockerfile"}
+#@ end
+
+#@ def skill_environment(skill):
 WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
 VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 SQUARE_API_URL: #@ data.values.square_api_url[data.values.environment]
-KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+REALM:  #@ data.values.realm
+CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
 #@ def skill_env_file(skill):
-#@ return ["./skills/.env"]
+#@ return ["./skills/" + skill.name + "/.env"]
 #@ end
 
 #@ def traefik_tls(service):
@@ -44,16 +50,15 @@ services:
       - --api.dashboard=true
       - --log.level=DEBUG
       - --providers.docker=true
-      - --providers.file.filename=/config/traefik.yaml
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
       - --accesslog=true
       - --accesslog.format=json
       - --accesslog.filepath=/var/log/traefik/access.log.json
-      - --entrypoints.websecure.address=:443
       - --certificatesresolvers.le.acme.tlschallenge=true
       - --certificatesresolvers.le.acme.storage=/certificates/acme.json
-      - --certificatesresolvers.le.acme.email=baumgaertner@ukp.informatik.tu-darmstadt.de
+      - #@ "--certificatesresolvers.le.acme.email=" + data.values.email
       #@ if/end data.values.environment == "local":
       - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     labels:
@@ -72,28 +77,10 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yaml:/config/traefik.yaml
-      #! mount volume to store certificates
       - traefik-public-certificates:/certificates
-
-  backend:
-    image: ukpsquare/square-backend:latest
-    expose:
-      - 5000
-    depends_on:
-      - db
-    volumes:
-      - migrations-data:/app/migrations
-    labels:
-      - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("backend"))
-      - #@ template.replace(traefik_prefix("backend"))
 
   keycloak:
     image: jboss/keycloak:16.1.1
-    expose:
-      - 8080
-      - 8443
     environment:
       KEYCLOAK_USER: admin
       DB_VENDOR: postgres
@@ -103,19 +90,19 @@ services:
       DB_SCHEMA: public
       DB_DATABASE: keycloak
       PROXY_ADDRESS_FORWARDING: "true"
-      KEYCLOAK_HOSTNAME: square.ukp-lab.de
-      KEYCLOAK_FRONTEND_URL: https://square.ukp-lab.de/auth
+      KEYCLOAK_HOSTNAME: #@ data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_FRONTEND_URL: #@ data.values.keycloak_base_url[data.values.environment] + "/auth"
     env_file:
       - ./keycloak/.env
     depends_on:
       - db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`square.ukp-lab.de`) && PathPrefix(`/auth`)"
+      - #@ "traefik.http.routers.keycloak.rule=Host(`" + data.values.keycloak_base_url[data.values.environment] + "`) && PathPrefix(`/auth`)" 
       - #@ template.replace(traefik_tls("keycloak"))
 
   db:
-    image: postgres
+    image: postgres:13.6
     restart: always
     ports:
       - 5432:5432
@@ -130,7 +117,7 @@ services:
 
   frontend:
     build: ./square-frontend
-    image: ukpsquare/square-frontend:latest
+    image: #@ "ukpsquare/square-frontend:" + data.values.tag
     restart: always
     expose:
       - 80
@@ -138,14 +125,14 @@ services:
     labels:
       - "traefik.enable=true"
       #@ if/end data.values.environment == "local":
-      - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.localhost`)"
+      - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.local`)"
       #@ if/end data.values.environment == "prod":
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
       - #@ template.replace(traefik_tls("frontend"))
 
   documentation:
-    image: ukpsquare/square-docs:latest
+    image: #@ "ukpsquare/square-docs:" + data.values.tag
     build: ./docs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -157,8 +144,10 @@ services:
       - #@ template.replace(traefik_tls("documentation"))
 
   skill_manager:
-    image: ukpsquare/skill-manager:latest
-    build: ./skill-manager
+    image: #@ "ukpsquare/skill-manager:" + data.values.tag
+    build: 
+      context: ./skill-manager
+      target: build
     ports:
       - 8000:8000
     expose:
@@ -167,9 +156,12 @@ services:
       - ./skill-manager/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
-      REALM: square
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      REALM: #@ data.values.realm
       CLIENT_ID: skill-manager
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: skill_manager_mongo
+      MONGO_PORT: 27017
     depends_on:
       - skill_manager_mongo
     labels:
@@ -185,24 +177,32 @@ services:
       - skill-manager-mongo-dumps:/dumps
     expose:
       - 27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: skill_manager_mongo
+      MONGO_PORT: 27017
     env_file:
       - ./skill-manager/.env
 
   maintaining:
-    image: ukpsquare/square-model-management:latest
-    build: ./square-model-inference-api/management_server
+    image: #@ "ukpsquare/square-model-management:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/management_server
+      target: build
     ports:
       - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./square-model-inference-api/management_server/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_IMAGE: ukpsquare/square-model-api-v1:latest
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
       ONNX_VOLUME: square-model-inference-api_onnx-models
-      REALM: Models-test
+      REALM: #@ data.values.realm
       CLIENT_ID: models
     labels:
       - "traefik.enable=true"
@@ -213,13 +213,15 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
   
   model_bert_adapter:
-    image: ukpsquare/square-model-api-v1:latest
-    build: ./square-model-inference-api/inference_server
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -228,13 +230,15 @@ services:
       - #@ template.replace(traefik_prefix("bert-base-uncased"))
   
   model_roberta_adapter:
-    image: ukpsquare/square-model-api-v1:latest
-    build: ./square-model-inference-api/inference_server
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.roberta_adapter
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -243,13 +247,15 @@ services:
       - #@ template.replace(traefik_prefix("roberta-base"))
       
   model_dpr:
-    image: ukpsquare/square-model-api-v1:latest
-    build: ./square-model-inference-api/inference_server
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -261,13 +267,15 @@ services:
       - traefik.http.middlewares.dpr-addprefix.addPrefix.prefix=/api
 
   model_distilbert_st:
-    image: ukpsquare/square-model-api-v1:latest
-    build: ./square-model-inference-api/inference_server
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
@@ -279,12 +287,15 @@ services:
       - traefik.http.middlewares.distilbert-addprefix.addPrefix.prefix=/api
 
   model_bert_onnx:
-    image: ukpsquare/square-model-api-v1:latest
+    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    build: 
+      context: ./square-model-inference-api/inference_server
+      target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url[data.values.environment]
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models
@@ -295,8 +306,10 @@ services:
 
   datastore_api:
     privileged: true
-    image: ukpsquare/square-datastore-api:latest
-    build: ./datastore-api
+    image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
+    build: 
+      context: ./datastore-api
+      target: build
     depends_on:
       - datastore_es
     ports:
@@ -308,6 +321,9 @@ services:
       FAISS_URL: #@ data.values.faiss_url[data.values.environment]
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       ES_URL: http://datastore_es:9200
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      CLIENT_ID: datastores-to-internal-services
+      REALM: square
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores"))
@@ -363,8 +379,9 @@ services:
   #@ for skill in data.values.skills:
   (@= skill.name @):
     image: #@ skill_image_name(skill)
+    build: #@ skill_build(skill)
     env_file: #@ skill_env_file(skill)
-    environment: #@ skill_environment()
+    environment: #@ skill_environment(skill)
   #@ end
 
 volumes:
