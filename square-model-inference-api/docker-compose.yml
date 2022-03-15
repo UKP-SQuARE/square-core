@@ -164,8 +164,12 @@ services:
       - skill-manager-mongo-data:/data/db
     ports:
       - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
     env_file:
-      - ../skill-manager/.env.example
+      - ../skill-manager/.env.template
 
   mongo-express:
     image: mongo-express:latest
@@ -176,6 +180,7 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=example
     ports:
       - 8081:8081
+
   # --------- Example config for onnx model server ---------
 #  model_bert_onnx:
 ##    image: ukpsquare/square-model-api-v1:latest
