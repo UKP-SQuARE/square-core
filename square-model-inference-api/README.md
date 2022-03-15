@@ -176,7 +176,7 @@ curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
 --data-raw '{
   "identifier": "bart-base",
   "model_name": "facebook/bart-base",
-  "model_type": "transformer",
+  "model_type": "adapter",
   "disable_gpu": true,
   "batch_size": 32,
   "max_input": 1024,
