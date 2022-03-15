@@ -108,6 +108,20 @@ make test
 ```
 For load testing with Locust, see [this README](locust/README.md).
 
+### Adding new Users
+The Traefik component provides an Authentication service. To add new users and their password add 
+them [here](traefik/traefik.yaml). All users have the following form: 
+```
+<user-name>:<password-hash>
+```
+The password can be hashed using wither MD5, SHA-1 or BCrypt.
+It is easiest to use `htpasswd` to obtain the necessary hash.
+
+The default `admin` user has the password `example_key`.
+
+## Management API
+The management Api provides methods to manage and maintain the deployed models. You can use this to add, update or
+delete models and to get an overview over the deployed models. It also keeps a database that contains all deployed models.
 ### Adding new Models using API
 New models can be added without manually adapting the docker-compose file by a `POST` request to`api/models/deploy`.
 By passing all environment information that would normally be in the `.env` file and the identifier which will be part
@@ -175,7 +189,8 @@ curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding'
 ```
 
 
-### Adding new Models Manually
+
+#### Adding new Models Manually
 With Traefik we can add new models to the model API easily for each new model append the following to the 
 docker-compose file:
 
@@ -242,7 +257,7 @@ via our update API. An example request to change the `return_plaintext_arrays`
 param to `true` for the dpr model is shown below:
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/update' \
+curl --insecure --request POST 'https://localhost:8443/api/models/update/facebook-dpr-question_encoder-single-nq-base' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "disable_gpu": true,
@@ -255,20 +270,43 @@ curl --insecure --request POST 'https://localhost:8443/api/facebook-dpr-question
 Note that changing the `disable_gpu` parameter is only possible for transformer and adapter models. For Onnx models
 and sentence-transformers models, changing this parameter is not supported.
 
-### Adding new Users
-The Traefik component provides an Authentication service. To add new users and their password add 
-them [here](traefik/traefik.yaml). All users have the following form: 
-```
-<user-name>:<password-hash>
-```
-The password can be hashed using wither MD5, SHA-1 or BCrypt.
-It is easiest to use `htpasswd` to obtain the necessary hash.
+---
+**NOTE**
 
-The default `admin` user has the password `example_key`.
+Please don't use the update method from the deployed model. This will not update the database that contains the 
+parameters of the deployed model.
 
-## Queueing
+---
+
+###Overview over deployed models
+To get all deployed models that are currently in the databease call:
+`curl --insecure https://localhost:8443/api/models/deployed-models`
+This returns all deployed models and their parameters from the database.
+If you want to check whether these models are actually running you can access their `is_alive`
+status with:
+`curl --insecure https://localhost:8443/api/models/deployed-models-health`
+This returns the `is_alive`status the individual models returns when `/api/<model-identifier>/health/heartbeat`
+is called.
+
+Both of these methods only consider models that are in the database. Models deployed with the management api
+are directly added to the database, but manually deployed models are not added by default.
+
+### Scan for models missing from database
+To add models to the database (e.g. manually deployed models) call:
+`curl --insecure https://localhost:8443/api/models/db/update`
+This scans the running docker containers for deployed models and checks whether
+they are in the database. If not they are added. The identifiers of all added models are returned.
+
+
+### Queueing
 The management server queues background tasks for deploying and removing models. The response to a 
 request for deploying or removing a model returns the `task_id`, which can be used to request the 
 status of the task. By sending a GET request to:
 `/api/models/task/<task_id>`
 you can see whether the task has been executed and the results of the task.
+
+### Database
+The database is the MongoDB that is also used for the skills and hence uses the credentials specified in the environment
+file of that database. 
+
+

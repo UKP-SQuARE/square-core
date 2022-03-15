@@ -12,7 +12,9 @@ from app.core.config import settings
 from starlette.responses import JSONResponse
 from tasks.tasks import deploy_task, remove_model_task
 
-from mongo_access import add_model_db, remove_model_dm, get_models_db, update_model_db
+from mongo_access import add_model_db, remove_model_dm, get_models_db, update_model_db, init_db
+from docker_access import get_all_model_prefixes
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -114,3 +116,32 @@ async def get_task_status(task_id):
         return JSONResponse(status_code=202, content={'task_id': str(task_id), 'status': 'Processing'})
     result = task.get()
     return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
+
+
+@router.post("/db/update")
+async def init_db_from_docker():
+    lst_prefix, port = get_all_model_prefixes()
+    lst_models = []
+
+    for prefix in lst_prefix:
+        r = requests.get(
+            url="{}{}/stats".format(settings.API_URL, prefix),
+            # headers={"Authorization": f"Bearer {token}"},
+            verify=os.getenv("VERIFY_SSL", 1) == 1,
+        )
+        # if the model-api instance has not finished loading the model it is not available yet
+        if r.status_code == 200:
+            data = r.json()
+            logger.info("Response Format {}".format(data))
+            lst_models.append({
+                "identifier": prefix.split("/")[-1],
+                "MODEL_NAME": data["model_name"] ,
+                "MODEL_TYPE": data["model_type"],
+                "DISABLE_GPU": data["disable_gpu"],
+                "BATCH_SIZE": data["batch_size"],
+                "MAX_INPUT_SIZE": data["max_input"],
+                "MODEL_CLASS": data["model_class"],
+                "RETURN_PLAINTEXT_ARRAYS": data["return_plaintext_arrays"],
+            })
+    added_models = await(init_db(lst_models))
+    return {"added": added_models}

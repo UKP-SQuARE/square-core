@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import logging
 
+# ToDo make this environment variables
 username = "root"
 password = "example"
 
@@ -49,3 +50,14 @@ async def update_model_db(identifier, updated_params):
         "RETURN_PLAINTEXT_ARRAYS": updated_params.return_plaintext_arrays,
     }}
     models.update_one(query, new_values)
+
+
+async def init_db(deployed_models):
+    db = client.model_management
+    models = db.models
+    added_models = []
+    for data in deployed_models:
+        if models.count_documents({"identifier": data["identifier"]}) == 0:
+            models.insert_one(data)
+            added_models.append(data["identifier"])
+    return added_models
