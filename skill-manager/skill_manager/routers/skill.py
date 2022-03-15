@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from http.client import HTTPException
@@ -7,10 +8,10 @@ import jwt
 import requests
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
-from fastapi.security.http import HTTPBearer
+from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from skill_manager import mongo_client
 from skill_manager.keycloak_api import KeycloakAPI
-from skill_manager.models import Prediction, Skill
+from skill_manager.models import Prediction, Skill, SkillType
 from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
@@ -23,11 +24,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/skill")
 
 
-def get_user_from_token(request: Request):
-    token = HTTPBearer()(request).credentials
+async def get_payload_from_token(request: Request):
+    http_bearer = HTTPBearer()
+    auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
+    token = auth_credentials.credentials
     payload = jwt.decode(token, options=dict(verify_signature=False))
     realm = Auth.get_realm_from_token(token)
-    return {"realm": realm, "user_id": payload["preferred_username"]}
+    return {"realm": realm, "username": payload["preferred_username"]}
 
 
 def has_auth_header(request: Request):
@@ -46,7 +49,8 @@ async def get_skill_by_id(request: Request, id: str = None):
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
 
     if has_auth_header(request):
-        user_id = get_user_from_token(request)["username"]
+        payload = await get_payload_from_token(request)
+        user_id = payload["username"]
         if not skill.published and not skill.user_id == user_id:
             raise HTTPException(403)
 
@@ -63,9 +67,11 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
     mongo_query = {"published": True}
     if user_id or has_auth_header(request):
         if has_auth_header(request):
-            user_id = get_user_from_token(request)["username"]
+            payload = await get_payload_from_token(request)
+            user_id = payload["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
+    logger.debug("Skill query: {query}".format(query=json.dumps(mongo_query)))
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
 
@@ -84,7 +90,7 @@ async def create_skill(
     """Creates a new skill and saves it."""
 
     if has_auth_header(request):
-        payload = get_user_from_token(request)
+        payload = await get_payload_from_token(request)
         realm = payload["realm"]
         username = payload["username"]
     else:
@@ -198,6 +204,7 @@ async def query_skill(
     user_id = query_request.user_id
 
     skill: Skill = await get_skill_by_id(request, id)
+    query_request.skill = json.loads(skill.json())
 
     default_skill_args = skill.default_skill_args
     if default_skill_args is not None:
@@ -206,13 +213,13 @@ async def query_skill(
 
     # FIXME: Once UI sends context and answers seperatly, this code block can be deleted
     if (
-        skill.skill_settings.requires_multiple_choices > 0
-        and "answers" not in query_request.skill_args
+        skill.skill_type == SkillType.multiple_choice
+        and "choices" not in query_request.skill_args
     ):
-        answers = query_request.skill_args["context"].split("\n")
+        choices = query_request.skill_args["context"].split("\n")
         if skill.skill_settings.requires_context:
-            query_request.skill_args["context"], *answers = answers
-        query_request.skill_args["answers"] = answers
+            query_request.skill_args["context"], *choices = choices
+        query_request.skill_args["choices"] = choices
 
     response = requests.post(
         f"{skill.url}/query",

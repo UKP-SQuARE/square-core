@@ -34,20 +34,21 @@
               </li>
             </ul>
             <div class="text-end" v-if="!isAuthenticated">
-              <router-link to="/signin" role="button" class="btn btn-outline-light me-2">Sign in</router-link>
-              <router-link to="/signup" role="button" class="btn btn-light">Sign up</router-link>
+              <a v-on:click.prevent="$emit('sign-in')" href="#" role="button" class="btn btn-outline-light me-2">Sign in</a>
+              <a v-on:click.prevent="$emit('sign-up')" href="#" role="button" class="btn btn-light">Sign up</a>
             </div>
             <div class="dropdown text-end" v-else>
               <a href="#" class="btn btn-outline-light dropdown-toggle d-inline-flex align-items-center" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
                   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
                 </svg>
-                &nbsp;{{ user.name }}
+                &nbsp;{{ userInfo.preferred_username }}
               </a>
-              <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+              <ul class="dropdown-menu dropdown-menu-end">
                 <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
+                <li><a v-on:click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" v-on:click.prevent="signout" href="#">Sign out</a></li>
+                <li><a v-on:click.prevent="$emit('sign-out')" href="#" class="dropdown-item">Sign out</a></li>
               </ul>
             </div>
           </div>
@@ -67,21 +68,11 @@ export default Vue.component('nav-bar', {
     }
   },
   computed: {
-    user() {
-      return this.$store.state.user
+    userInfo() {
+      return this.$store.state.userInfo
     },
     isAuthenticated() {
-      return this.$store.getters.isAuthenticated()
-    }
-  },
-  methods: {
-    signout() {
-      this.$store.dispatch('signOut')
-          .then(() => {
-            if (this.$route.path !== '/') {
-              this.$router.push('/')
-            }
-          })
+      return Object.keys(this.$store.state.userInfo).length > 0
     }
   }
 })

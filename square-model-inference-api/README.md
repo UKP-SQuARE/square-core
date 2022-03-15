@@ -45,6 +45,9 @@ the path to `/api/$model-prefix/$endpoint` which is then resolved by Traefik to 
 to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
 This requires you to setup the docker-compose and Traefik config as described below.
 
+*LOCAL BASE URL* = https://localhost:8443 </br>
+*PROD BASE URL* = https://square.ukp-lab.de
+
 
 ## Requirements
 
@@ -77,12 +80,40 @@ uninstall `transformers`, and finally install `adapter-transformers`.
    model servers (each with their .env file). See [docker-compose.yml](docker-compose.yml) for an example.
 
 To test whether the api is running you can execute:
+
+```bash
+curl https://square.ukp-lab.de/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
+```
+or if you are running SQuARE in your local machine:
 ```bash
 curl --insecure https://localhost:8443/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat
 ```
 
 ### Local
 Create `inference_server/.env` and configure it as needed for your local model server.
+
+### Authentication
+The authentication service is provided by [Keycloak](https://www.keycloak.org/).
+
+1. Get the bearer token via the following request. The token is valid for 5 minutes.
+```python
+curl --location --request POST 'https://square.ukp-lab.de/auth/realms/Models-test/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=client_credentials' \
+--data-urlencode 'client_id=models' \
+--data-urlencode 'client_secret=secret'
+```
+
+You can get the client secret from the keycloak console.
+
+2. Pass the received access token to the request. An example to check the model health 
+can be seen below:
+
+```python
+curl --location --request GET 'https://square.ukp-lab.de/api/facebook-dpr-question_encoder-single-nq-base/health/heartbeat' \
+--header 'accept: application/json' \
+--header 'Authorization: <access_token>'
+```
 
 ## Running
 
@@ -144,16 +175,23 @@ By passing all environment information that would normally be in the `.env` file
 
 The server will automatically create the model-api instance and add it to the docker network. It might take some time 
 until the model is available, since it needs to download and initialize the necessary models and adapters first. 
-To check whether the model is ready, you can retrieve all available models using
-`curl --insecure https://localhost:8443/api/models/deployed-models`
-and check whether the added models is in the list.
+To check whether the model is ready, you can retrieve all available models and check whether the added models are in the list with the following command:
+
+```bash
+curl https://square.ukp-lab.de/api/models/deployed-models
+
+```
+or if you are running SQuARE in your local machine:
+```bash
+curl --insecure https://localhost:8443/api/models/deployed-models`
+```
 
 #### Example deployment request 
 
 Deploy distilbert from sentence-transformers.
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
 --header 'accept: application/json' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -169,12 +207,32 @@ curl --insecure --request POST 'https://localhost:8443/api/models/deploy' \
 }'
 ```
 
+Here, `identifier` is the name you want to give to the model in SQuARE. `model_name` is the name of the model in Transformer's ModelHub, and `model_type` can take the values `sentence-transformer`, `adapter`, `transformer`, and `onnx`.
+
+Another example for BART 
+```bash
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "identifier": "bart-base",
+  "model_name": "facebook/bart-base",
+  "model_type": "transformer",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "base",
+  "return_plaintext_arrays": false
+}'
+```
+
 #### Example prediction request 
 
 Get prediction from the deployed model.
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/distilbert/embedding' \
+curl --request POST 'https://square.ukp-lab.de/api/msmarco-distilbert-base-tas-b/embedding' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "input": [
@@ -247,7 +305,7 @@ volume with the onnx files. Then, simply specify the `model_path` and optionally
 ### Removing models via API
 Removing the deployed distilbert model.
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/models/remove/distilbert'
+curl --request POST 'https://square.ukp-lab.de/api/models/remove/distilbert'
 ```
 
 ### Update model parameters
@@ -257,7 +315,7 @@ via our update API. An example request to change the `return_plaintext_arrays`
 param to `true` for the dpr model is shown below:
 
 ```bash
-curl --insecure --request POST 'https://localhost:8443/api/models/update/facebook-dpr-question_encoder-single-nq-base' \
+curl --request POST 'https://square.ukp-lab.de/api/facebook-dpr-question_encoder-single-nq-base/update' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "disable_gpu": true,
@@ -307,6 +365,4 @@ you can see whether the task has been executed and the results of the task.
 
 ### Database
 The database is the MongoDB that is also used for the skills and hence uses the credentials specified in the environment
-file of that database. 
-
-
+file of that database.

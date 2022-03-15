@@ -19,7 +19,7 @@ class GetModelsResult(BaseModel):
 
 
 class GetModelsHealth(BaseModel):
-    identifier:str
+    identifier: str
     is_alive: bool
 
 

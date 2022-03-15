@@ -5,19 +5,25 @@ import requests
 from typing import List
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+
 
 from app.models.management import GetModelsResult,\
                                   DeployRequest,\
                                   TaskGenericModel,\
-                                  TaskResultModel
+                                  TaskResultModel, \
+                                  GetModelsHealth, \
+                                  UpdateModel
 from app.core.config import settings
 from starlette.responses import JSONResponse
 from tasks.tasks import deploy_task, remove_model_task
 
-from mongo_access import add_model_db, remove_model_dm, get_models_db, update_model_db, init_db
+from mongo_access import add_model_db, remove_model_db, get_models_db, update_model_db, init_db
 from docker_access import get_all_model_prefixes
 
+
+from square_auth.client_credentials import ClientCredentials
+client_credentials = ClientCredentials()
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -43,15 +49,15 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
         ))
     return result
 
+
 @router.get("/deployed-models-health", response_model=List[GetModelsHealth], name="get-deployed-models-health")
-async def get_all_models():  # token: str = Depends(client_credentials)):
-    port = 8443
+async def get_all_models(token: str = Depends(client_credentials)):
     models = await get_models_db()
     lst_models = []
     for m in models:
         r = requests.get(
             url="{}/api/{}/health/heartbeat".format(settings.API_URL, m["identifier"]),
-            # headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
@@ -97,19 +103,19 @@ async def remove_model(identifier):
     """
     Remove a model from the platform
     """
-    await(remove_model_dm(identifier))
+    await(remove_model_db(identifier))
     res = remove_model_task.delay(identifier)
     return {"message": "Queued removing model.", "task_id": res.id}
 
 
 @router.post("/update/{identifier}")
-async def update_model(identifier: str, update_parameters: UpdateModel):
+async def update_model(identifier: str, update_parameters: UpdateModel, token: str = Depends(client_credentials)):
     await(update_model_db(identifier, update_parameters))
     logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
     r = requests.post(
         url="{}/api/{}/update".format(settings.API_URL, identifier),
         json=update_parameters.dict(),
-        # headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL", 1) == 1,
     )
     return {"status_code": r.status_code, "content": r.json()}
@@ -128,14 +134,14 @@ async def get_task_status(task_id):
 
 
 @router.post("/db/update")
-async def init_db_from_docker():
+async def init_db_from_docker(token: str = Depends(client_credentials)):
     lst_prefix, port = get_all_model_prefixes()
     lst_models = []
 
     for prefix in lst_prefix:
         r = requests.get(
             url="{}{}/stats".format(settings.API_URL, prefix),
-            # headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
@@ -144,7 +150,7 @@ async def init_db_from_docker():
             logger.info("Response Format {}".format(data))
             lst_models.append({
                 "identifier": prefix.split("/")[-1],
-                "MODEL_NAME": data["model_name"] ,
+                "MODEL_NAME": data["model_name"],
                 "MODEL_TYPE": data["model_type"],
                 "DISABLE_GPU": data["disable_gpu"],
                 "BATCH_SIZE": data["batch_size"],

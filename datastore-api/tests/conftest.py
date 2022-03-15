@@ -1,18 +1,18 @@
 import os
 
 import pytest
-from app.core.auth import verify_api_key
+# from app.core.auth import verify_api_key  # deprecated
 from app.core.config import settings
 from app.core.dense_retrieval import DenseRetrieval
 from app.core.es.class_converter import ElasticsearchClassConverter
 from app.core.faiss import FaissClient
 from app.core.model_api import ModelAPIClient
-from app.main import get_app
+from app.main import get_app, auth
 from app.models.datastore import Datastore, DatastoreField
 from app.models.document import Document
 from app.models.index import Index
 from app.models.upload import UploadUrlSet
-from app.routers.dependencies import get_search_client, get_storage_connector
+from app.routers.dependencies import get_search_client, get_storage_connector, client_credentials
 from elasticsearch import Elasticsearch
 from fastapi.testclient import TestClient
 
@@ -22,7 +22,6 @@ from .utils import MockConnector
 file_dir = os.path.dirname(__file__)
 
 MOCK_DEPENDENCIES = os.environ.get("MOCK_DEPENDENCIES", "0") == "1"
-
 
 @pytest.fixture
 def documents_file():
@@ -53,7 +52,6 @@ def wiki_datastore(datastore_name):
     return Datastore(
         name=datastore_name,
         fields=[
-            DatastoreField(name="id", type="long", is_id=True),
             DatastoreField(name="text", type="text"),
             DatastoreField(name="title", type="text"),
         ],
@@ -84,11 +82,11 @@ def second_index(datastore_name):
 
 @pytest.fixture(scope="package")
 def test_document():
-    return {
-        "id": 111,
+    return Document(__root__={
+        "id": "111",
         "title": "test document",
         "text": "this is a test document",
-    }
+    })
 
 
 @pytest.fixture(scope="package")
@@ -98,11 +96,11 @@ def test_document_embedding():
 
 @pytest.fixture(scope="package")
 def query_document():
-    return {
-        "id": 222,
+    return Document(__root__={
+        "id": "222",
         "title": "document title",
         "text": "document containing the query word quack",
-    }
+    })
 
 
 @pytest.fixture(scope="package")
@@ -132,6 +130,7 @@ def db_init(datastore_name, wiki_datastore, dpr_index, second_index, test_docume
     converter = ElasticsearchClassConverter()
     es = Elasticsearch(hosts=[settings.ES_URL])
 
+    #TODO: Reuse existing source code
     # configure indices
     es.indices.delete(index="datastore-test-*")
     es.indices.create(index=datastore_name + "-docs", body=converter.convert_from_datastore(wiki_datastore))
@@ -142,8 +141,8 @@ def db_init(datastore_name, wiki_datastore, dpr_index, second_index, test_docume
     )
 
     # add documents
-    es.index(index=datastore_name + "-docs", id=test_document["id"], body=test_document)
-    es.index(index=datastore_name + "-docs", id=query_document["id"], body=query_document)
+    es.index(index=datastore_name + "-docs", id=test_document["id"], body=converter.convert_from_document(test_document))
+    es.index(index=datastore_name + "-docs", id=query_document["id"], body=converter.convert_from_document(query_document))
 
     es.indices.refresh(index="")
 
@@ -151,7 +150,8 @@ def db_init(datastore_name, wiki_datastore, dpr_index, second_index, test_docume
 @pytest.fixture(scope="package")
 def client(db_init, mock_connector, mock_search_client):
     app = get_app()
-    app.dependency_overrides[verify_api_key] = lambda: True
+    app.dependency_overrides[auth] = lambda: True
+    app.dependency_overrides[client_credentials] = lambda: "test-token"
     if MOCK_DEPENDENCIES:
         app.dependency_overrides[get_storage_connector] = lambda: mock_connector
         app.dependency_overrides[get_search_client] = lambda: mock_search_client

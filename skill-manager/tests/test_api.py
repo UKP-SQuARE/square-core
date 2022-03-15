@@ -17,13 +17,17 @@ from skill_manager.models import Skill, SkillSettings
 from skill_manager.routers import client_credentials
 
 keycloak_api_mock = MagicMock()
-keycloak_api_mock.create_client.return_value = {"clientId": "test-client-id", "secret": "test-secret"}
+keycloak_api_mock.create_client.return_value = {
+    "clientId": "test-client-id",
+    "secret": "test-secret",
+}
 keycloak_api_override = lambda: keycloak_api_mock
 app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
 
 client = TestClient(app)
+
 
 @pytest.fixture(scope="module")
 def monkeymodule():
@@ -163,21 +167,22 @@ def test_heartbeat(client):
     assert response.json() == {"is_alive": True}
 
 
+@pytest.mark.parametrize("is_alive", (True, False), ids=["alive", "dead"])
 @responses.activate
-def test_skill_heartbeat(client):
+def test_skill_heartbeat(is_alive, client):
     skill_url = "http://test_skill_url"
     responses.add(
         responses.GET,
         url=f"{skill_url}/health/heartbeat",
         json={"is_alive": True},
-        status=200,
+        status=200 if is_alive else 404,
     )
     response = client.get(
         "/api/health/skill-heartbeat", params={"skill_url": skill_url}
     )
-    print(response.json())
+
     assert response.status_code == 200
-    assert response.json() == {"is_alive": True}
+    assert response.json() == {"is_alive": is_alive}
 
 
 def test_skill_types(client):
@@ -208,6 +213,17 @@ def test_get_skill_by_id(pers_client, skill_factory):
     assert response.status_code == 200
 
     assert_skills_equal_from_response(test_skill, response)
+
+@pytest.mark.asyncio
+def test_get_skill_by_id_token(pers_client: TestClient, skill_factory, token):
+    test_skill = skill_factory(user_id="test-user")
+    response = pers_client.post("/api/skill", data=test_skill.json())
+    added_skill_id = response.json()["id"]
+
+    response = pers_client.get(
+        f"/api/skill/{added_skill_id}", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
 
 
 def test_get_all_skills(pers_client, skill_factory):
@@ -344,7 +360,7 @@ def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
     saved_prediction = mongo_client.client.skill_manager.predictions.find_one(
         {"query": query}
     )
-    
+
     TestCase().assertDictEqual(
         response.json(), {"predictions": saved_prediction["predictions"]}
     )

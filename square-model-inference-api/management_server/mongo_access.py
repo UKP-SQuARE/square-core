@@ -22,7 +22,7 @@ async def add_model_db(identifier, env):
     return True
 
 
-async def remove_model_dm(identifier):
+async def remove_model_db(identifier):
     query = {"identifier": identifier}
     db = client.model_management
     models = db.models
