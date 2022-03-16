@@ -39,7 +39,8 @@ keycloak_create_realm () {
 	PAYLOAD=$(cat <<- EOF
 		{
 			"realm": "$REALM", 
-			"enabled": true
+			"enabled": true,
+			"registrationAllowed": true
 		}
 		EOF
 	)
