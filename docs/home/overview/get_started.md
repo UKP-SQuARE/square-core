@@ -48,7 +48,7 @@ To run UKP-SQuARE locally, you need the following software:
 * [jq](https://stedolan.github.io/jq/download/)
 
 ### Install
-We provide an installation script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
+Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml). For installation we provide a script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
 ```bash
 bash install.sh
 ```
