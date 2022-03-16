@@ -286,7 +286,7 @@ docker-compose down
 echo "Building frontend."
 # build frontend with updated env file
 cp square-frontend/.env.production square-frontend/.env.production-backup
-cp square-frontend/.env.development square-frontend/.env.production
+sed -e "s/%%SQUARE_URL%%/https:\/\/$SQUARE_URL/g" square-frontend/.env.template > square-frontend/.env.production
 
 docker-compose build -q frontend
 
