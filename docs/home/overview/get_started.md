@@ -53,7 +53,7 @@ Next change the `environment` to `local` and `os` to your operating system in th
 bash install.sh
 ```
 ### Run 
-Finally, you can run the full system with docker-compose.
+Finally, you can run the full system with docker-compose. Before doing so, you might want to reduce the number of models running depending on your resources. To do so, remove the respective services from the docker-compose.
 ```bash
 docker-compose up -d
 ```
