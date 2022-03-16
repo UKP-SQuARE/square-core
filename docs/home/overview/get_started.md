@@ -48,12 +48,12 @@ To run UKP-SQuARE locally, you need the following software:
 * [jq](https://stedolan.github.io/jq/download/)
 
 ### Install
-We provide an installation script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
+Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml). For installation we provide a script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
 ```bash
 bash install.sh
 ```
 ### Run 
-Finally, you can run the full system with docker-compose.
+Finally, you can run the full system with docker-compose. Before doing so, you might want to reduce the number of models running depending on your resources. To do so, remove the respective services from the docker-compose.
 ```bash
 docker-compose up -d
 ```
