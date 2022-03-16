@@ -20,7 +20,7 @@ MONGO_PASSWORD=${5:-$(generate_password)}
 
 keycloak_get_admin_token () {
 	# returns an admin token from the master realm
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/realms/master/protocol/openid-connect/token/" \
 		-H 'Content-Type: application/x-www-form-urlencoded' \
 		--data-urlencode "grant_type=password" \
@@ -44,7 +44,7 @@ keycloak_create_realm () {
 		}
 		EOF
 	)
-	curl -s -k -L --fail-with-body -o /dev/null -X POST \
+	curl -s -k -L -o /dev/null -X POST \
 		"https://$SQUARE_URL/auth/admin/realms" \
 		-H "Authorization: Bearer $ADMIN_TOKEN" \
 		-H 'Content-Type: application/json' \
@@ -54,7 +54,7 @@ keycloak_create_realm () {
 keycloak_get_initial_access_token () {
 	# gets a new initial access token for a realm that can be used once
 
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/admin/realms/$REALM/clients-initial-access" \
 		-H "Authorization: Bearer $ADMIN_TOKEN" \
 		-H 'Content-Type: application/json' \
@@ -69,7 +69,7 @@ keycloak_get_client_token () {
 	# returns an access token obtained by the client credentials flow
 	CLIENT_ID=$1
 	CLIENT_SECRET=$2
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/realms/$REALM/protocol/openid-connect/token" \
 		-H 'Content-Type: application/x-www-form-urlencoded' \
 		--data-urlencode 'grant_type=client_credentials' \
@@ -98,7 +98,7 @@ keycloak_create_client_registration_client () {
 	)
 
 	# ===== Create the `skill-manager` client =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 		-H "Authorization: Bearer $INITIAL_ACCESS_TOKEN" \
 		-H 'Content-Type: application/json' \
@@ -112,21 +112,21 @@ keycloak_create_client_registration_client () {
 	ADMIN_TOKEN=$(keycloak_get_admin_token)
 
 	# ===== Get the ID of the `realm-management` user =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X GET \
+	RESPONSE=$(curl -s -k -L -X GET \
 		"https://$SQUARE_URL/auth/admin/realms/$REALM/clients?clientId=realm-management&max=20&search=true" \
 		-H "Authorization: Bearer $ADMIN_TOKEN"
 	)
 	REALM_MANAGEMENT_ID=$(echo $RESPONSE | jq -r '.[0].id')
 
 	# ===== Get the ID of the service account of the skill-manager =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X GET \
+	RESPONSE=$(curl -s -k -L -X GET \
 		"https://$SQUARE_URL/auth/admin/realms/$REALM/clients/$SKILL_MANAGER_ID/service-account-user" \
 		-H "Authorization: Bearer $ADMIN_TOKEN"
 	)
 	SERVICE_ACCOUNT_ID=$(echo $RESPONSE | jq -r '.id')
 
 	# ===== Get the `create-client` role id of the realm-management client for the service account  =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X GET \
+	RESPONSE=$(curl -s -k -L -X GET \
 	"https://$SQUARE_URL/auth/admin/realms/$REALM/users/$SERVICE_ACCOUNT_ID/role-mappings/clients/$REALM_MANAGEMENT_ID/available" \
 	-H "Authorization: Bearer $ADMIN_TOKEN")
 	CREATE_CLIENT_ID=$(echo $RESPONSE | jq -r '.[] | select(.name | contains("create-client")) | .id')
@@ -146,7 +146,7 @@ keycloak_create_client_registration_client () {
 	)
 
 	# ===== Assign the service account the `create-client` role from the realm-management  =====
-	curl -s -k -L --fail-with-body -o /dev/null -X POST \
+	curl -s -k -L -o /dev/null -X POST \
 	"https://$SQUARE_URL/auth/admin/realms/$REALM/users/$SERVICE_ACCOUNT_ID/role-mappings/clients/$REALM_MANAGEMENT_ID" \
 	-H "Authorization: Bearer $ADMIN_TOKEN" \
 	-H 'Content-Type: application/json' \
@@ -175,7 +175,7 @@ keycloak_create_client () {
 		EOF
 	)
 
-	curl -s -k -L --fail-with-body -o /dev/null -g -X POST \
+	curl -s -k -L -o /dev/null -g -X POST \
 	"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 	-H "Authorization: Bearer $TOKEN" \
 	-H "Content-Type: application/json" \
@@ -202,7 +202,7 @@ keycloak_create_frontend_client () {
 		EOF
 	)
 
-	curl -s -k -L --fail-with-body -o /dev/null -g -X POST \
+	curl -s -k -L -o /dev/null -g -X POST \
 	"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 	-H "Authorization: Bearer $TOKEN" \
 	-H "Content-Type: application/json" \
