@@ -180,13 +180,17 @@ export default Vue.component('explainability-page', {
       let currentTests = []
       this.selectedSkills.forEach(skillId => {
         if (skillId in this.checklistData) {
-          getSkill(skillId)
+          getSkill(this.$store.getters.authenticationHeader(), skillId)
               .then((response) => {
                 currentSkills.push(response.data)
               })
           let tests = this.checklistData[skillId]
-          // FIXME: Sort all tests the same
-          tests.sort((a, b) => b.failure_rate - a.failure_rate)
+          // Sort first skill by failure rate and subsequent skills based on the sorting of the first one
+          if (currentTests.length === 0) {
+            tests.sort((a, b) => b.failure_rate - a.failure_rate)
+          } else {
+            tests.sort((a, b) => currentTests[0].findIndex(e => e.test_name === a.test_name) - currentTests[0].findIndex(e => e.test_name === b.test_name))
+          }
           tests.forEach(test => test.test_cases = test.test_cases.filter(
               test_case => test_case['success_failed'] === 'failed'))
           currentTests.push(tests)
@@ -203,9 +207,8 @@ export default Vue.component('explainability-page', {
       let skill = this.currentSkills[skillIndex - 1]
       let data = JSON.stringify(this.checklistData[skill.id], null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
-      // FIXME: Does not download
-      this.$refs[`downloadButton${skillIndex}`].href = URL.createObjectURL(blob)
-      this.$refs[`downloadButton${skillIndex}`].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
+      this.$refs[`downloadButton${skillIndex}`][0].href = URL.createObjectURL(blob)
+      this.$refs[`downloadButton${skillIndex}`][0].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
     }
   }
 })

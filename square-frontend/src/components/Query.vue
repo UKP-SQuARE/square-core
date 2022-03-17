@@ -44,6 +44,11 @@
         </div>
       </div>
     </div>
+    <div v-if="failure" class="row">
+      <div class="col-md-4 mx-auto mt-3">
+        <Alert class="bg-warning" :dismissible="true">An error occurred</Alert>
+      </div>
+    </div>
     <div v-if="minSkillsSelected(1)" class="row">
       <div class="col my-3">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
@@ -61,7 +66,8 @@
 
 <script>
 import Vue from 'vue'
-import CompareSkills from '@/components/CompareSkills.vue'
+import CompareSkills from '../components/CompareSkills'
+import Alert from '../components/Alert'
 
 export default Vue.component('query-skills', {
   data() {
@@ -73,7 +79,6 @@ export default Vue.component('query-skills', {
       inputQuestion: '',
       inputContext: '',
       failure: false,
-      failureMessage: '',
       skillSettings: {
         skillType: null,
         requiresContext: false,
@@ -82,7 +87,8 @@ export default Vue.component('query-skills', {
     }
   },
   components: {
-    CompareSkills
+    CompareSkills,
+    Alert
   },
   computed: {
     selectedSkills() {
@@ -146,10 +152,8 @@ export default Vue.component('query-skills', {
         }
       }).then(() => {
         this.failure = false
-        this.failureMessage = ''
-      }).catch(error => {
+      }).catch(() => {
         this.failure = true
-        this.failureMessage = error.data.msg
       }).finally(() => {
         this.waiting = false
       })

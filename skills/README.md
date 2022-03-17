@@ -3,11 +3,11 @@ Skills define how the user query should be processed by the Datastores and Model
 
 Skills can be added dynamically to UKP-SQuARE. Check out the 👉 [Add New Skills](#Add-New-Skills) for details.
 
-For a list of available skills, see 👉 [Publicly Available Skills](Publicly-Available-Skills).
+For a list of available skills, see 👉 [Publicly Available Skills](#publicly-available-skills).
 
 ## Add New Skills
 ### The Predict Function
-To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [*SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [*SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
+To create a new skill, simply the predict function needs to be implemented. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
@@ -63,7 +63,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 ### Adding Via Pull Request
 If you want to run your Skill directly on SQuARE hardware, you can submit a [pull request](https://github.com/UKP-SQuARE/square-core/pulls) with the following changes:
 1. Put your skill function in a file under: `./skills/<skill-name>/skill.py`
-2. Add you skill in the [skill.yaml](../skill.yaml). Give the skill the same name as the folder under skills.
+2. Add you skill in the [config.yaml](https://github.com/UKP-SQuARE/square-core/blob/master/config.yaml). Give the skill the same name as the folder under skills.
 3. Once you pull request is approved, your skill url will be `http://<skill-name>:<port>`
 
 ### Adding Self-Hosted or Cloud Skills
@@ -83,74 +83,36 @@ If you want to run your Skill directly on SQuARE hardware, you can submit a [pul
 7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
 An example repository can also be found at [UKP-SQuARE/cloud-example-azure](https://github.com/UKP-SQuARE/cloud-example-azure)
 ## Publicly Available Skills
-### boolq
-*Description*: A categorical QA skill answering boolean questions given a context with yes or no.
-*Base-Model*: [bert-base-uncased](https://huggingface.co/bert-base-uncased)
-*Adapter*: [AdapterHub/bert-base-uncased-pf-boolq](https://adapterhub.ml/adapters/AdapterHub/bert-base-uncased-pf-boolq/)
-*Training Data*: [boolq](https://huggingface.co/datasets/boolq)
-*Example*:
-Question: 
-```
-is windows movie maker part of windows essentials
-``` 
-Context: 
-```
-Windows Movie Maker (formerly known as Windows Live Movie Maker in Windows 7) is a discontinued video editing software by Microsoft. It is a part of Windows Essentials software suite and offers the ability to create and edit videos as well as to publish them on OneDrive, Facebook, Vimeo, YouTube, and Flickr.
-```
-### commonsense-qa
-*Description*: A multiple-choice QA skill answering commonsense questions by scoring a set of answer candidates.
-*Base-Model*: [bert-base-uncased](https://huggingface.co/bert-base-uncased)
-*Adapter*: [AdapterHub/bert-base-uncased-pf-commonsense_qa](https://adapterhub.ml/adapters/AdapterHub/bert-base-uncased-pf-commonsense_qa/)
-*Training Data*: [CommonsenseQA](https://huggingface.co/datasets/commonsense_qa)
-*Example*:
-Question
-```
-Sammy wanted to go to where the people were. Where might he go?
-```
-Answer Choices
-```
-race track
-populated areas
-the desert
-apartment
-roadblock
-```
-### squad-v2
-*Description*: A extractive QA skill, selecting an answer to a question from a text span of the provided context.
-*Base-Model*: [bert-base-uncased](https://huggingface.co/bert-base-uncased)
-*Adapter*: [qa/squad2@ukp](https://adapterhub.ml/adapters/ukp/roberta-base_qa_squad2_houlsby/)
-*Training Data*: [SQuAD V2.0](https://huggingface.co/datasets/squad_v2)
-Question
-```
-What areas did Beyonce compete in when she was growing up?
-```
-Context
-```
-Beyoncé Giselle Knowles-Carter (born September 4, 1981) is an American singer, songwriter, record producer and actress. Born and raised in Houston, Texas, she performed in various singing and dancing competitions as a child, and rose to fame in the late 1990s as lead singer of R&B girl-group Destiny's Child. Managed by her father, Mathew Knowles, the group became one of the world's best-selling girl groups of all time. Their hiatus saw the release of Beyoncé's debut album, Dangerously in Love (2003), which established her as a solo artist worldwide, earned five Grammy Awards and featured the Billboard Hot 100 number-one singles "Crazy in Love" and "Baby Boy".
-```
-### retrieve-span
-*Description*:
-*Base-Model*: [DPR](https://huggingface.co/facebook/dpr-question_encoder-single-nq-base) (retrieval); [bert-base-uncased](https://huggingface.co/bert-base-uncased) (span-extraction)
-*Adapter*: [qa/squad2@ukp](https://adapterhub.ml/adapters/ukp/roberta-base_qa_squad2_houlsby/)
-*Training Data*: [SQuAD V2.0](https://huggingface.co/datasets/squad_v2)
-*Example*:
-Questions
-```
-When was TU Darmstadt established?
-```
+| Name | Retrieval Model | Datastore | Reader Model | Reader Adapter | Type | Code |
+|---|---|---|---|---|---|---|
+| BoolQ BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [boolq](https://huggingface.co/AdapterHub/bert-base-uncased-pf-boolq) | categorical | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| BoolQ RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [boolq](https://huggingface.co/AdapterHub/roberta-base-pf-boolq) | categorical | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| CommonsenseQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [commonsense_qa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-commonsense_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| CommonsenseQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [commonsense_qa](https://huggingface.co/AdapterHub/roberta-base-pf-commonsense_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| CosmosQA BERT |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [cosmos_qa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-cosmos_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| CosmosQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [cosmos_qa](https://huggingface.co/AdapterHub/roberta-base-pf-cosmos_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| DROP BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [drop](https://huggingface.co/AdapterHub/bert-base-uncased-pf-drop) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| DROP RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [drop](https://huggingface.co/AdapterHub/roberta-base-pf-drop) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| HotpotQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [hotpotqa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-hotpotqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| HotpotQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [hotpotqa](https://huggingface.co/AdapterHub/roberta-base-pf-hotpotqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| MultiRC BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [multirc](https://huggingface.co/AdapterHub/bert-base-uncased-pf-multirc) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| MultiRC RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [multirc](https://huggingface.co/AdapterHub/roberta-base-pf-multirc) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| NarrativeQA BART Adapter |  |  | [bart-base](https://huggingface.co/facebook/bart-base) | [narrativeqa](https://huggingface.co/AdapterHub/narrativeqa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/generative-qa/skill.py) |
+| NewsQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [newsqa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-newsqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| NewsQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [newsqa](https://huggingface.co/AdapterHub/roberta-base-pf-newsqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| OpenBioASQ | [BM25](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) | Pubmed | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-bioasq/skill.py) |
+| OpenSQuAD | [dpr](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base) | Wikipedia | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-squad/skill.py) |
+| OpenSQuAD | [distilbert](https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b) | msmarco | [roberta-base](https://huggingface.co/roberta-base) | [multirc](https://huggingface.co/AdapterHub/roberta-base-pf-multirc) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-extractive-qa/skill.py) |
+| QuAIL BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [quail](https://huggingface.co/AdapterHub/bert-base-uncased-pf-quail) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| QuAIL RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quail](https://huggingface.co/AdapterHub/roberta-base-pf-quail) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| QuaRTz RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quartz](https://huggingface.co/AdapterHub/roberta-base-pf-quartz) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| Quoref BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [quoref](https://huggingface.co/AdapterHub/bert-base-uncased-pf-quoref) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| Quoref RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quoref](https://huggingface.co/AdapterHub/roberta-base-pf-quoref) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| RACE BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [race](https://huggingface.co/AdapterHub/bert-base-uncased-pf-race) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| RACE RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [race](https://huggingface.co/AdapterHub/roberta-base-pf-race) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| SQuAD 1.1 BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad](https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| SQuAD 1.1 RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [squad](https://huggingface.co/AdapterHub/roberta-base-pf-squad) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| SQuAD 2.0 BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) |
+| Social-IQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [social_i_qa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-social_i_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
+| Social-IQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [social_i_qa](https://huggingface.co/AdapterHub/roberta-base-pf-social_i_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) |
 
-### retrieve-bioasq
-*Description*: An open-domain, extractive QA skill, using PubMed articles as background knowledge and span-extraction for answer selection. For retrieval BM25 is used.
-*Base-Model*: [bert-base-uncased](https://huggingface.co/bert-base-uncased)
-*Adapter*: [qa/squad2@ukp](https://adapterhub.ml/adapters/ukp/roberta-base_qa_squad2_houlsby/)
-*Training Data*: [SQuAD V2.0](https://huggingface.co/datasets/squad_v2) (span-extraction)
-*Example*:
-Question:
-```
-What are the symptoms of MERS?
-```
-
-### exctractive-qa
-*Description*: An extractive QA skill that can work with any base-model and adapter (has to be an extractive QA adapter).
-### multiple-choice-qa
-*Description*: A multiple-choice QA skill that can work with any base-model and adapter (has to be a multiple-choice QA adapter).

@@ -182,6 +182,7 @@ services:
     restart: always
     volumes:
       - skill-manager-mongo-data:/data/db
+      - skill-manager-mongo-dumps:/dumps
     expose:
       - 27017
     env_file:
@@ -205,7 +206,7 @@ services:
       CLIENT_ID: models
     labels:
       - "traefik.enable=true"
-      #@ template.replace(traefik_tls("maintaining"))
+      - #@ template.replace(traefik_tls("maintaining"))
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
@@ -373,6 +374,8 @@ volumes:
   migrations-data:
     driver: local
   skill-manager-mongo-data:
+    driver: local
+  skill-manager-mongo-dumps:
     driver: local
   datastore-api-es:
     driver: local

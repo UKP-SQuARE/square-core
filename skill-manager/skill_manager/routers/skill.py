@@ -8,7 +8,7 @@ import jwt
 import requests
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
-from fastapi.security.http import HTTPBearer
+from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from skill_manager import mongo_client
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
@@ -24,11 +24,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/skill")
 
 
-def get_user_from_token(request: Request):
-    token = HTTPBearer()(request).credentials
+async def get_payload_from_token(request: Request):
+    http_bearer = HTTPBearer()
+    auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
+    token = auth_credentials.credentials
     payload = jwt.decode(token, options=dict(verify_signature=False))
     realm = Auth.get_realm_from_token(token)
-    return {"realm": realm, "user_id": payload["preferred_username"]}
+    return {"realm": realm, "username": payload["preferred_username"]}
 
 
 def has_auth_header(request: Request):
@@ -47,7 +49,8 @@ async def get_skill_by_id(request: Request, id: str = None):
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
 
     if has_auth_header(request):
-        user_id = get_user_from_token(request)["username"]
+        payload = await get_payload_from_token(request)
+        user_id = payload["username"]
         if not skill.published and not skill.user_id == user_id:
             raise HTTPException(403)
 
@@ -64,7 +67,8 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
     mongo_query = {"published": True}
     if user_id or has_auth_header(request):
         if has_auth_header(request):
-            user_id = get_user_from_token(request)["username"]
+            payload = await get_payload_from_token(request)
+            user_id = ["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
@@ -85,7 +89,7 @@ async def create_skill(
     """Creates a new skill and saves it."""
 
     if has_auth_header(request):
-        payload = get_user_from_token(request)
+        payload = await get_payload_from_token(request)
         realm = payload["realm"]
         username = payload["username"]
     else:
