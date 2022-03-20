@@ -52,3 +52,7 @@ def remove_model_task(identifier):
             }
     except:
         logger.exception("Could not remove model", exc_info=True)
+    return {
+        "success": False,
+        "message": "Model removal not successful"
+    }

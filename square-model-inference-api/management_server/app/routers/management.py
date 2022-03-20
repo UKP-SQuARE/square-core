@@ -157,6 +157,33 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "MAX_INPUT_SIZE": data["max_input"],
                 "MODEL_CLASS": data["model_class"],
                 "RETURN_PLAINTEXT_ARRAYS": data["return_plaintext_arrays"],
+                "TRANSFORMERS_CACHE": data["transformers_cache"],
+                "MODEL_PATH": data["model_path"],
+                "DECODER_PATH": data["decoder_path"],
             })
     added_models = await(init_db(lst_models))
     return {"added": added_models}
+
+@router.post("/db/deploy")
+async def start_from_db(token: str = Depends(client_credentials)):
+    configs = await get_models_db()
+    deployed = []
+    tasks = []
+    for model in configs:
+        r = requests.get(
+            url="{}/api/{}/health/heartbeat".format(settings.API_URL, model["identifier"]),
+            headers={"Authorization": f"Bearer {token}"},
+            verify=os.getenv("VERIFY_SSL", 1) == 1,
+        )
+        # if the model-api instance has not finished loading the model it is not available yet
+        if r.status_code != 200:
+            identifier = model["identifier"]
+            env = model
+            del env["identifier"]
+            del env["_id"]
+            res = deploy_task.delay(identifier, env)
+            logger.info(res.id)
+            deployed.append(identifier)
+            tasks.append(res.id)
+
+    return {"message": f"Queued deploying {deployed}", "task_id": tasks}

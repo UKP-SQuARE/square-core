@@ -11,7 +11,7 @@ password = os.getenv("PASSWORD", "user")
 
 app = Celery('tasks',
              backend='rpc://',
-             broker="amqp://guest:guest@rabbit:5672//",
+             broker=f"amqp://{user}:{password}@rabbit:5672//",
              include=['tasks.tasks'])
 
 if __name__ == '__main__':

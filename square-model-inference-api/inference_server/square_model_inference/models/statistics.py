@@ -11,6 +11,10 @@ class ModelStatistics(BaseModel):
     model_class: str  # for transformers which model class this is e.g. base
     disable_gpu: bool
     return_plaintext_arrays: bool
+    preloaded_adapters: bool
+    transformers_cache: Optional[str] = ".cache"
+    model_path: Optional[str] = ""
+    decoder_path: Optional[str] = ""
 
 
 class UpdateModel(BaseModel):

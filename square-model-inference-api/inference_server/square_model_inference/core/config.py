@@ -65,6 +65,10 @@ class ModelConfig(Mapping):
             max_input=self.max_input_size,
             disable_gpu=self.disable_gpu,
             return_plaintext_arrays=self.return_plaintext_arrays,
+            model_path=self.model_path,
+            decoder_path=self.decoder_path,
+            preloaded_adapters=self.preloaded_adapters,
+            transformers_cache=self.transformers_cache,
         )
 
     @staticmethod

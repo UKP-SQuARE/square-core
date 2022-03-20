@@ -355,6 +355,10 @@ To add models to the database (e.g. manually deployed models) call:
 This scans the running docker containers for deployed models and checks whether
 they are in the database. If not they are added. The identifiers of all added models are returned.
 
+## Deploy models from database
+After a crash or some other failure a model might not be available. To restart all models that have been 
+deployed previously send a POST request to `api/models/db/deploy`. It returns all identifiers which it tried to deploy.
+For each models a seperate task is queued. Hence, it returns a list of task ids. 
 
 ### Queueing
 The management server queues background tasks for deploying and removing models. The response to a 
