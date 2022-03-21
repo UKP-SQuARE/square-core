@@ -1,36 +1,43 @@
-from typing import Optional
 from fastapi import FastAPI
-import requests
-import json
-from .models import Skill, Query, SkillModelAdapter
+from .models import Skill
+from .utils import create_file_paths, run_tests
 
 app = FastAPI()
 
 
 @app.get("/")
 async def check_health():
+    """ Checks the health of the Explainability API
+
+    Returns a message of about the health of the API
+
+    """
     return "Api is running"
 
 
 @app.post("/test")
 async def test_skill(skill: Skill):
-    query = {
-            "query": "Sophie is happy, right?",
-            "skill_args": {
-                "context": "Sophie is very joyful. Florence is very organised.",
-                "base_model": "bert-base-uncased",
-                "adapter": "AdapterHub/bert-base-uncased-pf-boolq",
-            },
-            "num_results": 1,
-            "user_id": "ukp"
-    }
-    headers = {'Content-type': 'application/json'}
-    json_object = json.dumps(query)
-    request_path = "https://square.ukp-lab.de/api/skill-manager/skill/61a9f66935adbbf1f2433077/query"
-    response = requests.post(request_path, data = json_object, headers = headers)
-    predictions = response.json()
-    return predictions
+    """ Function for testing a Skill
 
-@app.post("/predict")
-async def predict(query: Query):
-    return "from predict function"
+    Takes an input of Skill class object and returns a json consisting 
+    all the test cases and their prediction made by the specified skill
+
+    Args:
+
+        skill (Skill) : An object of class Skill
+    
+    Returns:
+
+        json_data (json object) : A json object containing all the test cases and their predictions made by the specified skill
+
+    """
+  
+    #get the file containing all the test cases
+    test_file_path = create_file_paths(skill.skill_id)
+    #run the test cases from the test file and get the json object
+    json_data = run_tests(skill, test_file_path)
+    
+    return json_data
+
+
+
