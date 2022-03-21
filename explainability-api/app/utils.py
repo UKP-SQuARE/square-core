@@ -1,39 +1,39 @@
 import json
-from .models import Skill
+from app.models import Skill
 import requests
 import json
 import os
-from typing import Optional
 
-
-#differnt types of question answering models
+# different types of question answering models
 skill_types =[
     "span-extraction",
     "multiple-choice",
     "categorical"
 ]
 
-#name of the files containing test cases for different types of question answering models
+# name of the files containing test cases for different types of question answering models
 test_files = [
     "extractive_model_tests.json",
     "multiple_choice_model_tests.json",
     "boolean_model_tests.json"
 ]
 
+
 def create_type_to_file():
     """ Creates a dictionary 
 
     Creates a dictionary where the key is the skill type and value is the file name 
 
-    Retruns:
-
-        type_to_file (dict) : A dictionary containing all skill types and their corresponding files containing the test cases
+    Returns:
+        type_to_file (dict) : A dictionary containing all skill types and their corresponding files containing
+            the test cases
 
     """
     type_to_file = dict()
     for i in range(len(skill_types)):
         type_to_file[skill_types[i]] = test_files[i]
     return type_to_file
+
 
 def get_file_path(path ,skill_type):
     """ Creates the full path for the file
@@ -45,7 +45,6 @@ def get_file_path(path ,skill_type):
         skill_type : Type of the skill
 
     Returns:
-
         file_path (str) : full path of the file
 
     """
@@ -54,7 +53,8 @@ def get_file_path(path ,skill_type):
     file_path = path + file_name
     return file_path
 
-def get_json_data(path ,skill_type):
+
+def get_json_data(path, skill_type):
     """ Function to get json data
 
     Creates a json object of the test cases contained in a file
@@ -64,40 +64,38 @@ def get_json_data(path ,skill_type):
         skill_type : Type of the skill
 
     Returns:
-
         json_data (json_object) : A json object containing all the test cases for a specific skill type
 
     """
-    file_path = get_file_path(path ,skill_type)
+    file_path = get_file_path(path, skill_type)
     json_file = open(file_path)
     json_data = json.load(json_file)
     return json_data
 
 
-
 def create_query(test_case, capability, model, adapter):
     """ Create query
 
-    This fuction query creates a query and make it suitable for sending to for prediction
+    This function query creates a query and make it suitable for sending to for prediction
 
     Args:
         test_case (dict) : Test case as a dictionary
         capability (str) : Capability of the given test case
-        model (str) : Name of the lnaguage model
+        model (str) : Name of the language model
         adapter (str) : Name of the adapter
 
     Returns:
-
         json_object (json object) : A json object containing the test case and its prediction
         answer (str) : Prediction for test case made by the skill 
 
     """
-    #initialize dictionary to contain context, name of the base model and adapter
+    # initialize dictionary to contain context, name of the base model and adapter
     skill_args = dict()
-    #initilaize dictionary to contain a test case in suitable format for querying 
+    # initialize dictionary to contain a test case in suitable format for querying
     query = dict()
 
-    #in case of multiple choice models add the options to the context seperated by \n otherwise context will remain the same
+    # in case of multiple choice models add the options to the context seperated by \n otherwise context
+    # will remain the same
     if "options" in test_case.keys():
         context = test_case['context']
         for option in test_case["options"]:
@@ -108,7 +106,7 @@ def create_query(test_case, capability, model, adapter):
 
     skill_args["base_model"] = model
     skill_args["adapter"] = adapter
-    #skill args will be part of the query dictionary
+    # skill args will be part of the query dictionary
     query["query"] = test_case['question']
     query["num_results"] = 1
     query["user_id"] = "ukp"
@@ -116,7 +114,7 @@ def create_query(test_case, capability, model, adapter):
     query["skill_args"] = skill_args
     json_object = json.dumps(query)
 
-    #get the original answer for the test case
+    # get the original answer for the test case
     if "answer" not in test_case.keys():
         answer = test_case["prediction_before_change"]
     else:
@@ -124,23 +122,23 @@ def create_query(test_case, capability, model, adapter):
 
     return json_object, answer
 
+
 def predict(skill_query_path, json_query, answer):
     """ Predicts a given query
 
-    This fuction predicts a query and returns the prediction
+    This function predicts a query and returns the prediction
 
     Args:
         skill_query_path (str) : Request path to query a skill
         json_query (json object) : Query as a json object
 
     Returns:
-
         Returns the prediction
 
     """
     try:
         headers = {'Content-type': 'application/json'}
-        response = requests.post(skill_query_path, data = json_query, headers = headers)
+        response = requests.post(skill_query_path, data=json_query, headers=headers)
         predictions = response.json()
         prediction = predictions["predictions"][0]["prediction_output"]["output"]
 
@@ -153,31 +151,32 @@ def predict(skill_query_path, json_query, answer):
         print(ex)
         return "failed"
 
-def save_json(json_data, path : str):
+
+def save_json(json_data, path: str):
     """ Save a json object
 
     Saves a json object to a specific directory
 
     Args:
         json_data (json_object) : Containing all the test cases and their predictions
-        path (str) : Full path of the diretory where the json object will be saved
+        path (str) : Full path of the directory where the json object will be saved
 
     """
     with open(path, 'w') as f:
-        json.dump(json_data, f, indent = 4)
+        json.dump(json_data, f, indent=4)
 
-def run_tests(skill: Skill, path : str):
+
+def run_tests(skill: Skill, path: str):
     """ Function to run all the test cases for a given skill
 
-    This fuction run all the test cases for a given skill
+    This function run all the test cases for a given skill
 
     Args:
         skill (Skill object) : A object of Skill containing all the information for a skill
         path (path) : Directory of the json file containing test cases for that skill type
 
     Returns:
-
-        json_data (json object) : A json object containg all the test cases and their predictions for the given skill
+        json_data (json object) : A json object containing all the test cases and their predictions for the given skill
 
     """
     
@@ -208,25 +207,20 @@ def run_tests(skill: Skill, path : str):
         json_data['tests'][i]["success_rate"] = success_rate
     return json_data
 
+
 def create_file_paths(skill_id):
     """Get the directory
 
-    This function creates and return the directory of the json file containing th test cases
+    This function creates and return the directory of the json file containing the test cases
 
     Args:
-
         skill_id (str) : ID of the skill
     
     Returns:
-
         test_file_path (str) : Directory of the file containing the test cases
     
     """
-    current_dir = os.getcwd()
-    test_file_path = current_dir + "/model-tests/"
-    #prediction_file_path = current_dir + "/predictions/" + skill_id + ".json"
+    base_dir = os.getcwd()  # os.path.normpath(os.getcwd() + os.sep + os.pardir)
+    test_file_path = base_dir + "/model-tests/"
+    # prediction_file_path = current_dir + "/predictions/" + skill_id + ".json"
     return test_file_path
-
-
-
-
