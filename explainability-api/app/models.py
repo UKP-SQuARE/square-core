@@ -1,16 +1,9 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+
 
 class Skill(BaseModel):
-    #path for the query request of the skill
-    skill_query_path : str
-    #type of the skill : multiple choice, extractive, abstractive etc.
-    skill_type : str
-    #name of the language model
-    skill_base_model : str
-    #name of the adapter
-    skill_adapter : str
-    #id of the skill
-    skill_id : str
-
-
+    skill_query_path: str = Field(..., description="path for the query request of the skill")
+    skill_type: str = Field(..., description="type of the skill : multiple choice, extractive, abstractive etc.")
+    skill_base_model: str = Field(..., description="name of the language model")
+    skill_adapter: str = Field(..., description="name of the adapter")
+    skill_id: str = Field(..., description="id of the skill")
