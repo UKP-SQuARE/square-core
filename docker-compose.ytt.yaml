@@ -129,6 +129,7 @@ services:
       #@ if/end data.values.environment == "prod":
       - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
+      - #@ "traefik.http.routers.frontend.rule=Host(`" + data.values.frotnend_url[data.values.environment] + "`)"
       - #@ template.replace(traefik_tls("frontend"))
 
   documentation:

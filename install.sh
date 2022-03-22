@@ -12,7 +12,7 @@ generate_password () {
 	echo "$PASSWORD"
 }
 
-SQUARE_URL=${1:-"square.ukp-lab.local"}
+SQUARE_URL=${1:-"square.ukp-lab.localhost"}
 REALM=${2:-"square"}
 KEYCLOAK_PASSWORD=${3:-$(generate_password)}
 POSTGRES_PASSWORD=${4:-$(generate_password)}
