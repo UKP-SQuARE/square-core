@@ -81,12 +81,12 @@ export default Vue.component('compare-skills', {
       this.selectedSkills.forEach((skillId, index) => {
         this.availableSkills.forEach(skill => {
           if (skillId === skill.id) {
-            if (settings.skillType === null) {
+            if (index === 0) {
               settings.skillType = skill.skill_type
-            } else if (skill.skill_type !== settings.skillType) {
+              settings.requiresContext = skill.skill_settings.requires_context
+            } else if (skill.skill_type !== settings.skillType || skill.skill_settings.requires_context !== settings.requiresContext) {
               this.options.selectedSkills[index] = 'None'
             }
-            settings.requiresContext = settings.requiresContext || skill.skill_settings.requires_context
             // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
             settings.requiresMultipleChoices = Math.max(
                 settings.requiresContext ? 1 : 0,
