@@ -120,7 +120,7 @@
             </svg>
           </div>
           <h2 class="display-5">Explainability</h2>
-          <p class="lead fs-2">Test the <span class="text-success">behaviour</span> of <span class="text-success">black-box</span> models.</p>
+          <p class="lead fs-2">For now we are testing the <span class="text-success">behaviour</span> of <span class="text-success">black-box</span> models with more to come.</p>
           <p class="lead fs-2">Explore capabilities such as the <span class="text-success">robustness</span> of model output.</p>
           <p class="lead fs-2"><span class="text-success">Get started</span> by selecting up to three skills.</p>
         </div>
