@@ -79,6 +79,15 @@
         </div>
       </div>
       <div class="row">
+        <div class="col mt-3">
+          <label for="args" class="form-label">Skill arguments</label>
+          <input v-model="skillArguments" type="text" class="form-control" :class="{ 'is-invalid': !validJSON }" id="args" placeholder="Skill argument as JSON">
+          <div v-if="!validJSON" class="invalid-feedback">
+            JSON is invalid
+          </div>
+        </div>
+      </div>
+      <div class="row">
         <div class="col mt-4">
           <h3>Provide example questions</h3>
           <p class="mb-1">These examples will be featured alongside your skill.</p>
@@ -143,6 +152,7 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
+      validJSON: true,
       numberSkillExamples: 3
     }
   },
@@ -157,7 +167,22 @@ export default Vue.component('edit-skill', {
      */
     isCreateSkill() {
       return this.$route.params.id === 'new_skill'
-    }
+    },
+    skillArguments: {
+      get: function () {
+        return JSON.stringify(this.skill.default_skill_args)
+      },
+      set: function (newValue) {
+        try {
+          if (newValue.length > 0) {
+            this.skill.default_skill_args = JSON.parse(newValue)
+          }
+          this.validJSON = true
+        } catch (e) {
+          this.validJSON = false
+        }
+      }
+    },
   },
   methods: {
     onSubmit() {
@@ -204,11 +229,12 @@ export default Vue.component('edit-skill', {
     if (!this.isCreateSkill) {
       getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
           .then((response) => {
-            this.skill = response.data
-            this.originalName = this.skill.name
-            if (response.data.skill_input_examples == null) {
-              this.skill.skill_input_examples = []
+            let data = response.data
+            if (data.skill_input_examples == null) {
+              data.skill_input_examples = []
             }
+            this.skill = data
+            this.originalName = this.skill.name
             this.addInputExampleFields()
           })
     } else {
