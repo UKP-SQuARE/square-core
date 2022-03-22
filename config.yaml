@@ -47,7 +47,7 @@ frotnend_url:
 
 keycloak_base_url_https:
   prod: https://square.ukp-lab.de
-  local: https://square.ukp-lab.local
+  local: http://keycloak:8080
 
 faiss_url:
   prod: https://square.ukp-lab.de/api
