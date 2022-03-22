@@ -1,7 +1,6 @@
 <template>
   <span
       @mouseover="showPopover"
-      v-on:click="showPopover"
       :data-bs-content="popoverContent"
       data-bs-trigger="hover focus"
       data-bs-placement="top"
