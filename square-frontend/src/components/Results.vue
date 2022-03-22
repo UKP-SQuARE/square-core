@@ -79,6 +79,8 @@ export default Vue.component('skill-results', {
     },
     skillType() {
       switch (this.$store.state.currentResults[0].skill.skill_type) {
+        case 'abstractive':
+          // Fall through
         case 'span-extraction':
           // Fall through
         case 'multiple-choice':

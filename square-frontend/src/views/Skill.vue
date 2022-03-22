@@ -20,7 +20,7 @@
         </button>
       </template>
       <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
-      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+      <Alert v-if="failure" class="alert-danger" dismissible>An error occurred</Alert>
       <div class="row">
         <div class="col-md-6 mt-3">
           <label for="name" class="form-label">Skill name</label>
@@ -143,7 +143,6 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
-      failureMessage: '',
       numberSkillExamples: 3
     }
   },
@@ -177,18 +176,16 @@ export default Vue.component('edit-skill', {
             this.success = true
             this.failure = false
           })
-          .catch(failureMessage => {
+          .catch(() => {
             this.failure = true
-            this.failureMessage = failureMessage
           })
     },
     createSkill() {
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
-          .catch(error => {
+          .catch(() => {
             this.failure = true
-            this.failureMessage = error.data.msg
           })
     },
     addInputExampleFields() {
