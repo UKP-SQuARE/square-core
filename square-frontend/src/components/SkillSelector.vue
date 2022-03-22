@@ -14,7 +14,7 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('skill-status', {
+export default Vue.component('skill-selector', {
   props: ['value', 'skills']
 })
 </script>

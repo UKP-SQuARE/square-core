@@ -109,6 +109,7 @@ export default Vue.component('compare-skills', {
         .then(() => {
           // Copy the object so we do not change the state before a query is issued
           this.options = JSON.parse(JSON.stringify(this.$store.state.skillOptions[this.selectorTarget]))
+          this.$emit('input', this.options, this.skillSettings)
         }).finally(() => {
           this.waiting = false
         })
