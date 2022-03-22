@@ -2,7 +2,7 @@
 <template>
   <div v-if="currentResults.length">
     <div class="row">
-      <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3">
+      <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3 mt-4">
         <table class="table table-borderless">
           <thead class="border-bottom border-dark">
           <tr>

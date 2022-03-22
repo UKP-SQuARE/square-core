@@ -11,7 +11,7 @@
         </div>
       </div>
       <div v-if="selectedSkills.length > 0" class="row">
-        <div class="col my-3">
+        <div class="col mt-4">
           <div class="d-grid gap-2 d-md-flex justify-content-md-center">
             <button type="submit" class="btn btn-success btn-lg shadow text-white" :disabled="waiting">
               <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
@@ -22,7 +22,7 @@
     </form>
     <div v-if="currentTests.length > 0">
       <div class="row">
-        <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3">
+        <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3 mt-4">
           <table class="table table-borderless">
             <thead class="border-bottom border-dark">
             <tr>
