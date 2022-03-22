@@ -2,7 +2,7 @@
 <template>
   <header class="bg-primary">
     <div class="container-lg">
-      <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
           <router-link class="navbar-brand d-flex align-items-center" to="/">
             <img :src="`${publicPath}SQ_Web_Light_90px.png`" alt="UKP-SQuARE" width="45" height="45">
@@ -18,6 +18,9 @@
               </li>
               <li class="nav-item">
                 <router-link class="nav-link" to="/explain" exact-active-class="active">Explainability</router-link>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://arxiv.org" target="_blank">Publication</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/docs/" target="_blank">Docs</a>
