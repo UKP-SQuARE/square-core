@@ -7,7 +7,6 @@ from typing import List
 from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException, Depends
 
-
 from app.models.management import GetModelsResult,\
                                   DeployRequest,\
                                   TaskGenericModel,\
@@ -18,12 +17,16 @@ from app.core.config import settings
 from starlette.responses import JSONResponse
 from tasks.tasks import deploy_task, remove_model_task
 
-from mongo_access import add_model_db, remove_model_db, get_models_db, update_model_db, init_db
 from docker_access import get_all_model_prefixes
 
+from mongo_access import MongoClass
+mongo_client = MongoClass()
 
 from square_auth.client_credentials import ClientCredentials
-client_credentials = ClientCredentials()
+client_credentials = ClientCredentials(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
+                                       realm=os.getenv("REALM", "Models-test"),
+                                       client_id=os.getenv("CLIENT_ID", "models"),
+                                       client_secret=os.getenv("CLIENT_SECRET", ""))
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -34,7 +37,7 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     """
     Get all the models deployed on the platform in list format
     """
-    models = await get_models_db()
+    models = await mongo_client.get_models_db()
     result = []
     for m in models:
         result.append(GetModelsResult(
@@ -52,7 +55,7 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
 
 @router.get("/deployed-models-health", response_model=List[GetModelsHealth], name="get-deployed-models-health")
 async def get_all_models(token: str = Depends(client_credentials)):
-    models = await get_models_db()
+    models = await mongo_client.get_models_db()
     lst_models = []
     for m in models:
         r = requests.get(
@@ -90,7 +93,7 @@ async def deploy_new_model(model_params: DeployRequest):
         # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
     }
 
-    identifier_new = await(add_model_db(identifier, env))
+    identifier_new = await(mongo_client.add_model_db(identifier, env))
     if not identifier_new:
         raise HTTPException(status_code=401, detail="A model with that identifier already exists")
     res = deploy_task.delay(identifier, env)
@@ -103,14 +106,14 @@ async def remove_model(identifier):
     """
     Remove a model from the platform
     """
-    await(remove_model_db(identifier))
+    await(mongo_client.remove_model_db(identifier))
     res = remove_model_task.delay(identifier)
     return {"message": "Queued removing model.", "task_id": res.id}
 
 
 @router.post("/update/{identifier}")
 async def update_model(identifier: str, update_parameters: UpdateModel, token: str = Depends(client_credentials)):
-    await(update_model_db(identifier, update_parameters))
+    await(mongo_client.update_model_db(identifier, update_parameters))
     logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
     r = requests.post(
         url="{}/api/{}/update".format(settings.API_URL, identifier),
@@ -161,12 +164,13 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "MODEL_PATH": data["model_path"],
                 "DECODER_PATH": data["decoder_path"],
             })
-    added_models = await(init_db(lst_models))
+    added_models = await(mongo_client.init_db(lst_models))
     return {"added": added_models}
+
 
 @router.post("/db/deploy")
 async def start_from_db(token: str = Depends(client_credentials)):
-    configs = await get_models_db()
+    configs = await mongo_client.get_models_db()
     deployed = []
     tasks = []
     for model in configs:
