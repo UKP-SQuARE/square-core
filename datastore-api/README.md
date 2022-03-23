@@ -28,6 +28,7 @@ We now have a [tutorial&exercises](https://docs.google.com/document/d/1r-CeFB7jK
 3. [Upload documents](#upload-documents).
 
 4. For dense retrieval, [configure a FAISS container](#configure-dense-retrieval-with-faiss) per datastore index.
+5. **(TODO: Need more details!!!)** Configure arguments for authorization with SQuARE-Auth: `KEYCLOAK_BASE_URL`, `CLIENT_ID`, `CLIENT_SECRET` and `REALM`.
 
 ## Development setup
 
@@ -206,3 +207,8 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     ```bash
     docker compose up -d
     ```
+## Pytest
+Run
+```
+make test-api
+```

@@ -24,7 +24,7 @@
             <a role="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</a>
             <a
                 role="button"
-                class="btn btn-danger"
+                class="btn btn-danger text-white"
                 data-bs-dismiss="modal"
                 @click="$emit('callback', callbackValue)">
               {{ destructiveActionUpper }}

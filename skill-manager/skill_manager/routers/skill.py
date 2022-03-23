@@ -73,6 +73,7 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
         logger.debug(f"Retrieving Skills for user_id={user_id} with query={mongo_query}")
 
+    logger.debug("Skill query: {query}".format(query=json.dumps(mongo_query)))
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
 

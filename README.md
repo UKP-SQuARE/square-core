@@ -58,72 +58,30 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 </details>
 
 ## Add New Skills
-
-### Step 1: Hosting New Skills
-- If you want to add new skills to the [public service](https://square.ukp-lab.de/), please follow the skill-package examples (e.g. [skills/qa-retrieve-span-skill](skills/qa-retrieve-span-skill)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it run after code review;
-- It is also OK to host the skill yourself somewhere else. The only thing that matters here is to provide a URL and also match the argument formats.
-
-### Step 2: Register the Skill
-Go to your user profile and click on "My Skills" and "New" buttons. Fill out the form and link it to the hosted skills:
-
-<details open>
-    <summary>Example: Skill Form Filling</summary>
-    <p align="center">
-        <br>
-        <img src="images/link_skill.png" width="800"/>
-        <br>
-    <p>
-</details>
+To add new skills, please see the [skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills#add-new-skills) section.
 
 ## Local Installation
-### Setup
-Install [ytt](https://carvel.dev/ytt/docs/latest/install/)
-```bash
-brew instal ytt
-```
-### Environment Configuration
-First, let's initialize the .env files from our examples. Run the following lines:  
-```bash
-mv skill-manager/.env.example skill-manager/.env 
-mv datastore-api/.env.example datastore-api/.env 
-mv skills/.env.example skills/.env 
-mv keycloak/.env.example keycloak/.env 
-mv postgres/.env.example postgres/.env 
-cp square-frontend/.env.production square-frontend/.env.production-backup
-cp square-frontend/.env.development square-frontend/.env.production
-```
-#### Update .env files
-- For the _Skill-Manager_ (`./skill-manager/.env`) you can update the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` for production purposes.
-- In the _Datastore-API_ env file (`./datastore-api/.env`)  enter an `API_KEY`. This will secure the API, and only requests containing this key will be allowed.
-- Copy the API key from the datastores to the _Skills_ env file (`./skills/.env`)
-- For postgres and keycloak, set `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value. Also update the `KEYCLOAK_PASSWORD`
+### Requirements
+To run UKP-SQuARE locally, you need the following software:
+* [docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/#install-compose)
+* [ytt](https://carvel.dev/ytt/)
+* [jq](https://stedolan.github.io/jq/download/)
 
-### Generate the docker-compose file
-The docker-compose file is generated using the [ytt](https://carvel.dev/ytt/) templating tool. First, we need to update the [config.yaml](config.yaml) to the target platform.
-- Set _environment_ to `local`
-- Set _os_ to your operating system, e.g. `linux`, `mac` or `windows`
-Now we can generate the docker-compose.yaml file by running:
+### Install
+Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml). For installation we provide a script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
 ```bash
-ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml  
-```
-### Get docker images
-We now can pull the existing docker images from docker hub by running:
-```bash
-docker-compose pull
-```
-In order to inject the updated environment variables in the frontend, we need to rebuild it:
-```bash
-docker-compose build frontend
+bash install.sh
 ```
 ### Run 
+Finally, you can run the full system with docker-compose. Before doing so, you might want to reduce the number of models running depending on your resources. To do so, remove the respective services from the docker-compose.
 ```bash
 docker-compose up -d
 ```
-Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to https://square.ukp-lab.localhost.
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.local](https://square.ukp-lab.local).
 👉 Accept that the browser cannot verify the certificate.
-👉 enable the flag [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost) in Chrome.
 ### Add Skills
-Add Skills according to the [Add New Skills](#Add-New-Skills) section. Note that, for open-domain skills the datastore need to created first.
+Add Skills according to the [Add New Skills](./skills/README.md#add-new-skills) section. Note that, for open-domain skills the datastore need to created first.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:

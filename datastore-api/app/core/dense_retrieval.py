@@ -17,7 +17,7 @@ class DenseRetrieval:
         self.model_api = model_api
         self.faiss = faiss
 
-    async def status(self, datastore_name: str, index_name: str) -> bool:
+    async def status(self, datastore_name: str, index_name: str, credential_token: str = None) -> bool:
         """Checks the availability of the given index.
         This method queries both the FAISS web service and the Model API server as both are required for retrieval.
 
@@ -34,10 +34,17 @@ class DenseRetrieval:
 
         status = self.faiss.status(datastore_name, index_name) is not None
         if status:
-            status &= self.model_api.is_alive(index)
+            status &= self.model_api.is_alive(index, credential_token)
         return status
 
-    async def search(self, datastore_name: str, index_name: str, query: str, top_k: int = 10) -> List[QueryResult]:
+    async def search(
+        self, 
+        datastore_name: str, 
+        index_name: str,
+        query: str, 
+        top_k: int = 10,
+        credential_token: str = None
+    ) -> List[QueryResult]:
         """Searches for documents matching the given query string.
 
         Args:
@@ -52,10 +59,13 @@ class DenseRetrieval:
         index = await self.conn.get_index(datastore_name, index_name)
         if index is None:
             raise ValueError("Datastore or index not found.")
+        
+        if credential_token is None:
+            raise ValueError("Credential token is None")
 
         #TODO: Reuse search_by_vector
         # 1. Get the query embedding from the model api
-        query_vector = self.model_api.encode_query(query, index)
+        query_vector = self.model_api.encode_query(query, index, credential_token)
         logger.debug(f"Received query embedding:{query_vector}")
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
@@ -69,7 +79,13 @@ class DenseRetrieval:
 
         return sorted(results, key=lambda x: x.score, reverse=True)
 
-    async def search_by_vector(self, datastore_name: str, index_name: str, query_vector: List[float], top_k: int = 10) -> List[QueryResult]:
+    async def search_by_vector(
+        self, 
+        datastore_name: str, 
+        index_name: str, 
+        query_vector: List[float], 
+        top_k: int = 10
+    ) -> List[QueryResult]:
         """Searches for documents matching the given query vector.
 
         Args:
@@ -98,7 +114,14 @@ class DenseRetrieval:
 
         return sorted(results, key=lambda x: x.score, reverse=True)
 
-    async def score(self, datastore_name: str, index_name: str, query: str, document_id: str) -> QueryResult:
+    async def score(
+        self, 
+        datastore_name: str, 
+        index_name: str, 
+        query: str, 
+        document_id: str,
+        credential_token: str = None
+    ) -> QueryResult:
         """Scores a document by the given query string.
 
         Args:
@@ -115,9 +138,14 @@ class DenseRetrieval:
             raise ValueError("Datastore or index not found.")
 
         # 1. Get the query embedding from the model api
-        query_vector = self.model_api.encode_query(query, index)
+        query_vector = self.model_api.encode_query(query, index, credential_token)
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
-        queried = self.faiss.explain(datastore_name, index_name, query_vector, document_id)
+        queried = self.faiss.explain(
+            datastore_name, 
+            index_name, 
+            query_vector, 
+            document_id
+        )
         # 3. Lookup the retrieved doc ids in the ES index.
         doc = await self.conn.get_document(datastore_name, document_id)
         return QueryResult(document=doc, score=queried["score"], id=document_id)

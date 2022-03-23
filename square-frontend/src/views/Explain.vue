@@ -11,7 +11,7 @@
         </div>
       </div>
       <div v-if="selectedSkills.length > 0" class="row">
-        <div class="col my-3">
+        <div class="col mt-4">
           <div class="d-grid gap-2 d-md-flex justify-content-md-center">
             <button type="submit" class="btn btn-success btn-lg shadow text-white" :disabled="waiting">
               <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
@@ -22,7 +22,7 @@
     </form>
     <div v-if="currentTests.length > 0">
       <div class="row">
-        <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3">
+        <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3 mt-4">
           <table class="table table-borderless">
             <thead class="border-bottom border-dark">
             <tr>
@@ -120,7 +120,7 @@
             </svg>
           </div>
           <h2 class="display-5">Explainability</h2>
-          <p class="lead fs-2">Test the <span class="text-success">behaviour</span> of <span class="text-success">black-box</span> models.</p>
+          <p class="lead fs-2">For now we are testing the <span class="text-success">behaviour</span> of <span class="text-success">black-box</span> models with more to come.</p>
           <p class="lead fs-2">Explore capabilities such as the <span class="text-success">robustness</span> of model output.</p>
           <p class="lead fs-2"><span class="text-success">Get started</span> by selecting up to three skills.</p>
         </div>
@@ -180,7 +180,7 @@ export default Vue.component('explainability-page', {
       let currentTests = []
       this.selectedSkills.forEach(skillId => {
         if (skillId in this.checklistData) {
-          getSkill(skillId)
+          getSkill(this.$store.getters.authenticationHeader(), skillId)
               .then((response) => {
                 currentSkills.push(response.data)
               })
