@@ -31,6 +31,10 @@ verify_ssl:
   prod: 1
   local: 0
 
+verify_issuer:
+  prod: 1
+  local: 0
+
 realm: square
 
 square_api_url: 
@@ -39,11 +43,15 @@ square_api_url:
 
 keycloak_base_url:
   prod: square.ukp-lab.de
-  local: square.ukp-lab.local
+  local: square.ukp-lab.localhost
+
+frotnend_url:
+  prod: square.ukp-lab.de
+  local: square.ukp-lab.localhost
 
 keycloak_base_url_https:
   prod: https://square.ukp-lab.de
-  local: https://square.ukp-lab.local
+  local: http://keycloak:8080
 
 faiss_url:
   prod: https://square.ukp-lab.de/api

@@ -39,6 +39,12 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@  ]
 #@ end
 
+#@ def model_environment():
+WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
+#@ end
+
 version: "3.4"
 
 services:
@@ -124,11 +130,8 @@ services:
       - 443
     labels:
       - "traefik.enable=true"
-      #@ if/end data.values.environment == "local":
-      - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.local`)"
-      #@ if/end data.values.environment == "prod":
-      - "traefik.http.routers.frontend.rule=Host(`square.ukp-lab.de`)"
       - "traefik.http.routers.frontend.priority=1"
+      - #@ "traefik.http.routers.frontend.rule=Host(`" + data.values.frotnend_url[data.values.environment] + "`)"
       - #@ template.replace(traefik_tls("frontend"))
 
   documentation:
@@ -198,6 +201,7 @@ services:
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
@@ -219,9 +223,7 @@ services:
       target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_adapter
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
+    environment: #@ model_environment()
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -236,9 +238,7 @@ services:
       target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.roberta_adapter
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
+    environment: #@ model_environment()
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -253,9 +253,7 @@ services:
       target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+    environment: #@ model_environment()
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -273,9 +271,7 @@ services:
       target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+    environment: #@ model_environment()
     volumes:
       - ./.cache/:/etc/sentence-transformers/.cache/
     labels:
@@ -293,9 +289,7 @@ services:
       target: build
     env_file:
       - ./square-model-inference-api/inference_server/.env.bert_onnx
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+    environment: #@ model_environment()
     volumes:
       - ./.cache/:/etc/onnx/.cache/
       - onnx-models:/onnx_models
@@ -324,6 +318,7 @@ services:
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       CLIENT_ID: datastores-to-internal-services
       REALM: square
+      VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores"))
