@@ -18,7 +18,7 @@ from app.core.config import settings
 from starlette.responses import JSONResponse
 from tasks.tasks import deploy_task, remove_model_task
 
-from mongo_access import add_model_db, remove_model_db, get_models_db, update_model_db, init_db
+from mongo_access import add_model_db, remove_model_db, get_models_db, update_model_db, init_db, check_identifier_new
 from docker_access import get_all_model_prefixes
 
 
@@ -90,7 +90,7 @@ async def deploy_new_model(model_params: DeployRequest):
         # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
     }
 
-    identifier_new = await(add_model_db(identifier, env))
+    identifier_new = await(check_identifier_new(identifier))
     if not identifier_new:
         raise HTTPException(status_code=401, detail="A model with that identifier already exists")
     res = deploy_task.delay(identifier, env)
@@ -103,7 +103,6 @@ async def remove_model(identifier):
     """
     Remove a model from the platform
     """
-    await(remove_model_db(identifier))
     res = remove_model_task.delay(identifier)
     return {"message": "Queued removing model.", "task_id": res.id}
 
@@ -161,6 +160,8 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "MODEL_PATH": data["model_path"],
                 "DECODER_PATH": data["decoder_path"],
             })
+        else:
+            logger.info("Error retrieving Model Statistics: {}".format(r.json()))
     added_models = await(init_db(lst_models))
     return {"added": added_models}
 

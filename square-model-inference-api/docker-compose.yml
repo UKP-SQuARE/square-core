@@ -81,9 +81,9 @@ services:
       - redishost
 
   maintaining:
-    image: ukpsquare/square-model-management:latest
+#    image: ukpsquare/square-model-management:latest
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
-#    build: ./management_server
+    build: ./management_server
     ports:
       - 9001:9001
     volumes:

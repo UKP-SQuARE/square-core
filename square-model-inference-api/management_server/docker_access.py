@@ -1,11 +1,10 @@
 import os
 import re
 import logging
-
-logger = logging.getLogger(__name__)
-
 import docker
 from docker.types import Mount
+
+logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
@@ -20,6 +19,13 @@ def start_new_model_container(identifier, env):
     identifier(str): the name/identifier of the new model api instance
     env(Dict): the environment for the container
     """
+    container = get_container(identifier)
+    logger.info("Found container {} we try to restart".format(container))
+    if container is not None:
+        logger.info("Restarting container")
+        container.start()
+        logger.info("Restarted {} with current status: {}".format(container, container.status))
+        return container
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -62,11 +68,7 @@ def start_new_model_container(identifier, env):
     return container
 
 
-def remove_model_container(identifier):
-    """
-    Removes container for the given identifier
-    """
-
+def get_container(identifier):
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -79,13 +81,22 @@ def remove_model_container(identifier):
         "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
     }
 
-    if len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
+    if len(docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
+        return None
+    container = docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
+    return container
+
+def remove_model_container(identifier):
+    """
+    Removes container for the given identifier
+    """
+    container = get_container(identifier)
+    if container is None:
         return False
-    container = docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
     container.stop()
     container.remove()
 
-    return len(docker_client.containers.list(filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0
+    return True
 
 
 def get_all_model_prefixes():

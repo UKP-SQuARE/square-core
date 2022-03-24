@@ -9,6 +9,15 @@ client = MongoClient('mongodb://%s:%s@%s' % (username, password, "mongo"))
 logger = logging.getLogger(__name__)
 
 
+async def check_identifier_new(identifier):
+    db = client.model_management
+    models = db.models
+    if models.count_documents({"identifier": identifier}) >= 1:
+        return False
+    else:
+        return True
+
+
 async def add_model_db(identifier, env):
     data = env.copy()
     data["identifier"] = identifier
