@@ -21,12 +21,13 @@ class MongoClass:
         """
         self.client.close()
 
-    async def add_model_db(self, identifier, env):
+    async def add_model_db(self, user_id, identifier, env):
         """
         add entry to the db
         """
         data = env.copy()
         data["identifier"] = identifier
+        data["user_id"] = user_id
 
         if self.models.count_documents({"identifier": identifier}) >= 1:
             return False
