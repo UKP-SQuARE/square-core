@@ -108,9 +108,10 @@ services:
       - #@ template.replace(traefik_tls("keycloak"))
     volumes:
       - ./keycloak/themes/terms.ftl:/opt/jboss/keycloak/themes/base/login/terms.ftl
+      - ./keycloak/themes/register.ftl:/opt/jboss/keycloak/themes/base/login/register.ftl
 
   db:
-    image: postgres:13.6
+    image: postgres:14
     restart: always
     ports:
       - 5432:5432
