@@ -17,24 +17,17 @@ from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
 from skill_manager.routers import client_credentials
+from skill_manager.auth import (
+    get_skill_if_authorized,
+    get_payload_from_token,
+    has_auth_header,
+)
 
 logger = logging.getLogger(__name__)
 
-
 router = APIRouter(prefix="/skill")
 
-
-async def get_payload_from_token(request: Request):
-    http_bearer = HTTPBearer()
-    auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
-    token = auth_credentials.credentials
-    payload = jwt.decode(token, options=dict(verify_signature=False))
-    realm = Auth.get_realm_from_token(token)
-    return {"realm": realm, "username": payload["preferred_username"]}
-
-
-def has_auth_header(request: Request):
-    return request.headers.get("Authorization", "").lower().startswith("bearer")
+auth = Auth()
 
 
 @router.get(
