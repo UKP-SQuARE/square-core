@@ -106,6 +106,8 @@ services:
       - "traefik.enable=true"
       - #@ "traefik.http.routers.keycloak.rule=Host(`" + data.values.keycloak_base_url[data.values.environment] + "`) && PathPrefix(`/auth`)" 
       - #@ template.replace(traefik_tls("keycloak"))
+    volumes:
+      - ./keycloak/themes/terms.ftl:/opt/jboss/keycloak/themes/base/login/terms.ftl
 
   db:
     image: postgres:13.6
