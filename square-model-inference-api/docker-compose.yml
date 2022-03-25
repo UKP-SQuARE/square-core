@@ -67,8 +67,13 @@ services:
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./management_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
       - VERIFY_SSL=0
       - USERNAME=user
       - PASSWORD=user
@@ -103,6 +108,9 @@ services:
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=Models-test
       - CLIENT_ID=models
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
@@ -135,26 +143,26 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
-  # --------- Example config for abstractive QA adapter model server ---------
-  model_bart_base_adapter:
-    #    image: ukpsquare/square-model-api-v1:latest
-    build: ./inference_server
-    env_file:
-      - ./inference_server/.env.bart_adapter
-    environment:
-      - WEB_CONCURRENCY=1
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.model-bart-base-adapter.rule=PathPrefix(`/api/facebook-bart-base`)"
-      - "traefik.http.routers.model-bart-base-adapter.entrypoints=websecure"
-      - "traefik.http.routers.model-bart-base-adapter.tls=true"
-      - "traefik.http.routers.model-bart-base-adapter.tls.certresolver=le"
-      - "traefik.http.routers.model-bart-base-adapter.middlewares=model-bart-base-adapter-stripprefix,model-bart-base-adapter-addprefix"
-      - "traefik.http.middlewares.model-bart-base-adapter-stripprefix.stripprefix.prefixes=/api/facebook-bart-base"
-      - "traefik.http.middlewares.model-bart-base-adapter-addprefix.addPrefix.prefix=/api"
+#  # --------- Example config for abstractive QA adapter model server ---------
+#  model_bart_base_adapter:
+#    #    image: ukpsquare/square-model-api-v1:latest
+#    build: ./inference_server
+#    env_file:
+#      - ./inference_server/.env.bart_adapter
+#    environment:
+#      - WEB_CONCURRENCY=1
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#    volumes:
+#      - ./.cache/:/etc/huggingface/.cache/
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.model-bart-base-adapter.rule=PathPrefix(`/api/facebook-bart-base`)"
+#      - "traefik.http.routers.model-bart-base-adapter.entrypoints=websecure"
+#      - "traefik.http.routers.model-bart-base-adapter.tls=true"
+#      - "traefik.http.routers.model-bart-base-adapter.tls.certresolver=le"
+#      - "traefik.http.routers.model-bart-base-adapter.middlewares=model-bart-base-adapter-stripprefix,model-bart-base-adapter-addprefix"
+#      - "traefik.http.middlewares.model-bart-base-adapter-stripprefix.stripprefix.prefixes=/api/facebook-bart-base"
+#      - "traefik.http.middlewares.model-bart-base-adapter-addprefix.addPrefix.prefix=/api"
 
   mongo:
     hostname: mongo
@@ -169,7 +177,7 @@ services:
       MONGO_HOST: mongo
       MONGO_PORT: 27017
     env_file:
-      - ../skill-manager/.env.template
+      - management_server/.env
 
   mongo-express:
     image: mongo-express:latest
