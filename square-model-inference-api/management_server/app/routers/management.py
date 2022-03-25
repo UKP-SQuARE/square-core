@@ -1,11 +1,14 @@
 import os
+import jwt
 import logging
 import requests
 
 from typing import List
 
 from celery.result import AsyncResult
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
+from starlette.responses import JSONResponse
 
 from app.models.management import GetModelsResult,\
                                   DeployRequest,\
@@ -14,22 +17,32 @@ from app.models.management import GetModelsResult,\
                                   GetModelsHealth, \
                                   UpdateModel
 from app.core.config import settings
-from starlette.responses import JSONResponse
+from app.routers import client_credentials
+
 from tasks.tasks import deploy_task, remove_model_task
 
 from docker_access import get_all_model_prefixes
 
+from square_auth.auth import Auth
+
 from mongo_access import MongoClass
 mongo_client = MongoClass()
 
-from square_auth.client_credentials import ClientCredentials
-client_credentials = ClientCredentials(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
-                                       realm=os.getenv("REALM", "Models-test"),
-                                       client_id=os.getenv("CLIENT_ID", "models"),
-                                       client_secret=os.getenv("CLIENT_SECRET", ""))
-
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+async def get_payload_from_token(request: Request):
+    http_bearer = HTTPBearer()
+    auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
+    token = auth_credentials.credentials
+    payload = jwt.decode(token, options=dict(verify_signature=False))
+    realm = Auth.get_realm_from_token(token)
+    return {"realm": realm, "username": payload["preferred_username"]}
+
+
+def has_auth_header(request: Request):
+    return request.headers.get("Authorization", "").lower().startswith("bearer")
 
 
 @router.get("/deployed-models", name="get-deployed-models", response_model=List[GetModelsResult])
@@ -73,10 +86,15 @@ async def get_all_models(token: str = Depends(client_credentials)):
 
 
 @router.post("/deploy", name="deploy-model", response_model=TaskGenericModel)
-async def deploy_new_model(model_params: DeployRequest):
+async def deploy_new_model(request: Request, model_params: DeployRequest):
     """
     deploy a new model to the platform
     """
+    if has_auth_header(request):
+        payload = await get_payload_from_token(request)
+        user_id = payload["username"]
+    else:
+        user_id = ""
     identifier = model_params.identifier
     env = {
         "MODEL_NAME": model_params.model_name,
@@ -93,7 +111,7 @@ async def deploy_new_model(model_params: DeployRequest):
         # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
     }
 
-    identifier_new = await(mongo_client.add_model_db(identifier, env))
+    identifier_new = await(mongo_client.add_model_db(user_id, identifier, env))
     if not identifier_new:
         raise HTTPException(status_code=401, detail="A model with that identifier already exists")
     res = deploy_task.delay(identifier, env)
@@ -101,17 +119,31 @@ async def deploy_new_model(model_params: DeployRequest):
     return {"message": f"Queued deploying {identifier}", "task_id": res.id}
 
 
-@router.post("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
-async def remove_model(identifier):
+@router.delete("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
+async def remove_model(request: Request, identifier):
     """
     Remove a model from the platform
     """
-    await(mongo_client.remove_model_db(identifier))
-    res = remove_model_task.delay(identifier)
+    if has_auth_header(request):
+        payload = await get_payload_from_token(request)
+        user_id = payload["username"]
+    else:
+        user_id = ""
+    logger.debug(user_id)
+    # check if the user deployed a model that he/she is removing
+    models = await mongo_client.get_models_db()
+    model_config = [m for m in models if m["identifier"] == identifier][0]
+    check_user = True if model_config["user_id"] == user_id else False
+    logger.debug(check_user)
+    if check_user:
+        await(mongo_client.remove_model_db(identifier))
+        res = remove_model_task.delay(identifier)
+    else:
+        raise HTTPException(status_code=401, detail="Cannot remove a model deployed by another user")
     return {"message": "Queued removing model.", "task_id": res.id}
 
 
-@router.post("/update/{identifier}")
+@router.put("/update/{identifier}")
 async def update_model(identifier: str, update_parameters: UpdateModel, token: str = Depends(client_credentials)):
     await(mongo_client.update_model_db(identifier, update_parameters))
     logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
@@ -136,7 +168,7 @@ async def get_task_status(task_id):
     return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
 
 
-@router.post("/db/update")
+@router.put("/db/update")
 async def init_db_from_docker(token: str = Depends(client_credentials)):
     lst_prefix, port = get_all_model_prefixes()
     lst_models = []
@@ -152,6 +184,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
             data = r.json()
             logger.info("Response Format {}".format(data))
             lst_models.append({
+                "user_id": "admin",
                 "identifier": prefix.split("/")[-1],
                 "MODEL_NAME": data["model_name"],
                 "MODEL_TYPE": data["model_type"],
