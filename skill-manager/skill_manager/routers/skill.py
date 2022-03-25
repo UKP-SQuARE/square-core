@@ -1,14 +1,10 @@
 import json
 import logging
-import os
-from http.client import HTTPException
-from typing import List, Optional
+from typing import Dict, List
 
-import jwt
 import requests
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
-from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from skill_manager import mongo_client
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
@@ -36,17 +32,8 @@ auth = Auth()
 )
 async def get_skill_by_id(request: Request, id: str = None):
     """Returns the saved skill information."""
-    skill = Skill.from_mongo(
-        mongo_client.client.skill_manager.skills.find_one({"_id": ObjectId(id)})
-    )
+    skill = await get_skill_if_authorized(request, skill_id=id, write_access=False)
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
-
-    if has_auth_header(request):
-        payload = await get_payload_from_token(request)
-        user_id = payload["username"]
-        if not skill.published and not skill.user_id == user_id:
-            logger.debug(f"skill.published={skill.published}, skill.user_id={skill.user_id}, user_id={user_id}")
-            raise HTTPException(403)
 
     return skill
 
@@ -55,16 +42,15 @@ async def get_skill_by_id(request: Request, id: str = None):
     "",
     response_model=List[Skill],
 )
-async def get_skills(request: Request, user_id: Optional[str] = None):
+async def get_skills(request: Request):
     """Returns all skills that a user has access to. A user has access to
     all public skills, and private skill created by them."""
+
     mongo_query = {"published": True}
-    if user_id or has_auth_header(request):
-        if has_auth_header(request):
-            payload = await get_payload_from_token(request)
-            user_id = payload["username"]
-        mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
-        logger.debug(f"Retrieving Skills for user_id={user_id} with query={mongo_query}")
+    if has_auth_header(request):
+        payload = await get_payload_from_token(request)
+        user_id = payload["username"]
+    mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
     logger.debug("Skill query: {query}".format(query=json.dumps(mongo_query)))
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
@@ -80,26 +66,26 @@ async def get_skills(request: Request, user_id: Optional[str] = None):
     status_code=201,
 )
 async def create_skill(
-    skill: Skill, request: Request, keycloak_api=Depends(KeycloakAPI)
+    request: Request,
+    skill: Skill,
+    keycloak_api: KeycloakAPI = Depends(KeycloakAPI),
+    token_payload: Dict = Depends(auth),
 ):
     """Creates a new skill and saves it."""
 
-    if has_auth_header(request):
-        payload = await get_payload_from_token(request)
-        realm = payload["realm"]
-        username = payload["username"]
-        skill.user_id = username
-    else:
-        realm = "square"
-        username = skill.user_id
+    realm = token_payload["realm"]
+    username = token_payload["username"]
+    skill.user_id = username
 
     client = keycloak_api.create_client(
         realm=realm, username=username, skill_name=skill.name
     )
     skill.client_id = client["clientId"]
+
     skill_id = mongo_client.client.skill_manager.skills.insert_one(
         skill.mongo()
     ).inserted_id
+
     skill = await get_skill_by_id(request, skill_id)
     logger.debug("create_skill: {skill}".format(skill=skill))
 
@@ -109,13 +95,10 @@ async def create_skill(
     return skill
 
 
-@router.put(
-    "/{id}",
-    response_model=Skill,
-)
+@router.put("/{id}", response_model=Skill, dependencies=[Depends(auth)])
 async def update_skill(request: Request, id: str, data: dict):
     """Updates a skill with the provided data."""
-    skill = await get_skill_by_id(request, id)
+    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     for k, v in data.items():
         if hasattr(skill, k):
@@ -134,10 +117,10 @@ async def update_skill(request: Request, id: str, data: dict):
     return skill
 
 
-@router.delete("/{id}", status_code=204)
+@router.delete("/{id}", status_code=204, dependencies=[Depends(auth)])
 async def delete_skill(request: Request, id: str):
     """Deletes a skill."""
-    _ = await get_skill_by_id(request, id)
+    await get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     delete_result = mongo_client.client.skill_manager.skills.delete_one(
         {"_id": ObjectId(id)}
@@ -153,10 +136,11 @@ async def delete_skill(request: Request, id: str):
     "/{id}/publish",
     response_model=Skill,
     status_code=201,
+    dependencies=[Depends(auth)],
 )
 async def publish_skill(request: Request, id: str):
     """Makes a skill publicly available."""
-    skill = await get_skill_by_id(request, id)
+    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
     skill.published = True
     skill = await update_skill(request, id, skill.dict())
 
@@ -168,10 +152,11 @@ async def publish_skill(request: Request, id: str):
     "/{id}/unpublish",
     response_model=Skill,
     status_code=201,
+    dependencies=[Depends(auth)],
 )
 async def unpublish_skill(request: Request, id: str):
     """Makes a skill private."""
-    skill = await get_skill_by_id(request, id)
+    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
     skill.published = False
     skill = await update_skill(request, id, skill.dict())
 
@@ -199,7 +184,7 @@ async def query_skill(
     query = query_request.query
     user_id = query_request.user_id
 
-    skill: Skill = await get_skill_by_id(request, id)
+    skill = await get_skill_if_authorized(request, skill_id=id, write_access=False)
     query_request.skill = json.loads(skill.json())
 
     default_skill_args = skill.default_skill_args
