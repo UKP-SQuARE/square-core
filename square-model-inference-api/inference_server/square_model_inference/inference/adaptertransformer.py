@@ -1,4 +1,4 @@
-from transformers import AutoModelWithHeads, list_adapters
+from transformers import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
 from square_model_inference.inference.transformer import Transformer
@@ -27,7 +27,7 @@ class AdapterTransformer(Transformer):
              transformers_cache: Should be same as TRANSFORMERS_CACHE env variable. This folder will be used to store the adapters
              kwargs: Not used
         """
-        self._load_model(AutoModelWithHeads, model_config.model_name, model_config.disable_gpu)
+        self._load_model(AutoAdapterModel, model_config.model_name, model_config.disable_gpu)
         if model_config.preloaded_adapters:
             self._load_adapter(model_config.model_name, model_config.transformers_cache)
         self.model_name = model_config.model_name
