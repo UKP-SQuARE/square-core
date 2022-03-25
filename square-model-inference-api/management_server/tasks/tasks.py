@@ -1,4 +1,3 @@
-import logging
 import requests
 import time
 import os
@@ -6,6 +5,7 @@ from .celery import app
 from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
 from app.core.config import settings
 
+import logging
 logger = logging.getLogger(__name__)
 
 
