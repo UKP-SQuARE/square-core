@@ -1,20 +1,19 @@
 import json
-
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 import responses
+from skill_manager.routers.skill import auth
 from fastapi.testclient import TestClient
-from square_skill_api.models.request import QueryRequest
-from testcontainers.mongodb import MongoDbContainer
-
 from skill_manager import mongo_client
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
 from skill_manager.models import Skill, SkillSettings
 from skill_manager.routers import client_credentials
+from square_skill_api.models.request import QueryRequest
+from testcontainers.mongodb import MongoDbContainer
 
 keycloak_api_mock = MagicMock()
 keycloak_api_mock.create_client.return_value = {
@@ -25,6 +24,8 @@ keycloak_api_override = lambda: keycloak_api_mock
 app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
+
+
 
 client = TestClient(app)
 
@@ -193,26 +194,51 @@ def test_skill_types(client):
     skill_types = response.json()
     assert isinstance(skill_types, list), type(skill_types)
 
+@pytest.mark.asyncio
+async def test_create_skill(pers_client: TestClient, skill_factory, token_factory):
+    
+    test_user = "test-user"
+    app.dependency_overrides[auth] = lambda: dict(realm="test-realm", username=test_user)
+    test_skill = skill_factory(user_id=test_user)
+    token = token_factory(preferred_username=test_user)
 
-def test_create_skill(pers_client, skill_factory):
-
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
-    assert response.status_code == 201
+    response = pers_client.post("/api/skill", data=test_skill.json(), headers=dict(Authorization="Bearer " + token))
+    assert response.status_code == 201, response.content
 
     assert_skills_equal_from_response(test_skill, response)
 
+@pytest.mark.parametrize("published", [True, False], ids=["published", "private"])
+def test_get_skill_by_id(published, pers_client, skill_factory, token_factory):
 
-def test_get_skill_by_id(pers_client, skill_factory):
+    test_user = "test-user"
+    test_skill = skill_factory(user_id=test_user, published=published)
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm="test-realm", username=test_user)
 
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
+    response = pers_client.post("/api/skill", data=test_skill.json(), headers=dict(Authorization="Bearer " + token))
     added_skill_id = response.json()["id"]
 
-    response = pers_client.get(f"/api/skill/{added_skill_id}")
+    response = pers_client.get(f"/api/skill/{added_skill_id}", headers=dict(Authorization="Bearer " + token))
     assert response.status_code == 200
 
     assert_skills_equal_from_response(test_skill, response)
+
+def test_get_skill_by_id_unauthorized(pers_client, skill_factory, token_factory):
+
+    # create a private skill for skill_creator_user
+    skill_creator_user = "skill-creator"
+    test_skill = skill_factory(user_id=skill_creator_user, published=False)
+    skill_creator_token = token_factory(preferred_username=skill_creator_user)
+    app.dependency_overrides[auth] = lambda: dict(realm="test-realm", username=skill_creator_user)
+    response = pers_client.post("/api/skill", data=test_skill.json(), headers=dict(Authorization="Bearer " + skill_creator_token))
+    added_skill_id = response.json()["id"]
+
+    test_user = "test-user"
+    test_user_token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm="test-realm", username=test_user)
+
+    response = pers_client.get(f"/api/skill/{added_skill_id}", headers=dict(Authorization="Bearer " + test_user_token))
+    assert response.status_code == 403
 
 @pytest.mark.asyncio
 def test_get_skill_by_id_token(pers_client: TestClient, skill_factory, token):
