@@ -10,3 +10,6 @@ numpy>=1.21.5
 uvicorn[standard]>=0.14.0
 git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2
 square-auth>=0.0.7
+pymongo==4.0.2
+pyjwt==2.3.0
+testcontainers==3.4.2

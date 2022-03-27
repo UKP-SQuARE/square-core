@@ -36,24 +36,38 @@ class TestIndices:
         assert response.status_code == 200
         assert response.json() == {"is_available": True}
 
-    def test_put_index(self, client, datastore_name):
+    def test_put_index(self, client, datastore_name, token):
         index_name = "test_index"
         index = IndexRequest()
-        response = client.put(f"/datastores/{datastore_name}/indices/{index_name}", json=index.dict())
+        response = client.put(
+            f"/datastores/{datastore_name}/indices/{index_name}", 
+            json=index.dict(),
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 201
         assert response.json()["name"] == index_name
         assert response.json()["doc_encoder_model"] is None
 
-    def test_delete_index(self, client, datastore_name):
+    def test_delete_index(self, client, datastore_name, token):
         index_name = "index_for_delete"
         index = IndexRequest()
-        response = client.put(f"/datastores/{datastore_name}/indices/{index_name}", json=index.dict())
+        response = client.put(
+            f"/datastores/{datastore_name}/indices/{index_name}", 
+            json=index.dict(),
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 201
-        response = client.delete(f"/datastores/{datastore_name}/indices/{index_name}")
+        response = client.delete(
+            f"/datastores/{datastore_name}/indices/{index_name}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 204
 
-    def test_delete_index_not_found(self, client, datastore_name):
-        response = client.delete(f"/datastores/{datastore_name}/indices/not_found")
+    def test_delete_index_not_found(self, client, datastore_name, token):
+        response = client.delete(
+            f"/datastores/{datastore_name}/indices/not_found",
+            headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 404
 
     def test_get_document_embedding(
@@ -71,3 +85,24 @@ class TestIndices:
         assert response.status_code == 200
         assert response.json()["id"] == test_document["id"]
         assert response.json()["embedding"] == test_document_embedding
+
+    # ================== no permission ==================
+    def test_delete_index_no_permission(self, client, datastore_name, token, token_no_permission):
+        index_name = "index_for_delete"
+        index = IndexRequest()
+        response = client.put(
+            f"/datastores/{datastore_name}/indices/{index_name}", 
+            json=index.dict(),
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 201
+        response = client.delete(
+            f"/datastores/{datastore_name}/indices/{index_name}",
+            headers={"Authorization": f"Bearer {token_no_permission}"}
+        )
+        assert response.status_code == 403
+        response = client.delete(
+            f"/datastores/{datastore_name}/indices/{index_name}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 204
