@@ -21,6 +21,7 @@ RUN pip install -r requirements.dev.txt
 
 COPY ./tests ./tests
 COPY ./.env.test ./.env
+COPY ./pytest.ini ./pytest.ini
 RUN mkdir test-reports
 RUN PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest \
     --junitxml=test-reports/junit.xml \
