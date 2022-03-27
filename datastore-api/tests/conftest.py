@@ -145,7 +145,7 @@ def mock_mongo_client():
     port = mongo_container.get_exposed_port(settings.MONGO_PORT)  # We need to get this from testcontainers, since it is generated but set
     try:
         yield MongoClient(
-            settings.MONGO_HOST, 
+            mongo_container.get_container_host_ip(),  # Inside docker, we cannot use localhost
             port,
             settings.MONGO_INITDB_ROOT_USERNAME,
             settings.MONGO_INITDB_ROOT_PASSWORD,

@@ -1,5 +1,7 @@
 export name="datastore-api-base"
 
+docker exec $name apt -y install docker.io
+
 docker cp ./requirements.dev.txt $name:/app
 docker exec $name pip install -r /app/requirements.dev.txt
 
