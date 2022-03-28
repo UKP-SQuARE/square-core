@@ -23,7 +23,7 @@ def get_search_client() -> DenseRetrieval:
     model_api = ModelAPIClient(
         settings.MODEL_API_URL
     )
-    faiss = FaissClient(settings.FAISS_URL)
+    faiss = FaissClient()
     return DenseRetrieval(get_storage_connector(), model_api, faiss)
 
 @lru_cache()

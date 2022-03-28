@@ -1,8 +1,7 @@
 import logging
 from typing import List, Optional
-
 import requests
-
+from .config import settings
 from ..models.query import QueryResult
 
 
@@ -12,11 +11,9 @@ logger = logging.getLogger(__name__)
 class FaissClient:
     """Wraps access to the FAISS server."""
 
-    def __init__(self, base_url: str):
-        self.base_url = base_url
-
-    def build_faiss_url(self, datastore_name, index_name):
-        url = '_'.join(['faiss', datastore_name, index_name])
+    @staticmethod
+    def build_faiss_url(datastore_name, index_name):
+        url = 'http://' + '_'.join(['faiss', datastore_name, index_name]) + f':{settings.FAISS_PORT}'
         return url
 
     def status(self, datastore_name, index_name) -> Optional[dict]:

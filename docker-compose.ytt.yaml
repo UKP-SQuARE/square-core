@@ -316,7 +316,7 @@ services:
       - ./datastore-api/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      FAISS_URL: #@ data.values.faiss_url[data.values.environment]
+      FAISS_PORT: 5000
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       ES_URL: http://datastore_es:9200
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
@@ -345,16 +345,19 @@ services:
       - 7200:9200
 
   faiss_nq_dpr:
+    container_name: faiss_nq_dpr
     image: kwang2049/faiss-instant:latest
     volumes:
       - datastore-api-faiss-nq-dpr:/opt/faiss-instant/resources
 
   faiss_msmarco_distilbert:
+    container_name: faiss_msmarco_distilbert
     image: kwang2049/faiss-instant:latest
     volumes:
       - datastore-api-faiss-msmarco-distilbert:/opt/faiss-instant/resources
   
   faiss_bioasq_distilbert:
+    container_name: faiss_bioasq_distilbert
     image: kwang2049/faiss-instant:latest
     volumes:
       - datastore-api-faiss-bioasq-distilbert:/opt/faiss-instant/resources
