@@ -13,6 +13,13 @@ class Settings(BaseSettings):
     MODEL_API_URL: str = ""
     MAX_RETURN_ITEMS: int = 10000
 
+    # Mongo ROOT
+    MONGO_INITDB_ROOT_USERNAME: str = ""
+    MONGO_INITDB_ROOT_PASSWORD: str = ""
+    MONGO_HOST: str = ""
+    MONGO_PORT: int = 27017
+    MONGO_SERVER_SELECTION_TIMEOUT_MS: int = 3000
+
     class Config:
         env_file = ".env"
 
