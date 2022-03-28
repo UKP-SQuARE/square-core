@@ -166,29 +166,29 @@ services:
       REALM: #@ data.values.realm
       CLIENT_ID: skill-manager
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_HOST: skill_manager_mongo
+      MONGO_HOST: mongodb
       MONGO_PORT: 27017
     depends_on:
-      - skill_manager_mongo
+      - mongodb
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("skill-manager"))
       - #@ template.replace(traefik_prefix("skill-manager"))
 
-  skill_manager_mongo:
+  mongodb:
     image: mongo:5.0.4
     restart: always
     volumes:
-      - skill-manager-mongo-data:/data/db
-      - skill-manager-mongo-dumps:/dumps
+      - mongo-data:/data/db
+      - mongo-dumps:/dumps
     expose:
       - 27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_HOST: skill_manager_mongo
+      MONGO_HOST: mongodb
       MONGO_PORT: 27017
     env_file:
-      - ./skill-manager/.env
+      - ./mongodb/.env
 
   maintaining:
     image: #@ "ukpsquare/square-model-management:" + data.values.tag
@@ -309,6 +309,7 @@ services:
       target: build
     depends_on:
       - datastore_es
+      - mongodb
     ports:
       - "7000:7000"
     env_file:
@@ -323,7 +324,7 @@ services:
       REALM: square
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_HOST: datastore_mongo
+      MONGO_HOST: mongodb
       MONGO_PORT: 27017
     labels:
       - "traefik.enable=true"
@@ -342,21 +343,6 @@ services:
       - datastore-api-es:/usr/share/elasticsearch/data
     ports:
       - 7200:9200
-
-  datastore_mongo:
-    image: mongo:5.0.4
-    restart: always
-    volumes:
-      - datastore-mongo-data:/data/db
-      - datastore-mongo-dumps:/dumps
-    expose:
-      - 27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_HOST: datastore_mongo
-      MONGO_PORT: 27017
-    env_file:
-      - ./datastore-api/.env
 
   faiss-nq-dpr:
     image: kwang2049/faiss-instant:latest
