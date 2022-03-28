@@ -1,4 +1,4 @@
-from transformers import AutoAdapterModel, list_adapters
+from transformers.adapters import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
 from square_model_inference.inference.transformer import Transformer

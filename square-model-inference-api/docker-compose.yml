@@ -77,6 +77,9 @@ services:
       - VERIFY_SSL=0
       - USERNAME=user
       - PASSWORD=user
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=Models-test
+      - CLIENT_ID=models
     links:
       - rabbit
       - redishost

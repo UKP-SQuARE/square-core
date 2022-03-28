@@ -138,10 +138,10 @@ async def get_task_status(task_id):
 
 @router.post("/db/update")
 async def init_db_from_docker(token: str = Depends(client_credentials)):
-    lst_prefix, port = get_all_model_prefixes()
+    lst_prefix, lst_container_ids, port = get_all_model_prefixes()
     lst_models = []
 
-    for prefix in lst_prefix:
+    for prefix, container in zip(lst_prefix, lst_container_ids):
         r = requests.get(
             url="{}{}/stats".format(settings.API_URL, prefix),
             headers={"Authorization": f"Bearer {token}"},
@@ -163,6 +163,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "TRANSFORMERS_CACHE": data["transformers_cache"],
                 "MODEL_PATH": data["model_path"],
                 "DECODER_PATH": data["decoder_path"],
+                "container": container,
             })
         else:
             logger.info("Error retrieving Model Statistics: {}".format(r.json()))
@@ -187,7 +188,8 @@ async def start_from_db(token: str = Depends(client_credentials)):
             env = model
             del env["identifier"]
             del env["_id"]
-            res = deploy_task.delay(identifier, env)
+            del env["container"]
+            res = deploy_task.delay(identifier, env, allow_overwrite=True)
             logger.info(res.id)
             deployed.append(identifier)
             tasks.append(res.id)

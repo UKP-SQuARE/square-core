@@ -7,6 +7,7 @@ import asyncio
 import os
 from celery import Task
 from .celery import app
+from square_auth.client_credentials import ClientCredentials
 from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
 from mongo_access import MongoClass
 from app.core.config import settings
@@ -23,6 +24,7 @@ class ModelTask(Task, ABC):
     def __init__(self):
         super().__init__()
         self.client = None
+        self.credentials = None
 
     def __call__(self, *args, **kwargs):
         """
@@ -32,13 +34,20 @@ class ModelTask(Task, ABC):
         if not self.client:
             logging.info('Instantiating Mongo Client...')
             self.client = MongoClass()
+
+        if not self.credentials:
+            self.credentials = ClientCredentials(
+                keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
+                realm=os.getenv("REALM", "Models-test"),
+                client_id=os.getenv("CLIENT_ID", "models"),
+                client_secret=os.getenv("CLIENT_SECRET", ""))
         return self.run(*args, **kwargs)
 
 @app.task(
     bind=True,
     base=ModelTask,
 )
-def deploy_task(self, identifier, env):
+def deploy_task(self, identifier, env, allow_overwrite=False):
     try:
         self.client.server_info()
     except Exception as e:
@@ -64,12 +73,16 @@ def deploy_task(self, identifier, env):
                 logger.info(f"Waiting for container {container.id} which is {container.status}")
                 response = requests.get(
                     url="{}/api/{}/stats".format(settings.API_URL, identifier),
+                    headers={"Authorization": f"Bearer {self.credentials()}"},
                     verify=os.getenv("VERIFY_SSL", 1) == 1,
                 )
 
                 if response.status_code == 200:
-                    asyncio.run(self.client.add_model_db(identifier, env))
+                    env["container"] = container.id
+                    asyncio.run(self.client.add_model_db(identifier, env, allow_overwrite))
                     return result
+            logger.info(container.status)
+            logger.info(response.status_code)
             return {
                 "success": False,
                 "container_status": container.status,
@@ -93,7 +106,9 @@ def remove_model_task(self, identifier):
                 "message": "Connection to the database failed."
             }
     try:
-        result = remove_model_container(identifier)
+        id = self.client.get_container_id(identifier)
+        logger.info(f"Starting to remove docker container {id}")
+        result = remove_model_container(id)
         if result:
             asyncio.run(self.client.remove_model_db(identifier))
             return {
@@ -106,3 +121,4 @@ def remove_model_task(self, identifier):
         "success": False,
         "message": "Model removal not successful"
     }
+
