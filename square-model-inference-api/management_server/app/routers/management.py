@@ -97,8 +97,9 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         user_id = payload["username"]
     else:
         user_id = ""
-    identifier = model_params.identifier
+
     env = {
+        "IDENTIFIER": model_params.identifier,
         "MODEL_NAME": model_params.model_name,
         "MODEL_PATH": model_params.model_path,
         "DECODER_PATH": model_params.decoder_path,
@@ -110,15 +111,16 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         "TRANSFORMERS_CACHE": model_params.transformers_cache,
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
-        # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
+        "WEB_CONCURRENCY": os.getenv("WEB_CONCURRENCY", 1),  # fixed processes, do not give the control to  end-user
+        "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de")
     }
 
-    identifier_new = await(mongo_client.check_identifier_new(identifier))
+    identifier_new = await(mongo_client.check_identifier_new(env["IDENTIFIER"]))
     if not identifier_new:
         raise HTTPException(status_code=401, detail="A model with that identifier already exists")
-    res = deploy_task.delay(user_id, identifier, env)
+    res = deploy_task.delay(user_id, env)
     logger.info(res.id)
-    return {"message": f"Queued deploying {identifier}", "task_id": res.id}
+    return {"message": f"Queued deploying {env['IDENTIFIER']}", "task_id": res.id}
 
 
 @router.delete("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
@@ -131,7 +133,6 @@ async def remove_model(request: Request, identifier):
         user_id = payload["username"]
     else:
         user_id = ""
-
     # check if the user deployed a model that he/she is removing
     models = await mongo_client.get_models_db()
     model_config = [m for m in models if m["identifier"] == identifier][0]
@@ -170,10 +171,10 @@ async def get_task_status(task_id):
 
 @router.put("/db/update")
 async def init_db_from_docker(token: str = Depends(client_credentials)):
-    lst_prefix, port = get_all_model_prefixes()
+    lst_prefix, lst_container_ids, port = get_all_model_prefixes()
     lst_models = []
 
-    for prefix in lst_prefix:
+    for prefix, container in zip(lst_prefix, lst_container_ids):
         r = requests.get(
             url="{}{}/stats".format(settings.API_URL, prefix),
             headers={"Authorization": f"Bearer {token}"},
@@ -193,9 +194,10 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "MAX_INPUT_SIZE": data["max_input"],
                 "MODEL_CLASS": data["model_class"],
                 "RETURN_PLAINTEXT_ARRAYS": data["return_plaintext_arrays"],
-                "TRANSFORMERS_CACHE": data["transformers_cache"],
-                "MODEL_PATH": data["model_path"],
-                "DECODER_PATH": data["decoder_path"],
+                "TRANSFORMERS_CACHE": data.get("transformers_cache", ""),
+                "MODEL_PATH": data.get("model_path", ""),
+                "DECODER_PATH": data.get("decoder_path", ""),
+                "container": container,
             })
         else:
             logger.info("Error retrieving Model Statistics: {}".format(r.json()))
@@ -220,7 +222,8 @@ async def start_from_db(token: str = Depends(client_credentials)):
             env = model
             del env["identifier"]
             del env["_id"]
-            res = deploy_task.delay(identifier, env)
+            del env["container"]
+            res = deploy_task.delay(identifier, env, allow_overwrite=True)
             logger.info(res.id)
             deployed.append(identifier)
             tasks.append(res.id)

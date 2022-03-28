@@ -19,13 +19,17 @@ def start_new_model_container(identifier, env):
     identifier(str): the name/identifier of the new model api instance
     env(Dict): the environment for the container
     """
-    container = get_container(identifier)
-    logger.info("Found container {} we try to restart".format(container))
+    container = get_container_by_identifier(identifier)
     if container is not None:
-        logger.info("Restarting container")
-        container.start()
-        logger.info("Restarted {} with current status: {}".format(container, container.status))
-        return container
+        logger.info("Found old container for that identifier container")
+        logger.info(container.status)
+        if container.status == "running":
+            return {"container": container, "message": "A container wth same name is already deployed"}
+        logger.info("Removing old container")
+        container.stop()
+        container.remove()
+    else:
+        logger.info("Found no running instance, so we try to create it")
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -40,6 +44,7 @@ def start_new_model_container(identifier, env):
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
+    logger.info(reference_container)
     network_id = list(reference_container.attrs['NetworkSettings']['Networks'].values())[0]['NetworkID']
 
     path = ":".join(reference_container.attrs['HostConfig']['Binds'][1].split(":")[:-2])
@@ -49,6 +54,7 @@ def start_new_model_container(identifier, env):
 
     network = docker_client.networks.get(network_id)
     container_name = network.name + "-model-" + identifier
+    logger.info(container_name)
 
     try:
         container = docker_client.containers.run(
@@ -63,12 +69,12 @@ def start_new_model_container(identifier, env):
         )
 
         network.reload()
-    except:
-        return None
-    return container
+    except Exception as e:
+        return {"container": None, "message": "Caught exception. {} ".format(e)}
+    return {"container": container, "message": "Success"}
 
 
-def get_container(identifier):
+def get_container_by_identifier(identifier):
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -80,18 +86,27 @@ def get_container(identifier):
         "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
         "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
     }
-
-    if len(docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
+    if len(docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v)
+                                                                      for k, v in labels.items()]})) == 0:
         return None
-    container = docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
+    container = docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v)
+                                                                           for k, v in labels.items()]})[0]
     return container
 
 
-def remove_model_container(identifier):
+def get_container(id):
+
+    if len(docker_client.containers.list(all=True, filters={"id": id})) == 0:
+        return None
+    container = docker_client.containers.list(all=True, filters={"id": id})[0]
+    return container
+
+
+def remove_model_container(id):
     """
     Removes container for the given identifier
     """
-    container = get_container(identifier)
+    container = get_container(id)
     if container is None:
         return False
     container.stop()
@@ -110,6 +125,7 @@ def get_all_model_prefixes():
     port = list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
 
     lst_prefix = []
+    lst_container_ids = []
     for container in lst_container:
         logger.debug(f"Found candidate model container: {container.name}")
         if "model" in container.name:
@@ -117,9 +133,10 @@ def get_all_model_prefixes():
                 if "PathPrefix" in label and MODELS_API_PATH not in label:
                     prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
                     lst_prefix.append(prefix)
+                    lst_container_ids.append(container.id)
 
     logger.debug(f"Found model containers: {lst_prefix} on port {port}")
-    return lst_prefix, port
+    return lst_prefix, lst_container_ids, port
 
 
 def get_port():

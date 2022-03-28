@@ -30,7 +30,7 @@ class MongoClass:
     def server_info(self):
         return self.client.server_info()
 
-    async def add_model_db(self, user_id, identifier, env):
+    async def add_model_db(self, user_id, identifier, env, allow_overwrite=False):
         """
         add entry to the db
         """
@@ -39,10 +39,20 @@ class MongoClass:
         data["user_id"] = user_id
 
         if self.models.count_documents({"identifier": identifier}) >= 1:
-            return False
+            if allow_overwrite:
+                query = {"identifier": identifier}
+                self.models.delete_one(query)
+            else:
+                return False
 
         self.models.insert_one(data)
         return True
+
+    def get_container_id(self, identifier):
+        query = {"identifier": identifier}
+        result = self.models.find_one(query)
+        logger.info(result)
+        return result["container"]
 
     async def remove_model_db(self, identifier):
         """
