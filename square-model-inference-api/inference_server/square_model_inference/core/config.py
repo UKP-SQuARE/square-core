@@ -72,7 +72,7 @@ class ModelConfig(Mapping):
         )
 
     @staticmethod
-    def load(path=".env"):
+    def load(path=".env"):  # change .env filename to work on local
         config = Config(path)
         return ModelConfig(
             model_name=config("MODEL_NAME", default=None),
