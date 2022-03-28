@@ -27,14 +27,14 @@
             <thead class="border-bottom border-dark">
             <tr>
               <th
-                  v-for="(skill, index) in currentSkills"
+                  v-for="(skill, index) in currentSkillsFulfilled"
                   :key="index"
                   scope="col"
                   class="fs-2 fw-light text-center">{{ skill.name }}</th>
             </tr>
             <tr>
               <th
-                  v-for="index in currentSkills.length"
+                  v-for="index in currentSkillsFulfilled.length"
                   :key="index"
                   scope="col"
                   class="fw-normal text-center">
@@ -52,7 +52,7 @@
             </tr>
             <tr>
               <th
-                  v-for="(skill, index) in currentSkills"
+                  v-for="(skill, index) in currentSkillsFulfilled"
                   :key="index"
                   scope="col"
                   class="fw-normal text-center">{{ skill.description }}</th>
@@ -63,9 +63,9 @@
                 v-for="row in currentTests[0].length"
                 :key="row">
               <td
-                  v-for="index in currentSkills.length"
+                  v-for="index in currentSkillsFulfilled.length"
                   :key="index"
-                  :width="`${100 / currentSkills.length }%`"
+                  :width="`${100 / currentSkillsFulfilled.length }%`"
                   style="min-width: 320px;">
                 <div class="progress flex-grow-1 align-self-center m-2" title="Failure rate">
                   <div
@@ -162,6 +162,10 @@ export default Vue.component('explainability-page', {
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
     },
+    currentSkillsFulfilled() {
+      // Returns current skills array based on fulfilled promises
+      return this.currentSkills.filter(skill => Object.keys(skill).length > 0)
+    },
     checklistData() {
       // Dynamically require available CheckList data
       let requireComponent = require.context('../../checklist', false, /[a-z0-9]+\.json$/)
@@ -176,13 +180,12 @@ export default Vue.component('explainability-page', {
     },
     showCheckList() {
       this.waiting = true
-      let currentSkills = []
       let currentTests = []
-      this.selectedSkills.forEach(skillId => {
+      this.selectedSkills.forEach((skillId, index) => {
         if (skillId in this.checklistData) {
           getSkill(this.$store.getters.authenticationHeader(), skillId)
               .then((response) => {
-                currentSkills.push(response.data)
+                this.$set(this.currentSkills, index, response.data)
               })
           let tests = this.checklistData[skillId]
           // Sort first skill by failure rate and subsequent skills based on the sorting of the first one
@@ -196,7 +199,6 @@ export default Vue.component('explainability-page', {
           currentTests.push(tests)
         }
       })
-      this.currentSkills = currentSkills
       this.currentTests = currentTests
       this.waiting = false
     },

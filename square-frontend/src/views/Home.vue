@@ -9,7 +9,7 @@
         <DemoVideo />
         <div class="d-grid gap-2 d-flex justify-content-center mt-5">
           <a
-              href="https://arxiv.org"
+              href="https://arxiv.org/abs/2203.13693"
               target="_blank"
               role="button"
               class="btn btn-light btn-lg px-4 d-flex justify-content-center align-items-center">
