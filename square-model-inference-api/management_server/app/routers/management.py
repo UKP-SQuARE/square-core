@@ -26,10 +26,12 @@ from docker_access import get_all_model_prefixes
 from square_auth.auth import Auth
 
 from mongo_access import MongoClass
-mongo_client = MongoClass()
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+mongo_client = MongoClass()
 
 
 async def get_payload_from_token(request: Request):
@@ -111,10 +113,10 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         # "WEB_CONCURRENCY": 2,  # fixed processes, do not give the control to  end-user
     }
 
-    identifier_new = await(mongo_client.add_model_db(user_id, identifier, env))
+    identifier_new = await(mongo_client.check_identifier_new(identifier))
     if not identifier_new:
         raise HTTPException(status_code=401, detail="A model with that identifier already exists")
-    res = deploy_task.delay(identifier, env)
+    res = deploy_task.delay(user_id, identifier, env)
     logger.info(res.id)
     return {"message": f"Queued deploying {identifier}", "task_id": res.id}
 
@@ -129,14 +131,12 @@ async def remove_model(request: Request, identifier):
         user_id = payload["username"]
     else:
         user_id = ""
-    logger.debug(user_id)
+
     # check if the user deployed a model that he/she is removing
     models = await mongo_client.get_models_db()
     model_config = [m for m in models if m["identifier"] == identifier][0]
     check_user = True if model_config["user_id"] == user_id else False
-    logger.debug(check_user)
     if check_user:
-        await(mongo_client.remove_model_db(identifier))
         res = remove_model_task.delay(identifier)
     else:
         raise HTTPException(status_code=401, detail="Cannot remove a model deployed by another user")
@@ -197,6 +197,8 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "MODEL_PATH": data["model_path"],
                 "DECODER_PATH": data["decoder_path"],
             })
+        else:
+            logger.info("Error retrieving Model Statistics: {}".format(r.json()))
     added_models = await(mongo_client.init_db(lst_models))
     return {"added": added_models}
 

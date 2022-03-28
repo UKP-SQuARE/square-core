@@ -21,6 +21,15 @@ class MongoClass:
         """
         self.client.close()
 
+    async def check_identifier_new(self, identifier):
+        if self.models.count_documents({"identifier": identifier}) >= 1:
+            return False
+        else:
+            return True
+
+    def server_info(self):
+        return self.client.server_info()
+
     async def add_model_db(self, user_id, identifier, env):
         """
         add entry to the db
