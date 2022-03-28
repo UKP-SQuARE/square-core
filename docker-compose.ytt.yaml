@@ -392,15 +392,11 @@ volumes:
     driver: local
   migrations-data:
     driver: local
-  skill-manager-mongo-data:
+  mongo-data:
     driver: local
-  skill-manager-mongo-dumps:
+  mongo-dumps:
     driver: local
   datastore-api-es:
-    driver: local
-  datastore-mongo-data:
-    driver: local
-  datastore-mongo-dumps:
     driver: local
   datastore-api-faiss-nq-dpr:
     driver: local
