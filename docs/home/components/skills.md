@@ -23,7 +23,7 @@ The user interface allows the creation of "standard" QA pipelines (i.e., extract
     - http://multiple-choice-qa for both categorial and multiple-choice Skills.
     - http://generative-qa for generative Skills.
     - http://open-squad for open-retrieval Skills.
-- Skill arguments. Here you need to provide a json that specifies the base model and the adapters to use
+- Skill arguments. Here you need to provide a json that specifies the base model (a Transformer model) and the [adapters](https://adapterhub.ml) to use
  ``` 
  {"base_model": "....", "adapter": ...}
  ```    
