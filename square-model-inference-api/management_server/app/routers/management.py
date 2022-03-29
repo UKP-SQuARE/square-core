@@ -111,8 +111,12 @@ async def remove_model(request: Request, identifier):
     """
     # check if the user deployed a model that he/she is removing
     models = await mongo_client.get_models_db()
-    model_config = [m for m in models if m["identifier"] == identifier][0]
-    check_user = True if model_config["user_id"] == await utils.get_user_id(request) else False
+    model_config = [m for m in models if m["identifier"] == identifier]
+    if model_config:
+        conf = model_config[0]
+    else:
+        raise HTTPException(status_code=406, detail="No model to remove")
+    check_user = True if conf["user_id"] == await utils.get_user_id(request) else False
     if check_user:
         res = remove_model_task.delay(identifier)
     else:
@@ -124,8 +128,12 @@ async def remove_model(request: Request, identifier):
 async def update_model(request: Request, identifier: str, update_parameters: UpdateModel,
                        token: str = Depends(client_credentials)):
     models = await mongo_client.get_models_db()
-    model_config = [m for m in models if m["identifier"] == identifier][0]
-    check_user = True if model_config["user_id"] == await utils.get_user_id(request) else False
+    model_config = [m for m in models if m["identifier"] == identifier]
+    if model_config:
+        conf = model_config[0]
+    else:
+        raise HTTPException(status_code=406, detail="No model to update")
+    check_user = True if conf["user_id"] == await utils.get_user_id(request) else False
     if check_user:
         await(mongo_client.update_model_db(identifier, update_parameters))
         logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
@@ -168,7 +176,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
             data = r.json()
             logger.info("Response Format {}".format(data))
             lst_models.append({
-                "user_id": "admin",
+                "user_id": "ukp",
                 "identifier": prefix.split("/")[-1],
                 "MODEL_NAME": data["model_name"],
                 "MODEL_TYPE": data["model_type"],
