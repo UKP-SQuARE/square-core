@@ -2,7 +2,7 @@
 
 This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-# Project structure
+## Project structure
 
 ```
 ├───build                      # contains all build files after build
@@ -24,19 +24,19 @@ This website is built using [Docusaurus 2](https://docusaurus.io/), a modern sta
 └───requirements.txt           # libraries needed
 ```
 
-### How to use?
+## How to use?
 
-#### Adding static content
+### Adding static content
 
 1. <u>Images:</u> add all the images in the ``static/img`` folder.
 
-#### Installation
+### Installation
 
 ```
 $ yarn or npm
 ```
 
-#### Local Development
+### Local Development
 
 ```
 $ yarn start or npm start
@@ -44,7 +44,7 @@ $ yarn start or npm start
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-#### Build
+### Build
 
 ```
 $ yarn build or npm run build
