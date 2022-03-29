@@ -31,6 +31,15 @@ For example:
 ```
 {"base_model":"bert-base-uncased","adapter":"AdapterHub/bert-base-uncased-pf-squad"}
 ```
+<details open>
+    <summary>Screenshot</summary>
+    <p align="center">
+        <br>
+        <img src="Skill_example.png" width="800"/>
+        <br>
+    <p>
+</details>
+
 In the case of open-domain Skills, you also need to specify the datastore and retrieval method as follows:
 ```
  {"base_model": "....", "adapter": ..., "datastore": ..., "index": ....}
