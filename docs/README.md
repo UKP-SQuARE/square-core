@@ -24,13 +24,20 @@ This website is built using [Docusaurus 2](https://docusaurus.io/), a modern sta
 └───requirements.txt           # libraries needed
 ```
 
+## Requirements
+
+- Node.js version >= 14 or above (which can be checked by running node -v). You can 
+  use nvm for managing multiple Node versions on a single machine installed. 
+- When installing Node.js, you are recommended to check all checkboxes related to 
+  dependencies.
+
 ## How to use?
 
 ### Adding static content
 
-1. <u>Images:</u> add all the images in the ``static/img`` folder.
+- <b>Images:</b> add all the images in the ``static/img`` folder.
 
-### Installation
+### Installation libraries
 
 ```
 $ yarn or npm
@@ -42,12 +49,22 @@ $ yarn or npm
 $ yarn start or npm start
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+This command starts a local development server and opens up a browser window. Most changes are reflected 
+live without having to restart the server.
 
 ### Build
 
 ```
-$ yarn build or npm run build
+$ yarn run build or npm run build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+This command generates static content into the `build` directory and can be served 
+using any static contents hosting service.
+
+### Serve
+
+```
+$ yarn run serve or npm run serve
+```
+
+Serves the built website on your local server.
