@@ -146,7 +146,7 @@ const config = {
             items: [
               {
                 label: 'Twitter',
-                href: 'https://twitter.com/UKPLab',
+                href: 'https://twitter.com/UKP_SQuARE',
               },
                 {
                 label: 'Linkedin',
