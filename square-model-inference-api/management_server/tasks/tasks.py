@@ -6,13 +6,11 @@ import asyncio
 import os
 from celery import Task
 from .celery import app
-from square_auth.client_credentials import ClientCredentials
+
 from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
 from mongo_access import MongoClass
+
 from app.core.config import settings
-
-from fastapi import Depends
-
 from app.routers import client_credentials
 
 import logging
@@ -100,8 +98,8 @@ def deploy_task(self, user_id, env, allow_overwrite=False):
     except Exception as e:
         logger.exception("Deployment failed", exc_info=True)
         logger.info("Caught exception. {} ".format(e))
-    finally:
-        return {"success": False}
+
+    return {"success": False}
 
 
 @app.task(

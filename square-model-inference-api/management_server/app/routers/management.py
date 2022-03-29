@@ -1,5 +1,4 @@
 import os
-import jwt
 import logging
 import requests
 
@@ -7,7 +6,7 @@ from typing import List
 
 from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException, Depends, Request
-from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
+
 from starlette.responses import JSONResponse
 
 from app.models.management import GetModelsResult,\
@@ -18,12 +17,11 @@ from app.models.management import GetModelsResult,\
                                   UpdateModel
 from app.core.config import settings
 from app.routers import client_credentials
+from app.routers import utils
 
 from tasks.tasks import deploy_task, remove_model_task
 
 from docker_access import get_all_model_prefixes
-
-from square_auth.auth import Auth
 
 from mongo_access import MongoClass
 
@@ -32,19 +30,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 mongo_client = MongoClass()
-
-
-async def get_payload_from_token(request: Request):
-    http_bearer = HTTPBearer()
-    auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
-    token = auth_credentials.credentials
-    payload = jwt.decode(token, options=dict(verify_signature=False))
-    realm = Auth.get_realm_from_token(token)
-    return {"realm": realm, "username": payload["preferred_username"]}
-
-
-def has_auth_header(request: Request):
-    return request.headers.get("Authorization", "").lower().startswith("bearer")
 
 
 @router.get("/deployed-models", name="get-deployed-models", response_model=List[GetModelsResult])
@@ -92,12 +77,8 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     """
     deploy a new model to the platform
     """
-    if has_auth_header(request):
-        payload = await get_payload_from_token(request)
-        user_id = payload["username"]
-    else:
-        user_id = ""
-
+    user_id = await utils.get_user_id(request)
+    logger.info(user_id)
     env = {
         "IDENTIFIER": model_params.identifier,
         "MODEL_NAME": model_params.model_name,
@@ -128,15 +109,10 @@ async def remove_model(request: Request, identifier):
     """
     Remove a model from the platform
     """
-    if has_auth_header(request):
-        payload = await get_payload_from_token(request)
-        user_id = payload["username"]
-    else:
-        user_id = ""
     # check if the user deployed a model that he/she is removing
     models = await mongo_client.get_models_db()
     model_config = [m for m in models if m["identifier"] == identifier][0]
-    check_user = True if model_config["user_id"] == user_id else False
+    check_user = True if model_config["user_id"] == await utils.get_user_id(request) else False
     if check_user:
         res = remove_model_task.delay(identifier)
     else:
@@ -145,15 +121,22 @@ async def remove_model(request: Request, identifier):
 
 
 @router.put("/update/{identifier}")
-async def update_model(identifier: str, update_parameters: UpdateModel, token: str = Depends(client_credentials)):
-    await(mongo_client.update_model_db(identifier, update_parameters))
-    logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
-    r = requests.post(
-        url="{}/api/{}/update".format(settings.API_URL, identifier),
-        json=update_parameters.dict(),
-        headers={"Authorization": f"Bearer {token}"},
-        verify=os.getenv("VERIFY_SSL", 1) == 1,
-    )
+async def update_model(request: Request, identifier: str, update_parameters: UpdateModel,
+                       token: str = Depends(client_credentials)):
+    models = await mongo_client.get_models_db()
+    model_config = [m for m in models if m["identifier"] == identifier][0]
+    check_user = True if model_config["user_id"] == await utils.get_user_id(request) else False
+    if check_user:
+        await(mongo_client.update_model_db(identifier, update_parameters))
+        logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
+        r = requests.post(
+            url="{}/api/{}/update".format(settings.API_URL, identifier),
+            json=update_parameters.dict(),
+            headers={"Authorization": f"Bearer {token}"},
+            verify=os.getenv("VERIFY_SSL", 1) == 1,
+        )
+    else:
+        raise HTTPException(status_code=401, detail="Cannot update a model deployed by another user")
     return {"status_code": r.status_code, "content": r.json()}
 
 
