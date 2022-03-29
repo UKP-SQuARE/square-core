@@ -57,8 +57,10 @@ Finally, you can run the full system with docker-compose. Before doing so, you m
 ```bash
 docker-compose up -d
 ```
-Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.local](https://square.ukp-lab.local).
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.localhost](https://square.ukp-lab.localhost).
 👉 Accept that the browser cannot verify the certificate.
+### Add Skills
+Add Skills according to the [Add New Skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills/README.md#add-new-skills) section. Note that, for open-domain skills the datastore need to created first.
 ## Citation
 
 Coming soon!
