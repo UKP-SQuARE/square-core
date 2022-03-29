@@ -12,6 +12,7 @@ def monkeymodule():
     yield mpatch
     mpatch.undo()
 
+
 @pytest.fixture(scope="module")
 def init_mongo_db():
     mongo_db_test_container = MongoDbContainer("mongo:5.0.4")
@@ -22,6 +23,7 @@ def init_mongo_db():
         raise err
     finally:
         mongo_db_test_container.stop()
+
 
 @pytest.fixture
 def skill_prediction_factory():
@@ -81,15 +83,14 @@ def skill_factory():
 
     yield skill_init
 
+
 @pytest.fixture
 def token_factory():
     def token(**kwargs):
         return jwt.encode(
-            {
-                "iss": "https://square.ukp-lab.test/auth/realms/test-realm",
-                **kwargs
-            },
+            {"iss": "https://square.ukp-lab.test/auth/realms/test-realm", **kwargs},
             "secret",
-            algorithm="HS256"
+            algorithm="HS256",
         )
+
     return token
