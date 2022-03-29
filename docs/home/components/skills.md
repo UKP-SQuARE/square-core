@@ -10,8 +10,41 @@ Skills can be added dynamically to UKP-SQuARE. Check out the 👉 [Add New Skill
 For a list of available skills, see 👉 [Publicly Available Skills](#publicly-available-skills).
 
 ## Add New Skills
+### Via UI for Standard QA pipelines
+The user interface allows the creation of "standard" QA pipelines (i.e., extractive, multiple-choice, categorial/boolean, abstractive, and open-retrieval). If your skill belongs to one of these types, you can easily create deploy your skill effortlessly as follows:
+
+- skill_type: 
+    - extractive for both extractive and open-retrieval
+    - categorial for boolean skills
+    - multiple_choice for multiple choice
+    - abtractive for generative skills
+- Skill url
+    - http://extractive-qa for extractive Skills
+    - http://multiple-choice-qa for both categorial and multiple-choice Skills.
+    - http://generative-qa for generative Skills.
+    - http://open-squad for open-retrieval Skills.
+- Skill arguments. Here you need to provide a json that specifies the base model and the adapters to use
+ ``` 
+ {"base_model": "....", "adapter": ...}
+ ```    
+For example:
+```
+{"base_model":"bert-base-uncased","adapter":"AdapterHub/bert-base-uncased-pf-squad"}
+```
+In the case of open-domain Skills, you also need to specify the datastore and retrieval method as follows:
+```
+ {"base_model": "....", "adapter": ..., "datastore": ..., "index": ....}
+```
+The default value of ```index``` is ```bm25```, so if you want to use BM25, you can skip that argument.
+For example:
+```
+{"base_model":"roberta-base","adapter":"AdapterHub/roberta-base-pf-hotpotqa","datastore":"nq","index":"dpr"}
+```
+
+You should mark ```require context``` if the Skill needs an input passage along with the question, and ```public``` if you wan it to be publicly available.
+
 ### The Predict Function
-To create a new skill, only a predict function needs to be implemented. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
+If you want to create a new skill that does not follow the previously described QA pipelines, you would only need to implement a predict function. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
