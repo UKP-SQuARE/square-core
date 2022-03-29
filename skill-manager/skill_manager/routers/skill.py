@@ -13,7 +13,7 @@ from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
 from skill_manager.routers import client_credentials
-from skill_manager.auth import (
+from skill_manager.auth_utils import (
     get_skill_if_authorized,
     get_payload_from_token,
     has_auth_header,
