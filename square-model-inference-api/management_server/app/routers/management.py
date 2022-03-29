@@ -98,7 +98,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
 
     identifier_new = await(mongo_client.check_identifier_new(env["IDENTIFIER"]))
     if not identifier_new:
-        raise HTTPException(status_code=401, detail="A model with that identifier already exists")
+        raise HTTPException(status_code=406, detail="A model with that identifier already exists")
     res = deploy_task.delay(user_id, env)
     logger.info(res.id)
     return {"message": f"Queued deploying {env['IDENTIFIER']}", "task_id": res.id}
@@ -109,32 +109,26 @@ async def remove_model(request: Request, identifier):
     """
     Remove a model from the platform
     """
-    # check if the user deployed a model that he/she is removing
-    models = await mongo_client.get_models_db()
-    model_config = [m for m in models if m["identifier"] == identifier]
-    if model_config:
-        conf = model_config[0]
-    else:
-        raise HTTPException(status_code=406, detail="No model to remove")
-    check_user = True if conf["user_id"] == await utils.get_user_id(request) else False
-    if check_user:
+    # check if the model is deployed
+    check_model_id = await(mongo_client.check_identifier_new(identifier))
+    if check_model_id:
+        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+    # check if the user deployed this model
+    if mongo_client.check_user_id(request, identifier):
         res = remove_model_task.delay(identifier)
     else:
-        raise HTTPException(status_code=401, detail="Cannot remove a model deployed by another user")
+        raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
     return {"message": "Queued removing model.", "task_id": res.id}
 
 
-@router.put("/update/{identifier}")
+@router.patch("/update/{identifier}")
 async def update_model(request: Request, identifier: str, update_parameters: UpdateModel,
                        token: str = Depends(client_credentials)):
-    models = await mongo_client.get_models_db()
-    model_config = [m for m in models if m["identifier"] == identifier]
-    if model_config:
-        conf = model_config[0]
-    else:
-        raise HTTPException(status_code=406, detail="No model to update")
-    check_user = True if conf["user_id"] == await utils.get_user_id(request) else False
-    if check_user:
+
+    check_model_id = await(mongo_client.check_identifier_new(identifier))
+    if check_model_id:
+        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+    if mongo_client.check_user_id(request, identifier):
         await(mongo_client.update_model_db(identifier, update_parameters))
         logger.info("Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict()))
         r = requests.post(
@@ -144,7 +138,7 @@ async def update_model(request: Request, identifier: str, update_parameters: Upd
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
     else:
-        raise HTTPException(status_code=401, detail="Cannot update a model deployed by another user")
+        raise HTTPException(status_code=403, detail="Cannot update a model deployed by another user")
     return {"status_code": r.status_code, "content": r.json()}
 
 

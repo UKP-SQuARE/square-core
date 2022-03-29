@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from app.core.mongo_config import MongoSettings
+from app.routers import utils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -21,11 +22,17 @@ class MongoClass:
         """
         self.client.close()
 
-    async def check_identifier_new(self, identifier):
+    async def check_identifier_new(self, identifier)-> bool:
         if self.models.count_documents({"identifier": identifier}) >= 1:
             return False
         else:
             return True
+
+    async def check_user_id(self, request, identifier) -> bool:
+        models = await self.get_models_db()
+        model_config = [m for m in models if m["identifier"] == identifier][0]
+        check_user = True if model_config["user_id"] == await utils.get_user_id(request) else False
+        return check_user
 
     def server_info(self):
         return self.client.server_info()
