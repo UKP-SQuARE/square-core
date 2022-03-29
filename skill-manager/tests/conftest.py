@@ -1,8 +1,8 @@
 import jwt
 import pytest
+from skill_manager.models import Skill, SkillSettings
 from testcontainers.mongodb import MongoDbContainer
 
-from skill_manager.models import Skill, SkillSettings
 
 @pytest.fixture(scope="module")
 def monkeymodule():
