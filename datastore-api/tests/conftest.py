@@ -133,7 +133,7 @@ def mock_search_client(mock_connector):
     model_api = ModelAPIClient(
         settings.MODEL_API_URL
     )
-    faiss = FaissClient(settings.FAISS_URL)
+    faiss = FaissClient()
     return DenseRetrieval(mock_connector, model_api, faiss)
 
 

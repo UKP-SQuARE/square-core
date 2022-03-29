@@ -2,6 +2,7 @@ import pytest
 from app.core.config import settings
 from app.models.index import IndexRequest
 from requests_mock import Mocker
+from app.core.faiss import FaissClient
 
 
 class TestIndices:
@@ -28,7 +29,7 @@ class TestIndices:
             json={"is_alive": True},
         )
         requests_mock.get(
-            f"{settings.FAISS_URL}/{datastore_name}/{dpr_index.name}/index_list",
+            f"{FaissClient.build_faiss_url(datastore_name, dpr_index.name)}/index_list",
             json={"device": "cpu", "index list": ["samples"], "index loaded": "samples"},
         )
 
@@ -75,7 +76,7 @@ class TestIndices:
     ):
         requests_mock.real_http = True
         requests_mock.get(
-            f"{settings.FAISS_URL}/{datastore_name}/{dpr_index.name}/reconstruct",
+            f"{FaissClient.build_faiss_url(datastore_name, dpr_index.name)}/reconstruct",
             json={"vector": test_document_embedding},  # use an impossible score to test that this return value is used
         )
 
