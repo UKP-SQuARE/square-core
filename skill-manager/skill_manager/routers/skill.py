@@ -50,7 +50,7 @@ async def get_skills(request: Request):
     if has_auth_header(request):
         payload = await get_payload_from_token(request)
         user_id = payload["username"]
-    mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
+        mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
     logger.debug("Skill query: {query}".format(query=json.dumps(mongo_query)))
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
