@@ -28,16 +28,24 @@ The user interface allows the creation of "standard" QA pipelines (i.e., extract
  {"base_model": "....", "adapter": ...}
  ```    
 For example:
-```
+ ```
 {"base_model":"bert-base-uncased","adapter":"AdapterHub/bert-base-uncased-pf-squad"}
-```
-<details open>
-    <summary>Screenshot</summary>
-    <p align="center">
-        <br>
-        <img src="Skill_example.png" width="800"/>
-        <br>
-    <p>
+ ```
+
+<details>
+  <summary>Screenshot</summary>
+  <div>
+    <div>Adding a skill via the UI.</div>
+    <br/>
+      <div style={{textAlign:'center'}}>
+      <img
+      src={require('../../static/img/Skill_example.png').default}
+      alt="skill-manager"
+      width="600"
+      height="600"
+    />
+        </div>
+  </div>
 </details>
 
 In the case of open-domain Skills, you also need to specify the datastore and retrieval method as follows:
