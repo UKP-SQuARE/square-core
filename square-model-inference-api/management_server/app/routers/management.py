@@ -117,7 +117,7 @@ async def remove_model(request: Request, identifier):
     if check_model_id:
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
     # check if the user deployed this model
-    if mongo_client.check_user_id(request, identifier):
+    if await mongo_client.check_user_id(request, identifier):
         res = remove_model_task.delay(identifier)
     else:
         raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
@@ -135,7 +135,7 @@ async def update_model(
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
-    if mongo_client.check_user_id(request, identifier):
+    if await mongo_client.check_user_id(request, identifier):
         await (mongo_client.update_model_db(identifier, update_parameters))
         logger.info(
             "Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict())
