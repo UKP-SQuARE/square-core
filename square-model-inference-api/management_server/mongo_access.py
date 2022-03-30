@@ -1,8 +1,11 @@
+import logging
+
 from pymongo import MongoClient
+
 from app.core.mongo_config import MongoSettings
 from app.routers import utils
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +17,7 @@ class MongoClass:
         mongo_settings = MongoSettings()
         self.client = MongoClient(mongo_settings.connection_url)
         self.db = self.client.model_management  # database
-        self.models = self.db.models            # collection
+        self.models = self.db.models  # collection
 
     def close(self):
         """
@@ -22,16 +25,16 @@ class MongoClass:
         """
         self.client.close()
 
-    async def check_identifier_new(self, identifier)-> bool:
-        if self.models.count_documents({"identifier": identifier}) >= 1:
+    async def check_identifier_new(self, identifier) -> bool:
+        if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
             return False
         else:
             return True
 
     async def check_user_id(self, request, identifier) -> bool:
         models = await self.get_models_db()
-        model_config = [m for m in models if m["identifier"] == identifier][0]
-        check_user = True if model_config["user_id"] == await utils.get_user_id(request) else False
+        model_config = [m for m in models if m["IDENTIFIER"] == identifier][0]
+        check_user = True if model_config["USER_ID"] == await utils.get_user_id(request) else False
         return check_user
 
     def server_info(self):
@@ -42,12 +45,12 @@ class MongoClass:
         add entry to the db
         """
         data = env.copy()
-        data["identifier"] = identifier
-        data["user_id"] = user_id
+        data["IDENTIFIER"] = identifier
+        data["USER_ID"] = user_id
 
-        if self.models.count_documents({"identifier": identifier}) >= 1:
+        if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
             if allow_overwrite:
-                query = {"identifier": identifier}
+                query = {"IDENTIFIER": identifier}
                 self.models.delete_one(query)
             else:
                 return False
@@ -56,7 +59,7 @@ class MongoClass:
         return True
 
     def get_container_id(self, identifier):
-        query = {"identifier": identifier}
+        query = {"IDENTIFIER": identifier}
         result = self.models.find_one(query)
         logger.info(result)
         return result["container"]
@@ -65,7 +68,7 @@ class MongoClass:
         """
         remove entry from db
         """
-        query = {"identifier": identifier}
+        query = {"IDENTIFIER": identifier}
         self.models.delete_one(query)
 
     async def get_models_db(self):
@@ -82,13 +85,15 @@ class MongoClass:
         """
         Update db entries
         """
-        query = {"identifier": identifier}
-        new_values = {"$set": {
-            "MAX_INPUT_SIZE": updated_params.max_input,
-            "DISABLE_GPU": updated_params.disable_gpu,
-            "BATCH_SIZE": updated_params.batch_size,
-            "RETURN_PLAINTEXT_ARRAYS": updated_params.return_plaintext_arrays,
-        }}
+        query = {"IDENTIFIER": identifier}
+        new_values = {
+            "$set": {
+                "MAX_INPUT_SIZE": updated_params.max_input,
+                "DISABLE_GPU": updated_params.disable_gpu,
+                "BATCH_SIZE": updated_params.batch_size,
+                "RETURN_PLAINTEXT_ARRAYS": updated_params.return_plaintext_arrays,
+            }
+        }
         self.models.update_one(query, new_values)
 
     async def init_db(self, deployed_models):
@@ -97,7 +102,7 @@ class MongoClass:
         """
         added_models = []
         for data in deployed_models:
-            if self.models.count_documents({"identifier": data["identifier"]}) == 0:
+            if self.models.count_documents({"IDENTIFIER": data["IDENTIFIER"]}) == 0:
                 self.models.insert_one(data)
-                added_models.append(data["identifier"])
+                added_models.append(data["IDENTIFIER"])
         return added_models

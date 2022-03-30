@@ -1,8 +1,9 @@
+import logging
 from typing import Callable
 
 from mongo_access import MongoClass
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 

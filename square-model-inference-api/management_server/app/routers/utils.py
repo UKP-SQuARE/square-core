@@ -1,7 +1,6 @@
 import jwt
 from fastapi import Request
-from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
-
+from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from square_auth.auth import Auth
 
 

@@ -1,6 +1,8 @@
-from celery import Celery
 import logging
 import os
+
+from celery import Celery
+
 
 logger = logging.getLogger(__name__)
 
@@ -9,10 +11,12 @@ user = os.getenv("USERNAME", "user")
 password = os.getenv("PASSWORD", "user")
 
 
-app = Celery('tasks',
-             backend='rpc://',
-             broker=f"amqp://{user}:{password}@rabbit:5672//",
-             include=['tasks.tasks'])
+app = Celery(
+    "tasks",
+    backend="rpc://",
+    broker=f"amqp://{user}:{password}@rabbit:5672//",
+    include=["tasks.tasks"],
+)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.start()

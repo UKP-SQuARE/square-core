@@ -1,4 +1,5 @@
 import os
+
 from pydantic import BaseSettings
 
 
@@ -6,6 +7,7 @@ class Settings(BaseSettings):
     """
     Application configuration
     """
+
     APP_VERSION: str = "0.1.0"
     APP_NAME: str = "SQuARE Model Management API"
     API_PREFIX: str = "/api"

@@ -1,8 +1,10 @@
+import logging
 import os
 import re
-import logging
+
 import docker
 from docker.types import Mount
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +13,27 @@ docker_client = docker.from_env()
 MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
+
+
+def create_docker_labels(identifier: str) -> dict:
+    labels = {
+        "traefik.enable": "true",
+        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + identifier + ".tls": "true",
+        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-"
+        + identifier
+        + ".middlewares": "model-"
+        + identifier
+        + "-stripprefix, "
+        + "model-"
+        + identifier
+        + "-addprefix",
+        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
+    }
+    return labels
 
 
 def start_new_model_container(identifier, env):
@@ -24,30 +47,23 @@ def start_new_model_container(identifier, env):
         logger.info("Found old container for that identifier container")
         logger.info(container.status)
         if container.status == "running":
-            return {"container": container, "message": "A container wth same name is already deployed"}
+            return {
+                "container": container,
+                "message": "A container wth same name is already deployed",
+            }
         logger.info("Removing old container")
         container.stop()
         container.remove()
     else:
         logger.info("Found no running instance, so we try to create it")
-    labels = {
-        "traefik.enable": "true",
-        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + identifier + ".tls": "true",
-        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
-        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-"\
-                                                                     + identifier + "-addprefix",
-        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
-    }
+    labels = create_docker_labels(identifier)
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
     logger.info(reference_container)
-    network_id = list(reference_container.attrs['NetworkSettings']['Networks'].values())[0]['NetworkID']
+    network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
 
-    path = ":".join(reference_container.attrs['HostConfig']['Binds'][1].split(":")[:-2])
+    path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
     # in case of windows the next step is necessary
     path = path.replace("\\", "/")
     path = os.path.dirname(os.path.dirname(path))
@@ -64,7 +80,12 @@ def start_new_model_container(identifier, env):
             environment=env,
             network=network.name,
             volumes=[path + "/.cache/:/etc/huggingface/.cache/"],
-            mounts=[Mount(target="/onnx_models", source=ONNX_VOLUME, )],
+            mounts=[
+                Mount(
+                    target="/onnx_models",
+                    source=ONNX_VOLUME,
+                )
+            ],
             labels=labels,
         )
 
@@ -75,22 +96,19 @@ def start_new_model_container(identifier, env):
 
 
 def get_container_by_identifier(identifier):
-    labels = {
-        "traefik.enable": "true",
-        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + identifier + ".tls": "true",
-        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
-        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-" \
-                                                                     + identifier + "-addprefix",
-        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
-    }
-    if len(docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v)
-                                                                      for k, v in labels.items()]})) == 0:
+    labels = create_docker_labels(identifier)
+    if (
+        len(
+            docker_client.containers.list(
+                all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]}
+            )
+        )
+        == 0
+    ):
         return None
-    container = docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v)
-                                                                           for k, v in labels.items()]})[0]
+    container = docker_client.containers.list(
+        all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]}
+    )[0]
     return container
 
 
@@ -131,7 +149,7 @@ def get_all_model_prefixes():
         if "model" in container.name:
             for identifier, label in container.labels.items():
                 if "PathPrefix" in label and MODELS_API_PATH not in label:
-                    prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
+                    prefix = re.search("PathPrefix\(\`(.+?)\`\)", label).group(1)
                     lst_prefix.append(prefix)
                     lst_container_ids.append(container.id)
 

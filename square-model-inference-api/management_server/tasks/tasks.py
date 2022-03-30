@@ -1,19 +1,20 @@
+import asyncio
+import logging
+import os
+import time
 from abc import ABC
 
 import requests
-import time
-import asyncio
-import os
 from celery import Task
-from .celery import app
-
-from docker_access import start_new_model_container, get_all_model_prefixes, remove_model_container, get_port
-from mongo_access import MongoClass
 
 from app.core.config import settings
 from app.routers import client_credentials
+from docker_access import remove_model_container, start_new_model_container
+from mongo_access import MongoClass
 
-import logging
+from .celery import app
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,6 +22,7 @@ class ModelTask(Task, ABC):
     """
     Abstraction of Celery's Task class to support providing mongo client.
     """
+
     abstract = True
 
     def __init__(self):
@@ -34,7 +36,7 @@ class ModelTask(Task, ABC):
         Avoids the creation of multiple clients for each task request
         """
         if not self.client:
-            logging.info('Instantiating Mongo Client...')
+            logging.info("Instantiating Mongo Client...")
             self.client = MongoClass()
 
         if not self.credentials:
@@ -52,22 +54,17 @@ def deploy_task(self, user_id, env, allow_overwrite=False):
         self.client.server_info()
     except Exception as e:
         logger.exception(e)
-        return {
-                "success": False,
-                "message": "Connection to the database failed."
-            }
+        return {"success": False, "message": "Connection to the database failed."}
     try:
         deployment_result = start_new_model_container(identifier, env)
         container = deployment_result["container"]
         models = asyncio.run(self.client.get_models_db())
-        model_ids = [m["identifier"] for m in models]
-        logger.info(model_ids)
+        model_ids = [m["IDENTIFIER"] for m in models]
         if container is not None and identifier not in model_ids:
             result = {
                 "success": True,
                 "container": container.id,
-                "message": "Model deployed. Check the `/api/models/deployed-models` "
-                           "endpoint for more info."
+                "message": "Model deployed. Check the `/api/models/deployed-models` " "endpoint for more info.",
             }
             response = None
             while container.status in ["created", "running"] and (response is None or response.status_code != 200):
@@ -109,24 +106,16 @@ def deploy_task(self, user_id, env, allow_overwrite=False):
 def remove_model_task(self, identifier):
     try:
         self.client.server_info()
-    except:
-        return {
-                "success": False,
-                "message": "Connection to the database failed."
-            }
+    except Exception:
+        return {"success": False, "message": "Connection to the database failed."}
     try:
         id = self.client.get_container_id(identifier)
         logger.info(f"Starting to remove docker container {id}")
         result = remove_model_container(id)
         if result:
             asyncio.run(self.client.remove_model_db(identifier))
-            return {
-                "success": result,
-                "message": "Model removal successful"
-            }
-    except:
+            return {"success": result, "message": "Model removal successful"}
+    except Exception as e:
+        logger.info(e)
         logger.exception("Could not remove model", exc_info=True)
-    return {
-        "success": False,
-        "message": "Model removal not successful"
-    }
+    return {"success": False, "message": "Model removal not successful"}
