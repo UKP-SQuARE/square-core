@@ -51,14 +51,24 @@ services:
       - 5672:5672
       - 15672:15672
     environment:
-      - RABBITMQ_DEFAULT_USER=user
-      - RABBITMQ_DEFAULT_PASS=user
+      - RABBITMQ_DEFAULT_USER=ukp
+    env_file:
+      - management_server/.env
+    volumes:
+      - ./management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
   redishost:
     hostname: redishost
     image: redis:latest
     ports:
       - '6379:6379'
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    env_file:
+      - management_server/.env
+    volumes:
+      - square-redis-data:/square/redis/data:rw
+      - ./management_server/redis/redis.conf:/etc/redis/redis.conf
 
   maintaining_worker:
 #    image: ukpsquare/square-model-management:latest
@@ -75,8 +85,8 @@ services:
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
       - VERIFY_SSL=0
-      - USERNAME=user
-      - PASSWORD=user
+      - REDIS_USER=default
+      - RABBITMQ_DEFAULT_USER=ukp
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=Models-test
       - CLIENT_ID=models
@@ -114,6 +124,8 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
+      - REDIS_USER=default
+      - RABBITMQ_DEFAULT_USER=ukp
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
@@ -125,10 +137,12 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
 
 
-  # --------- Example config for transformer model server ---------
+##################################################################
+# --------- Example config for transformer model server ---------#
+##################################################################
   model_dpr:
-    image: ukpsquare/square-model-api-v1:latest
-#    build: ./inference_server
+#    image: ukpsquare/square-model-api-v1:latest
+    build: ./inference_server
     env_file:
       - ./inference_server/.env.dpr
     environment:
@@ -146,26 +160,6 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
-#  # --------- Example config for abstractive QA adapter model server ---------
-#  model_bart_base_adapter:
-#    #    image: ukpsquare/square-model-api-v1:latest
-#    build: ./inference_server
-#    env_file:
-#      - ./inference_server/.env.bart_adapter
-#    environment:
-#      - WEB_CONCURRENCY=1
-#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-#    volumes:
-#      - ./.cache/:/etc/huggingface/.cache/
-#    labels:
-#      - "traefik.enable=true"
-#      - "traefik.http.routers.model-bart-base-adapter.rule=PathPrefix(`/api/facebook-bart-base`)"
-#      - "traefik.http.routers.model-bart-base-adapter.entrypoints=websecure"
-#      - "traefik.http.routers.model-bart-base-adapter.tls=true"
-#      - "traefik.http.routers.model-bart-base-adapter.tls.certresolver=le"
-#      - "traefik.http.routers.model-bart-base-adapter.middlewares=model-bart-base-adapter-stripprefix,model-bart-base-adapter-addprefix"
-#      - "traefik.http.middlewares.model-bart-base-adapter-stripprefix.stripprefix.prefixes=/api/facebook-bart-base"
-#      - "traefik.http.middlewares.model-bart-base-adapter-addprefix.addPrefix.prefix=/api"
 
   mongo:
     hostname: mongo
@@ -192,7 +186,9 @@ services:
     ports:
       - 8081:8081
 
-  # --------- Example config for onnx model server ---------
+###########################################################
+# --------- Example config for onnx model server ---------#
+###########################################################
 #  model_bert_onnx:
 ##    image: ukpsquare/square-model-api-v1:latest
 #    build: ./inference_server
@@ -213,32 +209,14 @@ services:
 #      - "traefik.http.routers.model-bert-onnx.middlewares=model-bert-onnx-stripprefix,model-bert-onnx-addprefix"
 #      - "traefik.http.middlewares.model-bert-onnx-stripprefix.stripprefix.prefixes=/api/bert-onnx"
 #      - "traefik.http.middlewares.model-bert-onnx-addprefix.addPrefix.prefix=/api"
-#
-#  # --------- Example config for Adapter model server ---------
-#  model_bert_adapter:
-#    image: ukpsquare/square-model-api-v1:latest
-#    env_file:
-#      - ./square-model-inference-api/inference_server/.env.bert_adapter
-#    environment:
-#      - WEB_CONCURRENCY=1
-#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-#    volumes:
-#      - ./.cache/:/etc/huggingface/.cache/
-#    labels:
-#      - "traefik.enable=true"
-#      - "traefik.http.routers.model-bert-base-uncased.rule=PathPrefix(`/api/bert-base-uncased`)"
-#      - "traefik.http.routers.model-bert-base-uncased.entrypoints=websecure"
-#      - "traefik.http.routers.model-bert-base-uncased.tls=true"
-#      - "traefik.http.routers.model-bert-base-uncased.tls.certresolver=le"
-#      - "traefik.http.routers.model-bert-base-uncased.middlewares=model-bert-base-uncased-stripprefix,model-bert-base-uncased-addprefix"
-#      - "traefik.http.middlewares.model-bert-base-uncased-stripprefix.stripprefix.prefixes=/api/bert-base-uncased"
-#      - "traefik.http.middlewares.model-bert-base-uncased-addprefix.addPrefix.prefix=/api"
-#
 
 volumes:
   traefik-public-certificates:
 
   skill-manager-mongo-data:
+    driver: local
+
+  square-redis-data:
     driver: local
 
   # onnx-model folder on the vm
