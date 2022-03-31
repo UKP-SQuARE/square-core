@@ -149,7 +149,7 @@ def get_all_model_prefixes():
         if "model" in container.name:
             for identifier, label in container.labels.items():
                 if "PathPrefix" in label and MODELS_API_PATH not in label:
-                    prefix = re.search("PathPrefix\(\`(.+?)\`\)", label).group(1)
+                    prefix = re.search("PathPrefix(`(.+?)`)", label).group(1)
                     lst_prefix.append(prefix)
                     lst_container_ids.append(container.id)
 

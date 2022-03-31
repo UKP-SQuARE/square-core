@@ -40,13 +40,12 @@ class MongoClass:
     def server_info(self):
         return self.client.server_info()
 
-    async def add_model_db(self, user_id, identifier, env, allow_overwrite=False):
+    async def add_model_db(self, env, allow_overwrite=False):
         """
         add entry to the db
         """
         data = env.copy()
-        data["IDENTIFIER"] = identifier
-        data["USER_ID"] = user_id
+        identifier = data["IDENTIFIER"]
 
         if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
             if allow_overwrite:
