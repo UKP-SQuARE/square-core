@@ -124,7 +124,7 @@ async def update_model(identifier: str, update_parameters: UpdateModel, token: s
     return {"status_code": r.status_code, "content": r.json()}
 
 
-@router.get("/task/{task_id}", name="task-status", response_model=TaskResultModel)
+@router.get("/task_result/{task_id}", name="task-status", response_model=TaskResultModel)
 async def get_task_status(task_id):
     """
     Get results from a celery task
@@ -163,7 +163,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 "TRANSFORMERS_CACHE": data["transformers_cache"],
                 "MODEL_PATH": data["model_path"],
                 "DECODER_PATH": data["decoder_path"],
-                "container": container,
+                "model_container": container,
             })
         else:
             logger.info("Error retrieving Model Statistics: {}".format(r.json()))
@@ -188,7 +188,8 @@ async def start_from_db(token: str = Depends(client_credentials)):
             env = model
             del env["identifier"]
             del env["_id"]
-            del env["container"]
+            del env["model_container"]
+            del env["worker_container"]
             res = deploy_task.delay(identifier, env, allow_overwrite=True)
             logger.info(res.id)
             deployed.append(identifier)

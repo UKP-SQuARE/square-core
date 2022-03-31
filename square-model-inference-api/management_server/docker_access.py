@@ -11,6 +11,9 @@ docker_client = docker.from_env()
 MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
+USER = os.getenv("USERNAME", "user")
+PASSWORD = os.getenv("PASSWORD", "user")
+
 
 
 def start_new_model_container(identifier, env):
@@ -51,13 +54,16 @@ def start_new_model_container(identifier, env):
 
     network = docker_client.networks.get(network_id)
     container_name = network.name + "-model-" + identifier
+    worker_name = container_name + "-worker"
 
     env["WEB_CONCURRENCY"] = 1
     env["KEYCLOAK_BASE_URL"] = "https://square.ukp-lab.de"
+    env["QUEUE"] = identifier
 
     try:
         container = docker_client.containers.run(
             MODEL_API_IMAGE,
+            command="uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf",
             name=container_name,
             detach=True,
             environment=env,
@@ -67,10 +73,25 @@ def start_new_model_container(identifier, env):
             labels=labels,
         )
 
+        env["USER"] = USER
+        env["PASSWORD"] = PASSWORD
+        worker_container = docker_client.containers.run(
+            MODEL_API_IMAGE,
+            command=f"celery -A tasks worker -Q {identifier} --loglevel=info",
+            name=worker_name,
+            detach=True,
+            environment=env,
+            network=network.name,
+            volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
+            mounts=[Mount(target="/onnx_models", source=ONNX_VOLUME, )],
+        )
+        logger.info(f"Worker container {worker_container}")
+
         network.reload()
-    except:
+    except Exception as e:
+        logger.info(e)
         return None
-    return container
+    return container, worker_container
 
 
 def get_container_by_identifier(identifier):
@@ -132,6 +153,8 @@ def get_all_model_prefixes():
                     prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
                     lst_prefix.append(prefix)
                     lst_container_ids.append(container.id)
+                # TODO get corresponding worker for each model
+                # maybe we can achieve this by finding the container with the same queue name
 
     logger.debug(f"Found model containers: {lst_prefix} on port {port}")
     return lst_prefix, lst_container_ids, port

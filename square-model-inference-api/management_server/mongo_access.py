@@ -51,7 +51,7 @@ class MongoClass:
         query = {"identifier": identifier}
         result = self.models.find_one(query)
         logger.info(result)
-        return result["container"]
+        return result["model_container"], result["worker_container"]
 
     async def remove_model_db(self, identifier):
         """

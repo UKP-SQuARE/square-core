@@ -1,80 +1,79 @@
+from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException
-from starlette.requests import Request
+import os
 
 from square_model_inference.models.request import PredictionRequest, Task
-from square_model_inference.models.prediction import PredictionOutputForSequenceClassification, \
-    PredictionOutputForTokenClassification, \
-    PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
+from square_model_inference.models.prediction import AsyncTaskResult
 from square_model_inference.models.statistics import ModelStatistics, UpdateModel
+from starlette.responses import JSONResponse
+
 from square_model_inference.core.config import model_config
+from tasks.tasks import add_two, prediction_task
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+QUEUE = os.getenv("QUEUE", os.getenv("MODEL_NAME", None))
 
 
-@router.post("/sequence-classification", response_model=PredictionOutputForSequenceClassification,
+@router.get("/test")
+async def add():
+    res = add_two.delay(2, 2)
+    return {"message": "Queued add", "task_id": res.id}
+
+
+@router.post("/sequence-classification", response_model=AsyncTaskResult,
              name="sequence classification")
 async def sequence_classification(
-        request: Request,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForSequenceClassification:
-    logger.info(f"Sequence Classification Request: {prediction_request.dict()}")
-    model = request.app.state.model  # Access model from global app state
-    prediction = await model.predict(prediction_request, Task.sequence_classification)
+) -> AsyncTaskResult:
+    res = prediction_task.apply_async((prediction_request.dict(), Task.sequence_classification, model_config.to_dict()), queue=QUEUE)
 
-    return prediction
+    return AsyncTaskResult(message="Queued sequence classification", task_id=res.id)
 
 
-@router.post("/token-classification", response_model=PredictionOutputForTokenClassification,
+@router.post("/token-classification", response_model=AsyncTaskResult,
              name="token classification")
 async def token_classification(
-        request: Request,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForTokenClassification:
-    logger.info(f"Token Classification Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.token_classification)
-
-    return prediction
+) -> AsyncTaskResult:
+    res = await prediction_task.apply_async((prediction_request.dict(), Task.token_classification, model_config.to_dict()), queue=QUEUE)
+    return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
-@router.post("/embedding", response_model=PredictionOutputForEmbedding, name="embedding")
+@router.post("/embedding", response_model=AsyncTaskResult, name="embedding")
 async def embedding(
-        request: Request,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForEmbedding:
-    logger.info(f"Embedding Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.embedding)
-
-    return prediction
+) -> AsyncTaskResult:
+    res = prediction_task.apply_async((prediction_request.dict(), Task.embedding, model_config.to_dict()), queue="dpr")
+    return AsyncTaskResult(message="Queued embedding", task_id=res.id)
 
 
-@router.post("/question-answering", response_model=PredictionOutputForQuestionAnswering, name="question answering")
+@router.post("/question-answering", response_model=AsyncTaskResult, name="question answering")
 async def question_answering(
-        request: Request,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForQuestionAnswering:
-    logger.info(f"Question Answering Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.question_answering)
-
-    return prediction
+) -> AsyncTaskResult:
+    res = prediction_task.apply_async((prediction_request.dict(), Task.question_answering, model_config.to_dict()), queue=QUEUE)
+    return AsyncTaskResult(message="Queued question answering", task_id=res.id)
 
 
-@router.post("/generation", response_model=PredictionOutputForGeneration, name="generation")
+@router.post("/generation", response_model=AsyncTaskResult, name="generation")
 async def generation(
-        request: Request,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForGeneration:
-    logger.info(f"Generation Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.generation)
+) -> AsyncTaskResult:
+    res = prediction_task.apply_async((prediction_request.dict(), Task.generation, model_config), queue=QUEUE)
+    return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
-    return prediction
+
+@router.get("/task_result/{task_id}")
+async def get_task_results(task_id: str):
+    task = AsyncResult(task_id)
+    if not task.ready():
+        return JSONResponse(status_code=202, content={'task_id': str(task_id), 'status': 'Processing'})
+    result = task.get()
+    return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
 
 
 @router.get("/stats", response_model=ModelStatistics, name="statistics")

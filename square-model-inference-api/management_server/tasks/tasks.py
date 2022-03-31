@@ -58,39 +58,44 @@ def deploy_task(self, identifier, env, allow_overwrite=False):
             }
     logger.debug(env)
     try:
-        container = start_new_model_container(identifier, env)
-        logger.debug(container)
-        if container is not None:
+        model_container, worker_container = start_new_model_container(identifier, env)
+        logger.debug(f"Model container: {model_container}\nWorker container: {worker_container}")
+        if model_container is not None and worker_container is not None:
             result = {
                 "success": True,
-                "container": container.id,
+                "model_container": model_container.id,
+                "worker_container": worker_container.id,
                 "message": "Model deployed. Check the `/api/models/deployed-models` "
                            "endpoint for more info."
             }
             response = None
-            while container.status in ["created", "running"] and (response is None or response.status_code != 200):
+            while model_container.status in ["created", "running"] and worker_container.status in ["created", "running"] \
+                    and (response is None or response.status_code != 200):
                 time.sleep(20)
-                logger.info(f"Waiting for container {container.id} which is {container.status}")
+                logger.info(f"Waiting for container {model_container.id} which is {model_container.status}")
                 response = requests.get(
-                    url="{}/api/{}/stats".format(settings.API_URL, identifier),
+                    url="{}/api/{}/health/heartbeat".format(settings.API_URL, identifier),
                     headers={"Authorization": f"Bearer {self.credentials()}"},
                     verify=os.getenv("VERIFY_SSL", 1) == 1,
                 )
 
                 if response.status_code == 200:
-                    env["container"] = container.id
+                    env["model_container"] = model_container.id
+                    env["worker_container"] = worker_container.id
                     asyncio.run(self.client.add_model_db(identifier, env, allow_overwrite))
                     return result
-            logger.info(container.status)
+            logger.info(model_container.status)
             logger.info(response.status_code)
             return {
                 "success": False,
-                "container_status": container.status,
+                "model_container_status": model_container.status,
+                "worker_container_status": worker_container.status,
             }
     except Exception as e:
         logger.exception("Deployment failed", exc_info=True)
         logger.info("Caught exception. {} ".format(e))
-    return {"success": False}
+        return {"success": False,
+                "exception": str(e)}
 
 
 @app.task(
@@ -106,9 +111,9 @@ def remove_model_task(self, identifier):
                 "message": "Connection to the database failed."
             }
     try:
-        id = self.client.get_container_id(identifier)
-        logger.info(f"Starting to remove docker container {id}")
-        result = remove_model_container(id)
+        model_id, worker_id = self.client.get_container_id(identifier)
+        logger.info(f"Starting to remove docker model container {model_id} and worker container {worker_id}")
+        result = remove_model_container(model_id) and remove_model_container(worker_id)
         if result:
             asyncio.run(self.client.remove_model_db(identifier))
             return {
@@ -117,8 +122,8 @@ def remove_model_task(self, identifier):
             }
     except:
         logger.exception("Could not remove model", exc_info=True)
-    return {
-        "success": False,
-        "message": "Model removal not successful"
-    }
+        return {
+            "success": False,
+            "message": "Model removal not successful"
+        }
 

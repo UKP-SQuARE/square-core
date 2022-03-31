@@ -1,12 +1,12 @@
+import logging
+
+from tasks.config.model_config import model_config
+from tasks.models.prediction import PredictionOutput
+from tasks.models.request import Task, PredictionRequest
 from transformers.adapters import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
-from square_model_inference.inference.transformer import Transformer
-from square_model_inference.models.request import PredictionRequest, Task
-
-from square_model_inference.models.prediction import PredictionOutput
-from square_model_inference.core.config import model_config
-import logging
+from .transformer import Transformer
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ class AdapterTransformer(Transformer):
                 self.model.add_seq2seq_lm_head("lm_head", True)
         return super()._generation(request)
 
-    async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
+    def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
         if len(request.input) > model_config.max_input_size:

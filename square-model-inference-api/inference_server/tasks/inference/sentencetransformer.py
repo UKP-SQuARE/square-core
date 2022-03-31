@@ -1,13 +1,11 @@
+import logging
+
 import torch
 from sentence_transformers import SentenceTransformer as SentenceTransformerModel
-
-from square_model_inference.inference.model import Model
-from square_model_inference.models.request import PredictionRequest, Task
-
-from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForEmbedding
-from square_model_inference.core.config import model_config
-
-import logging
+from tasks.config.model_config import model_config
+from tasks.inference.model import Model
+from tasks.models.prediction import PredictionOutput, PredictionOutputForEmbedding
+from tasks.models.request import Task, PredictionRequest
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +47,7 @@ class SentenceTransformer(Model):
         embeddings = self.model.encode(request.input, batch_size=model_config.batch_size, show_progress_bar=False)
         return PredictionOutputForEmbedding(model_outputs={"embeddings": embeddings})
 
-    async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
+    def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         """
         Args:
 
@@ -63,4 +61,3 @@ class SentenceTransformer(Model):
         if task != Task.embedding:
             raise ValueError("Only embedding task supported by this model")
         return self._embedding(request)
-

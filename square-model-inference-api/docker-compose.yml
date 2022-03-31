@@ -129,11 +129,13 @@ services:
   model_dpr:
 #    image: ukpsquare/square-model-api-v1:latest
     build: ./inference_server
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./inference_server/.env.dpr
     environment:
       - WEB_CONCURRENCY=1
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - QUEUE=dpr
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -145,6 +147,30 @@ services:
       - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
+  dpr_worker:
+    build: ./inference_server
+    command: celery -A tasks worker -Q dpr --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./inference_server/.env.dpr
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - USERNAME=user
+      - PASSWORD=user
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=Models-test
+      - CLIENT_ID=models
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
 
 #  # --------- Example config for abstractive QA adapter model server ---------
 #  model_bart_base_adapter:
