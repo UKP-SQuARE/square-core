@@ -4,6 +4,7 @@ flake8
 # Automatic code formatting
 black==22.3.0
 isort==5.10.1
+pylint==2.13.4
 
 uvicorn==0.17.6                 # ASGI server
 fastapi>=0.75.0                 # REST API Framework

@@ -1,9 +1,18 @@
 SHELL := /bin/bash
 
-# global defs
-.PHONY: run-checks
+# files to check for linting
+SRC=$(shell find . -type f -name '*.py')
 
-run-checks:
-	isort --check .
-	black --check .
-	flake8 .
+# files to check for quality
+check_dirs := .
+
+# global defs
+.PHONY: quality lint
+
+quality:
+	isort --check ${check_dirs}
+	black --check ${check_dirs}
+	flake8 ${check_dirs}
+
+lint: $(SRC)
+	pylint $? --max-line-length=120
