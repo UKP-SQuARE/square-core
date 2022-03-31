@@ -48,8 +48,9 @@ class ModelTask(Task, ABC):
     bind=True,
     base=ModelTask,
 )
-def deploy_task(self, user_id, env, allow_overwrite=False):
-    identifier = env.pop("IDENTIFIER")
+def deploy_task(self, env, allow_overwrite=False):
+    logger.info(env)
+    identifier = env["IDENTIFIER"]
     try:
         self.client.server_info()
     except Exception as e:
@@ -58,9 +59,9 @@ def deploy_task(self, user_id, env, allow_overwrite=False):
     try:
         deployment_result = start_new_model_container(identifier, env)
         container = deployment_result["container"]
-        models = asyncio.run(self.client.get_models_db())
-        model_ids = [m["IDENTIFIER"] for m in models]
-        if container is not None and identifier not in model_ids:
+        # models = asyncio.run(self.client.get_models_db())
+        # model_ids = [m["IDENTIFIER"] for m in models]
+        if container is not None:  # and identifier not in model_ids:
             result = {
                 "success": True,
                 "container": container.id,
@@ -79,7 +80,7 @@ def deploy_task(self, user_id, env, allow_overwrite=False):
                 if response.status_code == 200:
                     logger.info(env)
                     env["container"] = container.id
-                    asyncio.run(self.client.add_model_db(user_id, identifier, env, allow_overwrite))
+                    asyncio.run(self.client.add_model_db(env, allow_overwrite))
                     return result
             logger.info(container.status)
             logger.info(response.status_code)
@@ -87,11 +88,7 @@ def deploy_task(self, user_id, env, allow_overwrite=False):
                 "success": False,
                 "container_status": container.status,
             }
-        else:
-            return {
-                "success": False,
-                "message": deployment_result["message"],
-            }
+
     except Exception as e:
         logger.exception("Deployment failed", exc_info=True)
         logger.info("Caught exception. {} ".format(e))

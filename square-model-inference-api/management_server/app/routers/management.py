@@ -19,7 +19,7 @@ from app.models.management import (
 from app.routers import client_credentials, utils
 from docker_access import get_all_model_prefixes
 from mongo_access import MongoClass
-from tasks.tasks import deploy_task, remove_model_task
+from tasks import tasks
 
 
 logger = logging.getLogger(__name__)
@@ -80,8 +80,8 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     deploy a new model to the platform
     """
     user_id = await utils.get_user_id(request)
-    logger.info(user_id)
     env = {
+        "USER_ID": user_id,
         "IDENTIFIER": model_params.identifier,
         "MODEL_NAME": model_params.model_name,
         "MODEL_PATH": model_params.model_path,
@@ -101,7 +101,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     identifier_new = await (mongo_client.check_identifier_new(env["IDENTIFIER"]))
     if not identifier_new:
         raise HTTPException(status_code=406, detail="A model with that identifier already exists")
-    res = deploy_task.delay(user_id, env)
+    res = tasks.deploy_task.delay(env)
     logger.info(res.id)
     return {"message": f"Queued deploying {env['IDENTIFIER']}", "task_id": res.id}
 
@@ -118,7 +118,7 @@ async def remove_model(request: Request, identifier):
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
     # check if the user deployed this model
     if await mongo_client.check_user_id(request, identifier):
-        res = remove_model_task.delay(identifier)
+        res = tasks.remove_model_task.delay(identifier)
     else:
         raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
     return {"message": "Queued removing model.", "task_id": res.id}
@@ -205,7 +205,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
 async def start_from_db(token: str = Depends(client_credentials)):
     configs = await mongo_client.get_models_db()
     deployed = []
-    tasks = []
+    task_ids = []
     for model in configs:
         r = requests.get(
             url="{}/api/{}/health/heartbeat".format(settings.API_URL, model["IDENTIFIER"]),
@@ -216,12 +216,11 @@ async def start_from_db(token: str = Depends(client_credentials)):
         if r.status_code != 200:
             identifier = model["IDENTIFIER"]
             env = model
-            del env["IDENTIFIER"]
             del env["_id"]
             del env["container"]
-            res = deploy_task.delay(identifier, env, allow_overwrite=True)
+            res = tasks.deploy_task.delay(env, allow_overwrite=True)
             logger.info(res.id)
             deployed.append(identifier)
-            tasks.append(res.id)
+            task_ids.append(res.id)
 
-    return {"message": f"Queued deploying {deployed}", "task_id": tasks}
+    return {"message": f"Queued deploying {deployed}", "task_id": task_ids}
