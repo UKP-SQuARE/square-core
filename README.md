@@ -117,7 +117,8 @@ Contact person: [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmsta
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 ## Citation
-To appear at [https://www.2022.aclweb.org/](ACL 2022 Demo Track).      
+
+To appear at [ACL 2022 Demo Track](https://www.2022.aclweb.org/).      
 ```
 @article{baumgartner2022ukp,
   title={UKP-SQUARE: An Online Platform for Question Answering Research},
