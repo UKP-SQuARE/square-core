@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class MongoClass:
+    """
+    class to handle the initialization and operation of mongodb
+    """
     def __init__(self):
         """
         get mongo settings and initialize db
@@ -26,15 +29,20 @@ class MongoClass:
         self.client.close()
 
     async def check_identifier_new(self, identifier) -> bool:
+        """
+        check if model identifier is in db
+        """
         if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
             return False
-        else:
-            return True
+        return True
 
     async def check_user_id(self, request, identifier) -> bool:
+        """
+        check user id requesting a resource
+        """
         models = await self.get_models_db()
         model_config = [m for m in models if m["IDENTIFIER"] == identifier][0]
-        check_user = True if model_config["USER_ID"] == await utils.get_user_id(request) else False
+        check_user = bool(model_config["USER_ID"] == await utils.get_user_id(request))
         return check_user
 
     def server_info(self):
@@ -58,6 +66,9 @@ class MongoClass:
         return True
 
     def get_container_id(self, identifier):
+        """
+        get container id from db
+        """
         query = {"IDENTIFIER": identifier}
         result = self.models.find_one(query)
         logger.info(result)
@@ -75,9 +86,9 @@ class MongoClass:
         get db entries
         """
         results = []
-        for m in self.models.find():
-            logger.info("Result type: {}".format(type(m)))
-            results.append(m)
+        for model in self.models.find():
+            logger.info("Result type: %s", type(model))
+            results.append(model)
         return results
 
     async def update_model_db(self, identifier, updated_params):

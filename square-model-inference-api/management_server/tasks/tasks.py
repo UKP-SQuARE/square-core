@@ -49,6 +49,9 @@ class ModelTask(Task, ABC):
     base=ModelTask,
 )
 def deploy_task(self, env, allow_overwrite=False):
+    """
+    deploy model to the platform
+    """
     logger.info(env)
     identifier = env["IDENTIFIER"]
     try:
@@ -70,9 +73,9 @@ def deploy_task(self, env, allow_overwrite=False):
             response = None
             while container.status in ["created", "running"] and (response is None or response.status_code != 200):
                 time.sleep(20)
-                logger.info(f"Waiting for container {container.id} which is {container.status}")
+                logger.info("Waiting for container %s which is %s", container.id, container.status)
                 response = requests.get(
-                    url="{}/api/{}/stats".format(settings.API_URL, identifier),
+                    url=f"{settings.API_URL}/api/{identifier}/stats",
                     headers={"Authorization": f"Bearer {self.credentials()}"},
                     verify=os.getenv("VERIFY_SSL", 1) == 1,
                 )
@@ -91,7 +94,7 @@ def deploy_task(self, env, allow_overwrite=False):
 
     except Exception as e:
         logger.exception("Deployment failed", exc_info=True)
-        logger.info("Caught exception. {} ".format(e))
+        logger.info("Caught exception. %s ", e)
 
     return {"success": False}
 
@@ -101,14 +104,17 @@ def deploy_task(self, env, allow_overwrite=False):
     base=ModelTask,
 )
 def remove_model_task(self, identifier):
+    """
+    Remove model from the platform
+    """
     try:
         self.client.server_info()
     except Exception:
         return {"success": False, "message": "Connection to the database failed."}
     try:
-        id = self.client.get_container_id(identifier)
-        logger.info(f"Starting to remove docker container {id}")
-        result = remove_model_container(id)
+        container_id = self.client.get_container_id(identifier)
+        logger.info("Starting to remove docker container %s", container_id)
+        result = remove_model_container(container_id)
         if result:
             asyncio.run(self.client.remove_model_db(identifier))
             return {"success": result, "message": "Model removal successful"}

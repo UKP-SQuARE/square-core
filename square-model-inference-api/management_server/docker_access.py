@@ -16,6 +16,9 @@ MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-mo
 
 
 def create_docker_labels(identifier: str) -> dict:
+    """
+    creates the labels to enable traefik for the docker container
+    """
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -91,40 +94,45 @@ def start_new_model_container(identifier, env):
 
         network.reload()
     except Exception as e:
-        return {"container": None, "message": "Caught exception. {} ".format(e)}
+        return {"container": None, "message": f"Caught exception. {e}"}
     return {"container": container, "message": "Success"}
 
 
 def get_container_by_identifier(identifier):
+    """
+    get the docker container based on the model identifier
+    """
     labels = create_docker_labels(identifier)
     if (
         len(
             docker_client.containers.list(
-                all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]}
+                all=True, filters={"label": [f"{k}={v}" for k, v in labels.items()]}
             )
         )
         == 0
     ):
         return None
     container = docker_client.containers.list(
-        all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]}
+        all=True, filters={"label": [f"{k}={v}" for k, v in labels.items()]}
     )[0]
     return container
 
 
-def get_container(id):
-
-    if len(docker_client.containers.list(all=True, filters={"id": id})) == 0:
+def get_container(container_id):
+    """
+    get the docker container based on its id
+    """
+    if len(docker_client.containers.list(all=True, filters={"id": container_id})) == 0:
         return None
-    container = docker_client.containers.list(all=True, filters={"id": id})[0]
+    container = docker_client.containers.list(all=True, filters={"id": container_id})[0]
     return container
 
 
-def remove_model_container(id):
+def remove_model_container(container_id):
     """
     Removes container for the given identifier
     """
-    container = get_container(id)
+    container = get_container(container_id)
     if container is None:
         return False
     container.stop()
@@ -145,15 +153,15 @@ def get_all_model_prefixes():
     lst_prefix = []
     lst_container_ids = []
     for container in lst_container:
-        logger.debug(f"Found candidate model container: {container.name}")
+        logger.debug("Found candidate model container: %s", container.name)
         if "model" in container.name:
-            for identifier, label in container.labels.items():
+            for _, label in container.labels.items():
                 if "PathPrefix" in label and MODELS_API_PATH not in label:
                     prefix = re.search("PathPrefix(`(.+?)`)", label).group(1)
                     lst_prefix.append(prefix)
                     lst_container_ids.append(container.id)
 
-    logger.debug(f"Found model containers: {lst_prefix} on port {port}")
+    logger.debug("Found model containers: %s on port %s", lst_prefix, port)
     return lst_prefix, lst_container_ids, port
 
 
