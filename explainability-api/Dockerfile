@@ -6,15 +6,12 @@ RUN apt-get -y update
 RUN apt-get -y install git
 RUN pip install --upgrade pip
 
-WORKDIR /app
+WORKDIR ./explainability-api
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-RUN pip install -r requirements.txt
-
-COPY ./app app
-COPY model-tests model-tests
+COPY ./explainability explainability
 
 EXPOSE 8010
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8010"]

@@ -1,5 +1,5 @@
 import json
-from app.models import Skill
+from models.skill import Skill
 import requests
 import json
 import os
@@ -166,7 +166,7 @@ def save_json(json_data, path: str):
         json.dump(json_data, f, indent=4)
 
 
-def run_tests(skill: Skill, path: str):
+def run_tests(skill : Skill , path: str):
     """ Function to run all the test cases for a given skill
 
     This function run all the test cases for a given skill
@@ -220,7 +220,7 @@ def create_file_paths(skill_id):
         test_file_path (str) : Directory of the file containing the test cases
     
     """
-    base_dir = os.getcwd()  # os.path.normpath(os.getcwd() + os.sep + os.pardir)
-    test_file_path = base_dir + "/model-tests/"
+
+    test_file_path = "api/routes/tests/"
     # prediction_file_path = current_dir + "/predictions/" + skill_id + ".json"
     return test_file_path
