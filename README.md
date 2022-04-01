@@ -116,4 +116,15 @@ Contact person: [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmsta
 
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
+## Citation
+To appear at [https://www.2022.aclweb.org/](ACL 2022 Demo Track).      
+```
+@article{baumgartner2022ukp,
+  title={UKP-SQUARE: An Online Platform for Question Answering Research},
+  author={Baumg{\"a}rtner, Tim and Wang, Kexin and Sachdeva, Rachneet and Eichler, Max and Geigle, Gregor and Poth, Clifton and Sterz, Hannah and Puerto, Haritz and Ribeiro, Leonardo FR and Pfeiffer, Jonas and Reimers, Nils and \c{S}ahin, G{\"o}zde G{\"u}l and Gurevych, Iryna},
+  journal={arXiv preprint arXiv:2203.13693},
+  year={2022}
+}
+```
+        
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.
