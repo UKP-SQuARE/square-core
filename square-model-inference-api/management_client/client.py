@@ -1,8 +1,13 @@
 from time import sleep
 
 import requests
+import os
 from square_auth.client_credentials import ClientCredentials
 
+REALM = os.getenv("REALM")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+CLIENT_ID = os.getenv("CLIENT_ID")
+KEYCLOAK_BASE_URL = os.getenv("KEYCLOAK_BASE_URL")
 
 class ManagementClient:
     """
