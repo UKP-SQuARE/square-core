@@ -11,6 +11,7 @@ const Explain = () => import('../views/Explain')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
 const Feedback = () => import('../views/Feedback')
+const Terms = () => import('../views/Terms')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
 
@@ -52,6 +53,11 @@ const routes = [
     path: '/feedback',
     name: 'feedback',
     component: Feedback
+  },
+  {
+    path: '/terms-and-conditions',
+    name: 'terms',
+    component: Terms
   },
   {
     path: '/signin',

@@ -152,6 +152,7 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
+      stringifiedJSON: '',
       validJSON: true,
       numberSkillExamples: 3
     }
@@ -169,13 +170,17 @@ export default Vue.component('edit-skill', {
       return this.$route.params.id === 'new_skill'
     },
     skillArguments: {
+      // Use intermediate stringified variable to not interrupt the users typing
       get: function () {
-        return JSON.stringify(this.skill.default_skill_args)
+        return this.stringifiedJSON
       },
       set: function (newValue) {
+        this.stringifiedJSON = newValue
         try {
           if (newValue.length > 0) {
             this.skill.default_skill_args = JSON.parse(newValue)
+          } else {
+            this.skill.default_skill_args = null
           }
           this.validJSON = true
         } catch (e) {
@@ -235,6 +240,8 @@ export default Vue.component('edit-skill', {
             }
             this.skill = data
             this.originalName = this.skill.name
+            // Trigger setter
+            this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
           })
     } else {

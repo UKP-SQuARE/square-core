@@ -15,8 +15,7 @@ let initOptions = {
   realm: 'square',
   clientId: 'web-app',
   onLoad: 'check-sso',
-  silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-  tokenStore: 'cookie'
+  silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
 }
 
 let keycloak = Keycloak(initOptions)

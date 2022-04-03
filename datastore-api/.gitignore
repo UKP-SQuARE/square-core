@@ -4,3 +4,5 @@ storage
 *.hdf5
 *.lock
 env
+test-reports
+.coverage

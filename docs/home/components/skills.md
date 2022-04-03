@@ -10,8 +10,58 @@ Skills can be added dynamically to UKP-SQuARE. Check out the 👉 [Add New Skill
 For a list of available skills, see 👉 [Publicly Available Skills](#publicly-available-skills).
 
 ## Add New Skills
+### Via UI for Standard QA pipelines
+The user interface allows the creation of "standard" QA pipelines (i.e., extractive, multiple-choice, categorial/boolean, abstractive, and open-retrieval). If your skill belongs to one of these types, you can easily create deploy your skill effortlessly as follows:
+
+- skill_type: 
+    - extractive for both extractive and open-retrieval
+    - categorial for boolean skills
+    - multiple_choice for multiple choice
+    - abtractive for generative skills
+- Skill url
+    - http://extractive-qa for extractive Skills
+    - http://multiple-choice-qa for both categorial and multiple-choice Skills.
+    - http://generative-qa for generative Skills.
+    - http://open-squad for open-retrieval Skills.
+- Skill arguments. Here you need to provide a json that specifies the base model (a Transformer model) and the [adapters](https://adapterhub.ml) to use
+ ``` 
+ {"base_model": "....", "adapter": ...}
+ ```    
+For example:
+ ```
+{"base_model":"bert-base-uncased","adapter":"AdapterHub/bert-base-uncased-pf-squad"}
+ ```
+
+<details>
+  <summary>Screenshot</summary>
+  <div>
+    <div>Adding a skill via the UI.</div>
+    <br/>
+      <div style={{textAlign:'center'}}>
+      <img
+      src={require('../../static/img/Skill_example.png').default}
+      alt="skill-manager"
+      width="600"
+      height="600"
+    />
+        </div>
+  </div>
+</details>
+
+In the case of open-domain Skills, you also need to specify the datastore and retrieval method as follows:
+```
+ {"base_model": "....", "adapter": ..., "datastore": ..., "index": ....}
+```
+The default value of ```index``` is ```bm25```, so if you want to use BM25, you can skip that argument.
+For example:
+```
+{"base_model":"roberta-base","adapter":"AdapterHub/roberta-base-pf-hotpotqa","datastore":"nq","index":"dpr"}
+```
+
+You should mark ```require context``` if the Skill needs an input passage along with the question, and ```public``` if you wan it to be publicly available.
+
 ### The Predict Function
-To create a new skill, only a predict function needs to be implemented. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
+If you want to create a new skill that does not follow the previously described QA pipelines, you would only need to implement a predict function. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
@@ -103,9 +153,10 @@ An example repository can also be found at [UKP-SQuARE/cloud-example-azure](http
  | NarrativeQA BART Adapter |  |  | [bart-base](https://huggingface.co/facebook/bart-base) | [narrativeqa](https://huggingface.co/AdapterHub/narrativeqa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/generative-qa/skill.py) | 
  | NewsQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [newsqa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-newsqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
  | NewsQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [newsqa](https://huggingface.co/AdapterHub/roberta-base-pf-newsqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | OpenBioASQ | [BM25](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) |  Pubmed | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-bioasq/skill.py) | 
- | OpenSQuAD-DPR | [dpr](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base) |  Wikipedia | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-squad/skill.py) | 
- | OpenSQuAD-TAS-b | [dpr](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base) |  Wikipedia | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-extractive-qa/skill.py) | 
+ | OpenBioASQ | [BM25](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) |  [BioASQ8](http://bioasq.org/) | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-bioasq/skill.py) | 
+ | OpenBioASQ-TAS-b | [TAS-B](https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b) |  [BioASQ8](http://bioasq.org/) | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-bioasq/skill.py) | 
+ | OpenSQuAD-DPR | [DPR](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base) |  [Wikipedia](https://github.com/facebookresearch/DPR/blob/a31212dc0a54dfa85d8bfa01e1669f149ac832b7/dpr/data/download_data.py#L31) | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-squad/skill.py) | 
+ | OpenSQuAD-TAS-b | [TAS-B](https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b) |  [MS MARCO](https://microsoft.github.io/msmarco/) | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-extractive-qa/skill.py) | 
  | QuAIL BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [quail](https://huggingface.co/AdapterHub/bert-base-uncased-pf-quail) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
  | QuAIL RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quail](https://huggingface.co/AdapterHub/roberta-base-pf-quail) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
  | QuaRTz RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quartz](https://huggingface.co/AdapterHub/roberta-base-pf-quartz) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 

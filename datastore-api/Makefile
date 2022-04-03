@@ -9,3 +9,6 @@ test:
 test-api:
 	cp .env.test .env
 	PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest -s -v tests/
+
+docker-test:
+	docker build --target test -t datastore-api-test .

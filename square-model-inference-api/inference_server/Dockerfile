@@ -10,9 +10,14 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
-COPY requirements1.txt requirements2.txt uninstall_requirements.txt ./
+RUN pip download torch==1.8.1
+COPY requirements1.txt ./
 RUN pip install -r requirements1.txt
+
+COPY uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
+
+COPY requirements2.txt ./
 RUN pip install -r requirements2.txt
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
