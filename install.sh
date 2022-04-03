@@ -219,16 +219,15 @@ else
 	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.template > ./postgres/.env 
 fi
 
-if [ -f ./skill-manager/.env ]; then
-	echo "./skill-manager/.env already exists. Skipping."
-	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./skill-manager/.env)"    
+if [ -f ./mongodb/.env ]; then
+	echo "./mongodb/.env already exists. Skipping."
+	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./mongodb/.env)"    
 else
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./mongodb/.env.template > ./mongodb/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./datastore-api/.env.template > ./datastore-api/.env
 	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.template > ./skill-manager/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./square-model-inference-api/management_server/.env.template > ./square-model-inference-api/management_server/.env
 fi
-
-# initilize env files for model management service and datastore
-cp ./square-model-inference-api/management_server/.env.template ./square-model-inference-api/management_server/.env 
-cp ./datastore-api/.env.template ./datastore-api/.env 
 
 # get all servies that need to be registered as clients keycloak
 CLIENTS=( "models" "datastores" ) 
