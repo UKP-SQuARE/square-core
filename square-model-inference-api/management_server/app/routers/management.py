@@ -1,3 +1,8 @@
+"""
+This file contains all the API calls for the
+management server of the models component of SQuARE.
+"""
+
 import logging
 import os
 from typing import List
@@ -35,17 +40,17 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     """
     models = await mongo_client.get_models_db()
     result = []
-    for m in models:
+    for model in models:
         result.append(
             GetModelsResult(
-                identifier=m["IDENTIFIER"],
-                model_type=m["MODEL_TYPE"],
-                model_name=m["MODEL_NAME"],
-                disable_gpu=m["DISABLE_GPU"],
-                batch_size=m["BATCH_SIZE"],
-                max_input=m["MAX_INPUT_SIZE"],
-                model_class=m["MODEL_CLASS"],
-                return_plaintext_arrays=m["RETURN_PLAINTEXT_ARRAYS"],
+                identifier=model["IDENTIFIER"],
+                model_type=model["MODEL_TYPE"],
+                model_name=model["MODEL_NAME"],
+                disable_gpu=model["DISABLE_GPU"],
+                batch_size=model["BATCH_SIZE"],
+                max_input=model["MAX_INPUT_SIZE"],
+                model_class=model["MODEL_CLASS"],
+                return_plaintext_arrays=model["RETURN_PLAINTEXT_ARRAYS"],
             )
         )
     return result
@@ -57,19 +62,22 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     name="get-deployed-models-health",
 )
 async def get_models_health(token: str = Depends(client_credentials)):
+    """
+    gets the health of all the deployed models
+    """
     models = await mongo_client.get_models_db()
     lst_models = []
-    for m in models:
-        r = requests.get(
-            url="{}/api/{}/health/heartbeat".format(settings.API_URL, m["IDENTIFIER"]),
+    for model in models:
+        response = requests.get(
+            url=f'{settings.API_URL}/api/{model["IDENTIFIER"]}/health/heartbeat',
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
-        if r.status_code == 200:
-            lst_models.append({"identifier": m["IDENTIFIER"], "is_alive": r.json()["is_alive"]})
+        if response.status_code == 200:
+            lst_models.append({"identifier": model["IDENTIFIER"], "is_alive": response.json()["is_alive"]})
         else:
-            lst_models.append({"identifier": m["IDENTIFIER"], "is_alive": False})
+            lst_models.append({"identifier": model["IDENTIFIER"], "is_alive": False})
 
     return lst_models
 
@@ -131,6 +139,9 @@ async def update_model(
     update_parameters: UpdateModel,
     token: str = Depends(client_credentials),
 ):
+    """
+    update the model parameters
+    """
 
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
@@ -138,17 +149,17 @@ async def update_model(
     if await mongo_client.check_user_id(request, identifier):
         await (mongo_client.update_model_db(identifier, update_parameters))
         logger.info(
-            "Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict())
+            "Update parameters Type %s,dict  %s", type(update_parameters.dict()), update_parameters.dict()
         )
-        r = requests.post(
-            url="{}/api/{}/update".format(settings.API_URL, identifier),
+        response = requests.post(
+            url=f"{settings.API_URL}/api/{identifier}/update",
             json=update_parameters.dict(),
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
     else:
         raise HTTPException(status_code=403, detail="Cannot update a model deployed by another user")
-    return {"status_code": r.status_code, "content": r.json()}
+    return {"status_code": response.status_code, "content": response.json()}
 
 
 @router.get("/task/{task_id}", name="task-status", response_model=TaskResultModel)
@@ -165,19 +176,23 @@ async def get_task_status(task_id):
 
 @router.put("/db/update")
 async def init_db_from_docker(token: str = Depends(client_credentials)):
-    lst_prefix, lst_container_ids, port = get_all_model_prefixes()
+    """
+    update the database with the configuration of models
+    deployed but not added to the db
+    """
+    lst_prefix, lst_container_ids, _ = get_all_model_prefixes()
     lst_models = []
 
     for prefix, container in zip(lst_prefix, lst_container_ids):
-        r = requests.get(
-            url="{}{}/stats".format(settings.API_URL, prefix),
+        response = requests.get(
+            url=f"{settings.API_URL}{prefix}/stats",
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
-        if r.status_code == 200:
-            data = r.json()
-            logger.info("Response Format {}".format(data))
+        if response.status_code == 200:
+            data = response.json()
+            logger.info("Response Format %s", data)
             lst_models.append(
                 {
                     "USER_ID": "ukp",
@@ -196,24 +211,27 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                 }
             )
         else:
-            logger.info("Error retrieving Model Statistics: {}".format(r.json()))
+            logger.info("Error retrieving Model Statistics: %s", response.json())
     added_models = await (mongo_client.init_db(lst_models))
     return {"added": added_models}
 
 
 @router.post("/db/deploy")
 async def start_from_db(token: str = Depends(client_credentials)):
+    """
+    deploy models from the database
+    """
     configs = await mongo_client.get_models_db()
     deployed = []
     task_ids = []
     for model in configs:
-        r = requests.get(
-            url="{}/api/{}/health/heartbeat".format(settings.API_URL, model["IDENTIFIER"]),
+        response = requests.get(
+            url=f'{settings.API_URL}/api/{model["IDENTIFIER"]}/health/heartbeat',
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
-        if r.status_code != 200:
+        if response.status_code != 200:
             identifier = model["IDENTIFIER"]
             env = model
             del env["_id"]

@@ -5,6 +5,9 @@ from square_auth.auth import Auth
 
 
 async def get_payload_from_token(request: Request):
+    """
+    get the username and realm from the encoded token
+    """
     http_bearer = HTTPBearer()
     auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
     token = auth_credentials.credentials
@@ -14,6 +17,9 @@ async def get_payload_from_token(request: Request):
 
 
 def has_auth_header(request: Request):
+    """
+    get auth header if available
+    """
     return request.headers.get("Authorization", "").lower().startswith("bearer")
 
 
