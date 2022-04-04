@@ -45,12 +45,12 @@
       </div>
     </div>
     <div v-if="failure" class="row">
-      <div class="col-md-4 mx-auto mt-3">
+      <div class="col-md-4 mx-auto mt-4">
         <Alert class="bg-warning" :dismissible="true">An error occurred</Alert>
       </div>
     </div>
     <div v-if="minSkillsSelected(1)" class="row">
-      <div class="col my-3">
+      <div class="col mt-4">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <button
               type="submit"

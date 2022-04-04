@@ -20,7 +20,7 @@
         </button>
       </template>
       <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
-      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+      <Alert v-if="failure" class="alert-danger" dismissible>An error occurred</Alert>
       <div class="row">
         <div class="col-md-6 mt-3">
           <label for="name" class="form-label">Skill name</label>
@@ -76,6 +76,15 @@
             <input v-model="skill.url" type="url" class="form-control" id="url" placeholder="Skill URL">
             <small class="text-muted">URL to the hosted skill (<span class="text-info">scheme</span>://<span class="text-info">host</span>:<span class="text-info">port</span>/<span class="text-info">base_path</span>)</small>
             <div class="mt-2"><Status :url="skill.url" /></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col mt-3">
+          <label for="args" class="form-label">Skill arguments</label>
+          <input v-model="skillArguments" type="text" class="form-control" :class="{ 'is-invalid': !validJSON }" id="args" placeholder="Skill argument as JSON">
+          <div v-if="!validJSON" class="invalid-feedback">
+            JSON is invalid
+          </div>
         </div>
       </div>
       <div class="row">
@@ -143,7 +152,8 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
-      failureMessage: '',
+      stringifiedJSON: '',
+      validJSON: true,
       numberSkillExamples: 3
     }
   },
@@ -158,7 +168,26 @@ export default Vue.component('edit-skill', {
      */
     isCreateSkill() {
       return this.$route.params.id === 'new_skill'
-    }
+    },
+    skillArguments: {
+      // Use intermediate stringified variable to not interrupt the users typing
+      get: function () {
+        return this.stringifiedJSON
+      },
+      set: function (newValue) {
+        this.stringifiedJSON = newValue
+        try {
+          if (newValue.length > 0) {
+            this.skill.default_skill_args = JSON.parse(newValue)
+          } else {
+            this.skill.default_skill_args = null
+          }
+          this.validJSON = true
+        } catch (e) {
+          this.validJSON = false
+        }
+      }
+    },
   },
   methods: {
     onSubmit() {
@@ -177,18 +206,16 @@ export default Vue.component('edit-skill', {
             this.success = true
             this.failure = false
           })
-          .catch(failureMessage => {
+          .catch(() => {
             this.failure = true
-            this.failureMessage = failureMessage
           })
     },
     createSkill() {
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
-          .catch(error => {
+          .catch(() => {
             this.failure = true
-            this.failureMessage = error.data.msg
           })
     },
     addInputExampleFields() {
@@ -207,11 +234,14 @@ export default Vue.component('edit-skill', {
     if (!this.isCreateSkill) {
       getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
           .then((response) => {
-            this.skill = response.data
-            this.originalName = this.skill.name
-            if (response.data.skill_input_examples == null) {
-              this.skill.skill_input_examples = []
+            let data = response.data
+            if (data.skill_input_examples == null) {
+              data.skill_input_examples = []
             }
+            this.skill = data
+            this.originalName = this.skill.name
+            // Trigger setter
+            this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
           })
     } else {

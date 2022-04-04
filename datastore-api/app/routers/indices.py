@@ -1,18 +1,21 @@
 import logging
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
 from fastapi.param_functions import Body, Path
 
 from ..models.embedding import DocumentEmbedding
 from ..models.httperror import HTTPError
 from ..models.index import Index, IndexRequest, IndexStatus
-from .dependencies import get_search_client, get_storage_connector, client_credentials
+from .dependencies import get_search_client, get_storage_connector, client_credentials, get_mongo_client
+from ..core.es.connector import ElasticsearchConnector
+from ..core.mongo import MongoClient
 
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Indices"])
+binding_item_type = 'index'
 
 
 @router.get(
@@ -70,18 +73,24 @@ async def get_index(
     },
 )
 async def put_index(
+    request: Request,
     datastore_name: str = Path(..., description="Name of the datastore"),
     index_name: str = Path(..., description="Name of the index"),
     index_request: IndexRequest = Body(..., description="The index configuration as IndexRequest"),
-    conn=Depends(get_storage_connector),
+    conn: ElasticsearchConnector = Depends(get_storage_connector),
     response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
     index = await conn.get_index(datastore_name, index_name)
     if index is None:
+        # creating a new index
         new_index = index_request.to_index(datastore_name, index_name)
         success = await conn.add_index(new_index) is not None
         response.status_code = status.HTTP_201_CREATED
+        if success:
+            await mongo.new_binding(request, index_name, binding_item_type)  # It should be placed after conn.add_datastore to make sure the status consistent between conn.add_datastore and mongo.new_binding
     else:
+        await mongo.autonomous_access_checking(request, index_name, binding_item_type)
         new_index = index_request.to_index(datastore_name, index_name)
         success = await conn.update_index(new_index)
         response.status_code = status.HTTP_200_OK
@@ -131,13 +140,20 @@ async def get_index_status(
     },
 )
 async def delete_index(
+    request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
     index_name: str = Path(..., description="The name of the index"),
-    conn=Depends(get_storage_connector),
+    conn: ElasticsearchConnector = Depends(get_storage_connector),
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
+    if not (await conn.get_index(datastore_name, index_name)):
+        raise HTTPException(status_code=404)
+
+    await mongo.autonomous_access_checking(request, index_name, binding_item_type)
     success = await conn.delete_index(datastore_name, index_name)
 
     if success:
+        await mongo.delete_binding(request, index_name, binding_item_type)
         await conn.commit_changes()
         return Response(status_code=204)
     else:
