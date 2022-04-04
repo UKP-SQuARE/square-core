@@ -46,7 +46,7 @@ services:
 
   rabbit:
     hostname: rabbit
-    image: rabbitmq:3-management
+    image: rabbitmq:3.9.14-management
     ports:
       - 5672:5672
       - 15672:15672
