@@ -1,5 +1,5 @@
 {
-    "rabbit_version": "3.6.6",
+    "rabbit_version": "3.9.14",
     "users": [
      {
       "name": "ukp",
@@ -15,7 +15,7 @@
     ],
     "permissions": [
      {
-      "user": "user1",
+      "user": "ukp",
       "vhost": "\/vhost1",
       "configure": ".*",
       "write": ".*",
