@@ -6,9 +6,6 @@ RUN apt-get -y update
 RUN apt-get -y install git
 RUN pip install --upgrade pip
 
-# install rabbit mq backend
-RUN apt-get install -y rabbitmq-server
-
 WORKDIR /app
 
 COPY requirements.txt ./
