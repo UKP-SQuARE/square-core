@@ -52,6 +52,7 @@ def test_api_token_classification(test_app) -> None:
     )
     assert response.status_code == 200
 
+
 def test_api_embedding(test_app) -> None:
     test_client = TestClient(test_app)
     response = test_client.post(

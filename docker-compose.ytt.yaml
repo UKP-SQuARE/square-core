@@ -45,6 +45,23 @@ VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
 #@ end
 
+#@ def model_management_environment():
+WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+ONNX_VOLUME: square-model-inference-api_onnx-models
+REALM: #@ data.values.realm
+CLIENT_ID: models
+REDIS_USER: default
+RABBITMQ_DEFAULT_USER: ukp
+MONGO_INITDB_ROOT_USERNAME: root
+MONGO_HOST: mongodb
+MONGO_PORT: 27017
+#@ end
+
 version: "3.4"
 
 services:
@@ -190,8 +207,35 @@ services:
     env_file:
       - ./mongodb/.env
 
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3.9.14-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=ukp
+    env_file:
+      - ./square-model-inference-api/management_server/.env
+    volumes:
+      - ./square-model-inference-api/management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./square-model-inference-api/management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+
+  redishost:
+    hostname: redishost
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    command: redis-server /etc/redis/redis.conf
+    env_file:
+      - ./square-model-inference-api/management_server/.env
+    volumes:
+      - square-redis-data:/square/redis/data:rw
+      - ./square-model-inference-api/management_server/redis/redis.conf:/etc/redis/redis.conf
+
   maintaining:
     image: #@ "ukpsquare/square-model-management:" + data.values.tag
+    command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     build: 
       context: ./square-model-inference-api/management_server
       target: build
@@ -199,18 +243,13 @@ services:
       - 9001:9001
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
     env_file:
       - ./square-model-inference-api/management_server/.env
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
-      VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-      ONNX_VOLUME: square-model-inference-api_onnx-models
-      REALM: #@ data.values.realm
-      CLIENT_ID: models
+    environment: #@ model_management_environment()
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -218,7 +257,26 @@ services:
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
-  
+
+  maintaining_worker:
+    image: #@ "ukpsquare/square-model-management:" + data.values.tag
+    command: celery -A tasks worker --loglevel=info
+    build:
+      context: ./square-model-inference-api/management_server
+      target: build
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+    env_file:
+      - ./square-model-inference-api/management_server/.env
+    environment: #@ model_management_environment()
+
   model_bert_adapter:
     image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
     build: 
@@ -380,6 +438,8 @@ volumes:
   mongo-data:
     driver: local
   mongo-dumps:
+    driver: local
+  square-redis-data:
     driver: local
   datastore-api-es:
     driver: local

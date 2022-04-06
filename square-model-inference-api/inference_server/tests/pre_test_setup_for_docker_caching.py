@@ -3,7 +3,7 @@
 # This way, adding new tests or even changing the server code does NOT trigger a new download during building
 from sentence_transformers import SentenceTransformer
 from starlette.config import environ
-from transformers import AutoTokenizer, AutoModelWithHeads, list_adapters
+from transformers import AutoTokenizer, AutoAdapterModel, list_adapters
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # Pre-download Huggingface model for tests
     _ = AutoTokenizer.from_pretrained(TRANSFORMER_MODEL)
-    model = AutoModelWithHeads.from_pretrained(TRANSFORMER_MODEL).to(device)
+    model = AutoAdapterModel.from_pretrained(TRANSFORMER_MODEL).to(device)
 
     # Pre-download adapters
     # logger.info("Loading all available adapters")

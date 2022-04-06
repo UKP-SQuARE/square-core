@@ -1,4 +1,4 @@
-from transformers import AutoModelWithHeads, list_adapters
+from transformers.adapters import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
 from square_model_inference.inference.transformer import Transformer
@@ -27,7 +27,7 @@ class AdapterTransformer(Transformer):
              transformers_cache: Should be same as TRANSFORMERS_CACHE env variable. This folder will be used to store the adapters
              kwargs: Not used
         """
-        self._load_model(AutoModelWithHeads, model_config.model_name, model_config.disable_gpu)
+        self._load_model(AutoAdapterModel, model_config.model_name, model_config.disable_gpu)
         if model_config.preloaded_adapters:
             self._load_adapter(model_config.model_name, model_config.transformers_cache)
         self.model_name = model_config.model_name
@@ -105,11 +105,8 @@ class AdapterTransformer(Transformer):
         return prediction
 
     def _prepare_adapter(self, adapter_name):
-        if adapter_name and adapter_name not in self.model.config.adapters.adapters:
-            try:
-                self.model.load_adapter(adapter_name, load_as=adapter_name)
-            except EnvironmentError:
-                self.model.load_adapter(adapter_name, load_as=adapter_name, source="hf")
+        if adapter_name is not None:
+            self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
 
         if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
             raise ValueError(f"Unknown or missing adapter {adapter_name}. "
