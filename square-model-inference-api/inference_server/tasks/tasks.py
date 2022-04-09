@@ -1,4 +1,5 @@
 import logging
+import os
 from abc import ABC
 
 from celery import Task
@@ -20,6 +21,8 @@ MODEL_MAPPING = {
     "onnx": Onnx,
 }
 
+IDENTIFIER = os.getenv("QUEUE")
+
 
 class ModelTask(Task, ABC):
     """
@@ -36,13 +39,7 @@ class ModelTask(Task, ABC):
         Instantiate mongo client on first call (i.e. first task processed)
         Avoids the creation of multiple clients for each task request
         """
-        config_dict = args[2]
-        if model_config.to_dict() != config_dict:
-            logger.info("Detected change in model config. Adapting local config to config passed by model.")
-            model_config.disable_gpu = config_dict["disable_gpu"]
-            model_config.batch_size = config_dict["batch_size"]
-            model_config.max_input_size = config_dict["max_input_size"]
-            model_config.return_plaintext_arrays = config_dict["return_plaintext_arrays"]
+        model_config.update(f"/model-config/{IDENTIFIER}")
         if not self.model:
             logger.info(model_config)
             model_instance = MODEL_MAPPING[model_config.model_type]()

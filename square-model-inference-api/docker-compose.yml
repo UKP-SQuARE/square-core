@@ -275,3 +275,6 @@ volumes:
       type: none
 #      device: /home/sterz/onnx_models
       device: /home/rachneet/onnx_models
+
+  model-configs:
+    driver: local

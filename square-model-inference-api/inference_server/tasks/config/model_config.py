@@ -55,20 +55,34 @@ class ModelConfig(Mapping):
     def to_dict(self):
         return asdict(self)
 
-    def to_statistics(self):
-        return ModelStatistics(
-            model_type=self.model_type,
-            model_name=self.model_name,
-            model_class=self.model_class,
-            batch_size=self.batch_size,
-            max_input=self.max_input_size,
-            disable_gpu=self.disable_gpu,
-            return_plaintext_arrays=self.return_plaintext_arrays,
-            model_path=self.model_path,
-            decoder_path=self.decoder_path,
-            preloaded_adapters=self.preloaded_adapters,
-            transformers_cache=self.transformers_cache,
-        )
+    # def to_statistics(self):
+    #     return ModelStatistics(
+    #         model_type=self.model_type,
+    #         model_name=self.model_name,
+    #         model_class=self.model_class,
+    #         batch_size=self.batch_size,
+    #         max_input=self.max_input_size,
+    #         disable_gpu=self.disable_gpu,
+    #         return_plaintext_arrays=self.return_plaintext_arrays,
+    #         model_path=self.model_path,
+    #         decoder_path=self.decoder_path,
+    #         preloaded_adapters=self.preloaded_adapters,
+    #         transformers_cache=self.transformers_cache,
+    #     )
+
+    def update(self, path):
+        config = Config(path)
+        self.model_name = config("MODEL_NAME", default=None)
+        self.model_type = config("MODEL_TYPE", default=None)
+        self.model_path = config("MODEL_PATH", default=None)
+        self.decoder_path = config("DECODER_PATH", default=None)
+        self.preloaded_adapters = config("PRELOADED_ADAPTERS", cast=bool, default=True)
+        self.disable_gpu = config("DISABLE_GPU", cast=bool, default=False)
+        self.batch_size = config("BATCH_SIZE", cast=int, default=32)
+        self.max_input_size = config("MAX_INPUT_SIZE", cast=int, default=1024)
+        self.transformers_cache = config("TRANSFORMERS_CACHE", default=None)
+        self.model_class = config("MODEL_CLASS", default="base")
+        self.return_plaintext_arrays = config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False)
 
     @staticmethod
     def load(path=".env"):
