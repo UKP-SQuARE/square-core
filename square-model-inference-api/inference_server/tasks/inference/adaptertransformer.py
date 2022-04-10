@@ -105,11 +105,8 @@ class AdapterTransformer(Transformer):
         return prediction
 
     def _prepare_adapter(self, adapter_name):
-        if adapter_name and adapter_name not in self.model.config.adapters.adapters:
-            try:
-                self.model.load_adapter(adapter_name, load_as=adapter_name)
-            except EnvironmentError:
-                self.model.load_adapter(adapter_name, load_as=adapter_name, source="hf")
+        if adapter_name is not None:
+            self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
 
         if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
             raise ValueError(f"Unknown or missing adapter {adapter_name}. "

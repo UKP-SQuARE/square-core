@@ -6,13 +6,20 @@ from celery import Celery
 logger = logging.getLogger(__name__)
 
 # use env vars
-user = os.getenv("USERNAME", "user")
-password = os.getenv("PASSWORD", "user")
+rabbitmq_user = os.getenv("RABBITMQ_DEFAULT_USER", "ukp")
+rabbitmq_password = os.getenv("RABBITMQ_DEFAULT_PASS", "secret")
 
-app = Celery('tasks',
-             backend='rpc://',
-             broker=f"amqp://{user}:{password}@rabbit:5672//",
-             include=['tasks.tasks'])
+redis_user = os.getenv("REDIS_USER", "ukp")
+redis_password = os.getenv("REDIS_PASSWORD", "secret")
+
+logger.info(f"redis://{redis_user}:{redis_password}@redishost:6379")
+logger.info(f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//")
+app = Celery(
+    "tasks",
+    backend=f"redis://{redis_user}:{redis_password}@redishost:6379",
+    broker=f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//",
+    include=["tasks.tasks"],
+)
 # app.conf.task_routes = {
 #     'tasks.add': {'queue': 'dpr'},
 #     'tasks.predict': {'queue': 'dpr'}

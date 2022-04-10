@@ -1,8 +1,10 @@
+import logging
 import os
 import re
-import logging
+
 import docker
 from docker.types import Mount
+
 
 logger = logging.getLogger(__name__)
 
@@ -10,10 +12,35 @@ docker_client = docker.from_env()
 
 MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
+CONFIG_VOLUME = os.getenv("CONFIG_VOLUME", "square-model-inference-api_model_configs")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
 USER = os.getenv("USERNAME", "user")
 PASSWORD = os.getenv("PASSWORD", "user")
 
+
+
+def create_docker_labels(identifier: str) -> dict:
+    """
+    creates the labels to enable traefik for the docker container
+    """
+    labels = {
+        "traefik.enable": "true",
+        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + identifier + ".tls": "true",
+        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-"
+        + identifier
+        + ".middlewares": "model-"
+        + identifier
+        + "-stripprefix, "
+        + "model-"
+        + identifier
+        + "-addprefix",
+        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
+    }
+    return labels
 
 
 def start_new_model_container(identifier, env):
@@ -23,59 +50,44 @@ def start_new_model_container(identifier, env):
     env(Dict): the environment for the container
     """
     container = get_container_by_identifier(identifier)
-    logger.info("Found container {} we try to delete it".format(container))
     if container is not None:
         logger.info("Found old container for that identifier container")
+        logger.info(container.status)
         if container.status == "running":
-            return None
+            return {
+                "container": container,
+                "message": "A container wth same name is already deployed",
+            }
         logger.info("Removing old container")
         container.stop()
         container.remove()
-    labels = {
-        "traefik.enable": "true",
-        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + identifier + ".tls": "true",
-        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
-        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-"\
-                                                                     + identifier + "-addprefix",
-        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
-    }
+    else:
+        logger.info("Found no running instance, so we try to create it")
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
-    network_id = list(reference_container.attrs['NetworkSettings']['Networks'].values())[0]['NetworkID']
+    logger.info(reference_container)
+    network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
 
-    path = ":".join(reference_container.attrs['HostConfig']['Binds'][1].split(":")[:-2])
+    path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
     # in case of windows the next step is necessary
     path = path.replace("\\", "/")
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    container_name = network.name + "-model-" + identifier
-    worker_name = container_name + "-worker"
+    worker_name = network.name + "-model-" + identifier + "-worker"
 
     env["WEB_CONCURRENCY"] = 1
     env["KEYCLOAK_BASE_URL"] = "https://square.ukp-lab.de"
     env["QUEUE"] = identifier
+    env["RABBITMQ_DEFAULT_USER"] = os.getenv("RABBITMQ_DEFAULT_USER", "ukp")
+    env["RABBITMQ_DEFAULT_PASS"] = os.getenv("RABBITMQ_DEFAULT_PASS", "secret")
+
+    env["REDIS_USER"] = os.getenv("REDIS_USER", "ukp")
+    env["REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD", "secret")
 
     try:
         container = docker_client.containers.run(
-            MODEL_API_IMAGE,
-            command="uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf",
-            name=container_name,
-            detach=True,
-            environment=env,
-            network=network.name,
-            volumes=[path + "/.cache/:/etc/huggingface/.cache/"],
-            mounts=[Mount(target="/onnx_models", source=ONNX_VOLUME, )],
-            labels=labels,
-        )
-
-        env["USER"] = USER
-        env["PASSWORD"] = PASSWORD
-        worker_container = docker_client.containers.run(
             MODEL_API_IMAGE,
             command=f"celery -A tasks worker -Q {identifier} --loglevel=info",
             name=worker_name,
@@ -83,49 +95,51 @@ def start_new_model_container(identifier, env):
             environment=env,
             network=network.name,
             volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
-            mounts=[Mount(target="/onnx_models", source=ONNX_VOLUME, )],
+            mounts=[Mount(target="/model_configs", source=CONFIG_VOLUME, )],
         )
-        logger.info(f"Worker container {worker_container}")
+        logger.info(f"Worker container {container}")
 
         network.reload()
     except Exception as e:
-        logger.info(e)
-        return None
-    return container, worker_container
+        return {"container": None, "message": f"Caught exception. {e}"}
+    return {"container": container, "message": "Success"}
 
 
 def get_container_by_identifier(identifier):
-    labels = {
-        "traefik.enable": "true",
-        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + identifier + ".tls": "true",
-        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
-        "traefik.http.routers.model-" + identifier + ".middlewares": "model-" + identifier + "-stripprefix, " + "model-" \
-                                                                     + identifier + "-addprefix",
-        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
-    }
-
-    if len(docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})) == 0:
+    """
+    get the docker container based on the model identifier
+    """
+    labels = create_docker_labels(identifier)
+    if (
+        len(
+            docker_client.containers.list(
+                all=True, filters={"label": [f"{k}={v}" for k, v in labels.items()]}
+            )
+        )
+        == 0
+    ):
         return None
-    container = docker_client.containers.list(all=True, filters={"label": ["{}={}".format(k, v) for k, v in labels.items()]})[0]
+    container = docker_client.containers.list(
+        all=True, filters={"label": [f"{k}={v}" for k, v in labels.items()]}
+    )[0]
     return container
 
 
-
-def get_container(id):
-
-    if len(docker_client.containers.list(all=True, filters={"id": id})) == 0:
+def get_container(container_id):
+    """
+    get the docker container based on its id
+    """
+    if len(docker_client.containers.list(all=True, filters={"id": container_id})) == 0:
         return None
-    container = docker_client.containers.list(all=True, filters={"id": id})[0]
+    container = docker_client.containers.list(all=True, filters={"id": container_id})[0]
     return container
 
-def remove_model_container(id):
+
+def remove_model_container(container_id):
     """
     Removes container for the given identifier
     """
-    container = get_container(id)
+    container = get_container(container_id)
     if container is None:
         return False
     container.stop()
@@ -146,17 +160,17 @@ def get_all_model_prefixes():
     lst_prefix = []
     lst_container_ids = []
     for container in lst_container:
-        logger.debug(f"Found candidate model container: {container.name}")
+        logger.debug("Found candidate model container: %s", container.name)
         if "model" in container.name:
-            for identifier, label in container.labels.items():
+            for _, label in container.labels.items():
                 if "PathPrefix" in label and MODELS_API_PATH not in label:
-                    prefix = re.search('PathPrefix\(\`(.+?)\`\)', label).group(1)
+                    prefix = re.search("PathPrefix\(`(.+?)`\)", label).group(1)
                     lst_prefix.append(prefix)
                     lst_container_ids.append(container.id)
                 # TODO get corresponding worker for each model
                 # maybe we can achieve this by finding the container with the same queue name
 
-    logger.debug(f"Found model containers: {lst_prefix} on port {port}")
+    logger.debug("Found model containers: %s on port %s", lst_prefix, port)
     return lst_prefix, lst_container_ids, port
 
 

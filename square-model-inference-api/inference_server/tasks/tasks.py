@@ -39,7 +39,8 @@ class ModelTask(Task, ABC):
         Instantiate mongo client on first call (i.e. first task processed)
         Avoids the creation of multiple clients for each task request
         """
-        model_config.update(f"/model-config/{IDENTIFIER}")
+        model_config.update(IDENTIFIER)
+        logger.info(f"Configuration: {model_config}")
         if not self.model:
             logger.info(model_config)
             model_instance = MODEL_MAPPING[model_config.model_type]()
@@ -61,3 +62,4 @@ def prediction_task(self, prediction_request, task, model_config):
     logger.info(model_config)
     prediction = self.model.predict(PredictionRequest(**prediction_request), task)
     return prediction.dict()
+

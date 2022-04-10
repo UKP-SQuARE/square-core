@@ -27,43 +27,48 @@ async def add():
 @router.post("/sequence-classification", response_model=AsyncTaskResult,
              name="sequence classification")
 async def sequence_classification(
+        identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = prediction_task.apply_async((prediction_request.dict(), Task.sequence_classification, model_config.to_dict()), queue=QUEUE)
+    res = prediction_task.apply_async((prediction_request.dict(), Task.sequence_classification, model_config.to_dict()), queue=identifier)
 
     return AsyncTaskResult(message="Queued sequence classification", task_id=res.id)
 
 
-@router.post("/token-classification", response_model=AsyncTaskResult,
+@router.post("/{identifier}/token-classification", response_model=AsyncTaskResult,
              name="token classification")
 async def token_classification(
+        identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = await prediction_task.apply_async((prediction_request.dict(), Task.token_classification, model_config.to_dict()), queue=QUEUE)
+    res = await prediction_task.apply_async((prediction_request.dict(), Task.token_classification, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
-@router.post("/embedding", response_model=AsyncTaskResult, name="embedding")
+@router.post("/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding")
 async def embedding(
+        identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = prediction_task.apply_async((prediction_request.dict(), Task.embedding, model_config.to_dict()), queue="dpr")
+    res = prediction_task.apply_async((prediction_request.dict(), Task.embedding, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued embedding", task_id=res.id)
 
 
-@router.post("/question-answering", response_model=AsyncTaskResult, name="question answering")
+@router.post("/{identifier}/question-answering", response_model=AsyncTaskResult, name="question answering")
 async def question_answering(
+        identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = prediction_task.apply_async((prediction_request.dict(), Task.question_answering, model_config.to_dict()), queue=QUEUE)
+    res = prediction_task.apply_async((prediction_request.dict(), Task.question_answering, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued question answering", task_id=res.id)
 
 
-@router.post("/generation", response_model=AsyncTaskResult, name="generation")
+@router.post("/{identifier}/generation", response_model=AsyncTaskResult, name="generation")
 async def generation(
+        identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = prediction_task.apply_async((prediction_request.dict(), Task.generation, model_config), queue=QUEUE)
+    res = prediction_task.apply_async((prediction_request.dict(), Task.generation, model_config), queue=identifier)
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
@@ -76,18 +81,18 @@ async def get_task_results(task_id: str):
     return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
 
 
-@router.get("/stats", response_model=ModelStatistics, name="statistics")
-async def statistics() -> ModelStatistics:
+@router.get("/{identifier}/stats", response_model=ModelStatistics, name="statistics")
+async def statistics(identifier) -> ModelStatistics:
     """
     Returns the statistics of the model
     :return: the ModelStatistics for the model
     """
     logger.info("Getting statistics for ")
-    return get_statistics()
+    return get_statistics(identifier)
 
 
-@router.post("/update")
-async def update(updated_param: UpdateModel):
+@router.post("/{identifier}/update")
+async def update(identifier: str, updated_param: UpdateModel):
     """
     Update the model with the given parameters.
     (not all parameters can be updated through this method e.g. the model class
@@ -102,12 +107,16 @@ async def update(updated_param: UpdateModel):
     model_config.batch_size = updated_param.batch_size
     model_config.max_input_size = updated_param.max_input
     model_config.return_plaintext_arrays = updated_param.return_plaintext_arrays
-    return get_statistics()
+    model_config.save(identifier)
+    return get_statistics(identifier)
 
 
-def get_statistics():
+def get_statistics(identifier):
     """
     Get the information about the model
     :return: the ModelStatistics for the model
     """
+    logger.info("Reloading config")
+    model_config.update(identifier)
+    logger.info(model_config)
     return model_config.to_statistics()

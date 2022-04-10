@@ -1,5 +1,7 @@
 from dataclasses import dataclass, asdict
 from collections.abc import Mapping
+import json
+import os
 from square_model_inference.models.statistics import ModelStatistics
 
 from starlette.config import Config
@@ -71,10 +73,25 @@ class ModelConfig(Mapping):
             transformers_cache=self.transformers_cache,
         )
 
+    def update(self, identifier):
+        with open(f"/model_configs/{identifier}.json", 'r') as f:
+            config = json.load(f)
+        self.model_name = config["model_name"]
+        self.model_type = config["model_type"]
+        self.model_path = config["model_path"]
+        self.decoder_path = config["decoder_path"]
+        self.preloaded_adapters = config["preloaded_adapters"]
+        self.disable_gpu = config["disable_gpu"]
+        self.batch_size = config["batch_size"]
+        self.max_input_size = config["max_input_size"]
+        self.transformers_cache = config["transformers_cache"]
+        self.model_class = config["model_class"]
+        self.return_plaintext_arrays = config["return_plaintext_arrays"]
+
     @staticmethod
-    def load(path=".env"):
+    def load(path=".env"):  # change .env filename to work on local
         config = Config(path)
-        return ModelConfig(
+        model_config = ModelConfig(
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
             model_path=config("MODEL_PATH", default=None),
@@ -86,7 +103,14 @@ class ModelConfig(Mapping):
             transformers_cache=config("TRANSFORMERS_CACHE", default=None),
             model_class=config("MODEL_CLASS", default="base"),
             return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
-            )
+        )
+        IDENTIFIER = os.getenv("QUEUE")
+        model_config.save(IDENTIFIER)
+        return model_config
+
+    def save(self, identifier):
+        with open(f'/model_configs/{identifier}.json', 'w+') as json_file:
+            json.dump(self.to_dict(), json_file)
 
 
 model_config = ModelConfig.load()

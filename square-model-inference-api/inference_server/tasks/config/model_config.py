@@ -1,5 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, asdict
+import json
+import os
 
 from starlette.config import Config
 
@@ -70,24 +72,25 @@ class ModelConfig(Mapping):
     #         transformers_cache=self.transformers_cache,
     #     )
 
-    def update(self, path):
-        config = Config(path)
-        self.model_name = config("MODEL_NAME", default=None)
-        self.model_type = config("MODEL_TYPE", default=None)
-        self.model_path = config("MODEL_PATH", default=None)
-        self.decoder_path = config("DECODER_PATH", default=None)
-        self.preloaded_adapters = config("PRELOADED_ADAPTERS", cast=bool, default=True)
-        self.disable_gpu = config("DISABLE_GPU", cast=bool, default=False)
-        self.batch_size = config("BATCH_SIZE", cast=int, default=32)
-        self.max_input_size = config("MAX_INPUT_SIZE", cast=int, default=1024)
-        self.transformers_cache = config("TRANSFORMERS_CACHE", default=None)
-        self.model_class = config("MODEL_CLASS", default="base")
-        self.return_plaintext_arrays = config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False)
+    def update(self, identifier):
+        with open(f"/model_configs/{identifier}.json", 'r') as f:
+            config = json.load(f)
+        self.model_name = config["model_name"]
+        self.model_type = config["model_type"]
+        self.model_path = config["model_path"]
+        self.decoder_path = config["decoder_path"]
+        self.preloaded_adapters = config["preloaded_adapters"]
+        self.disable_gpu = config["disable_gpu"]
+        self.batch_size = config["batch_size"]
+        self.max_input_size = config["max_input_size"]
+        self.transformers_cache = config["transformers_cache"]
+        self.model_class = config["model_class"]
+        self.return_plaintext_arrays = config["return_plaintext_arrays"]
 
     @staticmethod
     def load(path=".env"):
         config = Config(path)
-        return ModelConfig(
+        model_config = ModelConfig(
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
             model_path=config("MODEL_PATH", default=None),
@@ -100,6 +103,11 @@ class ModelConfig(Mapping):
             model_class=config("MODEL_CLASS", default="base"),
             return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
         )
+
+        IDENTIFIER = os.getenv("QUEUE")
+        with open(f'/model_configs/{IDENTIFIER}.json', 'w+') as json_file:
+            json.dump(model_config.to_dict(), json_file)
+        return model_config
 
 
 # for testing the inference models
