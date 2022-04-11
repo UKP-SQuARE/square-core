@@ -7,7 +7,7 @@ from square_model_inference.models.prediction import AsyncTaskResult
 from square_model_inference.models.statistics import ModelStatistics, UpdateModel
 from starlette.responses import JSONResponse
 
-from square_model_inference.core.config import model_config
+from tasks.config.model_config import model_config
 from tasks.tasks import add_two, prediction_task
 
 import logging

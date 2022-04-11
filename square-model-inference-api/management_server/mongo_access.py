@@ -67,12 +67,32 @@ class MongoClass:
 
         self.models.insert_one(data)
 
+        return await self.add_container(env["IDENTIFIER"], container)
+
+    async def add_container(self, identifier, container):
         container_data = {
-            "IDENTIFIER": env["IDENTIFIER"],
+            "IDENTIFIER": identifier,
             "CONTAINER": container
         }
         self.containers.insert_one(container_data)
         return True
+
+    async def remove_container(self, container):
+        query = {"CONTAINER": container}
+        self.containers.delete_one(query)
+        return True
+
+    def get_model_container_ids(self, identifier):
+        query = {"IDENTIFIER": identifier}
+        result = self.containers.find(query)
+        return result
+
+    async def get_model_containers(self):
+        pipeline = [
+            {"$group": {"_id": "$IDENTIFIER", "count": {"$sum": 1}}},
+        ]
+        logger.info(self.containers.aggregate(pipeline))
+        return self.containers.aggregate(pipeline)
 
     def get_container_id(self, identifier):
         """
@@ -123,6 +143,14 @@ class MongoClass:
         added_models = []
         for data in deployed_models:
             if self.models.count_documents({"IDENTIFIER": data["IDENTIFIER"]}) == 0:
-                self.models.insert_one(data)
+                await self.add_model_db(data)
                 added_models.append(data["IDENTIFIER"])
         return added_models
+
+    async def get_model_stats(self, identifier):
+        query = {"IDENTIFIER": identifier}
+        return self.models.find_one(query)
+
+    async def get_container(self, identifier):
+        query = {"IDENTIFIER": identifier}
+        return self.containers.find_one(query, sort=[('_id', -1)])["CONTAINER"]

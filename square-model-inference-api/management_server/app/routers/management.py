@@ -52,6 +52,23 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return result
 
 
+@router.get("/deployed-model-workers", name="get-deployed-models",)
+async def get_model_containers():  # token: str = Depends(client_credentials)):
+    """
+    Get all the models deployed on the platform in list format
+    """
+    models = await mongo_client.get_model_containers()
+    result = []
+    for m in models:
+        result.append(
+            {
+                "identifier": m["_id"],
+                "num_containers": m["count"],
+            }
+        )
+    return result
+
+
 @router.post("/deploy", name="deploy-model", response_model=TaskGenericModel)
 async def deploy_new_model(request: Request, model_params: DeployRequest):
     """
@@ -90,7 +107,6 @@ async def remove_model(request: Request, identifier):
     Remove a model from the platform
     """
     # check if the model is deployed
-    logger.info(identifier)
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
@@ -101,6 +117,31 @@ async def remove_model(request: Request, identifier):
         raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
     return {"message": "Queued removing model.", "task_id": res.id}
 
+
+@router.post("/{identifier}/add_worker")
+async def add_model_container(identifier):
+    env = await mongo_client.get_model_stats(identifier)
+    import json
+    from bson import json_util
+    env = json.loads(json_util.dumps(env))
+    models = await mongo_client.get_model_containers()
+    for m in models:
+        if m["_id"] == identifier:
+            res = tasks.add_worker.delay(identifier, env, m["count"]+1)
+            return {"message": f"Queued adding worker for {identifier}", "task_id": res.id}
+    return {"message": f"No model with that identifier"}
+
+
+@router.delete("/{identifier}/remove_worker")
+async def remove_model_container(identifier):
+    models = await mongo_client.get_model_containers()
+    for m in models:
+        if m["_id"] == identifier:
+            if m["count"] == 1:
+                return HTTPException(status_code=403, detail="Only one worker left. To remove that remove the whole model.")
+    container = await mongo_client.get_container(identifier)
+    res = tasks.remove_worker.delay(container)
+    return {"message": f"Queued removing worker for {identifier}", "task_id": res.id}
 
 @router.patch("/update/{identifier}")
 async def update_model(
@@ -148,7 +189,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
 
     for prefix, container in zip(lst_prefix, lst_container_ids):
         r = requests.get(
-            url="{}{}/stats".format(settings.API_URL, prefix),
+            url="{}/api/main/{}/stats".format(settings.API_URL, prefix),
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )

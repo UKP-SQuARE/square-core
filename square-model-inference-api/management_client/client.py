@@ -22,7 +22,7 @@ class ManagementClient:
             client_secret,
             verify_ssl=True,
             keycloak_base_url="https://square.ukp-lab.de",
-            realm="Models-test",
+            realm="square",
             client_id="models",
     ):
         """
@@ -61,7 +61,7 @@ class ManagementClient:
         while attempts < max_attempts:
             attempts += 1
             result_response = requests.get(
-                url="{}/api/{}/task_result/{}".format(self.url, identifier, task_id),
+                url="{}/api/main/task_result/{}".format(self.url, task_id),
                 headers={"Authorization": f"Bearer {self.client_credentials()}"},
                 verify=self.verify_ssl,
             )
@@ -86,7 +86,7 @@ class ManagementClient:
             raise ValueError(
                 f"Unknown prediction_method {prediction_method}. Please choose one of the following {supported_prediction_methods}")
         response = requests.post(
-            url="{}/api/{}/{}".format(self.url, model_identifier, prediction_method),
+            url="{}/api/main/{}/{}".format(self.url, model_identifier, prediction_method),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
             json=input_data,
             verify=self.verify_ssl,
@@ -103,7 +103,7 @@ class ManagementClient:
             model_identifier(str): the identifier of the model to provide the statistics for
         """
         response = requests.get(
-            url="{}/api/{}/stats".format(self.url, model_identifier),
+            url="{}/api/main/{}/stats".format(self.url, model_identifier),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
             verify=self.verify_ssl,
         )
@@ -114,18 +114,7 @@ class ManagementClient:
         Get all deployed models and their statistics
         """
         response = requests.get(
-            url="{}/api/models/deployed-models-health".format(self.url),
-            headers={"Authorization": f"Bearer {self.client_credentials()}"},
-            verify=self.verify_ssl,
-        )
-        return response.json()
-
-    def deployed_models_health(self):
-        """
-        Get all deployed models and their health status
-        """
-        response = requests.get(
-            url="{}/api/models/deployed-models-health".format(self.url),
+            url="{}/api/models/deployed-models".format(self.url),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
             verify=self.verify_ssl,
         )
@@ -167,7 +156,7 @@ class ManagementClient:
         Args:
             model_identifier (str): the identifier of the model that should be removed
         """
-        response = requests.post(
+        response = requests.delete(
             url="{}/api/models/remove/{}".format(self.url, model_identifier),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
             verify=self.verify_ssl,
@@ -192,7 +181,7 @@ class ManagementClient:
                     "return_plaintext_arrays": True
                 }
         """
-        response = requests.post(
+        response = requests.patch(
             url="{}/api/models/update/{}".format(self.url, model_identifier),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
             json=updated_attributes,

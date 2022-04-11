@@ -43,7 +43,7 @@ def create_docker_labels(identifier: str) -> dict:
     return labels
 
 
-def start_new_model_container(identifier, env):
+def start_new_model_container(identifier, env, id=1):
     """
     Start a new container in the current network with a new model-api instance.
     identifier(str): the name/identifier of the new model api instance
@@ -75,7 +75,7 @@ def start_new_model_container(identifier, env):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    worker_name = network.name + "-model-" + identifier + "-worker"
+    worker_name = network.name + "-model-" + identifier + "-worker-" + str(id)
 
     env["WEB_CONCURRENCY"] = 1
     env["KEYCLOAK_BASE_URL"] = "https://square.ukp-lab.de"
@@ -162,12 +162,13 @@ def get_all_model_prefixes():
     for container in lst_container:
         logger.debug("Found candidate model container: %s", container.name)
         if "model" in container.name:
-            for _, label in container.labels.items():
-                if "PathPrefix" in label and MODELS_API_PATH not in label:
-                    prefix = re.search("PathPrefix\(`(.+?)`\)", label).group(1)
-                    lst_prefix.append(prefix)
-                    lst_container_ids.append(container.id)
-                # TODO get corresponding worker for each model
+            for env_var in container.attrs["Config"]["Env"]:
+                if "QUEUE" in env_var:
+                    logger.info(env_var)
+                    key, val = env_var.split("=")
+                    if "QUEUE" == key:
+                        lst_prefix.append(val)
+                        lst_container_ids.append(container.id)
                 # maybe we can achieve this by finding the container with the same queue name
 
     logger.debug("Found model containers: %s on port %s", lst_prefix, port)

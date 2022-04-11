@@ -96,9 +96,11 @@ def remove_model_task(self, identifier):
     except Exception:
         return {"success": False, "message": "Connection to the database failed."}
     try:
-        container_id = self.client.get_container_id(identifier)
-        logger.info("Starting to remove docker container %s", container_id)
-        result = remove_model_container(container_id)
+        containers = self.client.get_model_container_ids(identifier)
+        for c in containers:
+            container_id = c["CONTAINER"]
+            logger.info("Starting to remove docker container %s", container_id)
+            result = remove_model_container(container_id)
         if result:
             asyncio.run(self.client.remove_model_db(identifier))
             return {"success": result, "message": "Model removal successful"}
@@ -106,3 +108,47 @@ def remove_model_task(self, identifier):
         logger.info(e)
         logger.exception("Could not remove model", exc_info=True)
     return {"success": False, "message": "Model removal not successful"}
+
+
+@app.task(
+    bind=True,
+    base=ModelTask,
+)
+def add_worker(self, identifier, env, id):
+    try:
+        deployment_result = start_new_model_container(identifier, env, id)
+        logger.info(deployment_result)
+        container = deployment_result["container"]
+        if container is not None:  # and identifier not in model_ids:
+            result = {
+                "success": True,
+                "container": container.id,
+                "message": f"Model container added for {identifier}",
+            }
+            asyncio.run(self.client.add_container(identifier, container.id))
+            return result
+
+    except Exception as e:
+        logger.exception("Adding model worker failed", exc_info=True)
+        logger.info("Caught exception. %s ", e)
+        return {"success": False}
+    return {
+        "success": False,
+    }
+
+
+@app.task(
+    bind=True,
+    base=ModelTask,
+)
+def remove_worker(self, container):
+    try:
+        result = remove_model_container(container)
+        if result:
+            asyncio.run(self.client.remove_container(container))
+            return {"success": result, "message": "Model removal successful"}
+
+    except Exception as e:
+        logger.exception("Adding model worker failed", exc_info=True)
+        logger.info("Caught exception. %s ", e)
+        return {"success": False}

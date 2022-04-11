@@ -2,8 +2,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass, asdict
 import json
 import os
-
 from starlette.config import Config
+from square_model_inference.models.statistics import ModelStatistics
+from filelock import FileLock
 
 APP_VERSION = "0.1.0"
 APP_NAME = "SQuARE Model Inference API"
@@ -57,20 +58,20 @@ class ModelConfig(Mapping):
     def to_dict(self):
         return asdict(self)
 
-    # def to_statistics(self):
-    #     return ModelStatistics(
-    #         model_type=self.model_type,
-    #         model_name=self.model_name,
-    #         model_class=self.model_class,
-    #         batch_size=self.batch_size,
-    #         max_input=self.max_input_size,
-    #         disable_gpu=self.disable_gpu,
-    #         return_plaintext_arrays=self.return_plaintext_arrays,
-    #         model_path=self.model_path,
-    #         decoder_path=self.decoder_path,
-    #         preloaded_adapters=self.preloaded_adapters,
-    #         transformers_cache=self.transformers_cache,
-    #     )
+    def to_statistics(self):
+        return ModelStatistics(
+            model_type=self.model_type,
+            model_name=self.model_name,
+            model_class=self.model_class,
+            batch_size=self.batch_size,
+            max_input=self.max_input_size,
+            disable_gpu=self.disable_gpu,
+            return_plaintext_arrays=self.return_plaintext_arrays,
+            model_path=self.model_path,
+            decoder_path=self.decoder_path,
+            preloaded_adapters=self.preloaded_adapters,
+            transformers_cache=self.transformers_cache,
+        )
 
     def update(self, identifier):
         with open(f"/model_configs/{identifier}.json", 'r') as f:
@@ -88,7 +89,7 @@ class ModelConfig(Mapping):
         self.return_plaintext_arrays = config["return_plaintext_arrays"]
 
     @staticmethod
-    def load(path=".env"):
+    def load(path=".env"):  # change .env filename to work on local
         config = Config(path)
         model_config = ModelConfig(
             model_name=config("MODEL_NAME", default=None),
@@ -103,11 +104,17 @@ class ModelConfig(Mapping):
             model_class=config("MODEL_CLASS", default="base"),
             return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
         )
-
         IDENTIFIER = os.getenv("QUEUE")
-        with open(f'/model_configs/{IDENTIFIER}.json', 'w+') as json_file:
-            json.dump(model_config.to_dict(), json_file)
+        model_config.save(IDENTIFIER)
         return model_config
+
+    def save(self, identifier):
+        with FileLock(f"/model_configs/{identifier}.lock"):
+            with open(f'/model_configs/{identifier}.json', 'w+') as json_file:
+                json.dump(self.to_dict(), json_file)
+
+
+model_config = ModelConfig.load()
 
 
 # for testing the inference models
@@ -122,7 +129,4 @@ def set_test_config(model_name, disable_gpu, batch_size, max_input_size, model_c
     model_config.transformers_cache = cache
     model_config.preloaded_adapters = preloaded_adapters
     model_config.model_path = onnx_path
-    model_config.decoder_path = decoder_path
-
-
-model_config = ModelConfig.load()
+    model_config.decoder_path = decoder_pathmodel_config = ModelConfig.load()
