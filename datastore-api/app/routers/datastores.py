@@ -131,7 +131,7 @@ async def delete_datastore(
 
     if success:    
         await mongo.delete_binding(request, datastore_name, binding_item_type)
-        conn.commit_changes()
+        await conn.commit_changes()
         return Response(status_code=204)
     else:
         return Response(status_code=404)
