@@ -69,12 +69,12 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      # - name: Retrieve Test Reports
-      #   id: extract
-      #   uses: shrink/actions-docker-extract@v1
-      #   with:
-      #     image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
-      #     path: /app/test-reports
+      - name: Retrieve Test Reports
+        id: extract
+        uses: shrink/actions-docker-extract@v1
+        with:
+          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          path: /app/test-reports
 
       - uses: actions/upload-artifact@v2
         with:
