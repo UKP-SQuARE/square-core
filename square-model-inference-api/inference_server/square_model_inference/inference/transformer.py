@@ -325,7 +325,8 @@ class Transformer(Model):
                               enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]],
                 }
                 for s, e, score in zip(starts, ends, scores)]
-            answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
+            if request.task_kwargs.get("return_no_answer_score", False):
+                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
             answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
             task_outputs["answers"].append(answers)
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
