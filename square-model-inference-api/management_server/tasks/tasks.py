@@ -114,18 +114,27 @@ def remove_model_task(self, identifier):
     bind=True,
     base=ModelTask,
 )
-def add_worker(self, identifier, env, id):
+def add_worker(self, identifier, env, id, num):
     try:
-        deployment_result = start_new_model_container(identifier, env, id)
-        logger.info(deployment_result)
-        container = deployment_result["container"]
-        if container is not None:  # and identifier not in model_ids:
+        containers = []
+        for i in range(num):
+            deployment_result = start_new_model_container(identifier, env, id+i)
+            logger.info(deployment_result)
+            container = deployment_result["container"]
+            if containers is None:
+                return {
+                    "success": False,
+                    "message": deployment_result["message"],
+                }
+            containers.append(container.id)
+        if len(containers) > 0:  # and identifier not in model_ids:
             result = {
                 "success": True,
-                "container": container.id,
-                "message": f"Model container added for {identifier}",
+                "container": containers,
+                "message": f" {len(containers)} model container added for {identifier}",
             }
-            asyncio.run(self.client.add_container(identifier, container.id))
+            for id in containers:
+                asyncio.run(self.client.add_container(identifier, id))
             return result
 
     except Exception as e:
@@ -141,12 +150,13 @@ def add_worker(self, identifier, env, id):
     bind=True,
     base=ModelTask,
 )
-def remove_worker(self, container):
+def remove_worker(self, containers):
     try:
-        result = remove_model_container(container)
+        for c in containers:
+            result = remove_model_container(c)
         if result:
-            asyncio.run(self.client.remove_container(container))
-            return {"success": result, "message": "Model removal successful"}
+            asyncio.run(self.client.remove_container(containers))
+            return {"success": result, "message": "Worker removal successful"}
 
     except Exception as e:
         logger.exception("Adding model worker failed", exc_info=True)

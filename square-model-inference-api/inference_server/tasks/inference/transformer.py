@@ -292,7 +292,8 @@ class Transformer(Model):
 
         request.preprocessing_kwargs["truncation"] = "only_second"
         predictions, features = self._predict(request, output_features=True)
-
+        logger.info(predictions)
+        logger.info(request.input)
         task_outputs = {"answers": []}
         for idx, (start, end, (_, context)) in enumerate(
                 zip(predictions["start_logits"], predictions["end_logits"], request.input)):

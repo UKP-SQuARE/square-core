@@ -7,7 +7,7 @@ from square_model_inference.models.prediction import AsyncTaskResult
 from square_model_inference.models.statistics import ModelStatistics, UpdateModel
 from starlette.responses import JSONResponse
 
-from tasks.config.model_config import model_config
+from tasks.config.model_config import ModelConfig
 from tasks.tasks import add_two, prediction_task
 
 import logging
@@ -30,6 +30,7 @@ async def sequence_classification(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.sequence_classification, model_config.to_dict()), queue=identifier)
 
     return AsyncTaskResult(message="Queued sequence classification", task_id=res.id)
@@ -41,7 +42,8 @@ async def token_classification(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = await prediction_task.apply_async((prediction_request.dict(), Task.token_classification, model_config.to_dict()), queue=identifier)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async((prediction_request.dict(), Task.token_classification, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
@@ -50,6 +52,7 @@ async def embedding(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.embedding, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued embedding", task_id=res.id)
 
@@ -59,6 +62,7 @@ async def question_answering(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.question_answering, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued question answering", task_id=res.id)
 
@@ -68,7 +72,8 @@ async def generation(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
-    res = prediction_task.apply_async((prediction_request.dict(), Task.generation, model_config), queue=identifier)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async((prediction_request.dict(), Task.generation, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
@@ -101,6 +106,7 @@ async def update(identifier: str, updated_param: UpdateModel):
     :return: the information about the updated model
     """
     logger.info("Updating model parameters")
+    model_config = ModelConfig.load_from_file(identifier)
     if model_config.model_type in ["onnx", "sentence-transformer"] and model_config.disable_gpu != updated_param.disable_gpu:
         raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
     model_config.disable_gpu = updated_param.disable_gpu
@@ -117,6 +123,7 @@ def get_statistics(identifier):
     :return: the ModelStatistics for the model
     """
     logger.info("Reloading config")
+    model_config = ModelConfig.load_from_file(identifier)
     model_config.update(identifier)
     logger.info(model_config)
     return model_config.to_statistics()

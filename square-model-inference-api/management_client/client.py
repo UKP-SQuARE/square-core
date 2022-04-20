@@ -58,6 +58,7 @@ class ManagementClient:
         if poll_interval is None:
             poll_interval = self.poll_interval
         attempts = 0
+        result = None
         while attempts < max_attempts:
             attempts += 1
             result_response = requests.get(
@@ -80,7 +81,7 @@ class ManagementClient:
                 sequence-classification, token-classification, generation, question-answering
             input_data (Dict): the input for the prediction
         """
-        supported_prediction_methods = ["embedding", "sequence-classification", "token-classification," "generation",
+        supported_prediction_methods = ["embedding", "sequence-classification", "token-classification", "generation",
                                         "question-answering"]
         if prediction_method not in supported_prediction_methods:
             raise ValueError(
@@ -115,6 +116,17 @@ class ManagementClient:
         """
         response = requests.get(
             url="{}/api/models/deployed-models".format(self.url),
+            headers={"Authorization": f"Bearer {self.client_credentials()}"},
+            verify=self.verify_ssl,
+        )
+        return response.json()
+
+    def deployed_model_workers(self):
+        """
+        Get all deployed models and their statistics
+        """
+        response = requests.get(
+            url="{}/api/models/deployed-model-workers".format(self.url),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
             verify=self.verify_ssl,
         )
@@ -188,3 +200,33 @@ class ManagementClient:
             verify=self.verify_ssl,
         )
         return response.json()
+
+    def add_worker(self, model_identifier, number):
+        """
+        Adds workers of a specific model such that heavy workloads can be handled better.
+        Note, that only the creater of the model is allowed to add new workers and only admins are allowed to have more than 2
+        workers for each model.
+        Args:
+            model_identifier (str): the identifier of the model to add workers for
+            number (int): the number of workers to add
+        """
+        response = requests.patch(
+            url="{}/api/models/{}/add_worker/{}".format(self.url, model_identifier, number),
+            headers={"Authorization": f"Bearer {self.client_credentials()}"},
+            verify=self.verify_ssl,
+        )
+        if response.status_code == 200:
+            return self._wait_for_task("models", response.json()["task_id"])
+        else:
+            return response
+
+    def remove_worker(self, model_identifier, number):
+        response = requests.patch(
+            url="{}/api/models/{}/remove_worker/{}".format(self.url, model_identifier, number),
+            headers={"Authorization": f"Bearer {self.client_credentials()}"},
+            verify=self.verify_ssl,
+        )
+        if response.status_code == 200:
+            return self._wait_for_task("models", response.json()["task_id"])
+        else:
+            return response

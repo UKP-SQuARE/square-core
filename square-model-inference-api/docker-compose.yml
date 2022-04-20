@@ -142,7 +142,7 @@ services:
 ##################################################################
 # --------- Example config for transformer model server ---------#
 ##################################################################
-  model_dpr:
+  main_model:
 #    image: ukpsquare/square-model-api-v1:latest
     build: ./inference_server
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf

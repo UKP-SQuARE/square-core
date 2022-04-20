@@ -108,6 +108,12 @@ class ModelConfig(Mapping):
         model_config.save(IDENTIFIER)
         return model_config
 
+    @staticmethod
+    def load_from_file(identifier):
+        with open(f"/model_configs/{identifier}.json", 'r') as f:
+            config = json.load(f)
+        return ModelConfig(**config)
+
     def save(self, identifier):
         with FileLock(f"/model_configs/{identifier}.lock"):
             with open(f'/model_configs/{identifier}.json', 'w+') as json_file:

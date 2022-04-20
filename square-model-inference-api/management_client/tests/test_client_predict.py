@@ -1,12 +1,44 @@
 import unittest
 
 from client import ManagementClient
+import base64
+import numpy as np
+from io import BytesIO
 
 
 class TestClientPredict(unittest.TestCase):
-    def setUp(self) -> None:
-        self.client = ManagementClient("https://localhost:8443", client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
+    @classmethod
+    def setUpClass(cls):
+        cls.client = ManagementClient("https://localhost:8443", client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
                                        verify_ssl=False)
+        identifier = "bert_adapter_test"
+        model_attributes = {
+            "identifier": identifier,
+            "model_name": "bert-base-uncased",
+            "model_type": "adapter",
+            "disable_gpu": True,
+            "batch_size": 32,
+            "max_input": 1024,
+            "transformers_cache": "../.cache",
+            "model_class": "generation",
+            "return_plaintext_arrays": False,
+            "preloaded_adapters": False
+        }
+        cls.client.deploy(model_attributes)
+        identifier = "gpt2_test"
+        model_attributes = {
+            "identifier": identifier,
+            "model_name": "bert-base-uncased",
+            "model_type": "transformer",
+            "disable_gpu": True,
+            "batch_size": 32,
+            "max_input": 1024,
+            "transformers_cache": "../.cache",
+            "model_class": "generation",
+            "return_plaintext_arrays": False,
+            "preloaded_adapters": True
+        }
+        cls.client.deploy(model_attributes)
 
     def test_client_embedding(self):
         result = self.client.predict("facebook-dpr-question_encoder-single-nq-base",
@@ -15,77 +47,51 @@ class TestClientPredict(unittest.TestCase):
         self.assertTrue("embeddings" in result["model_outputs"])
         self.assertEquals(type(result["model_outputs"]["embeddings"]), str)
 
-    def test_deployed_models(self):
-        result = self.client.deployed_models()
-        self.assertTrue(any(model["identifier"] == "facebook-dpr-question_encoder-single-nq-base" for model in result))
+    def test_client_sequence_classification(self):
+        identifier = "bert_adapter_test"
+        result = self.client.predict(identifier, input_data={"input": [["What is a test?", "A test is a thing where you test."]], "adapter_name": "lingaccept/cola@ukp"}, prediction_method="embedding")
+        self.assertTrue("logits" in result["model_outputs"])
+        self.assertEqual(type(result["model_outputs"]["logits"]), str)
 
-    def test_deploy_and_remove(self):
-        identifier="bert-test"
-        model_attributes = {
-            "identifier": identifier,
-            "model_name": "bert-base-uncased",
-            "model_type": "transformer",
-            "disable_gpu": True,
-            "batch_size": 32,
-            "max_input": 1024,
-            "transformers_cache": "../.cache",
-            "model_class": "base",
-            "return_plaintext_arrays": False,
-            "preloaded_adapters": True
-        }
-        result_deploy = self.client.deploy(model_attributes)
-        self.assertTrue(result_deploy["success"])
-        models = self.client.deployed_models()
-        self.assertTrue(any(model["identifier"] == identifier for model in models))
+        arr_binary_b64 = result["model_outputs"]["logits"].encode()
+        arr_binary = base64.decodebytes(arr_binary_b64)
+        arr = np.load(BytesIO(arr_binary))
 
-        result_remove = self.client.remove(identifier)
-        self.assertTrue(result_remove["success"])
-        models = self.client.deployed_models()
-        self.assertFalse(any(model["identifier"] == identifier for model in models))
+        self.assertEquals(arr.shape, (1, 2))
 
-    def test_update(self):
-        identifier = "bert-test"
-        model_attributes = {
-            "identifier": identifier,
-            "model_name": "bert-base-uncased",
-            "model_type": "transformer",
-            "disable_gpu": True,
-            "batch_size": 32,
-            "max_input": 1024,
-            "transformers_cache": "../.cache",
-            "model_class": "base",
-            "return_plaintext_arrays": False,
-            "preloaded_adapters": True
-        }
-        result_deploy = self.client.deploy(model_attributes)
-        self.assertTrue(result_deploy["success"])
-        models = self.client.deployed_models()
-        self.assertTrue(any(model["identifier"] == identifier for model in models))
+    def test_client_token_classification(self):
+        identifier = "bert_adapter_test"
+        result = self.client.predict(identifier,
+                                     input_data={"input": ["Some text"], "adapter_name": "ner/conll2003@ukp"},
+                                     prediction_method="token-classification")
+        self.assertTrue("logits" in result["model_outputs"])
+        self.assertEqual(type(result["model_outputs"]["logits"]), str)
 
-        updated_params = {
-            "disable_gpu": True,
-            "batch_size": 32,
-            "max_input": 256,
-            "return_plaintext_arrays": True
-        }
-        result = self.client.update(identifier, updated_params)
-        self.assertTrue(result["content"]["return_plaintext_arrays"])
-        prediction_result = self.client.predict(identifier,
-                                                input_data={"input": ["Some text"]}, prediction_method="embedding")
-        self.assertEquals(type(prediction_result["model_outputs"]["embeddings"]), list)
+        arr_binary_b64 = result["model_outputs"]["logits"].encode()
+        arr_binary = base64.decodebytes(arr_binary_b64)
+        arr = np.load(BytesIO(arr_binary))
 
-        updated_params["return_plaintext_arrays"] = False
-        result = self.client.update(identifier, updated_params)
-        self.assertFalse(result["content"]["return_plaintext_arrays"])
+        self.assertEquals(arr.shape, (1, 4, 9))
 
-        prediction_result = self.client.predict(identifier,
-                                                input_data={"input": ["Some text"]}, prediction_method="embedding")
-        self.assertEquals(type(prediction_result["model_outputs"]["embeddings"]), str)
-        result_remove = self.client.remove(identifier)
-        self.assertTrue(result_remove["success"])
-        models = self.client.deployed_models()
-        self.assertFalse(any(model["identifier"] == identifier for model in models))
+    def test_client_question_answering(self):
+        identifier = "bert_adapter_test"
+        result = self.client.predict(identifier,
+                                     input_data={"input": [["What is a test?", "A test is a thing where you test."]], "adapter_name": "qa/squad1@ukp"},
+                                     prediction_method="question-answering")
+        self.assertTrue("start_logits" in result["model_outputs"])
+        self.assertEqual(type(result["model_outputs"]["start_logits"]), str)
 
+        arr_binary_b64 = result["model_outputs"]["start_logits"].encode()
+        arr_binary = base64.decodebytes(arr_binary_b64)
+        arr = np.load(BytesIO(arr_binary))
+
+        self.assertEquals(arr.shape, (1, 17))
+
+    def test_client_generation(self):
+        identifier = "gpt2_test"
+        result = self.client.predict(identifier, input_data={"input": ["Some text"]}, prediction_method="generation")
+        self.assertTrue("model_outputs" in result)
+        self.assertTrue("sequences" in result["model_outputs"])
 
 if __name__ == '__main__':
     unittest.main()

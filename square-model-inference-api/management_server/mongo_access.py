@@ -77,9 +77,10 @@ class MongoClass:
         self.containers.insert_one(container_data)
         return True
 
-    async def remove_container(self, container):
-        query = {"CONTAINER": container}
-        self.containers.delete_one(query)
+    async def remove_container(self, containers):
+        for c in containers:
+            query = {"CONTAINER": c}
+            self.containers.delete_one(query)
         return True
 
     def get_model_container_ids(self, identifier):
@@ -151,6 +152,10 @@ class MongoClass:
         query = {"IDENTIFIER": identifier}
         return self.models.find_one(query)
 
-    async def get_container(self, identifier):
+    async def get_containers(self, identifier, num):
         query = {"IDENTIFIER": identifier}
-        return self.containers.find_one(query, sort=[('_id', -1)])["CONTAINER"]
+        result = self.containers.find(query, sort=[('_id', -1)]).limit(num)
+        containers = []
+        for c in result:
+            containers.append(c["CONTAINER"])
+        return containers
