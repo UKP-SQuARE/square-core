@@ -22,8 +22,12 @@ const sidebars = {
     {
       type: 'category',
       label: 'Overview',
-      items: ['overview/introduction', 'overview/get_started', 'overview/use_cases', 'overview/tutorials',
-              'overview/roadmap', 'overview/faq'],
+      items: ['overview/introduction',
+              'overview/get_started',
+              'overview/use_cases',
+              'overview/tutorials',
+              // 'overview/roadmap',
+              'overview/faq'],
     },
       {
       type: 'category',

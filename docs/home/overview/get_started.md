@@ -20,7 +20,7 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)!
 The existing skills include span-extraction, abstractive, multi-choice QA 
 with contexts or without contexts (open QA based on retrieval).
 
-![demo-page](../../static/img/demo-page.png)
+![demo-page](../../static/img/skill_comparison.png)
 
 <a name="Add-New-Skills"></a>
 
