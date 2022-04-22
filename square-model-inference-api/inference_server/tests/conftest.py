@@ -19,7 +19,8 @@ import subprocess
 # environ["BATCH_SIZE"] = "1"
 # environ["RETURN_PLAINTEXT_ARRAYS"] = "False"
 
-from main import get_app
+from main import get_app, auth
+
 from square_model_inference.inference.model import Model
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForGeneration, \
     PredictionOutputForEmbedding, PredictionOutputForTokenClassification, PredictionOutputForSequenceClassification,\
@@ -36,6 +37,7 @@ from square_model_inference.core.config import ModelConfig, set_test_config, mod
 def test_app():
     app = get_app()
     app.state.model = TestModel()
+    app.dependency_overrides[auth] = lambda: True
     return app
 
 

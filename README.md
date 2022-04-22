@@ -69,7 +69,13 @@ To run UKP-SQuARE locally, you need the following software:
 * [jq](https://stedolan.github.io/jq/download/)
 
 ### Install
-Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml). For installation we provide a script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
+Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml).  
+Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml).  
+Now, modify your `/etc/hosts` to contain:
+```
+127.0.0.1   square.ukp-lab.localhost
+```  
+For installation we provide a script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
 ```bash
 bash install.sh
 ```
@@ -78,10 +84,10 @@ Finally, you can run the full system with docker-compose. Before doing so, you m
 ```bash
 docker-compose up -d
 ```
-Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.local](https://square.ukp-lab.local).
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.localhost](https://square.ukp-lab.localhost).
 👉 Accept that the browser cannot verify the certificate.
 ### Add Skills
-Add Skills according to the [Add New Skills](./skills/README.md#add-new-skills) section. Note that, for open-domain skills the datastore need to created first.
+Add Skills according to the [Add New Skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills/README.md#add-new-skills) section. Note that, for open-domain skills the datastore need to created first.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:
@@ -116,4 +122,16 @@ Contact person: [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmsta
 
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
+## Citation
+
+To appear at [ACL 2022 Demo Track](https://www.2022.aclweb.org/).      
+```
+@article{baumgartner2022ukp,
+  title={UKP-SQUARE: An Online Platform for Question Answering Research},
+  author={Baumg{\"a}rtner, Tim and Wang, Kexin and Sachdeva, Rachneet and Eichler, Max and Geigle, Gregor and Poth, Clifton and Sterz, Hannah and Puerto, Haritz and Ribeiro, Leonardo FR and Pfeiffer, Jonas and Reimers, Nils and \c{S}ahin, G{\"o}zde G{\"u}l and Gurevych, Iryna},
+  journal={arXiv preprint arXiv:2203.13693},
+  year={2022}
+}
+```
+        
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.

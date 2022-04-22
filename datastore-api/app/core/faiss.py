@@ -1,8 +1,7 @@
 import logging
 from typing import List, Optional
-
 import requests
-
+from .config import settings
 from ..models.query import QueryResult
 
 
@@ -12,11 +11,13 @@ logger = logging.getLogger(__name__)
 class FaissClient:
     """Wraps access to the FAISS server."""
 
-    def __init__(self, base_url: str):
-        self.base_url = base_url
+    @staticmethod
+    def build_faiss_url(datastore_name, index_name):
+        url = 'http://' + '_'.join(['faiss', datastore_name, index_name]) + f':{settings.FAISS_PORT}'
+        return url
 
     def status(self, datastore_name, index_name) -> Optional[dict]:
-        url = f"{self.base_url}/{datastore_name}/{index_name}/index_list"
+        url = f"{self.build_faiss_url(datastore_name, index_name)}/index_list"
         response = requests.get(url)
         if response.status_code != 200:
             logger.info(response.text)
@@ -26,7 +27,7 @@ class FaissClient:
         return queried
 
     def search(self, datastore_name, index_name, query_vector, top_k=10) -> List[QueryResult]:
-        url = f"{self.base_url}/{datastore_name}/{index_name}/search"
+        url = f"{self.build_faiss_url(datastore_name, index_name)}/search"
         data = {"k": top_k, "vectors": [query_vector]}
         logger.debug(f"querying faiss at {url}") 
         response = requests.post(url, json=data)
@@ -40,7 +41,7 @@ class FaissClient:
         return queried
 
     def explain(self, datastore_name, index_name, query_vector, document_id) -> QueryResult:
-        url = f"{self.base_url}/{datastore_name}/{index_name}/explain"
+        url = f"{self.build_faiss_url(datastore_name, index_name)}/explain"
         data = {"vector": query_vector, "id": document_id}
         response = requests.post(url, json=data)
         if response.status_code != 200:
@@ -51,7 +52,7 @@ class FaissClient:
         return queried
 
     def reconstruct(self, datastore_name, index_name, document_id) -> List[float]:
-        url = f"{self.base_url}/{datastore_name}/{index_name}/reconstruct"
+        url = f"{self.build_faiss_url(datastore_name, index_name)}/reconstruct"
         params = {"id": document_id}
         response = requests.get(url, params=params)
         if response.status_code != 200:
