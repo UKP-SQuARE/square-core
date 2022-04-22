@@ -14,7 +14,9 @@ class TestcontainerKeycloak(DockerContainer):
         self.with_env("KEYCLOAK_USER", kwargs.get("keycloak_user", "admin"))
         self.with_env("KEYCLOAK_PASSWORD", kwargs.get("keycloak_password", "admin"))
 
-    @wait_container_is_ready()
+    @wait_container_is_ready(
+        requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout
+    )
     def _connect(self):
         connection_url = self.get_connection_url()
         response = requests.get(f"{connection_url}/auth", timeout=1)
