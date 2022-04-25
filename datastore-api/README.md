@@ -70,7 +70,7 @@ docker compose down
 
 ### API server
 
-**Configuration:** Before starting the server, a few configuration options can be set via environment variables or a `.env` file. See [here](.env) for an example configuration and [here](app/core/config.py) for all available options.
+**Configuration:** Before starting the server, a few configuration options can be set via environment variables or a `.env` file. See [here](.env.test) for an example configuration and [here](app/core/config.py) for all available options.
 
 **Running:**
 ```
@@ -87,10 +87,7 @@ Run integration tests:
 ```
 make test
 ```
-Run API tests (does not require dependency services):
-```
-make test-api
-```
+
 
 ## Upload documents
 
@@ -210,11 +207,17 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     docker compose up -d
     ```
 ## Pytest
+
+Please make sure to upgrade your Pyhton requirements for testing:
+```
+pip install -r requirements.dev.txt
+```
+
 As the usual way, for running tests on the host machine, just run:
 ```
-make test-api
+make test
 ```
-However, the CI test actually run the test inside a docker container. To simulate this, we can run:
+However, the CI test actually runs the test inside a docker container. To simulate this, we can run:
 ```
 make docker-test
 ```
