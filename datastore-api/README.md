@@ -210,7 +210,11 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     docker compose up -d
     ```
 ## Pytest
-Run
+As the usual way, for running tests on the host machine, just run:
 ```
 make test-api
+```
+However, the CI test actually run the test inside a docker container. To simulate this, we can run:
+```
+make docker-test
 ```
