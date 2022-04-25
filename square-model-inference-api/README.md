@@ -6,44 +6,19 @@ Receives input and returns prediction and other artifacts (e.g. attention scores
 ## Project structure
 
 The Model API uses 2 components: 
-n inference servers (each with their own model), and a Traefik server that serves as API gateway 
-to forward requests to the correct inference server and to handle authorization of requests.
-```
-├───inference_server            # FastAPI Model API Server
-│   ├───tests                   # Unit Tests
-│   │   ├───test_api
-│   │   ├───test_inference
-│   ├───main.py                 # Entry point in server
-│   ├───Dockerfile              # Dockerfile for server
-│   └───square_model_inference  # Server Logic
-│       ├───api                 # API Routes
-│       │   ├───routes
-│       ├───core                # Server config, Startup logic, etc.
-│       ├───models              # Input/ output modelling for API
-│       └───inference           # Deep Model implementation and inference code for NLP tasks
-├───management_server           # FastAPI server for adding new models or listing all models
-│   ├───main.py                 # Entry point in server
-│   ├───docker_access.py        # Manages docker acces of server
-│   ├───Dockerfile              # Dockerfile for server
-│   ├───tasks                   # Tasks for queueing with celery 
-│   └───app
-│        ├───core               # app config
-│        ├───models             # input and output request models
-│        └───routers            # api routes
-├───traefik
-│   └───traefik.yaml            # the midleware of the traefik server (including the Authetification)
-├───locust                      # Load testing configuration with Locust
-└───docker-compose.yml          # Example docker-compose setup for the Model API
-```
+* A treafik server that redirects incomming requests to the corresponding service
+* A main model instance that takes processes all prediction requests and schedules them for the worker with the correct model
+* A prediction celery worker that has one specific model loaded and handles the predictions for that model
+* A maintaining server that handles adding, removing and updating models and provides some information about the models
+* A maintaining celery worker that handles the longer maintaining tasks like deployin a new model
+* A mongoDB that contains the currently deployed models and the refrences to the corresponding docker containers 
 
+This setup allows flexible scaling of the different components.
+
+:warning: This update changes some api answers. For easy access use the ManagementClient 
 ## API Path
-The 'true' path of the API for the model server is of the form `/api/$endpoint` where the endpoint
-is embeddings, question-answering, etc. This is the path you use if you just run a model server locally.
-
-However, to run and distinguish multiple models, we use an API gateway with Traefik so we extend 
-the path to `/api/$model-prefix/$endpoint` which is then resolved by Traefik to the correct model server and forwarded
-to this server's `/api/$endpoint` endpoint. This is the path you use with Docker.
-This requires you to setup the docker-compose and Traefik config as described below.
+To acces one model for prediction use the path `/api/$model-prefix/$endpoint`, which is then redirected to the main model
+server wich schedules the task for the correct worker.
 
 *LOCAL BASE URL* = https://localhost:8443 </br>
 *PROD BASE URL* = https://square.ukp-lab.de
@@ -150,6 +125,20 @@ It is easiest to use `htpasswd` to obtain the necessary hash.
 
 The default `admin` user has the password `example_key`.
 
+## ManagementClient
+
+It is recommended to use the ManagementClient to access the model-api. It provides methods for all calls to the api, that
+already handle the waiting for scheduled tasks.
+
+A prediction with the ManagementClient can be done with the following method:
+ 
+`predict(self, model_identifier, prediction_method, input_data)`
+Request model prediction.
+`model_identifier` (str): the identifier of the model that should be used for the prediction
+`prediction_method` (str): what kind of prediction should be made. Possible values are embedding,
+                sequence-classification, token-classification, generation, question-answering
+`input_data` (Dict): the input for the prediction
+
 ## Management API
 The management Api provides methods to manage and maintain the deployed models. You can use this to add, update or
 delete models and to get an overview over the deployed models. It also keeps a database that contains all deployed models.
@@ -245,7 +234,6 @@ curl --request POST 'https://square.ukp-lab.de/api/msmarco-distilbert-base-tas-b
   "adapter_name": ""
 }'
 ```
-
 
 
 #### Adding new Models Manually
@@ -370,3 +358,5 @@ you can see whether the task has been executed and the results of the task.
 ### Database
 The database is the MongoDB that is also used for the skills and hence uses the credentials specified in the environment
 file of that database.
+
+

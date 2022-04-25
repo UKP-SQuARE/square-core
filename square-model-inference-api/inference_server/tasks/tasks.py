@@ -21,8 +21,6 @@ MODEL_MAPPING = {
     "onnx": Onnx,
 }
 
-IDENTIFIER = os.getenv("QUEUE")
-
 
 class ModelTask(Task, ABC):
     """
@@ -39,7 +37,7 @@ class ModelTask(Task, ABC):
         Instantiate mongo client on first call (i.e. first task processed)
         Avoids the creation of multiple clients for each task request
         """
-        model_config.update(IDENTIFIER)
+        model_config.update()
         logger.info(f"Configuration: {model_config}")
         if not self.model:
             logger.info(model_config)
@@ -62,4 +60,3 @@ def prediction_task(self, prediction_request, task, model_config):
     logger.info(model_config)
     prediction = self.model.predict(PredictionRequest(**prediction_request), task)
     return prediction.dict()
-

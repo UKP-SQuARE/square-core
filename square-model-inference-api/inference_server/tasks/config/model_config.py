@@ -11,6 +11,8 @@ APP_NAME = "SQuARE Model Inference API"
 API_PREFIX = "/api"
 OPENAPI_URL = "/api/openapi.json"
 
+CONFIG_PATH = os.getenv("CONFIG_PATH")
+IDENTIFIER = os.getenv("QUEUE")
 
 @dataclass
 class ModelConfig(Mapping):
@@ -73,8 +75,8 @@ class ModelConfig(Mapping):
             transformers_cache=self.transformers_cache,
         )
 
-    def update(self, identifier):
-        with open(f"/model_configs/{identifier}.json", 'r') as f:
+    def update(self):
+        with open(f"{CONFIG_PATH}/{IDENTIFIER}.json", 'r') as f:
             config = json.load(f)
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
@@ -104,35 +106,42 @@ class ModelConfig(Mapping):
             model_class=config("MODEL_CLASS", default="base"),
             return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
         )
-        IDENTIFIER = os.getenv("QUEUE")
         model_config.save(IDENTIFIER)
         return model_config
 
     @staticmethod
     def load_from_file(identifier):
-        with open(f"/model_configs/{identifier}.json", 'r') as f:
+        with open(f"{CONFIG_PATH}/{identifier}.json", 'r') as f:
             config = json.load(f)
         return ModelConfig(**config)
 
     def save(self, identifier):
-        with FileLock(f"/model_configs/{identifier}.lock"):
-            with open(f'/model_configs/{identifier}.json', 'w+') as json_file:
+
+        with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
+            if not os.path.exists(f'{CONFIG_PATH}/{identifier}.json'):
+                os.makedirs(os.path.dirname(f'{CONFIG_PATH}/{identifier}.json'))
+            with open(f'{CONFIG_PATH}/{identifier}.json', 'w+') as json_file:
                 json.dump(self.to_dict(), json_file)
 
 
 model_config = ModelConfig.load()
 
-
 # for testing the inference models
-def set_test_config(model_name, disable_gpu, batch_size, max_input_size, model_class="base", cache="./.cache",
+def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_size, model_class="base", cache="./.cache",
                     preloaded_adapters=False, onnx_path="", decoder_path=""):
     global model_config
     model_config.model_name = model_name
     model_config.model_class = model_class
     model_config.disable_gpu = disable_gpu
+    model_config.model_type = model_type
     model_config.batch_size = batch_size
     model_config.max_input_size = max_input_size
     model_config.transformers_cache = cache
     model_config.preloaded_adapters = preloaded_adapters
     model_config.model_path = onnx_path
-    model_config.decoder_path = decoder_pathmodel_config = ModelConfig.load()
+    model_config.decoder_path = decoder_path
+
+
+if os.getenv("TEST") == 1:
+    set_test_config("bert-base-uncased", True, 8, "adapter", 512)
+    model_config.save(IDENTIFIER)

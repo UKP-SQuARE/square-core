@@ -18,18 +18,20 @@ router = APIRouter()
 QUEUE = os.getenv("QUEUE", os.getenv("MODEL_NAME", None))
 
 
-@router.get("/test")
-async def add():
-    res = add_two.delay(2, 2)
-    return {"message": "Queued add", "task_id": res.id}
+def check_valid_request(request):
+    if request.input is None:
+        return False, "Missing input"
+    return True, None
 
-
-@router.post("/sequence-classification", response_model=AsyncTaskResult,
+@router.post("/{identifier}/sequence-classification", response_model=AsyncTaskResult,
              name="sequence classification")
 async def sequence_classification(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.sequence_classification, model_config.to_dict()), queue=identifier)
 
@@ -42,6 +44,9 @@ async def token_classification(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.token_classification, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
@@ -52,6 +57,9 @@ async def embedding(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.embedding, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued embedding", task_id=res.id)
@@ -62,6 +70,9 @@ async def question_answering(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.question_answering, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued question answering", task_id=res.id)
@@ -72,6 +83,9 @@ async def generation(
         identifier: str,
         prediction_request: PredictionRequest,
 ) -> AsyncTaskResult:
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async((prediction_request.dict(), Task.generation, model_config.to_dict()), queue=identifier)
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
@@ -124,6 +138,6 @@ def get_statistics(identifier):
     """
     logger.info("Reloading config")
     model_config = ModelConfig.load_from_file(identifier)
-    model_config.update(identifier)
+    model_config.update()
     logger.info(model_config)
     return model_config.to_statistics()

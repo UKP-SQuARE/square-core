@@ -128,6 +128,7 @@ services:
       - MONGO_PORT=27017
       - REDIS_USER=default
       - RABBITMQ_DEFAULT_USER=ukp
+      - CONFIG_PATH=/model_configs
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
@@ -189,6 +190,7 @@ services:
       - REDIS_PASSWORD=8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918
       - RABBITMQ_DEFAULT_PASS=kI3GCrKiruPThdUJaIVVL98MqLaKozyNez96OaUzQEmkpJDX
       - QUEUE=facebook-dpr-question_encoder-single-nq-base
+      - CONFIG_PATH=/model_configs
     links:
       - rabbit
       - redishost

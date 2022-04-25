@@ -53,6 +53,9 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
         )
     return result
 
+@router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsResult])
+async def get_all_models_health():
+    pass
 
 @router.get("/deployed-model-workers", name="get-deployed-models",)
 async def get_model_containers():  # token: str = Depends(client_credentials)):
