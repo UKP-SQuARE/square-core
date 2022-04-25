@@ -1,4 +1,5 @@
 {
+    "qa_type": "multiple-choice",
     "tests": [
         {
             "test_type": "MFT",

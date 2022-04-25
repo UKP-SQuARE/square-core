@@ -11,7 +11,8 @@ WORKDIR ./explainability-api
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY ./explainability explainability
+COPY ./app app
+COPY ./tasks tasks
 
 EXPOSE 8010
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8010"]

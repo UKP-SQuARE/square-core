@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from worker.checklist_tasks import run_checklist
+from tasks.tasks import run_checklist
 from celery.result import AsyncResult
 
 router = APIRouter()
