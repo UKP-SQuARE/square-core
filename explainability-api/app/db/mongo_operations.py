@@ -65,11 +65,17 @@ class Database:
         except ValueError:
             return False
 
-    def get_tests_from_db(self, qa_type, test_type, capability):
+    def get_tests_from_db(self, qa_type):
         """
         get container id from db
         """
-        query = {"qa_type": qa_type, "test_type": test_type, "capability": capability}
-        result = self.checklist_tests.find_one(query)
-        logger.info(result)
+        result = list()
+        if self.checklist_tests.count_documents({"qa_type": qa_type}) >= 1:
+            query = {"qa_type": qa_type}
+            docs = self.checklist_tests.find(query)
+            result = [test for test in docs]
+            logger.info(result)
+        else:
+            logger.info("No tests to run for the specified qa_type")
+            return result
         return result

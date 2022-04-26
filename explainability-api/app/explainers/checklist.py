@@ -1,8 +1,11 @@
 # add functionality to process json to be injected into the db
 import json
 import requests
+import itertools
 from app.models.skill import Skill
 from app.db.mongo_operations import Database
+
+from typing import List
 
 
 mongo_client = Database()
@@ -56,54 +59,48 @@ async def process_json(data: bytes):
         }
 
 
-# def create_query(test_case, capability, model, adapter):
-#     """
-#     Create query for prediction
-#     This function query creates a query and make it suitable for sending to for prediction
-#
-#     Args:
-#         test_case (dict) : Test case as a dictionary
-#         capability (str) : Capability of the given test case
-#         model (str) : Name of the language model
-#         adapter (str) : Name of the adapter
-#
-#     Returns:
-#         json_object (json object) : A json object containing the test case and its prediction
-#         answer (str) : Prediction for test case made by the skill
-#
-#     """
-#     # initialize dictionary to contain context, name of the base model and adapter
-#     skill_args = dict()
-#     # initialize dictionary to contain a test case in suitable format for querying
-#     query = dict()
-#
-#     # in case of multiple choice models add the options to the context seperated by \n otherwise context
-#     # will remain the same
-#     if "options" in test_case.keys():
-#         context = test_case['context']
-#         for option in test_case["options"]:
-#             context = context + "\n" + option
-#         skill_args["context"] = context
-#     else:
-#         skill_args["context"] = test_case['context']
-#
-#     skill_args["base_model"] = model
-#     skill_args["adapter"] = adapter
-#     # skill args will be part of the query dictionary
-#     query["query"] = test_case['question']
-#     query["num_results"] = 1
-#     query["user_id"] = "ukp"
-#
-#     query["skill_args"] = skill_args
-#     json_object = json.dumps(query)
-#
-#     # get the original answer for the test case
-#     if "answer" not in test_case.keys():
-#         answer = test_case["prediction_before_change"]
-#     else:
-#         answer = test_case["answer"]
-#
-#     return json_object, answer
+def create_query(skill, test_cases: List):
+    """
+    Create query for prediction
+    This function query creates a query and make it suitable for sending to for prediction
+
+    Args:
+        test_cases (list) : Test case as a list
+
+    Returns:
+        json_object (json object) : A json object containing the test case and its prediction
+        answer (str) : Prediction for test case made by the skill
+
+    """
+    skill_type = skill["skill_type"]
+    # initialize dictionary to contain context, name of the base model and adapter
+    skill_args = dict()
+    skill_args = skill["default_skill_args"]  # gets base model and adapter
+    # initialize dictionary to contain a test case in suitable format for querying
+    request = dict()
+    request["num_results"] = 1
+    request["user_id"] = "ukp"
+    # extract all tests
+    all_tests = [tests["test_cases"] for tests in test_cases]
+    # all_tests = list(itertools.chain.from_iterable([tests["test_cases"] for tests in test_cases]))
+    for tests in all_tests:
+        questions = [query["question"] for query in tests]
+        # list of list for mcq else list
+        contexts = [query["context"] if skill_type != "multiple-choice" else [query["context"] + "\n" + option
+                    for option in query["options"]] for query in tests]
+        answers = [query.get("answer") if "answer" in query.keys() else query.get("prediction_before_change")
+                   for query in tests]
+        # print(answers)
+        # send batch to the skill query endpoint
+
+    # prediction_request = json.dumps(request)
+    # # get the original answer for the test case
+    # if "answer" not in test_case.keys():
+    #     answer = test_case["prediction_before_change"]
+    # else:
+    #     answer = test_case["answer"]
+
+    # return prediction_request, answer
 #
 #
 # def predict(skill_query_path, json_query, answer):
@@ -145,7 +142,8 @@ async def process_json(data: bytes):
 #         path (path) : Directory of the json file containing test cases for that skill type
 #
 #     Returns:
-#         json_data (json object) : A json object containing all the test cases and their predictions for the given skill
+#         json_data (json object) : A json object containing all the test cases and their
+#           predictions for the given skill
 #
 #     """
 #

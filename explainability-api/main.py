@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.event_handlers import start_app_handler, stop_app_handler
-from app.routers.api import api_router
+from app.api.router import api_router
 
 
 # auth = Auth(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"))
@@ -76,4 +76,4 @@ app = get_app()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8010, debug=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8010, reload=True)  # for dev purposes

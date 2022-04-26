@@ -4,14 +4,20 @@ from fastapi import (
     File,
     HTTPException
     )
+
+import logging
 import requests
-from app.routers import utils
+from app.explainers import checklist
+from app.db import mongo_operations
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+database = mongo_operations.Database()
 
 
-@router.put("/run-checklist", name="run-checklist")
-async def run_checklist_tests(skill_name, test_type, capability):
+@router.put("/", name="run-checklist")
+async def run_checklist_tests(skill_id: str):
     """ Function for testing a Skill
 
     Takes an input of Skill class object and returns a json consisting
@@ -31,11 +37,18 @@ async def run_checklist_tests(skill_name, test_type, capability):
     # json_data = run_tests(skill, path)
 
     # TODO
-    # get tests based on the skill name, test type and capability
+    # get tests based on the skill
     skill_info = requests.get(url='https://square.ukp-lab.de/api/skill-manager/skill')
-    print(skill_info)
+    skill = [skill for skill in skill_info.json() if skill_id == skill["id"]][0]
+    skill_type = skill["skill_type"]
+    # get tests from db
+    test_cases = database.get_tests_from_db(qa_type=skill_type)
 
     # create the request format for prediction
+    if test_cases:
+        checklist.create_query(skill, test_cases)
+    else:
+        logger.info("No tests retrieved for the specified qa_type")
 
     # get prediction
 
@@ -44,7 +57,7 @@ async def run_checklist_tests(skill_name, test_type, capability):
     return ""
 
 
-@router.put("/add-tests-to-db", name="add checklist tests")
+@router.put("/checklist-tests", name="add checklist tests")
 async def add_checklist_tests(file: UploadFile = File(...)):
     """
     request format
@@ -85,5 +98,5 @@ async def add_checklist_tests(file: UploadFile = File(...)):
         raise HTTPException(status_code=415, detail="Unsupported file format. Please upload a json file.")
     data = await file.read()
     # process data to extract tests and add them to db
-    result = await utils.process_json(data)
+    result = await checklist.process_json(data)
     return result
