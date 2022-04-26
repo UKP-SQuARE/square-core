@@ -14,6 +14,9 @@
     <a href="https://github.com/UKP-SQuARE/square-core">
         <img alt="Repo" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
     </a>
+    <a href="https://arxiv.org/abs/2203.13693">
+        <img alt="Paper" src="https://img.shields.io/badge/arXiv-2203.13693-b31b1b.svg">
+    </a>
 </p>
 
 
