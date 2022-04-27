@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
     OPENAPI_URL: str = "/api/openapi.json"
     # set this ENV variable to `host.docker.internal` for Mac
-    API_URL = os.getenv("DOCKER_HOST_URL", "https://172.17.0.1:8443")
+    API_URL = os.getenv("DOCKER_HOST_URL", "https://square.ukp-lab.de")  # change later
 
 
 settings = Settings()

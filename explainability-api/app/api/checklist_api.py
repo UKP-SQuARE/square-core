@@ -7,8 +7,19 @@ from fastapi import (
 
 import logging
 import requests
+
 from app.explainers import checklist
 from app.db import mongo_operations
+from app.core.config import settings
+from app.models.checklist_models import (
+    TaskGenericModel,
+    TaskResultModel
+)
+
+from celery.result import AsyncResult
+from starlette.responses import JSONResponse
+
+from tasks import tasks
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +27,7 @@ router = APIRouter()
 database = mongo_operations.Database()
 
 
-@router.put("/", name="run-checklist")
+@router.put("/results", name="run-checklist", response_model=TaskGenericModel)
 async def run_checklist_tests(skill_id: str):
     """ Function for testing a Skill
 
@@ -24,40 +35,35 @@ async def run_checklist_tests(skill_id: str):
     all the test cases and their prediction made by the specified skill
 
     Args:
-        skill (Skill) : An object of class Skill
-        test_type: can be one of MFT and INV
-        capability: can be one of Vocabulary, Taxonomy, Robustness, NER, Temporal, Negation, Fairness, Coref, SRL
+        skill_id (Skill) : id of the skill for which the checklist has to be run
+        # capability: can be one of Vocabulary, Taxonomy, Robustness, NER, Temporal, Negation, Fairness, Coref, SRL
 
     Returns:
         json_data (json object) : A json object containing all the test cases and their predictions made by
             the specified skill
 
     """
-    # path = create_file_paths(skill.skill_id)
-    # json_data = run_tests(skill, path)
-
     # TODO
     # get tests based on the skill
-    skill_info = requests.get(url='https://square.ukp-lab.de/api/skill-manager/skill')
+    skill_info = requests.get(url=f"{settings.API_URL}/api/skill-manager/skill")
     skill = [skill for skill in skill_info.json() if skill_id == skill["id"]][0]
-    skill_type = skill["skill_type"]
-    # get tests from db
-    test_cases = database.get_tests_from_db(qa_type=skill_type)
+    try:
+        result = tasks.run_checklist.delay(skill)
+        logger.info(result)
+        return {
+            "message": f"Queued running checklist on skill: {skill_id}",
+            "task_id": result.id
+        }
+    except Exception as e:
+        logger.info("Could not execute the task and got error:", e)
+        return {
+            "message": f"Could not queue checklist task for skill: {skill_id}. "
+                       f"Exception: {e}",
+            "task_id": ""
+        }
 
-    # create the request format for prediction
-    if test_cases:
-        checklist.create_query(skill, test_cases)
-    else:
-        logger.info("No tests retrieved for the specified qa_type")
 
-    # get prediction
-
-    # add test results to db
-
-    return ""
-
-
-@router.put("/checklist-tests", name="add checklist tests")
+@router.put("/tests", name="add checklist tests")
 async def add_checklist_tests(file: UploadFile = File(...)):
     """
     request format
@@ -98,5 +104,23 @@ async def add_checklist_tests(file: UploadFile = File(...)):
         raise HTTPException(status_code=415, detail="Unsupported file format. Please upload a json file.")
     data = await file.read()
     # process data to extract tests and add them to db
-    result = await checklist.process_json(data)
+    result = await checklist.process_data(data)
     return result
+
+
+@router.get("/task/{task_id}",
+            name="task-status",
+            response_model=TaskResultModel)
+async def get_task_status(task_id):
+    """
+    Get results from a celery task
+    """
+    task = AsyncResult(task_id)
+    if not task.ready():
+        return JSONResponse(status_code=202, content={"task_id": str(task_id), "status": "Processing", "result": {}})
+    result = task.get()
+    return {
+        "task_id": str(task_id),
+        "status": "Finished",
+        "result": result
+    }

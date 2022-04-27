@@ -28,23 +28,6 @@ class Database:
         """
         self.client.close()
 
-    # async def check_identifier_new(self, identifier) -> bool:
-    #     """
-    #     check if model identifier is in db
-    #     """
-    #     if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
-    #         return False
-    #     return True
-    #
-    # async def check_user_id(self, request, identifier) -> bool:
-    #     """
-    #     check user id requesting a resource
-    #     """
-    #     models = await self.get_models_db()
-    #     model_config = [m for m in models if m["IDENTIFIER"] == identifier][0]
-    #     check_user = bool(model_config["USER_ID"] == await utils.get_user_id(request))
-    #     return check_user
-
     def server_info(self):
         return self.client.server_info()
 
@@ -62,6 +45,25 @@ class Database:
             else:
                 self.checklist_tests.insert_one(data)
                 return True
+        except ValueError:
+            return False
+
+    async def add_results_to_db(self, skill_id, model_outputs):
+        """
+        add checklist results to the db
+        """
+        try:
+            for predictions in model_outputs:
+                data = predictions.copy()
+                data["skill_id"] = skill_id
+                if self.checklist_results.count_documents({"skill_id": data["skill_id"],
+                                                           "question": data["question"]}) >= 1:
+                    # print("Entry already present in db. Skipping!")
+                    logger.info("Entry already present in db. Skipping!")
+                    return False
+                else:
+                    self.checklist_results.insert_one(data)
+            return True
         except ValueError:
             return False
 

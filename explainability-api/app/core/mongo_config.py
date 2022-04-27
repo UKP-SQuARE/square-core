@@ -2,6 +2,9 @@ import logging
 
 from pydantic import BaseSettings, Field, validator
 
+from dotenv import load_dotenv
+load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 
@@ -13,7 +16,7 @@ class MongoSettings(BaseSettings):
     # host: str = Field(..., env="MONGO_HOST")
     # port: str = Field(..., env="MONGO_PORT")
     username = "root"
-    password = ""
+    password = "2kJ!kJPQr7t39RGK*iiSzvhPLo8xEQi2"
     host = "mongo"
     port = "27017"
     connection_url: str = None
@@ -22,5 +25,5 @@ class MongoSettings(BaseSettings):
     def build_connection_url(cls, _, values) -> str:
         """builds the connection string for connecting to mongoDB."""
         logger.info("Constructing url from {}".format(values))
-        values = {"username": "root", "password": "", "host": "localhost", "port": "27017"}
+        values = {"username": "root", "password": "2kJ!kJPQr7t39RGK*iiSzvhPLo8xEQi2", "host": "localhost", "port": "27017"}
         return f"mongodb://{values['username']}:{values['password']}" f"@{values['host']}:{values['port']}"
