@@ -142,6 +142,6 @@ def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_s
     model_config.decoder_path = decoder_path
 
 
-if os.getenv("TEST", 0) == 1:
+if os.getenv("TEST", 0) == '1':
     set_test_config("bert-base-uncased", True, 8, "adapter", 512)
     model_config.save(IDENTIFIER)

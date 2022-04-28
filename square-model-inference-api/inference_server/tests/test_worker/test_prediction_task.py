@@ -8,7 +8,7 @@ class TestTasks(unittest.TestCase):
     def test_embedding_task(self):
         request = PredictionRequest(input=["Some text"], adapter_name="lingaccept/cola@ukp")
         task = Task.embedding
-        model_config = {"identifier": "test",
+        model_config = {"identifier": "test_config",
             "model_type": "adapter",
             "model_name": "bert-base-uncased",
             "disable_gpu": False,
@@ -26,7 +26,7 @@ class TestTasks(unittest.TestCase):
         adapter_name = "lingaccept/cola@ukp"
         request = PredictionRequest(input=["Some text"], adapter_name=adapter_name)
         task = Task.sequence_classification
-        model_config = {"identifier": "test",
+        model_config = {"identifier": "test_config",
             "model_type": "adapter",
             "model_name": "bert-base-uncased",
             "disable_gpu": False,
@@ -43,7 +43,7 @@ class TestTasks(unittest.TestCase):
         adapter_name = "ner/conll2003@ukp"
         request = PredictionRequest(input=["Some text"], adapter_name=adapter_name)
         task = Task.token_classification
-        model_config = {"identifier": "test",
+        model_config = {"identifier": "test_config",
             "model_type": "adapter",
             "model_name": "bert-base-uncased",
             "disable_gpu": False,
@@ -61,7 +61,7 @@ class TestTasks(unittest.TestCase):
         adapter_name = "qa/squad1@ukp"
         request = PredictionRequest(input=[["What is a test?", "A test is a thing where you test."]], adapter_name=adapter_name)
         task = Task.question_answering
-        model_config = {"identifier": "test",
+        model_config = {"identifier": "test_config",
             "model_type": "adapter",
             "model_name": "bert-base-uncased",
             "disable_gpu": False,
