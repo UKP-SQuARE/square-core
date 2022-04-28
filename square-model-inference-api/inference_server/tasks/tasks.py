@@ -46,11 +46,6 @@ class ModelTask(Task, ABC):
         return self.run(*args, **kwargs)
 
 
-@app.task()
-def add_two(x, y):
-    return x + y
-
-
 @app.task(
     bind=True,
     base=ModelTask,

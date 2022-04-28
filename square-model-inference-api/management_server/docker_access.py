@@ -85,6 +85,7 @@ def start_new_model_container(identifier, env, id=1):
 
     env["REDIS_USER"] = os.getenv("REDIS_USER", "ukp")
     env["REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD", "secret")
+    env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
     try:
         container = docker_client.containers.run(

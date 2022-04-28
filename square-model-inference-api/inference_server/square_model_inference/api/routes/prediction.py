@@ -8,7 +8,7 @@ from square_model_inference.models.statistics import ModelStatistics, UpdateMode
 from starlette.responses import JSONResponse
 
 from tasks.config.model_config import ModelConfig
-from tasks.tasks import add_two, prediction_task
+from tasks.tasks import prediction_task
 
 import logging
 

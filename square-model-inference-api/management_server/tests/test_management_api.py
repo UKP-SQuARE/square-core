@@ -68,3 +68,59 @@ def test_api_remove_not_existing(test_check, test_task, test_app) -> None:
     )
     assert not test_task.called
     assert response.status_code == 406
+
+
+@patch('celery.app.task.Task.delay',  return_value=AsyncResult(123))
+@patch('mongo_access.MongoClass.check_identifier_new', return_value=False, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.check_user_id', return_value=True, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.get_model_stats', return_value={}, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.get_model_containers', return_value=[{"_id": "test_identifier", "container": "12345", "count": 2}], new_callable=AsyncMock)
+def test_api_add_worker(test_check1, test_check2, test_check3, test_check4, test_task, test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.post(
+        f"/api/test_identifier/add_worker/2",
+    )
+    assert test_check1.called
+    assert test_check2.called
+    assert test_check3.called
+    assert test_check4.called
+    assert test_task.called
+    assert response.status_code == 200
+    assert response.json()["message"] == "Queued adding worker for test_identifier"
+
+
+@patch('celery.app.task.Task.delay',  return_value=AsyncResult(123))
+@patch('mongo_access.MongoClass.check_identifier_new', return_value=False, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.check_user_id', return_value=True, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.get_model_containers', return_value=[{"_id": "test_identifier", "container": "12345", "count": 3}], new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.get_containers', return_value=[], new_callable=AsyncMock)
+def test_api_remove_worker(test_check1, test_check2, test_check3, test_check4, test_task, test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.delete(
+        f"/api/test_identifier/remove_worker/2",
+    )
+    assert test_check1.called
+    assert test_check2.called
+    assert test_check3.called
+    assert test_task.called
+    assert response.status_code == 200
+    assert response.json()["message"] == "Queued removing worker for test_identifier"
+
+
+@patch('celery.app.task.Task.delay',  return_value=AsyncResult(123))
+@patch('mongo_access.MongoClass.check_identifier_new', return_value=False, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.check_user_id', return_value=True, new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.get_model_containers', return_value=[{"_id": "test_identifier", "container": "12345", "count": 2}], new_callable=AsyncMock)
+@patch('mongo_access.MongoClass.get_containers', return_value=[], new_callable=AsyncMock)
+def test_api_remove_worker_none_left(test_check1, test_check2, test_check3, test_check4, test_task, test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.delete(
+        f"/api/test_identifier/remove_worker/2",
+    )
+    assert not test_check1.called
+    assert test_check2.called
+    assert test_check3.called
+    assert test_check4.called
+    assert not test_task.called
+    assert response.status_code == 200
+    assert response.json()["detail"] == "Only 2 worker left. To remove that remove the whole model."

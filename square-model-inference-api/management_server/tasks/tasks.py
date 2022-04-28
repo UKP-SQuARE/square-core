@@ -161,4 +161,4 @@ def remove_worker(self, containers):
     except Exception as e:
         logger.exception("Adding model worker failed", exc_info=True)
         logger.info("Caught exception. %s ", e)
-        return {"success": False}
+    return {"success": False}

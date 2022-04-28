@@ -11,7 +11,7 @@ The Model API uses 2 components:
 * A prediction celery worker that has one specific model loaded and handles the predictions for that model
 * A maintaining server that handles adding, removing and updating models and provides some information about the models
 * A maintaining celery worker that handles the longer maintaining tasks like deployin a new model
-* A mongoDB that contains the currently deployed models and the refrences to the corresponding docker containers 
+* A mongoDB that contains the currently deployed models and the references to the corresponding docker containers 
 
 This setup allows flexible scaling of the different components.
 
