@@ -31,7 +31,6 @@ EXPOSE 9001
 FROM base as test
 
 COPY ./tests tests
-RUN python ./tests/pre_test_setup_for_docker_caching.py
 COPY . ./
 RUN pip install pytest pytest-cov pytest-asyncio
 RUN mkdir test-reports
