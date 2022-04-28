@@ -25,3 +25,19 @@ COPY ./tasks tasks
 COPY ./mongo_access.py mongo_access.py
 
 EXPOSE 9001
+
+# Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
+# run the tests
+FROM base as test
+
+COPY ./tests tests
+RUN python ./tests/pre_test_setup_for_docker_caching.py
+COPY . ./
+RUN pip install pytest pytest-cov pytest-asyncio
+RUN mkdir test-reports
+RUN PYTHONPATH=./ pytest \
+    --junitxml=test-reports/junit.xml \
+    --cov \
+    --cov-report=xml:test-reports/coverage.xml \
+    --cov-report=html:test-reports/coverage.html; \
+    echo $? > test-reports/pytest.existcode
