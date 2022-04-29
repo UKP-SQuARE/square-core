@@ -119,6 +119,11 @@ There are also tests that require a running version of the api. To include them 
 make full-test
 ```
 
+IMPORTANT: In order to run the client tests add the client secret to the `management_client/pytest.ini` file to the `env`:
+```
+    CLIENT_SECRET=<client_secret>
+```
+
 ### Adding new Users
 The Traefik component provides an Authentication service. To add new users and their password add 
 them [here](traefik/traefik.yaml). All users have the following form: 

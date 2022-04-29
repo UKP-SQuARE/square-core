@@ -1,14 +1,14 @@
 import unittest
 
 from client import ManagementClient
-import base64
-import numpy as np
-from io import BytesIO
+import os
+
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 
 class TestClientMaintaining(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = ManagementClient("https://localhost:8443", client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
+        self.client = ManagementClient("https://localhost:8443", client_secret=CLIENT_SECRET,
                                        verify_ssl=False)
 
     def test_deployed_models(self):

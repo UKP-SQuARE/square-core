@@ -111,13 +111,14 @@ class ModelConfig(Mapping):
 
     @staticmethod
     def load_from_file(identifier):
-        with open(f"{CONFIG_PATH}/{identifier}.json", 'r') as f:
-            config = json.load(f)
-        return ModelConfig(**config)
+        with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
+            with open(f"{CONFIG_PATH}/{identifier}.json", 'r') as f:
+                config = json.load(f)
+            return ModelConfig(**config)
 
     def save(self, identifier):
 
-        # with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
+        with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
             if not os.path.exists(f'{CONFIG_PATH}/{identifier}.json'):
                 os.makedirs(os.path.dirname(f'{CONFIG_PATH}/{identifier}.json'))
             with open(f'{CONFIG_PATH}/{identifier}.json', 'w+') as json_file:

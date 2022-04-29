@@ -119,7 +119,7 @@ async def update(identifier: str, updated_param: UpdateModel):
     :param updated_param: the new parameters
     :return: the information about the updated model
     """
-    logger.info("Updating model parameters")
+    logger.info("Updating model parameters with {}".format(updated_param))
     model_config = ModelConfig.load_from_file(identifier)
     if model_config.model_type in ["onnx", "sentence-transformer"] and model_config.disable_gpu != updated_param.disable_gpu:
         raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
@@ -127,8 +127,10 @@ async def update(identifier: str, updated_param: UpdateModel):
     model_config.batch_size = updated_param.batch_size
     model_config.max_input_size = updated_param.max_input
     model_config.return_plaintext_arrays = updated_param.return_plaintext_arrays
+    logger.info(model_config)
     model_config.save(identifier)
-    return get_statistics(identifier)
+    logger.info(model_config)
+    return model_config.to_statistics()
 
 
 def get_statistics(identifier):

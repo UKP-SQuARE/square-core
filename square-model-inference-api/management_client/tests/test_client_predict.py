@@ -1,15 +1,17 @@
 import unittest
+import os
 
 from client import ManagementClient
 import base64
 import numpy as np
 from io import BytesIO
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 
 class TestClientPredict(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = ManagementClient("https://localhost:8443", client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
+        cls.client = ManagementClient("https://localhost:8443", client_secret=CLIENT_SECRET,
                                        verify_ssl=False)
         identifier = "bert_adapter_test"
         model_attributes = {
