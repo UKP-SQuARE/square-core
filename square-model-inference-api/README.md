@@ -114,6 +114,11 @@ make test
 ```
 For load testing with Locust, see [this README](locust/README.md).
 
+There are also tests that require a running version of the api. To include them run:
+```sh
+make full-test
+```
+
 ### Adding new Users
 The Traefik component provides an Authentication service. To add new users and their password add 
 them [here](traefik/traefik.yaml). All users have the following form: 
