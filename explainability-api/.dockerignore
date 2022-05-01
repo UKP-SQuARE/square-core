@@ -1,4 +1,5 @@
 # ignore cache
 
 app/.pytest_cache
+app/__pycache__
 __pycache__

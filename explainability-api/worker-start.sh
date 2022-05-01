@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 set -e
 
-export PYTHONPATH="${PYTHONPATH}:~/projects/ukp/square-explainability/square-core/explainability-api"
+#export PYTHONPATH="${PYTHONPATH}:~/projects/ukp/square-explainability/square-core/explainability-api"
 
 python tasks/celeryworker_pre_start.py
 
