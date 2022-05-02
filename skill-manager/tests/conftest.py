@@ -1,7 +1,10 @@
 import jwt
 import pytest
-from skill_manager.models import Skill, SkillSettings
+from fastapi.testclient import TestClient
 from testcontainers.mongodb import MongoDbContainer
+
+from skill_manager.main import app
+from skill_manager.models.skill import Skill, SkillSettings
 
 
 @pytest.fixture(scope="module")
@@ -37,6 +40,8 @@ def mongo_db(monkeymodule):
 def pers_client(mongo_db) -> TestClient:
     with TestClient(app) as client:
         yield client
+
+
 @pytest.fixture
 def skill_prediction_factory():
     def skill_prediction():
