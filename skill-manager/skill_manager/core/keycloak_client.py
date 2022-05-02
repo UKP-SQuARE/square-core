@@ -8,7 +8,7 @@ import requests
 from skill_manager.settings import KeycloakSettings
 
 
-class KeycloakAPI:
+class KeycloakClient:
     def __init__(self):
         """Class for interacting with Keycloak for CRUD clients.
 
