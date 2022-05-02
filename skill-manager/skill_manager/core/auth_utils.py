@@ -6,7 +6,7 @@ from square_auth.auth import Auth
 from starlette.requests import Request
 
 from skill_manager import mongo_client
-from skill_manager.models import Skill
+from skill_manager.models.skill import Skill
 
 
 def has_auth_header(request: Request):
