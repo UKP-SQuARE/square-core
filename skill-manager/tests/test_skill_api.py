@@ -7,50 +7,23 @@ import pytest
 import responses
 from fastapi.testclient import TestClient
 from skill_manager import mongo_client
-from skill_manager.keycloak_api import KeycloakAPI
+from skill_manager.core.keycloak_client import KeycloakClient
 from skill_manager.main import app
 from skill_manager.routers import client_credentials
 from skill_manager.routers.skill import auth
 from square_skill_api.models.request import QueryRequest
 
-keycloak_api_mock = MagicMock()
-keycloak_api_mock.create_client.return_value = {
+keycloak_client_mock = MagicMock()
+keycloak_client_mock.create_client.return_value = {
     "clientId": "test-client-id",
     "secret": "test-secret",
 }
-keycloak_api_override = lambda: keycloak_api_mock
-app.dependency_overrides[KeycloakAPI] = keycloak_api_override
+keycloak_client_override = lambda: keycloak_client_mock
+app.dependency_overrides[KeycloakClient] = keycloak_client_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
 
 client = TestClient(app)
-
-
-@pytest.fixture(scope="module")
-def pers_client(monkeymodule, init_mongo_db):
-    # connection_url = init_mongo_db.get_connection_url()
-
-    # # HACK: *for MAC* host detection does not work properly when running inside docker
-    # # therefore, we set an env variable in the Dockerfile and manually replace
-    # # the host. Once the issue below is fixed in testcontainers, this could be removed.
-    # # https://github.com/testcontainers/testcontainers-python/issues/43
-    # if os.getenv("INSIDE_DOCKER", False) == 1:
-    #     lindex = connection_url.index("@") + 1
-    #     rindex = max(i for i, v in enumerate(connection_url) if v == ":")
-    #     connection_url = (
-    #         connection_url[:lindex] + "host.docker.internal" + connection_url[rindex:]
-    #     )
-
-    monkeymodule.setenv(
-        "MONGO_INITDB_ROOT_USERNAME", init_mongo_db.MONGO_INITDB_ROOT_USERNAME
-    )
-    monkeymodule.setenv(
-        "MONGO_INITDB_ROOT_PASSWORD", init_mongo_db.MONGO_INITDB_ROOT_PASSWORD
-    )
-    monkeymodule.setenv("MONGO_HOST", init_mongo_db.get_container_host_ip())
-    monkeymodule.setenv("MONGO_PORT", init_mongo_db.get_exposed_port(27017))
-    with TestClient(app) as client:
-        yield client
 
 
 @pytest.fixture(scope="function")

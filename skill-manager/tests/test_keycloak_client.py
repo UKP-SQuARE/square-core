@@ -7,7 +7,7 @@ from keycloak import KeycloakAdmin
 from keycloak.exceptions import KeycloakGetError
 from testcontainers.core.container import DockerContainer
 
-from skill_manager.keycloak_api import KeycloakAPI
+from skill_manager.core.keycloak_client import KeycloakClient
 from tests.testcontainer_keycloak import TestcontainerKeycloak
 
 
@@ -66,8 +66,8 @@ def test_create_client(kc_admin_realm_factory, import_test_realm):
     username = "test-user"
     skill_name = "test-skill"
 
-    keycloak_api = KeycloakAPI()
-    expected_client = keycloak_api.create_client(
+    keycloak_client = KeycloakClient()
+    expected_client = keycloak_client.create_client(
         realm=realm, username=username, skill_name=skill_name
     )
 
@@ -78,7 +78,7 @@ def test_create_client(kc_admin_realm_factory, import_test_realm):
 
     # check if tokens can be obtained for the new client
     response = requests.post(
-        f"{keycloak_api.settings.base_url}/auth/realms/{realm}"
+        f"{keycloak_client.settings.base_url}/auth/realms/{realm}"
         "/protocol/openid-connect/token",
         data={
             "grant_type": "client_credentials",
@@ -95,13 +95,13 @@ def test_update_client(kc_admin_realm_factory, import_test_realm):
     username = "test-user"
     skill_name = "test-skill-update"
 
-    keycloak_api = KeycloakAPI()
-    initial_client = keycloak_api.create_client(
+    keycloak_client = KeycloakClient()
+    initial_client = keycloak_client.create_client(
         realm=realm, username=username, skill_name=skill_name
     )
     assert initial_client["enabled"]
 
-    updated_client = keycloak_api.update_client(
+    updated_client = keycloak_client.update_client(
         realm=realm, client_id=initial_client["clientId"], enabled=False
     )
     assert not updated_client["enabled"]
@@ -116,11 +116,11 @@ def test_delete_client(kc_admin_realm_factory, import_test_realm):
     username = "test-user"
     skill_name = "test-skill-delete"
 
-    keycloak_api = KeycloakAPI()
-    client = keycloak_api.create_client(
+    keycloak_client = KeycloakClient()
+    client = keycloak_client.create_client(
         realm=realm, username=username, skill_name=skill_name
     )
-    keycloak_api.delete_client(realm=realm, client_id=client["clientId"])
+    keycloak_client.delete_client(realm=realm, client_id=client["clientId"])
 
     kc_admin: KeycloakAdmin = kc_admin_realm_factory(realm=realm)
     with pytest.raises(KeycloakGetError):
