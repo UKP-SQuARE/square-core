@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from client import ManagementClient
+from client.client import ManagementClient
 import base64
 import numpy as np
 from io import BytesIO

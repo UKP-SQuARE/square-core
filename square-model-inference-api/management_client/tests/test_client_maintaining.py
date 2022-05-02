@@ -1,6 +1,6 @@
 import unittest
 
-from client import ManagementClient
+from client.client import ManagementClient
 import os
 
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
