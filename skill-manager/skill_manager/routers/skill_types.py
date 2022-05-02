@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter
 
-from skill_manager.models import SkillType
+from skill_manager.models.skill import SkillType
 
 logger = logging.getLogger(__name__)
 
