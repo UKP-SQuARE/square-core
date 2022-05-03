@@ -11,7 +11,7 @@ import requests
 from app.explainers import checklist
 from app.db import mongo_operations
 from app.core.config import settings
-from app.models.checklist_models import (
+from app.models.celery import (
     TaskGenericModel,
     TaskResultModel
 )
@@ -45,11 +45,13 @@ async def run_checklist_tests(skill_id: str):
     """
     # TODO
     # get tests based on the skill
-    skill_info = requests.get(url=f"{settings.API_URL}/api/skill-manager/skill")
-    skill = [skill for skill in skill_info.json() if skill_id == skill["id"]][0]
+
     try:
+        skill_info = requests.get(url=f"{settings.API_URL}/api/skill-manager/skill")
+        # print(skill_info.json())
+        skill = [skill for skill in skill_info.json() if skill_id == skill["id"]][0]
         result = tasks.run_checklist.delay(skill)
-        logger.info(result)
+        # logger.info(result)
         return {
             "message": f"Queued running checklist on skill: {skill_id}",
             "task_id": result.id
