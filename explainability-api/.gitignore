@@ -1,1 +1,5 @@
 app/.pytest_cache
+
+rabbitmq
+
+redis
