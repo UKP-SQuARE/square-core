@@ -11,7 +11,7 @@ def _startup_model() -> None:
     """
     Connect to the db
     """
-    # print("start")
+    logger.info("Initialize database")
     Database()
 
 
@@ -25,7 +25,6 @@ def start_app_handler() -> Callable:
     def startup() -> None:
         logger.info("Running app start handler.")
         _startup_model()
-
     return startup
 
 
