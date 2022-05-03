@@ -9,12 +9,23 @@
         <li class="nav-item"><a href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp" class="nav-link px-2 text-muted">UKP Lab</a></li>
       </ul>
     </div>
+    <div class="container">
+      <ul class="nav justify-content-center">
+        <li class="nav-item"><img :src="`${publicPath}ukp_logo.png`" alt="Ubiquitous Knowledge Processing" width="110" height="40" class="px-2"></li> 
+        <li class="nav-item"><img :src="`${publicPath}tud_logo.png`" alt="TU Darmstadt" width="120" height="40" class="px-2"></li>
+      </ul>
+    </div>
   </footer>
 </template>
 
 <script>
 import Vue from 'vue'
 
-export default Vue.component('square-footer', {
+export default Vue.component('square-footer', {  
+  data() {    
+    return {
+      publicPath: process.env.BASE_URL
+    }
+  }
 })
 </script>
