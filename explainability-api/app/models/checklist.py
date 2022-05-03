@@ -1,4 +1,29 @@
 from pydantic import BaseModel, Field
+from beanie import Document
+from fastapi.security import HTTPBasicCredentials
+
+
+class ChecklistTests(Document):
+    qa_type: str
+    test_type: str
+    capability: str
+    test_name: str
+    test_name_description: str
+    test_type_description: str
+    capability_description: str
+    test_cases: list
+
+    class Collection:
+        name = "checklist_tests"
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "fullname": "Abdulazeez Abdulazeez Adeshina",
+                "email": "abdul@youngest.dev",
+                "password": "3xt3m#"
+            }
+        }
 
 
 class TaskGenericModel(BaseModel):
