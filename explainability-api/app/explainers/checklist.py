@@ -3,12 +3,14 @@ import json
 import logging
 import requests
 import itertools
+from typing import List
 
 from collections import OrderedDict
 
 from app.models.skill import Skill
 from app.db.mongo_operations import Database
 from app.core.config import settings
+from app.models.checklist import ChecklistResults
 
 from typing import List
 
@@ -97,8 +99,9 @@ def create_query(skill, test_cases: List):
     for tests in all_tests:
         questions.append([query["question"] for query in tests])
         # list of list for mcq else list
-        contexts.append([query["context"] if skill_type != "multiple-choice" else [query["context"] + "\n" + option
-                        for option in query["options"]] for query in tests])
+        contexts.append([query["context"] if skill_type != "multiple-choice"
+                         else query["context"] + "\n" + "\n".join(query["options"])
+                         for query in tests])
         answers.extend([query.get("answer") if "answer" in query.keys() else query.get("prediction_before_change")
                         for query in tests])
 
@@ -112,7 +115,7 @@ def create_query(skill, test_cases: List):
             request = dict()
             request["num_results"] = 1
             request["user_id"] = "ukp"
-            request["skill_args"] = {"base_model": base_model, "adapter": adapter,"context": context}
+            request["skill_args"] = {"base_model": base_model, "adapter": adapter, "context": context}
             request["query"] = question
             prediction_requests.append(request)
 
@@ -126,7 +129,7 @@ def create_query(skill, test_cases: List):
     return model_inputs
 
 
-def predict(model_inputs: dict, skill_id: str):
+def predict(model_inputs: dict, skill_id: str) -> list:
     """ Predicts a given query
 
     This function predicts a query and returns the prediction
@@ -145,6 +148,7 @@ def predict(model_inputs: dict, skill_id: str):
         model_predictions = list()
         i = 0
         for request in model_inputs["request"]:
+            print(request)
             response = requests.post(skill_query_url, data=json.dumps(request), headers=headers)
             predictions = response.json()
             model_predictions.append(predictions["predictions"][0]["prediction_output"]["output"])
@@ -169,6 +173,7 @@ def predict(model_inputs: dict, skill_id: str):
         ):
             model_outputs.append(
                 {
+                    "skill_id": skill_id,
                     "test_type": test_type,
                     "capability": capability,
                     "test_name": test_name,

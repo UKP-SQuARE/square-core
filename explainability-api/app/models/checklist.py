@@ -1,9 +1,7 @@
 from pydantic import BaseModel, Field
-from beanie import Document
-from fastapi.security import HTTPBasicCredentials
 
 
-class ChecklistTests(Document):
+class ChecklistTests(BaseModel):
     qa_type: str
     test_type: str
     capability: str
@@ -13,29 +11,57 @@ class ChecklistTests(Document):
     capability_description: str
     test_cases: list
 
-    class Collection:
-        name = "checklist_tests"
-
     class Config:
         schema_extra = {
             "example": {
-                "fullname": "Abdulazeez Abdulazeez Adeshina",
-                "email": "abdul@youngest.dev",
-                "password": "3xt3m#"
+                "qa_type": "span-extraction",
+                "test_type": "MFT",
+                "capability": "Vocabulary",
+                "test_name": "A is COMP than B. Who is more / less COMP??",
+                "test_name_description": "Compare person A and person B with different comparative adjective " \
+                                         "and test's models ability to understand the comparative words",
+                "test_type_description": "MFT stands for Minimum Functionality Test. This testing type is " \
+                                         "inspired from unit testing of software engineering. For this type of " \
+                                         "testing precise and small testing datasets are created and the models " \
+                                         "are tested on that particular test set. MFTs are useful particularly " \
+                                         "for detecting when models use alternative approaches to handle " \
+                                         "complicated inputs without actually knowing the inside out of the " \
+                                         "capability. For MFT test cases, labeled test set is required.",
+                "capability_description": "This capability tests whether a model has necessary vocabulary and " \
+                                          "whether it has the ability to handle the importance of different words.",
+                "test_cases": [
+                    {
+                        "context": "Caroline is nicer than Marie.",
+                        "question": "Who is less nice?",
+                        "answer": "Marie"
+                    }, ...
+                ]
             }
         }
 
 
-class TaskGenericModel(BaseModel):
-    """Celery generic task representation"""
+class ChecklistResults(BaseModel):
+    skill_id: str
+    test_type: str
+    capability: str
+    test_name: str
+    question: str
+    context: str
+    answer: str
+    prediction: str
+    success: bool
 
-    message: str = Field(..., description="Error or success message")
-    task_id: str = Field(..., description="id of the task being processed by celery")
-
-
-class TaskResultModel(BaseModel):
-    """Celery task response"""
-
-    task_id: str = Field(..., description="id of the task being processed by celery")
-    status: str = Field(..., description="status of the celery task being processed")
-    result: dict = Field(..., description="the response from the requested endpoint")
+    class Config:
+        schema_extra = {
+            "example": {
+                "skill_id": "61a9f56c35adbbf1f2433072",
+                "test_type": "MFT",
+                "capability": "Vocabulary",
+                "test_name": "A is COMP than B. Who is more / less COMP??",
+                "question": "Who is less nice?",
+                "context": "Caroline is nicer than Marie.",
+                "answer": "Marie",
+                "prediction": "Marie",
+                "success": True
+            }
+        }

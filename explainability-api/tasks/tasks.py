@@ -17,7 +17,6 @@ class ExplainerTask(Task, ABC):
     """
     Abstraction of Celery's Task class to support providing mongo client.
     """
-
     abstract = True
 
     def __init__(self):
@@ -60,26 +59,29 @@ def run_checklist(self, skill):
         # get tests from db
         test_cases = self.client.get_tests_from_db(qa_type=skill_type)
         # create the request format for prediction
-        if test_cases:
-            model_inputs = checklist.create_query(skill, test_cases)
-            # get predictions
-            model_outputs = checklist.predict(model_inputs, skill_id)
-            # add results to db
-            status = asyncio.run(self.client.add_results_to_db(skill_id, model_outputs))
-            if status:
-                return {
-                    "success": status,
-                    "message": "Checklist tests were run and results were saved to the db."
-                }
-            else:
-                return {
-                    "success": status,
-                    "message": "Checklist tests could not be saved to the db. Please check if they already exist."
-                }
-        else:
+        if not test_cases:
             logger.info("No tests retrieved for the specified qa_type")
-            raise HTTPException(status_code=400, detail="No test cases were retrieved from the db for"
-                                                        "the particular skill")
+            raise HTTPException(
+                status_code=400,
+                detail="No test cases were retrieved from the db for "
+                       "the particular skill"
+            )
+        model_inputs = checklist.create_query(skill, test_cases)
+        # get predictions
+        model_outputs = checklist.predict(model_inputs, skill_id)
+        # add results to db
+        status = asyncio.run(self.client.add_results_to_db(model_outputs))
+        if status:
+            return {
+                "success": status,
+                "message": "Checklist tests were run and results were saved to the db."
+            }
+        else:
+            return {
+                "success": status,
+                "message": "Checklist tests could not be saved to the db. "
+                           "Please check if they already exist."
+            }
 
     except Exception as e:
         logger.info("Caught exception. %s ", e)

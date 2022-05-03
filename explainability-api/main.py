@@ -11,7 +11,6 @@ from app.core.config import settings
 from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.api.router import api_router
 
-
 # auth = Auth(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"))
 
 logger = logging.getLogger(__name__)
