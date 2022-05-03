@@ -54,21 +54,21 @@ services:
       - RABBITMQ_DEFAULT_USER=ukp
     env_file:
       - .env
-    volumes:
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+#    volumes:
+#      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+#      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
   redishost:
     hostname: redishost
     image: redis:latest
     ports:
       - '6379:6379'
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    command: ["redis-server", "--appendonly yes", "--requirepass ${REDIS_PASSWORD}"]
     env_file:
       - .env
-    volumes:
-      - square-redis-data:/square/redis/data:rw
-      - ./redis/redis.conf:/etc/redis/redis.conf
+#    volumes:
+#      - square-redis-data:/square/redis/data:rw
+#      - ./redis/redis.conf:/etc/redis/redis.conf
 
   celeryworker:
 #    image: ukpsquare/square-explainability:latest
@@ -154,5 +154,5 @@ volumes:
   mongo-data:
     driver: local
 
-  square-redis-data:
-    driver: local
+#  square-redis-data:
+#    driver: local
