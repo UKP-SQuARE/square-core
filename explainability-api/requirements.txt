@@ -9,6 +9,4 @@ docker==5.0.3
 square-auth>=0.0.7
 celery==5.1.2
 redis==4.1.4
-motor~=2.5.1
-beanie~=1.10.8
 git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # elk-json logger
