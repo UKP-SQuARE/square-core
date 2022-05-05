@@ -36,7 +36,7 @@ async def get_skill_template_by_id(skill_template_id=Path(..., alias="id")):
 
 
 @router.post("", response_model=SkillTemplate, status_code=201)
-async def create_skill_tempalte(
+async def create_skill_template(
     skill_template: SkillTemplate,
     keycloak_client: KeycloakClient = Depends(KeycloakClient),
     token_payload: Dict = Depends(auth),
@@ -75,7 +75,7 @@ async def update_skill_template(data: dict, skill_template_id=Path(..., alias="i
 
 
 @router.delete("/{id}", status_code=204)
-async def delete_skill_tempalte(skill_template_id=Path(..., alias="id")):
+async def delete_skill_template(skill_template_id=Path(..., alias="id")):
 
     delete_result = mongo_client.client.skill_manager.skill_templates.delete_one(
         {"_id": ObjectId(skill_template_id)}
