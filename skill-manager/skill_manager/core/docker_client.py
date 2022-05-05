@@ -106,7 +106,9 @@ class SkillManagerDockerClient:
             filters={"label": "type=skill-template"}
         )
 
-    def get_skill_template_container_by_id(self, skill_template_id) -> Union[Container, None]:
+    def get_skill_template_container_by_id(
+        self, skill_template_id
+    ) -> Union[Container, None]:
         skill_template_container = self.docker_client.containers.list(
             filters={"label": f"skill-template-id={skill_template_id}"}
         )
@@ -114,5 +116,5 @@ class SkillManagerDockerClient:
             skill_template_container = skill_template_container[0]
         else:
             skill_template_container = None
-        
+
         return skill_template_container

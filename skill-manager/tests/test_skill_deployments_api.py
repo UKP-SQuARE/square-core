@@ -23,6 +23,7 @@ username = "test-user"
 app.dependency_overrides[KeycloakClient] = keycloak_client_override
 app.dependency_overrides[auth] = lambda: dict(realm=realm, username=username)
 
+
 @pytest.mark.parametrize(
     "skill_template_running", [False, True], ids=["not-runnning", "running"]
 )
@@ -92,7 +93,7 @@ def test_get_deployments(
             )
             skill_template_id = response.json()["id"]
 
-        # deploy a container 
+        # deploy a container
         container = docker_client.containers.run(
             test_image,
             detach=True,
@@ -103,14 +104,14 @@ def test_get_deployments(
                 "url": test_url,
             },
         )
-        containers.append(container) 
+        containers.append(container)
     sm_docker_client_mock.get_skill_template_containers.return_value = containers
     app.dependency_overrides[SkillManagerDockerClient] = lambda: sm_docker_client_mock
 
     for _ in range(4):
         container = docker_client.containers.run(
             test_image,
-            detach=True, 
+            detach=True,
             remove=True,
         )
         containers.append(container)

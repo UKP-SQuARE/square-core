@@ -9,12 +9,15 @@ from skill_manager.core.docker_client import SkillManagerDockerClient
 from skill_manager.models.skill_deployment import SkillDeployment
 from skill_manager.models.skill_template import SkillTemplate
 from skill_manager.models.task import TaskStatus
-from skill_manager.routers.skill_templates import (get_skill_template_by_id,
-                                                   get_skill_templates)
+from skill_manager.routers.skill_templates import (
+    get_skill_template_by_id,
+    get_skill_templates,
+)
 
 router = APIRouter(prefix="/deployments")
 
 auth = Auth()
+
 
 @router.get("/{id}", response_model=SkillDeployment)
 async def get_deployment_by_id(
@@ -48,7 +51,9 @@ async def get_deployments(
 ):
     skill_templates: List[SkillTemplate] = await get_skill_templates()
     containers = skill_manager_docker_client.get_skill_template_containers()
-    container_skill_template_ids = [c.labels.get("skill-template-id", "") for c in containers]
+    container_skill_template_ids = [
+        c.labels.get("skill-template-id", "") for c in containers
+    ]
 
     skill_deployments = []
     for skill_template in skill_templates:

@@ -37,9 +37,11 @@ def mongo_db(monkeymodule):
     finally:
         mongo_db_test_container.stop()
 
+
 @pytest.fixture(scope="module")
 def docker_client():
     return DockerClient.from_env()
+
 
 @pytest.fixture(scope="module")
 def pers_client(mongo_db) -> TestClient:
@@ -116,6 +118,7 @@ def token_factory():
         )
 
     return token
+
 
 @pytest.fixture
 def skill_template_factory():

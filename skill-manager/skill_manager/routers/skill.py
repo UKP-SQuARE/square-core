@@ -105,7 +105,7 @@ async def update_skill(request: Request, id: str, data: dict):
             setattr(skill, k, v)
 
     _ = mongo_client.client.skill_manager.skills.find_one_and_update(
-        {"_id": ObjectId(id)}, {"$set": data} #BUG: dont we need to use `skill`` here?
+        {"_id": ObjectId(id)}, {"$set": data}  # BUG: dont we need to use `skill`` here?
     )
     updated_skill = await get_skill_by_id(request, id)
 

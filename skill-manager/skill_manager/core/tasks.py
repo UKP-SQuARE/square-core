@@ -35,5 +35,5 @@ def build_and_deploy_skill_template_container(
     return SkillDeployment(
         skill_template_id=str(skill_template.id),
         deployed=True,
-        url=container.labels["url"]
+        url=container.labels["url"],
     )

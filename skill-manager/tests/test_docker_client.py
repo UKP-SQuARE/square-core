@@ -255,7 +255,10 @@ def test_get_skill_template_container_by_id(
     if skill_template_running:
         containers.append(
             docker_client.containers.run(
-                test_image, detach=True, remove=True, labels={"skill-template-id": skill_template_id}
+                test_image,
+                detach=True,
+                remove=True,
+                labels={"skill-template-id": skill_template_id},
             )
         )
     # start some "distractor" containers
@@ -265,7 +268,9 @@ def test_get_skill_template_container_by_id(
         )
 
     sm_docker_client = SkillManagerDockerClient()
-    found_container = sm_docker_client.get_skill_template_container_by_id(skill_template_id)
+    found_container = sm_docker_client.get_skill_template_container_by_id(
+        skill_template_id
+    )
     if skill_template_running:
         assert found_container.labels["skill-template-id"] == skill_template_id
     else:
