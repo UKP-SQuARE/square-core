@@ -28,8 +28,3 @@ class SkillTemplate(MongoModel):
     client_secret: Optional[str] = Field(
         None, description="The cleint secret of the skill stored in Keycloak."
     )
-
-class SkillDeployment(BaseModel):
-    skill_template_id: str = Field()
-    deployed: bool = Field()
-    url: Optional[str] = Field()

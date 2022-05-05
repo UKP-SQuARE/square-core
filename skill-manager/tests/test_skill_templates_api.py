@@ -1,13 +1,11 @@
+import uuid
 from unittest.mock import MagicMock
 
-import pytest
 from bson import ObjectId
 from fastapi.testclient import TestClient
-
 from skill_manager import mongo_client
 from skill_manager.core.keycloak_client import KeycloakClient
 from skill_manager.main import app
-from skill_manager.models.skill_template import SkillTemplate
 from skill_manager.routers.skill_templates import auth
 
 keycloak_client_mock = MagicMock()
@@ -21,22 +19,6 @@ realm = "test-realm"
 username = "test-user"
 app.dependency_overrides[KeycloakClient] = keycloak_client_override
 app.dependency_overrides[auth] = lambda: dict(realm=realm, username=username)
-
-@pytest.fixture
-def skill_template_factory():
-    def create_skill_template(
-        name="test-skill-template",
-        user_id="test-user",
-        url="http://test-skill-template.test",
-        **kwargs
-    ):
-        skill_template = SkillTemplate(name=name, user_id=user_id, url=url, **kwargs)
-        if not skill_template.id:
-            del skill_template.id
-
-        return skill_template
-
-    return create_skill_template
 
 
 def test_get_skill_by_id(mongo_db, token_factory, skill_template_factory):
@@ -53,9 +35,11 @@ def test_get_skill_by_id(mongo_db, token_factory, skill_template_factory):
             headers=dict(Authorization="Bearer " + token),
         )
         assert response.status_code == 201, response.content
-        
+
         skill_template_id = response.json()["id"]
-        response = test_client.get("/api/skill-templates/{id}".format(id=skill_template_id))
+        response = test_client.get(
+            "/api/skill-templates/{id}".format(id=skill_template_id)
+        )
         assert response.status_code == 200, response.content
 
         response = response.json()
@@ -84,6 +68,7 @@ def test_get_skill(mongo_db, token_factory, skill_template_factory):
         response = response.json()
         assert any(r["name"] == skill_template_name for r in response)
 
+
 def test_create_skill(mongo_db, token_factory, skill_template_factory):
 
     token = token_factory(preferred_username=username)
@@ -108,7 +93,6 @@ def test_create_skill(mongo_db, token_factory, skill_template_factory):
             )
         )
         assert mongo_skill_template["name"] == skill_template_name
-        
 
 
 def test_update_skill(mongo_db, token_factory, skill_template_factory):
@@ -126,7 +110,7 @@ def test_update_skill(mongo_db, token_factory, skill_template_factory):
             headers=dict(Authorization="Bearer " + token),
         )
         assert response.status_code == 201, response.content
-        
+
         skill_template_id = response.json()["id"]
         updated_skill_template_name = "test-update-skill-template-updated"
         response = test_client.put(
@@ -159,7 +143,7 @@ def test_delete_skill(mongo_db, token_factory, skill_template_factory):
             headers=dict(Authorization="Bearer " + token),
         )
         assert response.status_code == 201, response.content
-        
+
         skill_template_id = response.json()["id"]
 
         response = test_client.delete(
@@ -167,7 +151,7 @@ def test_delete_skill(mongo_db, token_factory, skill_template_factory):
             data=test_skill_template.json(),
             headers=dict(Authorization="Bearer " + token),
         )
-        
+
         # assert it has been deleted from mongodb
         mongo_skill_template = (
             mongo_client.client.skill_manager.skill_templates.find_one(
@@ -175,3 +159,28 @@ def test_delete_skill(mongo_db, token_factory, skill_template_factory):
             )
         )
         assert mongo_skill_template is None
+
+
+def test_upload_function(mongo_db, monkeypatch, tmp_path_factory):
+
+    skill_template_id = str(uuid.uuid1())
+    filename = f"{skill_template_id}.pickle"
+    source_dir = tmp_path_factory.mktemp("source")
+
+    source_path = source_dir / filename
+    source_path.write_text(f"{skill_template_id}")
+
+    target_dir = tmp_path_factory.mktemp("target")
+    monkeypatch.setenv("FUNCTION_DUMP_DIR", str(target_dir))
+
+    with TestClient(app) as test_client:
+        with open(source_path, "rb") as file:
+            test_client.post(
+                f"/api/skill-templates/{skill_template_id}/upload-function",
+                files={"file": file},
+            )
+
+        assert (
+            open(target_dir / f"{skill_template_id}.pickle", "r").read()
+            == skill_template_id
+        )

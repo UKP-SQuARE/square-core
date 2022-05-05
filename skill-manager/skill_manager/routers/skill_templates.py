@@ -1,14 +1,14 @@
 import logging
+import os
 from typing import Dict, List
 
 from bson import ObjectId
-from fastapi import APIRouter, Depends, Request, Path
+from fastapi import APIRouter, Depends, Path, UploadFile
 from square_auth.auth import Auth
+
 from skill_manager import mongo_client
 from skill_manager.core.keycloak_client import KeycloakClient
-
 from skill_manager.models.skill_template import SkillTemplate
-
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ async def create_skill_template(
         realm=realm, username=username, skill_name=skill_template.name
     )
     skill_template.client_id = client["clientId"]
-    
+
     # save skill template in mongo db
     skill_template_id = mongo_client.client.skill_manager.skill_templates.insert_one(
         skill_template.mongo()
@@ -85,3 +85,12 @@ async def delete_skill_template(skill_template_id=Path(..., alias="id")):
         return
     else:
         raise RuntimeError(delete_result.raw_result)
+
+
+@router.post("/{id}/upload-function")
+async def upload_function(file: UploadFile, skill_template_id=Path(..., alias="id")):
+    tmp = await file.read()
+    fn_dir = os.environ["FUNCTION_DUMP_DIR"]
+    os.makedirs(fn_dir, exist_ok=True)
+    with open(f"{fn_dir}/{skill_template_id}.pickle", "wb") as fh:
+        fh.write(tmp)
