@@ -27,11 +27,6 @@ def genearte_id_and_remove_docker_image():
     docker_client.images.remove(f"ukpsquare/skill-template-{skill_template_id}")
 
 
-@pytest.fixture(scope="module")
-def docker_client():
-    return DockerClient.from_env()
-
-
 def test_copy_remove_file(tmp_path_factory):
 
     skill_template_id = str(uuid.uuid1())

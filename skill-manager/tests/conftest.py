@@ -1,10 +1,12 @@
 import jwt
 import pytest
+from docker import DockerClient
 from fastapi.testclient import TestClient
 from testcontainers.mongodb import MongoDbContainer
 
 from skill_manager.main import app
 from skill_manager.models.skill import Skill, SkillSettings
+from skill_manager.models.skill_template import SkillTemplate
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +37,9 @@ def mongo_db(monkeymodule):
     finally:
         mongo_db_test_container.stop()
 
+@pytest.fixture(scope="module")
+def docker_client():
+    return DockerClient.from_env()
 
 @pytest.fixture(scope="module")
 def pers_client(mongo_db) -> TestClient:
@@ -111,3 +116,19 @@ def token_factory():
         )
 
     return token
+
+@pytest.fixture
+def skill_template_factory():
+    def create_skill_template(
+        name="test-skill-template",
+        user_id="test-user",
+        url="http://test-skill-template.test",
+        **kwargs,
+    ):
+        skill_template = SkillTemplate(name=name, user_id=user_id, url=url, **kwargs)
+        if not skill_template.id:
+            del skill_template.id
+
+        return skill_template
+
+    return create_skill_template
