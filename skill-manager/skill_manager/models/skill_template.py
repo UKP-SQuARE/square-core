@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
@@ -22,7 +21,6 @@ class SkillTemplate(MongoModel):
     name: str = Field(...)
     description: Optional[str] = Field(None)
     user_id: str = Field(description="User ID of the creator of the Skill Template.")
-    url: str = Field()
     parameters: Optional[List[SkillTemplateParameter]] = Field(None)
     client_id: Optional[str] = Field(
         None, description="The clientId of the skill stored in Keycloak."
@@ -30,3 +28,8 @@ class SkillTemplate(MongoModel):
     client_secret: Optional[str] = Field(
         None, description="The cleint secret of the skill stored in Keycloak."
     )
+
+class SkillDeployment(BaseModel):
+    skill_template_id: str = Field()
+    deployed: bool = Field()
+    url: Optional[str] = Field()
