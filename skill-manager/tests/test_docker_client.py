@@ -219,3 +219,63 @@ def test_deploy_skill_template(monkeypatch, tmp_path_factory):
     # clean-up
     container.stop()
     container.remove()
+
+
+@pytest.mark.parametrize("num_containers", [0, 3], ids=["zero-runnning", "n-running"])
+def test_get_skill_template_containers(num_containers, docker_client: DockerClient):
+
+    test_image = "containous/whoami"
+    containers = []
+    for _ in range(num_containers):
+        containers.append(
+            docker_client.containers.run(
+                test_image, detach=True, remove=True, labels={"type": "skill-template"}
+            )
+        )
+    # start some "distractor" containers
+    for _ in range(4):
+        containers.append(
+            docker_client.containers.run(test_image, detach=True, remove=True)
+        )
+
+    sm_docker_client = SkillManagerDockerClient()
+    found_containers = sm_docker_client.get_skill_template_containers()
+    assert len(found_containers) == num_containers
+
+    # clean-up
+    for c in containers:
+        c.stop()
+
+
+@pytest.mark.parametrize(
+    "skill_template_running", [False, True], ids=["not-runnning", "running"]
+)
+def test_get_skill_template_container_by_id(
+    skill_template_running, docker_client: DockerClient
+):
+
+    skill_template_id = str(uuid.uuid1())
+    test_image = "containous/whoami"
+    containers = []
+    if skill_template_running:
+        containers.append(
+            docker_client.containers.run(
+                test_image, detach=True, remove=True, labels={"skill-template-id": skill_template_id}
+            )
+        )
+    # start some "distractor" containers
+    for _ in range(4):
+        containers.append(
+            docker_client.containers.run(test_image, detach=True, remove=True)
+        )
+
+    sm_docker_client = SkillManagerDockerClient()
+    found_container = sm_docker_client.get_skill_template_container_by_id(skill_template_id)
+    if skill_template_running:
+        assert found_container.labels["skill-template-id"] == skill_template_id
+    else:
+        assert found_container is None
+
+    # clean-up
+    for c in containers:
+        c.stop()

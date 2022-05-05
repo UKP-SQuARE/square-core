@@ -2,7 +2,7 @@ import os
 import shutil
 from contextlib import contextmanager
 from time import time
-from typing import List
+from typing import List, Union
 
 from docker import DockerClient
 from docker.models.containers import Container
@@ -103,10 +103,16 @@ class SkillManagerDockerClient:
 
     def get_skill_template_containers(self) -> List[Container]:
         return self.docker_client.containers.list(
-            filters={"labels": "type=skill-template"}
+            filters={"label": "type=skill-template"}
         )
 
-    def get_skill_template_container_by_id(self, skill_template_id) -> Container:
-        return self.docker_client.containers.list(
-            filters={"labels": f"skill-template-id={skill_template_id}"}
-        )[0]
+    def get_skill_template_container_by_id(self, skill_template_id) -> Union[Container, None]:
+        skill_template_container = self.docker_client.containers.list(
+            filters={"label": f"skill-template-id={skill_template_id}"}
+        )
+        if skill_template_container:
+            skill_template_container = skill_template_container[0]
+        else:
+            skill_template_container = None
+        
+        return skill_template_container
