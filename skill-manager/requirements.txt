@@ -6,5 +6,6 @@ fastapi>=0.70.0
 pydantic>=1.8.2
 pymongo>=3.12.1
 requests>=2.26.0
+celery>=5.2.6
 docker>=5.0.3
 python-multipart>=0.0.5
