@@ -8,7 +8,8 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 class TestClientMaintaining(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = ManagementClient("https://localhost:8443", client_secret=CLIENT_SECRET,
+        self.client = ManagementClient("https://localhost:8443",
+                                       client_secret=CLIENT_SECRET,
                                        verify_ssl=False)
 
     def test_deployed_models(self):

@@ -11,8 +11,9 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 class TestClientPredict(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = ManagementClient("https://localhost:8443", client_secret=CLIENT_SECRET,
-                                       verify_ssl=False)
+        cls.client = ManagementClient("https://localhost:8443",
+                                      client_secret=CLIENT_SECRET,
+                                      verify_ssl=False)
         identifier = "bert_adapter_test"
         model_attributes = {
             "identifier": identifier,
@@ -51,7 +52,12 @@ class TestClientPredict(unittest.TestCase):
 
     def test_client_sequence_classification(self):
         identifier = "bert_adapter_test"
-        result = self.client.predict(identifier, input_data={"input": [["What is a test?", "A test is a thing where you test."]], "adapter_name": "lingaccept/cola@ukp"}, prediction_method="embedding")
+        result = self.client.predict(identifier,
+                                     input_data={
+                                            "input": [["What is a test?", "A test is a thing where you test."]],
+                                            "adapter_name": "lingaccept/cola@ukp"
+                                     },
+                                     prediction_method="embedding")
         self.assertTrue("logits" in result["model_outputs"])
         self.assertEqual(type(result["model_outputs"]["logits"]), str)
 
@@ -78,7 +84,10 @@ class TestClientPredict(unittest.TestCase):
     def test_client_question_answering(self):
         identifier = "bert_adapter_test"
         result = self.client.predict(identifier,
-                                     input_data={"input": [["What is a test?", "A test is a thing where you test."]], "adapter_name": "qa/squad1@ukp"},
+                                     input_data={
+                                         "input": [["What is a test?", "A test is a thing where you test."]],
+                                         "adapter_name": "qa/squad1@ukp"
+                                     },
                                      prediction_method="question-answering")
         self.assertTrue("start_logits" in result["model_outputs"])
         self.assertEqual(type(result["model_outputs"]["start_logits"]), str)
@@ -94,6 +103,7 @@ class TestClientPredict(unittest.TestCase):
         result = self.client.predict(identifier, input_data={"input": ["Some text"]}, prediction_method="generation")
         self.assertTrue("model_outputs" in result)
         self.assertTrue("sequences" in result["model_outputs"])
+
 
 if __name__ == '__main__':
     unittest.main()

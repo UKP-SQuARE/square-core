@@ -14,6 +14,7 @@ OPENAPI_URL = "/api/openapi.json"
 CONFIG_PATH = os.getenv("CONFIG_PATH")
 IDENTIFIER = os.getenv("QUEUE")
 
+
 @dataclass
 class ModelConfig(Mapping):
     # Corresponds to the Huggingface name for finetuned Transformers or the name of a finetuned SentenceTransformers
@@ -114,22 +115,25 @@ class ModelConfig(Mapping):
         with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
             with open(f"{CONFIG_PATH}/{identifier}.json", 'r') as f:
                 config = json.load(f)
-            return ModelConfig(**config)
+        return ModelConfig(**config)
 
     def save(self, identifier):
-
-        with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
-            if not os.path.exists(f'{CONFIG_PATH}/{identifier}.json'):
+        if not os.path.exists(f'{CONFIG_PATH}/{identifier}.json'):
+            try:
                 os.makedirs(os.path.dirname(f'{CONFIG_PATH}/{identifier}.json'))
+            except OSError as err:
+                print(err)
+        with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
             with open(f'{CONFIG_PATH}/{identifier}.json', 'w+') as json_file:
                 json.dump(self.to_dict(), json_file)
 
 
 model_config = ModelConfig.load()
 
+
 # for testing the inference models
-def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_size, model_class="base", cache="./.cache",
-                    preloaded_adapters=False, onnx_path="", decoder_path=""):
+def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_size, model_class="base",
+                    cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path=""):
     global model_config
     model_config.model_name = model_name
     model_config.model_class = model_class

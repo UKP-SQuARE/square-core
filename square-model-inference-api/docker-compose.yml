@@ -50,25 +50,24 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-    environment:
-      - RABBITMQ_DEFAULT_USER=ukp
     env_file:
-      - management_server/.env
-    volumes:
-      - ./management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./management_server/.env
+#    volumes:
+#      - ./management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+#      - ./management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
   redishost:
     hostname: redishost
     image: redis:latest
     ports:
       - '6379:6379'
-    command: ["redis-server", "/etc/redis/redis.conf"]
     env_file:
-      - management_server/.env
-    volumes:
-      - square-redis-data:/square/redis/data:rw
-      - ./management_server/redis/redis.conf:/etc/redis/redis.conf
+      - .env
+    command: [ "redis-server", "--appendonly yes", "--requirepass ${REDIS_PASSWORD}" ]
+
+#    volumes:
+#      - square-redis-data:/square/redis/data:rw
+#      - ./management_server/redis/redis.conf:/etc/redis/redis.conf
 
   maintaining_worker:
 #    image: ukpsquare/square-model-management:latest
@@ -81,12 +80,9 @@ services:
       - ./management_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
       - VERIFY_SSL=0
-      - REDIS_USER=default
-      - RABBITMQ_DEFAULT_USER=ukp
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=square
       - CLIENT_ID=models
@@ -114,18 +110,13 @@ services:
       - ./management_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=1
       - ONNX_VOLUME=square-model-inference-api_onnx-models
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=square
       - CLIENT_ID=models
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
-      - REDIS_USER=default
-      - RABBITMQ_DEFAULT_USER=ukp
       - CONFIG_PATH=/model_configs
     labels:
       - "traefik.enable=true"
@@ -147,18 +138,17 @@ services:
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./inference_server/.env.dpr
+      - inference_server/.env
     environment:
       - WEB_CONCURRENCY=1
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - QUEUE=facebook-dpr-question_encoder-single-nq-base
-      - REDIS_USER=default
-      - RABBITMQ_DEFAULT_USER=ukp
-      - REDIS_PASSWORD=8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918
-      - RABBITMQ_DEFAULT_PASS=kI3GCrKiruPThdUJaIVVL98MqLaKozyNez96OaUzQEmkpJDX
       - CONFIG_PATH=/model_configs
+#      - TEST=1   # for testing model config
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
+      - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
@@ -178,16 +168,13 @@ services:
       - model_configs:/model_configs
     env_file:
       - ./inference_server/.env.dpr
+      - inference_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
       - VERIFY_SSL=0
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=square
       - CLIENT_ID=models
-      - REDIS_USER=default
-      - RABBITMQ_DEFAULT_USER=ukp
-      - REDIS_PASSWORD=8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918
-      - RABBITMQ_DEFAULT_PASS=kI3GCrKiruPThdUJaIVVL98MqLaKozyNez96OaUzQEmkpJDX
       - QUEUE=facebook-dpr-question_encoder-single-nq-base
       - CONFIG_PATH=/model_configs
     links:
@@ -224,24 +211,17 @@ services:
     image: mongo:5.0.4
     restart: always
     volumes:
-      - skill-manager-mongo-data:/data/db
+      - mongo-data:/data/db
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_HOST: mongo
-      MONGO_PORT: 27017
     env_file:
       - management_server/.env
 
   mongo-express:
     image: mongo-express:latest
     restart: always
-    environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongo:27017
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+    env_file:
+      - ./management_server/.env
     ports:
       - 8081:8081
 
@@ -272,11 +252,11 @@ services:
 volumes:
   traefik-public-certificates:
 
-  skill-manager-mongo-data:
+  mongo-data:
     driver: local
 
-  square-redis-data:
-    driver: local
+#  square-redis-data:
+#    driver: local
 
   # onnx-model folder on the vm
   onnx-models:

@@ -23,6 +23,7 @@ def check_valid_request(request):
         return False, "Missing input"
     return True, None
 
+
 @router.post("/{identifier}/sequence-classification", response_model=AsyncTaskResult,
              name="sequence classification")
 async def sequence_classification(

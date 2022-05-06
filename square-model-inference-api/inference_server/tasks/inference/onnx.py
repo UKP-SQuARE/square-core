@@ -11,6 +11,7 @@ from tasks.models.request import PredictionRequest
 from torch import nn
 from torch.nn import functional as F
 
+from transformers import AutoTokenizer
 from .transformer import Transformer
 
 
@@ -25,7 +26,7 @@ class Onnx(Transformer):
 
         """
          Args:
-             model_path: patyh where the model is stored
+             model_path: path where the model is stored
              model_name: the ONNX model name
              decoder_path: path to the decoder ONNX model
              kwargs: Not used

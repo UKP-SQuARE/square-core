@@ -1,16 +1,14 @@
 import asyncio
 import logging
-import os
-import time
 from abc import ABC
 
-import requests
 from celery import Task
 
-from app.core.config import settings
+# from app.core.config import settings
 from app.routers import client_credentials
+from app.db.database import MongoClass
+
 from docker_access import remove_model_container, start_new_model_container
-from mongo_access import MongoClass
 
 from .celery import app
 
@@ -72,7 +70,7 @@ def deploy_task(self, env, allow_overwrite=False):
                 "message": "Model deployed. Check the `/api/models/deployed-models` " "endpoint for more info.",
             }
 
-            env["container"] = container.id
+            env["CONTAINER"] = container.id
 
             asyncio.run(self.client.add_model_db(env, allow_overwrite))
             return result

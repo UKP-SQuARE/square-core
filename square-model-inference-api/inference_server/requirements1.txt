@@ -9,4 +9,5 @@ onnxruntime==1.8.1              # onnx inference and models
 square-auth>=0.0.3              # keycloak authentication
 celery==5.1.2                   # queue requests
 redis==4.1.4
+pytest-env==0.6.2
 git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # ELK logger

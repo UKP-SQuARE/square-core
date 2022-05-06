@@ -9,6 +9,7 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 CLIENT_ID = os.getenv("CLIENT_ID")
 KEYCLOAK_BASE_URL = os.getenv("KEYCLOAK_BASE_URL")
 
+
 class ManagementClient:
     """
     This client provides an easy interface to the model-api from the square project.
@@ -85,7 +86,8 @@ class ManagementClient:
                                         "question-answering"]
         if prediction_method not in supported_prediction_methods:
             raise ValueError(
-                f"Unknown prediction_method {prediction_method}. Please choose one of the following {supported_prediction_methods}")
+                f"Unknown prediction_method {prediction_method}. Please choose one of the "
+                f"following {supported_prediction_methods}")
         response = requests.post(
             url="{}/api/main/{}/{}".format(self.url, model_identifier, prediction_method),
             headers={"Authorization": f"Bearer {self.client_credentials()}"},
@@ -230,5 +232,3 @@ class ManagementClient:
             return self._wait_for_task("models", response.json()["task_id"])
         else:
             return response
-
-

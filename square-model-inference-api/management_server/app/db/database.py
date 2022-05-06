@@ -22,7 +22,7 @@ class MongoClass:
         self.client = MongoClient(mongo_settings.connection_url)
         self.db = self.client.model_management  # database
         self.models = self.db.models  # collection
-        self.containers = self.db.containers # collection
+        self.containers = self.db.containers  # collection
 
     def close(self):
         """
@@ -56,8 +56,8 @@ class MongoClass:
         """
         data = env.copy()
         identifier = data["IDENTIFIER"]
-        container = env["container"]
-        del env["container"]
+        container = env["CONTAINER"]
+        del env["CONTAINER"]
         if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
             if allow_overwrite:
                 query = {"IDENTIFIER": identifier}

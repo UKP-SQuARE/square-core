@@ -10,13 +10,12 @@ logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
-MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
+MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v2:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
 CONFIG_VOLUME = os.getenv("CONFIG_VOLUME", "square-model-inference-api_model_configs")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
 USER = os.getenv("USERNAME", "user")
 PASSWORD = os.getenv("PASSWORD", "user")
-
 
 
 def create_docker_labels(identifier: str) -> dict:
@@ -96,11 +95,14 @@ def start_new_model_container(identifier, env, id=1):
             environment=env,
             network=network.name,
             volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
-            mounts=[Mount(target="/model_configs", source=CONFIG_VOLUME, )],
+            mounts=[Mount(target="/model_configs", source=CONFIG_VOLUME,),
+                    Mount(target="/onnx_models", source=ONNX_VOLUME,)],
         )
         logger.info(f"Worker container {container}")
-
         network.reload()
+        entries_to_remove = ["RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS", "REDIS_USER", "REDIS_PASSWORD"]
+        for k in entries_to_remove:
+            env.pop(k, None)
     except Exception as e:
         return {"container": None, "message": f"Caught exception. {e}"}
     return {"container": container, "message": "Success"}

@@ -17,10 +17,11 @@ from app.models.management import (
     UpdateModel,
 )
 from app.routers import client_credentials, utils
+from app.db.database import MongoClass
 from docker_access import get_all_model_prefixes
-from mongo_access import MongoClass
+
 from tasks import tasks
-from tasks.celery import app
+# from tasks.celery import app
 import json
 from bson import json_util
 
@@ -53,9 +54,11 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
         )
     return result
 
+
 @router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsResult])
 async def get_all_models_health():
     pass
+
 
 @router.get("/deployed-model-workers", name="get-deployed-models",)
 async def get_model_containers():  # token: str = Depends(client_credentials)):
@@ -228,7 +231,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                     "TRANSFORMERS_CACHE": data.get("transformers_cache", ""),
                     "MODEL_PATH": data.get("model_path", ""),
                     "DECODER_PATH": data.get("decoder_path", ""),
-                    "container": container,
+                    "CONTAINER": container,
                 }
             )
         else:

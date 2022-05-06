@@ -13,9 +13,10 @@ test:
 
 full-test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
-	PYTHONPATH=inference_server/ pytest inference_server/  --cov
-	PYTHONPATH=management_server/ pytest management_server/  --cov
-    PYTHONPATH=management_client/ pytest management_client/  --cov
+	PYTHONPATH=management_client/ pytest management_client/  --cov
+#	PYTHONPATH=inference_server/ pytest inference_server/  --cov
+#	PYTHONPATH=management_server/ pytest management_server/  --cov
+
 
 
 install:

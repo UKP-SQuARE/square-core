@@ -25,6 +25,7 @@ def test_api_sequence_classification(test_task, test_app) -> None:
             "adapter_name": ""
         }
     )
+    print("check task", Task.sequence_classification)
     assert test_task.called
     assert test_task.call_args[1] == {"queue": identifier}
     assert test_task.call_args[0][0][1] == Task.sequence_classification
@@ -47,6 +48,7 @@ def test_api_sequence_classification_malformed_input(test_task, test_app) -> Non
     )
     assert not test_task.called
     assert response.status_code == 422
+
 
 @patch('celery.app.task.Task.apply_async',  return_value=AsyncResult(123))
 def test_api_token_classification(test_task, test_app) -> None:

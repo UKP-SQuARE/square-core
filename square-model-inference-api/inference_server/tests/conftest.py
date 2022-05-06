@@ -1,6 +1,11 @@
 import pytest
 
-from pre_test_setup_for_docker_caching import TRANSFORMERS_TESTING_CACHE, TRANSFORMER_MODEL, SENTENCE_MODEL, ONNX_MODEL
+from pre_test_setup_for_docker_caching import (
+    TRANSFORMERS_TESTING_CACHE,
+    TRANSFORMER_MODEL,
+    SENTENCE_MODEL,
+    ONNX_MODEL
+)
 import torch
 import os
 
@@ -25,6 +30,7 @@ from tasks.inference.sentencetransformer import SentenceTransformer
 from tasks.inference.onnx import Onnx
 from tasks.config.model_config import ModelConfig, set_test_config, model_config
 from square_model_inference.models.request import PredictionRequest
+
 
 @pytest.fixture(scope="session")
 def test_app():
@@ -88,7 +94,7 @@ def test_transformer_question_answering():
         disable_gpu=True,
         batch_size=1,
         max_input_size=50,
-        model_type = "transformers",
+        model_type="transformers",
     )
     return Transformer()
 
