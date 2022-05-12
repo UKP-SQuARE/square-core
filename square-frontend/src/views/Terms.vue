@@ -68,14 +68,19 @@
             <h4>Sources</h4>
             <p><a href="https://www.termsfeed.com/resources/#templates" target="_blank">https://www.termsfeed.com/resources/#templates</a></p>
             <p><a href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp" target="_blank">https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp</a></p>
+            <script id="CookieDeclaration" type="application/javascript"  src="https://consent.cookiebot.com/36777cf3-0dbd-43eb-b0c5-3b9797f9427e/cd.js"  async></script>
+
+
           </div>
         </div>
       </div>
     </div>
 </template>
 
+
 <script>
 import Vue from 'vue'
 
 export default Vue.component('send-feedback', {})
 </script>
+
