@@ -1,135 +1,94 @@
-import requests
-import argparse
-import os
-import json
+from pathlib import Path
+from unittest.mock import patch, MagicMock
+
+from starlette.testclient import TestClient
+from celery.result import AsyncResult
 
 
-def test_single_skill(request_path, skill, args):
-    """ Run the tests for a single skill
-
-    Run tests for single skill and save the results in json file
-
-    Args:
-        request_path (str) : Request path for testing the skill
-        skill (dict) : A dictionary containing all the information of the skill
-        args (ArgumentParser object): An object containing necessary arguments to run this script
-    """
-    print("testing skill")
-    headers = {'Content-type': 'application/json'}
-    response = requests.post(request_path, data = skill)
-    json_data = response.json()
-    path = os.getcwd() + "/" + args.skill_id + '.json'
-    save_json(json_data, path)
-    print("testing done predictions are saved in " + str(path))
+class AsyncMock(MagicMock):
+    async def __call__(self, *args, **kwargs):
+        return super(AsyncMock, self).__call__(*args, **kwargs)
 
 
-def save_json(json_data, path : str):
-    """ Save a json object
-
-    Saves a json object to a specific directory
-
-    Args:
-        json_data (json_object) : Containing all the test cases and their predictions
-        path (str) : Full path of the diretory where the json object will be saved
-
-    """
-    with open(path, 'w') as f:
-        json.dump(json_data, f, indent=4)
+def test_heartbeat(test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.get("/api/health/heartbeat")
+    assert response.status_code == 200
+    assert response.json() == {"is_alive": True}
 
 
-def test_all_skills(request_path, skills, args):
-    """ Run tests for all skills
-
-    Run tests for all skill and save the results in different json file
-
-    Args:
-        skills (json object) : A json object containing all the information for all the objects 
-        args (ArgumentParser object): An object containing necessary arguments to run this script
-
-    """
-    for skill in skills:
-        if skill['skill_type'] in ['multiple-choice', 'span-extraction', 'categorical'] and "open" not in skill['name'].lower():
-            print("testing " + str(skill['name']))
-            skill_obj = {
-                "skill_query_path" : args.skill_path + skill['id'] + "/query",
-                "skill_type" : skill['skill_type'],
-                "skill_base_model" : skill['default_skill_args']['base_model'],
-                "skill_adapter" :skill['default_skill_args']['adapter'],
-                "skill_id" : skill['id'],
-                "skill_name" : skill['name']
-            }
-            json_skill = json.dumps(skill_obj)
-            response = requests.post(request_path, data = json_skill)
-            json_data = response.json()
-            path = os.getcwd() + "/" + skill['id'] + '.json'
-            save_json(json_data, path)
-            print("testing done for " + str(skill['name']) + "and predictions are saved in " + str(path))
+def test_default_route(test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.get("/")
+    assert response.status_code == 404
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Test the Explainability API')
+@patch(
+    'app.db.mongo_operations.Database.add_tests_to_db', return_value=True
+    , new_callable=AsyncMock
+)
+def test_api_add_tests(test_mongo, test_app) -> None:
+    test_client = TestClient(test_app)
+    _test_upload_file = Path('checklists/', 'boolean_model_tests.json')
+    files = [('file', ('boolean_model_tests.json', open(_test_upload_file, 'rb'),
+                       'application/json'))]
+    response = test_client.put(
+        f"/api/checklist/tests",
+        files=files,
+    )
+    assert response.status_code == 200
 
-    parser.add_argument('--all', type = bool, default = False, help = 'if True is given all skills are tested, else only the given skill is tested')
-    parser.add_argument('--skill_name', type = str, default = 'BoolQ', help = 'name of the skill, change it according to need')
-    parser.add_argument('--skill_type', type = str, default = 'multiple-choice', help = 'type of the skill, change it according to need')
-    parser.add_argument('--skill_id', type = str, default = '61a9f66935adbbf1f2433077', help = 'id of the skill, change it according to need')
-    parser.add_argument('--skill_path', type = str, 
-                        default = 'https://square.ukp-lab.de/api/skill-manager/skill/', 
-                        help = 'skill query path, change it according to need')
-    parser.add_argument('--skill_base_model', type = str, 
-                        default = 'bert-base-uncased',
-                        help = 'name of the model, change it according to need')
-    parser.add_argument('--skill_adapter', type = str, 
-                        default = 'AdapterHub/bert-base-uncased-pf-boolq', 
-                        help = 'name of the adapter, change it according to need')
-    args = parser.parse_args()
 
-    # get all the skill information
-    response = requests.get("https://square.ukp-lab.de/api/skill-manager/skill")
-    skills = response.json()
+@patch('celery.app.task.Task.apply_async',  return_value=AsyncResult(123))
+@patch(
+    'app.db.mongo_operations.Database.add_results_to_db', return_value=True
+    , new_callable=AsyncMock
+)
+@patch(
+    'app.api.auth.get_user_id', return_value="ukp"
+    , new_callable=AsyncMock
+)
+def test_api_execute_checklist_single(test_check1, test_check2, test_task, test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.put(
+        f"/api/checklist/execute-single",
+        params={"skill_name": "CosmosQA BERT"}
+    )
+    assert test_task.called
+    assert test_task.call_args[0][0][0]["name"] == "CosmosQA BERT"
+    assert response.status_code == 200
 
-    # request path for testing skills
-    skill_test_path = "http://localhost:8010/test"
 
-    if args.all == True:
-        test_all_skills(skill_test_path, skills, args)
-    else:
-        skill_obj = {
-            "skill_query_path" : args.skill_path + args.skill_id + "/query",
-            "skill_type" : args.skill_type,
-            "skill_base_model" : args.skill_base_model,
-            "skill_adapter" : args.skill_adapter,
-            "skill_id" : args.skill_id,
-            "skill_name" : args.skill_name,
-        }
-        json_skill = json.dumps(skill_obj)
-        test_single_skill(skill_test_path, json_skill, args)
+@patch('celery.app.task.Task.apply_async',  return_value=AsyncResult(123))
+@patch(
+    'app.db.mongo_operations.Database.add_results_to_db', return_value=True
+    , new_callable=AsyncMock
+)
+@patch(
+    'app.db.mongo_operations.Database.get_skills_from_results_db', return_value=["61a9f68535adbbf1f2433078"]
+    , new_callable=AsyncMock
+)
+@patch(
+    'app.api.auth.get_user_id', return_value="ukp"
+    , new_callable=AsyncMock
+)
+def test_api_execute_checklist_all(test_check1, test_check2, test_check3, test_task, test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.put(
+        f"/api/checklist/execute-all",
+    )
+    assert test_task.called
+    assert response.status_code == 200
 
-    # sample input to the api
 
-    # for boolq
-    # {
-    #    "skill_query_path": "https://square.ukp-lab.de/api/skill-manager/skill/61a9f66935adbbf1f2433077/query",
-    #    "skill_type": "categorical",
-    #    "skill_base_model": "bert-base-uncased",
-    #    "skill_adapter": "AdapterHub/bert-base-uncased-pf-boolq",
-    #    "skill_id": "61a9f66935adbbf1f2433077"
-    # }
-
-    # for multiple choice
-    # {
-    #    "skill_query_path": "https://square.ukp-lab.de/api/skill-manager/skill/61a9f68535adbbf1f2433078/query",
-    #    "skill_type": "multiple-choice",
-    #    "skill_base_model": "bert-base-uncased",
-    #    "skill_adapter": "AdapterHub/bert-base-uncased-pf-cosmos_qa",
-    #    "skill_id": "61a9f68535adbbf1f2433078"
-    # }
-
-    # for span extraction
-    # {
-    #    "skill_query_path": "https://square.ukp-lab.de/api/skill-manager/skill/61a9f56c35adbbf1f2433072/query",
-    #    "skill_type": "span-extraction",
-    #    "skill_base_model": "bert-base-uncased",
-    #    "skill_adapter": "AdapterHub/bert-base-uncased-pf-squad",
-    #    "skill_id": "61a9f56c35adbbf1f2433072"
-    # }
+@patch(
+    'app.db.mongo_operations.Database.get_results', return_value={}
+    , new_callable=AsyncMock
+)
+def test_api_get_results(test_mongo, test_app) -> None:
+    test_client = TestClient(test_app)
+    response = test_client.get(
+        f"/api/checklist/results",
+        params={"skill_id": "61a9f68535adbbf1f2433078", "test_type": "MFT", "capability": "Vocabulary"}
+    )
+    assert response.status_code == 200
