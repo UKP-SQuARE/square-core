@@ -3,3 +3,7 @@ app/.pytest_cache
 rabbitmq
 
 redis
+
+# secrets
+.env
+.env.dev
