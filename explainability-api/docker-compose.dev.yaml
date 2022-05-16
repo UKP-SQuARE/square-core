@@ -85,7 +85,7 @@ services:
       - VERIFY_SSL=0
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=square-testing
-      - CLIENT_ID=models
+      - CLIENT_ID=explainability-api
     links:
       - rabbit
       - redishost
@@ -108,7 +108,7 @@ services:
       - VERIFY_SSL=0
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=square-testing
-      - CLIENT_ID=models
+      - CLIENT_ID=explainability-api
     links:
       - rabbit
       - redishost
