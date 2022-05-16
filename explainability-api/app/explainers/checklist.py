@@ -3,14 +3,9 @@ import json
 import logging
 import requests
 import itertools
-from typing import List
 
-from collections import OrderedDict
-
-from app.models.skill import Skill
 from app.db.mongo_operations import Database
 from app.core.config import settings
-from app.models.checklist import ChecklistResults
 
 from typing import List
 
@@ -24,9 +19,9 @@ mongo_client = Database()
 ##################################################################
 
 
-async def process_data(data: bytes):
+async def process_and_add_data(data: bytes):
     """
-    process json file consisting of tests for adding to the database
+    Processes the json file consisting of tests for adding to the database
     """
     try:
         data = json.loads(data)
@@ -69,8 +64,7 @@ async def process_data(data: bytes):
 
 def create_query(skill, test_cases: List):
     """
-    Create query for prediction
-    This function query creates a query and make it suitable for sending to for prediction
+    Creates a query and make it suitable for sending to for prediction
 
     Args:
         skill: input skill for which the checklist tests are run
@@ -125,14 +119,14 @@ def create_query(skill, test_cases: List):
     model_inputs["test_type"] = test_type
     model_inputs["capability"] = capability
     model_inputs["test_name"] = test_name
+    # logger.info("inputs:", model_inputs)
 
     return model_inputs
 
 
 def predict(model_inputs: dict, skill_id: str) -> list:
-    """ Predicts a given query
-
-    This function predicts a query and returns the prediction
+    """
+    Predicts a given query
 
     Args:
         model_inputs (dict) : input for the model inference
@@ -146,18 +140,14 @@ def predict(model_inputs: dict, skill_id: str) -> list:
         headers = {'Content-type': 'application/json'}
         skill_query_url = f"{settings.API_URL}/api/skill-manager/skill/{skill_id}/query"
         model_predictions = list()
-        i = 0
+        # i = 0
         for request in model_inputs["request"]:
-            print(request)
             response = requests.post(skill_query_url, data=json.dumps(request), headers=headers)
             predictions = response.json()
             model_predictions.append(predictions["predictions"][0]["prediction_output"]["output"])
-            i += 1
-            if i == 2:
-                break
-        # print(model_predictions)
-        # print(model_inputs)
-        # print(model_inputs["answers"][0])
+            # i += 1
+            # if i == 10:
+            #     break
 
         # calculate success rate
         success_rate = [pred == gold for pred, gold in zip(model_predictions, model_inputs["answers"])]
@@ -188,49 +178,6 @@ def predict(model_inputs: dict, skill_id: str) -> list:
     except Exception as ex:
         logger.info(ex)
     return model_outputs
-
-
-# def run_tests(skill: Skill, path: str):
-#     """ Function to run all the test cases for a given skill
-#
-#     This function run all the test cases for a given skill
-#
-#     Args:
-#         skill (Skill object) : A object of Skill containing all the information for a skill
-#         path (path) : Directory of the json file containing test cases for that skill type
-#
-#     Returns:
-#         json_data (json object) : A json object containing all the test cases and their
-#           predictions for the given skill
-#
-#     """
-#
-#     json_data = get_json_data(path, skill.skill_type)
-#     num_tests = len(json_data['tests'])
-#     for i in range(num_tests):
-#         num_test_cases = len(json_data['tests'][i]['test_cases'])
-#         capability = json_data['tests'][i]['capability']
-#         success = 0
-#         failed = 0
-#         for j in range(num_test_cases):
-#             test_case = json_data['tests'][i]['test_cases'][j]
-#             json_query, answer = create_query(test_case, capability, skill.skill_base_model, skill.skill_adapter)
-#             result = predict(skill.skill_query_path, json_query, answer)
-#             json_data['tests'][i]['test_cases'][j]['success_failed'] = result
-#             if result == "success":
-#                 success = success + 1
-#             else:
-#                 failed = failed + 1
-#         total_cases = json_data['tests'][i]['total_cases']
-#         failure_rate = (failed / total_cases) * 100
-#         failure_rate_ = "{:.2f}".format(failure_rate)
-#         failure_rate = float(failure_rate_)
-#         success_rate = 100 - failure_rate
-#         json_data['tests'][i]["failed_cases"] = failed
-#         json_data['tests'][i]["success_cases"] = success
-#         json_data['tests'][i]["failure_rate"] = failure_rate
-#         json_data['tests'][i]["success_rate"] = success_rate
-#     return json_data
 
 
 ##################################################################
