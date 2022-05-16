@@ -1,5 +1,7 @@
 import logging
+import numpy as np
 from typing import List
+from fastapi import HTTPException
 
 from pymongo import MongoClient
 
@@ -58,7 +60,7 @@ class Database:
 
     def get_tests_from_db(self, qa_type: str) -> list:
         """
-        get container id from db
+        get checklist tests from db
         """
         result = list()
         if self.checklist_tests.count_documents({"qa_type": qa_type}) >= 1:
@@ -78,20 +80,58 @@ class Database:
         try:
             for predictions in model_outputs:
                 data = predictions.copy()
+                # logger.info(data)
                 if self.checklist_results.count_documents(
                         {
                             "skill_id": data["skill_id"],
-                            "question": data["question"]
+                            "question": data["question"],
+                            # "context": data["context"]
                         }
                 ) >= 1:
                     # print("Entry already present in db. Skipping!")
                     logger.info("Entry already present in db. Skipping!")
-                    return False
+                    # return False
                 else:
                     self.checklist_results.insert_one(data)
             return True
         except ValueError:
             return False
+
+    async def get_skills_from_results_db(self):
+        skills = self.checklist_results.distinct('skill_id')
+        return skills
+
+    async def get_results(self, skill_id, test_type, capability):
+        total_entries = self.checklist_results.count_documents({"skill_id": skill_id})
+        if total_entries == 0:
+            raise HTTPException(status_code=400, detail="No results found.")
+        num_success = self.checklist_results.count_documents({"skill_id": skill_id,
+                                                              "test_type": test_type,
+                                                              "capability": capability,
+                                                              "success": True})
+        num_failures = self.checklist_results.count_documents({"skill_id": skill_id,
+                                                               "test_type": test_type,
+                                                               "capability": capability,
+                                                               "success": False})
+        success_rate = np.round((num_success/total_entries), 2)
+        # get questions and answers
+        documents = self.checklist_results.find(
+            {
+                "skill_id": skill_id,
+                "test_type": test_type,
+                "capability": capability
+            }
+        )
+
+        response = [{"question": doc["question"], "answer": doc["answer"], "prediction": doc["prediction"]}
+                    for doc in documents]
+
+        results = {
+            "response": response,
+            "success_rate": success_rate
+        }
+
+        return results
 
     async def add_to_db(self, collection, data, query) -> bool:
         try:
