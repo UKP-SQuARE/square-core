@@ -6,6 +6,10 @@ SHELL := /bin/bash
 
 all: clean test install run-backend run-celery deploy down
 
+test:
+	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
+	PYTHONPATH=./ pytest ./  --cov
+
 install:
 	pip install --upgrade pip
 	pip install -r requirements.txt
