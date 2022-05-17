@@ -1,5 +1,5 @@
 <#import "template.ftl" as layout>
-<@layout.registrationLayout displayMessage=!messagesPerField.existsError('firstName','lastName','email','username','password','password-confirm'); section>
+<@layout.registrationLayout displayMessage=!messagesPerField.existsError('firstName','lastName','email','username','password','password-confirm','subscribed'); section>
     <#if section = "header">
         ${msg("registerTitle")}
     <#elseif section = "form">
@@ -117,6 +117,13 @@
                 </div>
             </#if>
 
+            <div class="${properties.kcFormGroupClass!}">
+                <div class="${properties.kcLabelWrapperClass!}">
+                    <label for="subscribed" class="${properties.kcLabelClass!}">${msg("Subscribe to Newsletter?")} 
+                        <input tabindex="3" id="subscribed" name="subscribed" type="checkbox" checked> 
+                    </label>
+                </div>
+            </div>
             <#if recaptchaRequired??>
                 <div class="form-group">
                     <div class="${properties.kcInputWrapperClass!}">
@@ -133,9 +140,51 @@
                 </div>
 
                 <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
-                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg("doRegister")}"/>
+                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="SubmitButton" type="button" onclick="SubmitRegistration()" value="${msg("doRegister")}"   />
                 </div>
             </div>
         </form>
     </#if>
 </@layout.registrationLayout>
+
+<script>
+async function SubscribeNewUser(){
+    const url = new URL("https://api.sender.net/v2/subscribers");
+
+    let headers = {
+        "Authorization": "Bearer ${process.env.SENDER_TOKKEN}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    };
+
+    let data = {
+    "email": document.getElementById("email").value,
+    "firstname": document.getElementById("firstName").value,
+    "lastname": document.getElementById("lastName").value
+    };
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers,body: JSON.stringify(data)
+    });
+    
+    return response.json();
+}
+
+function SubmitRegistration() {
+    if(document.getElementById("subscribed").checked) {
+        try {
+            SubscribeNewUser().then(response => document.getElementById("kc-register-form").submit());
+            console.log("Sub finished");
+        }
+        catch (e) {
+            console.log("Error!");
+            console.log(e);
+        }
+        console.log("New User subscribed");        
+    } 
+    else {
+        document.getElementById("kc-register-form").submit();
+    }
+}
+</script>
