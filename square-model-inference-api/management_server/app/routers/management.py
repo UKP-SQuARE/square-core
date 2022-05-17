@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import List
+import docker
 
 import requests
 from celery.result import AsyncResult
@@ -55,9 +56,42 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return result
 
 
-@router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsResult])
-async def get_all_models_health():
-    pass
+@router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsHealth])
+async def get_all_models_health(token: str = Depends(client_credentials)):
+    '''
+    Check all worker's health (worker : inference model container)
+
+    Args:
+        token: Token
+
+    Return:
+        result: GetModelsHealth structure for reporting the health information.
+
+    '''
+
+    models = await mongo_client.get_models_db()
+    result = []
+    docker_client = docker.from_env()
+
+    for model in models:
+        container_id = mongo_client.get_container_id(model["IDENTIFIER"])
+        container_obj = docker_client.containers.get(container_id)
+        if container_obj in docker_client.containers.list() :
+            result.append(
+                GetModelsHealth(
+                    identifier=model["IDENTIFIER"],
+                    is_alive=True,
+                )
+            )
+        else:
+            result.append(
+                GetModelsHealth(
+                    identifier=model["IDENTIFIER"],
+                    is_alive=False,
+                )
+            )
+    return result
+
 
 
 @router.get("/deployed-model-workers", name="get-deployed-models",)
