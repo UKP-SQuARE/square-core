@@ -4,8 +4,10 @@
     <div class="container">
       <ul class="nav justify-content-center">
         <li class="nav-item"><router-link to="/terms-and-conditions" class="nav-link px-2 text-muted">Terms and Conditions</router-link></li>
+        <li class="nav-item"><router-link to="/privacy-policy" class="nav-link px-2 text-muted">Privacy Policy</router-link></li>
+
         <li class="nav-item"><a href="https://www.informatik.tu-darmstadt.de/ukp/impressum.en.jsp" class="nav-link px-2 text-muted">Legal Note</a></li>
-        <li class="nav-item"><a href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp" class="nav-link px-2 text-muted">Privacy Policy</a></li>
+<!--        <li class="nav-item"><a href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp" class="nav-link px-2 text-muted">Privacy Policy</a></li>-->
         <li class="nav-item"><a href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp" class="nav-link px-2 text-muted">UKP Lab</a></li>
         <li class="nav-item">
           <ul class="navbar-nav me-auto">

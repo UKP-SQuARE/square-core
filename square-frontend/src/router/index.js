@@ -12,6 +12,7 @@ const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
 const Feedback = () => import('../views/Feedback')
 const Terms = () => import('../views/Terms')
+const Privacy = () => import('../views/Privacy')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
 
@@ -58,6 +59,11 @@ const routes = [
     path: '/terms-and-conditions',
     name: 'terms',
     component: Terms
+  },
+  {
+    path: '/privacy-policy',
+    name: 'privacy',
+    component: Privacy
   },
   {
     path: '/signin',
