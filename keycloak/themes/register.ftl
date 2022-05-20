@@ -1,5 +1,5 @@
 <#import "template.ftl" as layout>
-<@layout.registrationLayout displayMessage=!messagesPerField.existsError('firstName','lastName','email','username','password','password-confirm'); section>
+<@layout.registrationLayout displayMessage=!messagesPerField.existsError('firstName','lastName','email','username','password','password-confirm', 'subscribed'); section>
     <#if section = "header">
         ${msg("registerTitle")}
     <#elseif section = "form">
@@ -117,6 +117,13 @@
                 </div>
             </#if>
 
+            <div class="${properties.kcFormGroupClass!}">
+                <div class="${properties.kcLabelWrapperClass!}">
+                    <label for="subscribed" class="${properties.kcLabelClass!}">${msg("Subscribe to Newsletter?")} 
+                        <input type="checkbox" id="user.attributes.subscribed" name="user.attributes.subscribed"  checked> 
+                    </label>
+                </div>
+            </div>
             <#if recaptchaRequired??>
                 <div class="form-group">
                     <div class="${properties.kcInputWrapperClass!}">
