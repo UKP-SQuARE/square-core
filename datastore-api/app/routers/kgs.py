@@ -7,12 +7,11 @@ from ..models.datastore import Datastore, DatastoreRequest
 from ..models.stats import DatastoreStats
 from .dependencies import get_storage_connector, get_kg_storage_connector, get_mongo_client
 from ..core.mongo import MongoClient
-from ..core.es.connector import ElasticsearchConnector
 
 from ..core.kgs.connector import KnowledgeGraphConnector
 
 
-router = APIRouter(tags=["kg"])
+router = APIRouter(tags=["Knowledge Graphs"])
 binding_item_type = 'datastore'
 
 @router.get(
@@ -32,6 +31,7 @@ async def get_all_kgs(
 ):
     return await conn.get_kgs()
 
+###  BUG: PUT-Request goes through and kgs are being created. But is still returning a 500 ERROR
 @router.put(
     "/{kg_name}",
     summary="Create a knowledge graph",
@@ -53,30 +53,28 @@ async def get_all_kgs(
 
 async def put_kg(
     request: Request,
-    datastore_name: str = Path(..., description="The knowledge graph name"),
+    kg_name: str = Path(..., description="The knowledge graph name"),
     fields: DatastoreRequest = Body(..., description="The knowledge graph fields"),
-    conn: ElasticsearchConnector = Depends(get_kg_storage_connector),
+    conn: KnowledgeGraphConnector = Depends(get_kg_storage_connector),
     response: Response = None,
     mongo: MongoClient = Depends(get_mongo_client)
 ):
     # Update if existing, otherwise add new
-    schema = await conn.add_kg(datastore_name)
+    schema = await conn.add_kg(kg_name)
     success = False
-    print("Try putting")
     if schema is None:
         # creating a new datastore
-        schema = fields.to_datastore(datastore_name)
+        schema = fields.to_datastore(kg_name)
         success = await conn.add_kg(schema)
         response.status_code = status.HTTP_201_CREATED
         if success:
-            await mongo.new_binding(request, datastore_name, binding_item_type)  # It should be placed after conn.add_datastore to make sure the status consistent between conn.add_datastore and mongo.new_binding
+            await mongo.new_binding(request, kg_name, binding_item_type) 
     else:
-        # # updating an existing datastore
-        # await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
-        # schema = fields.to_datastore(datastore_name)
-        # success = await conn.update_datastore(schema)
-        # response.status_code = status.HTTP_200_OK
-        print("test")
+        # updating an existing datastore
+        await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
+        schema = fields.to_datastore(kg_name)
+        success = await conn.update_datastore(schema)
+        response.status_code = status.HTTP_200_OK
 
     if success:
         await conn.commit_changes()

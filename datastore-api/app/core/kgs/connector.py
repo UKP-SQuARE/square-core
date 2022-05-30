@@ -35,6 +35,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
 
 
     async def get_kgs(self) -> List[Datastore]:
+        """Returns a list of all knowledge graphs."""
         return await self.get_datastores()
         
 
@@ -44,17 +45,6 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         Args:
             datastore (Datastore): Datastore to add.
         """
-        try:
-            # The ES index that holds the documents
-            resp1 = await self.es.indices.create(
-                index=self._datastore_docs_index_name(datastore.name),
-                body=self.converter.convert_from_datastore(datastore),
-            )
-            # The ES index that holds the (FAISS) search index config
-            resp2 = await self.es.indices.create(index=self._datastore_search_index_name(datastore.name), body={})
-            return resp1["acknowledged"] and resp2["acknowledged"]
-        except elasticsearch.exceptions.RequestError as e:
-            logger.info(e)
-            return False
+        return await self.add_datastore(datastore)
 
 
