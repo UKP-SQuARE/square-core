@@ -21,13 +21,13 @@ logger = logging.getLogger(__name__)
 class ElasticsearchConnector(BaseConnector):
     """Provides a connector for an Elasticsearch backend."""
 
-    def __init__(self, host: str):
+    def __init__(self, host: str, converter = ElasticsearchClassConverter()):
         """Initializes a new instance of ElasticsearchConnector.
 
         Args:
             host (str): Hostname of the Elasticsearch instance.
         """
-        super().__init__(converter=ElasticsearchClassConverter())
+        super().__init__(converter=converter)
         self.es = AsyncElasticsearch(hosts=[host], timeout=settings.ES_SEARCH_TIMEOUT)
 
     # --- Datastore schemas ---
