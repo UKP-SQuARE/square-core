@@ -33,18 +33,38 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         super().__init__(converter=KnowledgeGraphClassConverter(), host=host)
 
 
-
     async def get_kgs(self) -> List[Datastore]:
         """Returns a list of all knowledge graphs."""
         return await self.get_datastores()
         
+    async def get_kg(self, kg_name: str) -> Optional[Datastore]:
+        """Returns a knowledge graph by name.
 
-    async def add_kg(self, datastore: Datastore) -> bool:
+        Args:
+            kg_name (str): Name of the knowledge graph.
+        """
+        return await self.get_datastore(kg_name)
+
+    async def add_kg(self, kg_name: Datastore) -> bool:
         """Adds a new knowledge graph.
 
         Args:
-            datastore (Datastore): Datastore to add.
+            Knowledge graph (Datastore): Knowledge graph to add.
         """
-        return await self.add_datastore(datastore)
+        return await self.add_datastore(kg_name)
 
+    async def delete_kg(self, kg_name: Datastore) -> bool:
+        """Deletes a knowledge graph.
 
+        Args:
+            kg_name (str): Name of the knowledge graph.
+        """
+        return await self.delete_datastore(kg_name)
+        
+    async def get_kg_stats(self, kg_name: Datastore) -> bool:
+        """Returns statistics about a knowledge graph.
+
+        Args:
+            kg_name (str): Name of the knowledge graph.
+        """
+        return await self.get_datastore_stats(kg_name)
