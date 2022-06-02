@@ -75,7 +75,7 @@ async def upload_document_file(
 async def upload_documents(
     request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
-    file: UploadFile = File(..., description="The filecontaining the documents to upload"),
+    file: UploadFile = File(..., description="The file containing the documents to upload"),
     conn = Depends(get_storage_connector),
     response: Response = None,
     mongo: MongoClient = Depends(get_mongo_client)

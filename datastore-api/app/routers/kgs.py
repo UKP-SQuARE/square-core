@@ -1,15 +1,21 @@
-from typing import List
+import json
+import logging
+from typing import Iterable, List, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, File, UploadFile
 from fastapi.param_functions import Body, Path
 
+from ..core.config import settings
+from ..models.document import Document
 from ..models.datastore import Datastore, DatastoreRequest
 from ..models.stats import DatastoreStats
+from ..models.httperror import HTTPError
+from ..models.upload import UploadResponse, UploadUrlSet
 from .dependencies import get_storage_connector, get_kg_storage_connector, get_mongo_client
 from ..core.mongo import MongoClient
 
 from ..core.kgs.connector import KnowledgeGraphConnector
-
+from ..routers.documents import upload_document_file
 
 router = APIRouter(tags=["Knowledge Graphs"])
 binding_item_type = 'datastore'
@@ -46,7 +52,7 @@ async def get_all_kgs(
 )
 async def get_kg(
     kg_name: str = Path(..., description="The knowledge graph name"),
-    conn=Depends(get_storage_connector),
+    conn=Depends(get_kg_storage_connector),
 ):
     schema = await conn.get_kg(kg_name)
     if schema is None:
@@ -152,12 +158,71 @@ async def delete_kg(
     },
     response_model=DatastoreStats,
 )
-async def get_datastore_stats(
+async def get_kg_stats(
     kg_name: str = Path(..., description="The knowledge graph name"),
-    conn=Depends(get_storage_connector),
+    conn=Depends(get_kg_storage_connector),
 ):
-    stats = await conn.get_datastore_stats(kg_name)
+    stats = await conn.get_kg_stats(kg_name)
     if stats is not None:
         return stats
     else:
         raise HTTPException(status_code=404)
+
+@router.get(
+    "/{kg_name}/relations",
+    summary="Get all knowledge graph relations",
+    description="Get all relations of a given knowledge graph.",
+    responses={
+        200: {
+            "model": List[Dict[str,int]],
+            "description": "The knowledge graph relations",
+        },
+        404: {"description": "The knowledge graph relations could not be found"},
+    },
+    response_model=List[Dict[str,int]],
+)
+async def get_kg_relations(
+    kg_name: str = Path(..., description="The knowledge graph name"),
+    conn=Depends(get_kg_storage_connector),
+):
+    stats = await conn.get_all_relations(kg_name)
+    if stats is not None:
+        return stats
+    else:
+        raise HTTPException(status_code=404)
+
+@router.post(
+    "/{kg_name}/nodes",
+    summary="Upload a batch of nodes",
+    response_model=UploadResponse,
+    status_code=201,
+    responses={
+        200: {"description": "Number of successfully uploaded nodes to the knowledge graph."},
+        400: {"model": UploadResponse, "description": "Error during Upload"},
+        404: {"model": HTTPError, "description": "The knowledge graph does not exist."},
+        422: {"description": "Cannot instantiate a Document object"}
+    },
+)
+async def post_kg_nodes(
+    request: Request,
+    kg_name: str = Path(..., description="The name of the knowledge graph"),
+    documents: List[Document] = Body(..., description="Batch of documents to be uploaded."),
+    conn = Depends(get_kg_storage_connector),
+    response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
+):
+    kg = await conn.get_kg(kg_name)
+    if kg is None:
+        raise HTTPException(status_code=404, detail="Knowledge graph not found.")
+
+    await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
+
+    successes, errors = await conn.add_document_batch(kg_name, documents)
+    if errors > 0:
+        response.status_code = 400
+        return UploadResponse(
+            message=f"Unable to upload {errors} documents.", successful_uploads=successes, errors=errors
+        )
+    else:
+        return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
+

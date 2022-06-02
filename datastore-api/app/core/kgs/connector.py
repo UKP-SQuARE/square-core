@@ -1,6 +1,7 @@
-import typing
+import json
 import logging
-from typing import Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
+
 
 import elasticsearch.exceptions
 from elasticsearch import AsyncElasticsearch
@@ -23,6 +24,9 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeGraphConnector(ElasticsearchConnector):
     """Provides a connector for an KnowledgeGraphConnector backend."""
+
+    datastore_suffix = "-kg-docs"
+    datastore_search_suffix = "-kg-search-indices"
 
     def __init__(self, host: str):
         """Initializes a new instance of KnowledgeGraphConnector.
@@ -68,3 +72,28 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             kg_name (str): Name of the knowledge graph.
         """
         return await self.get_datastore_stats(kg_name)
+
+    async def get_all_relations(self, kg_name: Datastore) -> List[Dict[str,int]]:
+        """Returns all relation names about a knowledge graph.
+
+        Args:
+            kg_name (str): Name of the knowledge graph.
+        """
+        docs_index = self._datastore_docs_index_name(kg_name)
+        body = {
+            "aggs": {
+                "all_relations": {            
+                    "filter": {
+                        "term": {"type": "node"},
+                    },
+                    "aggs": {
+                        "name": {
+                            "terms": {"field": "name", "size": 10000}
+                        }
+                    }
+                }
+            }
+        } 
+        results = await self.es.search(index=docs_index, body=body)
+        relations = results['aggregations']['all_relations']['name']['buckets']
+        return relations
