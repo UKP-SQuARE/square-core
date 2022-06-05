@@ -1,6 +1,6 @@
 import numpy as np
 from abc import ABC
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 import torch
 from torch import backends
@@ -58,8 +58,8 @@ class BaseExplainer(ABC):
                              ) -> Module or ModuleList:
         """
         Get the model embedding layer
-        :param embedding_type: can be one of word_embeddings, token_type_embeddings or position_embeddings
-        :return:
+        Args:
+            embedding_type: can be one of word_embeddings, token_type_embeddings or position_embeddings
         """
         embeddings = Module or ModuleList
         model_prefix = self.model.base_model_prefix
@@ -71,18 +71,18 @@ class BaseExplainer(ABC):
             embeddings = model_embeddings.token_type_embeddings
         elif embedding_type == "position_embeddings":
             embeddings = model_embeddings.position_embeddings
-        # print(embeddings)
         return embeddings
 
-    def _register_hooks(self, embeddings_list: List):
+    def _register_hooks(self, embeddings_list: List, alpha: int):
         """
         Register the model embeddings during the forward pass
-        :param embeddings_list:
-        :return:
+        Args:
+            embeddings_list: list to store embeddings during forward pass
         """
 
         def forward_hook(module, inputs, output):
-            embeddings_list.append(output.squeeze(0).clone().detach())
+            if alpha == 0:
+                embeddings_list.append(output.squeeze(0).clone().detach())
 
         handles = []
         embedding_layer = self.get_model_embeddings()
@@ -92,8 +92,8 @@ class BaseExplainer(ABC):
     def _register_embedding_gradient_hooks(self, embedding_grads: List):
         """
         Register the model gradients during the backward pass
-        :param embedding_grads:
-        :return:
+        Args:
+            embedding_grads: list to store the gradients
         """
         def hook_layers(module, grad_in, grad_out):
             grads = grad_out[0]
@@ -101,16 +101,18 @@ class BaseExplainer(ABC):
 
         hooks = []
         embedding_layer = self.get_model_embeddings()
-        hooks.append(embedding_layer.register_backward_hook(hook_layers))
+        hooks.append(embedding_layer.register_full_backward_hook(hook_layers))
         return hooks
 
     def get_gradients(self, inputs, answer_start, answer_end):
         """
         Compute model gradients
-        :param inputs: list of question and context
-        :param answer_start: answer span start
-        :param answer_end: answer span end
-        :return: dict of model gradients
+        Args:
+            inputs: list of question and context
+            answer_start: answer span start
+            answer_end: answer span end
+        Return:
+            dict of model gradients
         """
         embedding_gradients: List[torch.Tensor] = []
         # print(answer_start, answer_end)
@@ -155,10 +157,12 @@ class BaseExplainer(ABC):
     def encode(self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None):
         """
         Encode inputs using the model tokenizer
-        :param inputs: question, context pair as a list
-        :param add_special_tokens: where to add CLS, SEP tokens
-        :param return_tensors: whether to return tensors
-        :return: tokenized inputs
+        Args:
+            inputs: question, context pair as a list
+            add_special_tokens: where to add CLS, SEP tokens
+            return_tensors: whether to return tensors
+        Return:
+            tokenized inputs
         """
         return self.tokenizer(inputs, add_special_tokens=add_special_tokens, return_tensors=return_tensors,
                               padding=True, truncation=True, max_length=512)
@@ -175,9 +179,12 @@ class BaseExplainer(ABC):
     def _predict(
             self,
             inputs,
+            **model_kwargs
             ) -> tuple:
         """
         Inference on the input.
+        Args:
+            inputs: list of question, context input
         Returns:
              The model outputs and optionally the input features
         """
@@ -188,12 +195,13 @@ class BaseExplainer(ABC):
                                                                                  skip_special_tokens=False)]
         else:
             self.decoded_text = self.decode(encoded_inputs["input_ids"], skip_special_tokens=False)
-        self.words_mapping = encoded_inputs.words()
+        self.words_mapping = encoded_inputs.word_ids()
 
         all_predictions = list()
         self.model.to(self.device)
         predictions = self.model(
-            **encoded_inputs
+            **encoded_inputs,
+            **model_kwargs
         )
         # print(predictions)
         all_predictions.append(predictions)
@@ -207,14 +215,13 @@ class BaseExplainer(ABC):
                 final_prediction[key] = tuple(torch.cat(l) for l in tuple_of_lists)
             else:
                 final_prediction[key] = torch.cat([p[key].to(self.device) for p in all_predictions])
-        # print("predictions: ", final_prediction)
-        return final_prediction["start_logits"], final_prediction["end_logits"], encoded_inputs
+
+        return predictions, encoded_inputs
 
     def question_answering(self, request):
         """
         Span-based question answering for a given question and context.
         We expect the input to use the (question, context) format for the text pairs.
-
         Args:
           request: the prediction request
 
@@ -271,10 +278,12 @@ class BaseExplainer(ABC):
 
             return starts_, ends_, scores_
 
-        start_logits, end_logits, features = self._predict(request)
+        predictions, features = self._predict(request)
         # print(features)
         task_outputs = {"answers": []}
-        for idx, (start, end, (_, context)) in enumerate(zip(start_logits, end_logits, request)):
+        for idx, (start, end, (_, context)) in enumerate(zip(predictions["start_logits"],
+                                                             predictions["end_logits"],
+                                                             request)):
             start = start.cpu().detach().numpy()
             end = end.cpu().detach().numpy()
             # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
@@ -292,8 +301,6 @@ class BaseExplainer(ABC):
 
             start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
             end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
-
-            # print(start, end)
 
             # Get score for 'no answer' then mask for decoding step (CLS token
             no_answer_score = (start[0] * end[0]).item()
@@ -319,22 +326,28 @@ class BaseExplainer(ABC):
             task_outputs["answers"].append(answers)
         return task_outputs
 
-    def process_outputs(self, attributions: Dict, top_k: int, mode: str) -> Dict:
+    def process_outputs(self, attributions: List, top_k: int, mode: str) -> Dict:
         """
         post-process the word attributions to merge the sub-words tokens
         to words
+        Args:
+            attributions: word importance scores
+            top_k: number of top word attributions
+            mode: whether to show attribution in question, context or both
+        Returns:
+            dict of processed words along with their scores
         """
 
         dec_text = self.decoded_text
         word_map = self.words_mapping
-
+        # sub-words to original words
         words = [dec_text[0]]
         for idx, (word_idx, word) in enumerate(zip(word_map, dec_text[1:])):
             if word_idx == word_map[idx + 1] and not word == self.tokenizer.sep_token:
                 words[-1] = f'{words[-1]}{word.replace("##", "")}'
             else:
                 words.append(word)
-
+        # average scores
         c_list = [1]
         attr = [attributions[0]]
         for idx, (word_idx, score) in enumerate(zip(word_map, attributions[1:])):

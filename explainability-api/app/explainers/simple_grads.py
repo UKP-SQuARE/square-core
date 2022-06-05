@@ -6,6 +6,7 @@ import torch
 from transformers import (
     AutoTokenizer,
     BertAdapterModel,
+    RobertaAdapterModel,
     AutoModelWithHeads,
     PreTrainedModel,
     PreTrainedTokenizer,
@@ -41,7 +42,7 @@ class SimpleGradients(BaseExplainer):
         gets the word attributions
         """
         # get predicted answer
-        outputs = self._predict(inputs)
+        outputs, _ = self._predict(inputs)
         start_idx = torch.argmax(outputs[0])
         end_idx = torch.argmax(outputs[1])
 
@@ -50,7 +51,7 @@ class SimpleGradients(BaseExplainer):
 
         embeddings_list: List[torch.Tensor] = []
         # Hook used for saving embeddings
-        handles: List = self._register_hooks(embeddings_list)
+        handles: List = self._register_hooks(embeddings_list, alpha=0)
         try:
             grads = self.get_gradients(inputs, answer_start, answer_end)
         finally:
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     # adapter_name = model.load_adapter(adapter_model, source="hf")
     # model.active_adapters = adapter_name
 
-    model = AutoModelWithHeads.from_pretrained("roberta-base")
+    model = RobertaAdapterModel.from_pretrained("roberta-base")
     tokenizer = AutoTokenizer.from_pretrained("roberta-base")
     adapter_name = model.load_adapter("AdapterHub/roberta-base-pf-squad", source="hf")
     model.active_adapters = adapter_name
