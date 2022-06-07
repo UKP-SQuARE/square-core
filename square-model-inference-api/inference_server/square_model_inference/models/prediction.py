@@ -178,6 +178,9 @@ class PredictionOutputForQuestionAnswering(PredictionOutput):
                                                       "(the extracted span). The inner list is sorted by score. If no "
                                                       "answer span was extracted, the empty span is returned "
                                                       "(start and end both 0)")
+    attributions: List[Dict] = Field(...,
+                                     description="scores for the input tokens which are important for the"
+                                                 "model prediction")
 
     def __init__(self, **data):
         super().__init__(**data)
