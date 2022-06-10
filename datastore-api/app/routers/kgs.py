@@ -174,12 +174,12 @@ async def get_kg_stats(
     description="Get all relations of a given knowledge graph.",
     responses={
         200: {
-            "model": List[Dict[str,int]],
+            #"model": List[Dict[str,int]],
             "description": "The knowledge graph relations",
         },
         404: {"description": "The knowledge graph relations could not be found"},
     },
-    response_model=List[Dict[str,int]],
+    #response_model=List[Dict[str,int]],
 )
 async def get_kg_relations(
     kg_name: str = Path(..., description="The knowledge graph name"),
@@ -226,3 +226,53 @@ async def post_kg_nodes(
     else:
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
+
+@router.get(
+    "/{kg_name}/nodes/query_by_name",
+    summary="Get a node from a knowledge graph",
+    description="Get a node from the knowledge graph by name",
+    responses={
+        200: {
+            "description": "The node",
+            "model": Document,
+        },
+        400: {"model": HTTPError, "description": "Failed to retrieve node"},
+    },
+)
+async def get_node_by_name(
+    kg_name: str = Path(..., description="The name of the node"),
+    doc_id: str = Path(..., description="The name of the node to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.get_node(kg_name, doc_id)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
+
+
+@router.post(
+    "/{kg_name}/subgraph/query_by_node_name",
+    summary="summary",
+    description="Get the subgraph of a given List of node-names and the number of hops",
+    responses={
+        200: {
+            #"model": DatastoreStats,
+            "description": "The subgraph as a set of nodes and edges",
+        },
+        404: {"description": "The subgraph could not be retrieved"},
+    },
+    #response_model=DatastoreStats,
+)
+async def subgraph_by_names(
+    kg_name: str = Path(..., description="The knowledge graph name"),
+    nids: set = Body(..., description="List of node names."),
+    hops: int = Body(2, description="Number of hops to retrieve."),
+    conn=Depends(get_kg_storage_connector),
+):
+
+    stats = await conn.extract_subgraph_by_names(kg_name, names=nids, hops=hops)
+    if stats is not None:
+        return stats
+    else:
+        raise HTTPException(status_code=404)
