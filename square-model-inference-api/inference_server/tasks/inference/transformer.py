@@ -1,9 +1,11 @@
 import logging
 from collections import defaultdict
-from typing import Union, Tuple
+from typing import Union, Tuple, List, Dict, Any
 
 import numpy as np
+import math
 import torch
+from torch.nn import Module, ModuleList
 from tasks.config.model_config import model_config
 from tasks.inference.model import Model
 from tasks.models.prediction import PredictionOutput, PredictionOutputForSequenceClassification, \
@@ -40,6 +42,7 @@ class Transformer(Model):
              disable_gpu: do not move model to GPU even if CUDA is available
              kwargs: Not used
         """
+        # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         if model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
         self._load_model(CLASS_MAPPING[model_config.model_class], model_config.model_name, model_config.disable_gpu)
@@ -61,6 +64,28 @@ class Transformer(Model):
         self.model = model
         self.tokenizer = tokenizer
 
+    def encode(self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None):
+        """
+        Encode inputs using the model tokenizer
+        Args:
+            inputs: question, context pair as a list
+            add_special_tokens: where to add CLS, SEP tokens
+            return_tensors: whether to return tensors
+        Return:
+            tokenized inputs
+        """
+        return self.tokenizer(inputs, add_special_tokens=add_special_tokens, return_tensors=return_tensors,
+                              padding=True, truncation=True, max_length=512)
+
+    def decode(self, input_ids: torch.Tensor, skip_special_tokens: bool) -> List[str]:
+        """
+        Decode received input_ids into a list of word tokens.
+        Args:
+            input_ids (torch.Tensor): Input ids representing
+            word tokens for a sentence/document.
+        """
+        return self.tokenizer.convert_ids_to_tokens(input_ids[0], skip_special_tokens=skip_special_tokens)
+
     def _ensure_tensor_on_device(self, **inputs):
         """
         Ensure PyTorch tensors are on the specified device.
@@ -72,6 +97,168 @@ class Transformer(Model):
             :obj:`Dict[str, torch.Tensor]`: The same as :obj:`inputs` but on the proper device.
         """
         return {name: tensor.to(self.model.device) for name, tensor in inputs.items()}
+
+    def get_model_embeddings(self,
+                             embedding_type: str = "word_embeddings"
+                             ) -> Module or ModuleList:
+        """
+        Get the model embedding layer
+        Args:
+            embedding_type: can be one of word_embeddings, token_type_embeddings or position_embeddings
+        """
+        embeddings = Module or ModuleList
+        model_prefix = self.model.base_model_prefix
+        model_base = getattr(self.model, model_prefix)
+        model_embeddings = getattr(model_base, "embeddings")
+        if embedding_type == "word_embeddings":
+            embeddings = model_embeddings.word_embeddings
+        elif embedding_type == "token_type_embeddings":
+            embeddings = model_embeddings.token_type_embeddings
+        elif embedding_type == "position_embeddings":
+            embeddings = model_embeddings.position_embeddings
+        return embeddings
+
+    def get_model_attentions(self) -> Module or ModuleList:
+        """
+        Get the model attention layer
+        :return:
+        """
+        model_prefix = self.model.base_model_prefix
+        model_base = getattr(self.model, model_prefix)
+        model_enc = getattr(model_base, "encoder")
+        # get attn weights from last layer
+        attentions = model_enc.layer[-1].attention
+        return attentions
+
+    def _register_forward_hooks_attn(self, attentions_list: List):
+        """
+        Register the model attentions during the forward pass
+        :param attentions_list:
+        :return:
+        """
+
+        def forward_hook(module, inputs, output):
+            attentions_list.append(output[1][:, :, 0, :].mean(1).squeeze(0).clone().detach())
+
+        handles = []
+        attn_layer = self.get_model_attentions()
+        handles.append(attn_layer.register_forward_hook(forward_hook))
+        return handles
+
+    def _register_hooks(self, embeddings_list: List, alpha: int, method: str):
+        """
+        Register the model embeddings during the forward pass
+        Args:
+            embeddings_list: list to store embeddings during forward pass
+        """
+
+        def forward_hook(module, inputs, output):
+            if alpha == 0 and method in ["simple_grads", "integrated_grads"]:
+                embeddings_list.append(output.squeeze(0).clone().detach())
+            if method == "integrated_grads":
+                # Scale the embedding by alpha
+                output.mul_(alpha)
+            elif method == "smooth_grads":
+                torch.manual_seed(4)
+                torch.cuda.manual_seed(4)
+                # Random noise = N(0, stdev * (max-min))
+                stdev = 0.01
+                scale = output.detach().max() - output.detach().min()
+                noise = torch.randn(output.shape, device=output.device) * stdev * scale
+
+                # Add the random noise
+                output.add_(noise)
+
+        handles = []
+        embedding_layer = self.get_model_embeddings()
+        handles.append(embedding_layer.register_forward_hook(forward_hook))
+        return handles
+
+    def _register_embedding_gradient_hooks(self, embedding_grads: List):
+        """
+        Register the model gradients during the backward pass
+        Args:
+            embedding_grads: list to store the gradients
+        """
+        def hook_layers(module, grad_in, grad_out):
+            grads = grad_out[0]
+            embedding_grads.append(grads)
+
+        hooks = []
+        embedding_layer = self.get_model_embeddings()
+        hooks.append(embedding_layer.register_full_backward_hook(hook_layers))
+        return hooks
+
+    def _register_attention_gradient_hooks(self, attn_grads: List):
+        """
+        Register the model gradients during the backward pass
+        :param embedding_grads:
+        :return:
+        """
+        def hook_layers(module, grad_in, grad_out):
+            grads = grad_out[0]
+            attn_grads.append(grads)
+
+        hooks = []
+        attentions = self.get_model_attentions()
+        hooks.append(attentions.register_full_backward_hook(hook_layers))
+        return hooks
+
+    def get_gradients(self, request: PredictionRequest, answer_start, answer_end):
+        """
+        Compute model gradients
+        Args:
+            inputs: list of question and context
+            answer_start: answer span start
+            answer_end: answer span end
+        Return:
+            dict of model gradients
+        """
+
+        original_param_name_to_requires_grad_dict = {}
+        for param_name, param in self.model.named_parameters():
+            original_param_name_to_requires_grad_dict[param_name] = param.requires_grad
+            param.requires_grad = True
+
+        gradients: List[torch.Tensor] = []
+        if request.explain_kwargs["method"] == "scaled_attention":
+            hooks: List = self._register_attention_gradient_hooks(gradients)
+        else:
+            hooks: List = self._register_embedding_gradient_hooks(gradients)
+        with torch.backends.cudnn.flags(enabled=False):
+            features = self.tokenizer(request.input,
+                                      return_tensors="pt",
+                                      **request.preprocessing_kwargs)
+            input_features = self._ensure_tensor_on_device(**features)
+            logger.info(input_features)
+            outputs = self.model(
+                **input_features,
+                start_positions=answer_start.to(self.model.device),
+                end_positions=answer_end.to(self.model.device),
+                **request.model_kwargs
+            )
+            loss = outputs.loss
+
+            # Zero gradients.
+            # NOTE: this is actually more efficient than calling `self._model.zero_grad()`
+            # because it avoids a read op when the gradients are first updated below.
+            for p in self.model.parameters():
+                p.grad = None
+            loss.backward()
+
+        for hook in hooks:
+            hook.remove()
+
+        grad_dict = dict()
+        for idx, grad in enumerate(gradients):
+            key = "grad_input_" + str(idx + 1)
+            grad_dict[key] = grad.detach().cpu().numpy()
+
+        # restore the original requires_grad values of the parameters
+        for param_name, param in self.model.named_parameters():
+            param.requires_grad = original_param_name_to_requires_grad_dict[param_name]
+        # print(grad_dict)
+        return grad_dict
 
     def _predict(self, request: PredictionRequest, output_features=False) \
             -> Union[dict, Tuple[dict, dict]]:
@@ -94,10 +281,23 @@ class Transformer(Model):
         features = self.tokenizer(request.input,
                                   return_tensors="pt",
                                   **request.preprocessing_kwargs)
+        if request.explain_kwargs:
+            if self.model.config.model_type == "roberta":
+                self.decoded_text = [token.replace("Ġ", "") for token in self.decode(
+                    features["input_ids"],
+                    skip_special_tokens=False)]
+            else:
+                self.decoded_text = self.decode(
+                    features["input_ids"],
+                    skip_special_tokens=False)
+            self.words_mapping = features.word_ids()
+
+            if request.explain_kwargs["method"] in ["attention", "scaled_attention"]:
+                request.model_kwargs["output_attentions"] = True
+
         for start_idx in range(0, len(request.input), model_config.batch_size):
             with torch.no_grad():
-                input_features = {k: features[k][start_idx:start_idx + model_config.batch_size] for k in
-                                  features.keys()}
+                input_features = {k: features[k][start_idx:start_idx+model_config.batch_size] for k in features.keys()}
                 input_features = self._ensure_tensor_on_device(**input_features)
                 predictions = self.model(**input_features, **request.model_kwargs)
                 all_predictions.append(predictions)
@@ -108,9 +308,7 @@ class Transformer(Model):
             # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
             # Generation should NOT use this function
             if isinstance(all_predictions[0][key], tuple):
-                tuple_of_lists = list(zip(
-                    *[[torch.stack(p).cpu() if isinstance(p, tuple) else p.cpu() for p in tpl[key]] for tpl in
-                      all_predictions]))
+                tuple_of_lists = list(zip(*[[torch.stack(p).cpu() if isinstance(p, tuple) else p.cpu() for p in tpl[key]] for tpl in all_predictions]))
                 final_prediction[key] = tuple(torch.cat(l) for l in tuple_of_lists)
             else:
                 final_prediction[key] = torch.cat([p[key].cpu() for p in all_predictions])
@@ -118,10 +316,134 @@ class Transformer(Model):
             return final_prediction, features
         return final_prediction
 
+    def _interpret(self,
+                  request: PredictionRequest,
+                  prediction: Dict,
+                  method: str
+                  ):
+        """
+        gets the word attributions
+        """
+        start_idx = torch.argmax(prediction["start_logits"])
+        end_idx = torch.argmax(prediction["end_logits"])
+
+        answer_start = torch.tensor([start_idx])
+        answer_end = torch.tensor([end_idx])
+        # print(answer_start, answer_end)
+
+        embeddings_list: List[torch.Tensor] = []
+        attentions_list: List[torch.Tensor] = []
+        grads: Dict[str, Any] = {}
+        instances_with_grads = dict()
+        if method == "simple_grads":
+            # Hook used for saving embeddings
+            handles: List = self._register_hooks(embeddings_list, alpha=0, method=method)
+            try:
+                grads = self.get_gradients(request, answer_start, answer_end)
+            finally:
+                for handle in handles:
+                    handle.remove()
+            # Gradients come back in the reverse order that they were sent into the network
+            embeddings_list.reverse()
+            embeddings_list = [embedding.cpu().detach().numpy() for embedding in embeddings_list]
+
+        elif method == "integrated_grads":
+            # Use 10 terms in the summation approximation of the integral in integrated grad
+            steps = 10
+            # Exclude the endpoint because we do a left point integral approximation
+            for alpha in np.linspace(0, 1.0, num=steps, endpoint=False):
+                handles = []
+                # Hook for modifying embedding value
+                handles = self._register_hooks(embeddings_list, alpha, method=method)
+                try:
+                    gradients = self.get_gradients(request, answer_start, answer_end)
+                finally:
+                    for handle in handles:
+                        handle.remove()
+
+                # Running sum of gradients
+                if grads == {}:
+                    grads = gradients
+                else:
+                    for key in gradients.keys():
+                        grads[key] += gradients[key]
+
+            # Average of each gradient term
+            for key in grads.keys():
+                grads[key] /= steps
+
+            # Gradients come back in the reverse order that they were sent into the network
+            embeddings_list.reverse()
+            embeddings_list = [embedding.cpu().detach().numpy() for embedding in embeddings_list]
+            # Element-wise multiply average gradient by the input
+            for idx, input_embedding in enumerate(embeddings_list):
+                key = "grad_input_" + str(idx + 1)
+                grads[key] *= input_embedding
+
+        elif method == "smooth_grads":
+            num_samples = 10
+            for _ in range(num_samples):
+                handles = self._register_hooks(embeddings_list, alpha=0, method=method)
+                try:
+                    gradients = self.get_gradients(request, answer_start, answer_end)
+                finally:
+                    for handle in handles:
+                        handle.remove()
+
+                # Sum gradients
+                if grads == {}:
+                    grads = gradients
+                else:
+                    for key in gradients.keys():
+                        grads[key] += gradients[key]
+
+            # Average the gradients
+            for key in grads.keys():
+                grads[key] /= num_samples
+
+        elif method == "scaled_attention":
+            # Hook used for saving attentions
+            handles: List = self._register_forward_hooks_attn(attentions_list)
+            try:
+                grads = self.get_gradients(request, answer_start, answer_end)
+                # print(grads["grad_input_1"][:, :, 0, :].mean(1))
+            finally:
+                for handle in handles:
+                    handle.remove()
+
+            # Gradients come back in the reverse order that they were sent into the network
+            attentions_list.reverse()
+            attentions_list = [attn.cpu().detach().numpy() for attn in attentions_list]
+
+        emb_grad = np.array([])
+        for key, grad in grads.items():
+            # Get number at the end of every gradient key (they look like grad_input_[int],
+            # we're getting this [int] part and subtracting 1 for zero-based indexing).
+            # This is then used as an index into the reversed input array to match up the
+            # gradient and its respective embedding.
+            if method == "simple_grads":
+                input_idx = int(key[-1]) - 1
+                # The [0] here is undo-ing the batching that happens in get_gradients.
+                emb_grad = np.sum(grad[0] * embeddings_list[input_idx][0], axis=1)
+            elif method in ["integrated_grads", "smooth_grads"]:
+                emb_grad = np.sum(grad[0], axis=1)
+            elif method == "scaled_attention":
+                input_idx = int(key[-1]) - 1
+                emb_grad = np.sum(grad[0] * attentions_list[input_idx][0], axis=1)
+            else:
+                raise ValueError("Method not allowed. Please enter another explanation method.")
+            norm = np.linalg.norm(emb_grad, ord=1)
+            normalized_grad = [math.fabs(e) / norm for e in emb_grad]
+            grads[key] = normalized_grad
+
+        instances_with_grads["instance_" + str(1)] = grads
+        attributions = instances_with_grads["instance_1"]["grad_input_1"]
+        return attributions
+
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
         request.model_kwargs["output_hidden_states"] = True
         predictions, features = self._predict(request, output_features=True)
-        # We remove hidden_states from predictions!0
+        # We remove hidden_states from predictions!
         if "hidden_states" in predictions:
             hidden_state = predictions.pop("hidden_states")[-1]
         elif "last_hidden_state" in predictions:
@@ -138,8 +460,7 @@ class Transformer(Model):
         }
 
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
-            raise ValueError(
-                f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
+            raise ValueError(f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
 
         if embedding_mode == "cls":
             emb = hidden_state[:, 0, :]
@@ -168,7 +489,7 @@ class Transformer(Model):
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
         label2id = self.model.config.label2id
-        id2label = {v: k for k, v in label2id.items()}
+        id2label = {v:k for k,v in label2id.items()}
         task_outputs = {
             "id2label": id2label,
             "word_ids": [features.word_ids(i) for i in range(len(request.input))]
@@ -183,7 +504,7 @@ class Transformer(Model):
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         predictions = self._predict(request)
         label2id = self.model.config.label2id
-        id2label = {v: k for k, v in label2id.items()}
+        id2label = {v:k for k,v in label2id.items()}
         task_outputs = {
             "id2label": id2label
         }
@@ -198,8 +519,7 @@ class Transformer(Model):
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", False)
-        request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens",
-                                                                                              False)
+        request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens", False)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
 
@@ -225,8 +545,7 @@ class Transformer(Model):
 
             generated_texts = [self.tokenizer.decode(seq,
                                                      skip_special_tokens=True,
-                                                     clean_up_tokenization_spaces=request.task_kwargs.get(
-                                                         "clean_up_tokenization_spaces", False))
+                                                     clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
                                for seq in res["sequences"]]
             task_outputs["generated_texts"].append(generated_texts)
         return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
@@ -240,63 +559,59 @@ class Transformer(Model):
           request: the prediction request
 
         """
-
         # Making heavy use of https://huggingface.co/transformers/_modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
-        def decode(start_: np.ndarray, end_: np.ndarray, topk: int, max_answer_len: int,
-                   undesired_tokens_: np.ndarray) -> Tuple:
-            """
-            Take the output of any :obj:`ModelForQuestionAnswering` and will generate probabilities for each span to be the
-            actual answer.
+        def decode(start_: np.ndarray, end_: np.ndarray, topk: int, max_answer_len: int, undesired_tokens_: np.ndarray) -> Tuple:
+                """
+                Take the output of any :obj:`ModelForQuestionAnswering` and will generate probabilities for each span to be the
+                actual answer.
 
-            In addition, it filters out some unwanted/impossible cases like answer len being greater than max_answer_len or
-            answer end position being before the starting position. The method supports output the k-best answer through
-            the topk argument.
+                In addition, it filters out some unwanted/impossible cases like answer len being greater than max_answer_len or
+                answer end position being before the starting position. The method supports output the k-best answer through
+                the topk argument.
 
-            Args:
-                start_ (:obj:`np.ndarray`): Individual start probabilities for each token.
-                end (:obj:`np.ndarray`): Individual end_ probabilities for each token.
-                topk (:obj:`int`): Indicates how many possible answer span(s) to extract from the model output.
-                max_answer_len (:obj:`int`): Maximum size of the answer to extract from the model's output.
-                undesired_tokens_ (:obj:`np.ndarray`): Mask determining tokens that can be part of the answer
-            """
-            # Ensure we have batch axis
-            if start_.ndim == 1:
-                start_ = start_[None]
+                Args:
+                    start_ (:obj:`np.ndarray`): Individual start probabilities for each token.
+                    end (:obj:`np.ndarray`): Individual end_ probabilities for each token.
+                    topk (:obj:`int`): Indicates how many possible answer span(s) to extract from the model output.
+                    max_answer_len (:obj:`int`): Maximum size of the answer to extract from the model's output.
+                    undesired_tokens_ (:obj:`np.ndarray`): Mask determining tokens that can be part of the answer
+                """
+                # Ensure we have batch axis
+                if start_.ndim == 1:
+                    start_ = start_[None]
 
-            if end_.ndim == 1:
-                end_ = end_[None]
+                if end_.ndim == 1:
+                    end_ = end_[None]
 
-            # Compute the score of each tuple(start_, end_) to be the real answer
-            outer = np.matmul(np.expand_dims(start_, -1), np.expand_dims(end_, 1))
+                # Compute the score of each tuple(start_, end_) to be the real answer
+                outer = np.matmul(np.expand_dims(start_, -1), np.expand_dims(end_, 1))
 
-            # Remove candidate with end_ < start_ and end_ - start_ > max_answer_len
-            candidates = np.tril(np.triu(outer), max_answer_len - 1)
+                # Remove candidate with end_ < start_ and end_ - start_ > max_answer_len
+                candidates = np.tril(np.triu(outer), max_answer_len - 1)
 
-            #  Inspired by Chen & al. (https://github.com/facebookresearch/DrQA)
-            scores_flat = candidates.flatten()
-            if topk == 1:
-                idx_sort = [np.argmax(scores_flat)]
-            elif len(scores_flat) < topk:
-                idx_sort = np.argsort(-scores_flat)
-            else:
-                idx = np.argpartition(-scores_flat, topk)[0:topk]
-                idx_sort = idx[np.argsort(-scores_flat[idx])]
+                #  Inspired by Chen & al. (https://github.com/facebookresearch/DrQA)
+                scores_flat = candidates.flatten()
+                if topk == 1:
+                    idx_sort = [np.argmax(scores_flat)]
+                elif len(scores_flat) < topk:
+                    idx_sort = np.argsort(-scores_flat)
+                else:
+                    idx = np.argpartition(-scores_flat, topk)[0:topk]
+                    idx_sort = idx[np.argsort(-scores_flat[idx])]
 
-            starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
-            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
-            starts_ = starts_[desired_spans]
-            ends_ = ends_[desired_spans]
-            scores_ = candidates[0, starts_, ends_]
+                starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
+                desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
+                starts_ = starts_[desired_spans]
+                ends_ = ends_[desired_spans]
+                scores_ = candidates[0, starts_, ends_]
 
-            return starts_, ends_, scores_
+                return starts_, ends_, scores_
 
         request.preprocessing_kwargs["truncation"] = "only_second"
         predictions, features = self._predict(request, output_features=True)
-        logger.info(predictions)
-        logger.info(request.input)
-        task_outputs = {"answers": []}
-        for idx, (start, end, (_, context)) in enumerate(
-                zip(predictions["start_logits"], predictions["end_logits"], request.input)):
+
+        task_outputs = {"answers": [], "attributions": []}
+        for idx, (start, end, (_, context)) in enumerate(zip(predictions["start_logits"], predictions["end_logits"], request.input)):
             start = start.numpy()
             end = end.numpy()
             # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
@@ -320,8 +635,7 @@ class Transformer(Model):
             start[0] = end[0] = 0.0
 
             starts, ends, scores = decode(
-                start, end, request.task_kwargs.get("topk", 1), request.task_kwargs.get("max_answer_len", 128),
-                undesired_tokens
+                start, end, request.task_kwargs.get("topk", 1), request.task_kwargs.get("max_answer_len", 128), undesired_tokens
             )
             enc = features[idx]
             answers = [
@@ -331,13 +645,30 @@ class Transformer(Model):
                         enc.token_to_word(s), sequence_index=1)[0],
                     "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
                     "answer": context[
-                              enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0]:
+                              enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0] :
                               enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]],
                 }
                 for s, e, score in zip(starts, ends, scores)]
             answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
             answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
             task_outputs["answers"].append(answers)
+
+            # word attributions
+            if request.explain_kwargs:
+                # attributions = []
+                if request.explain_kwargs["method"] == "attention":
+                    attn = predictions["attentions"][-1]
+                    weights = attn[:, :, 0, :].mean(1)
+                    attributions = weights.cpu().detach().numpy()[0]
+                else:
+                    attributions = self._interpret(request=request, prediction=predictions,
+                                                   method=request.explain_kwargs["method"])
+                predictions.pop("attentions", None)
+                word_imp = self.process_outputs(attributions=attributions,
+                                                top_k=request.explain_kwargs["top_k"],
+                                                mode=request.explain_kwargs["mode"])
+                task_outputs["attributions"] = word_imp
+
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
@@ -356,3 +687,63 @@ class Transformer(Model):
             return self._question_answering(request)
         elif task == Task.generation:
             return self._generation(request)
+
+    def process_outputs(self, attributions: List, top_k: int, mode: str) -> List[Dict]:
+        """
+        post-process the word attributions to merge the sub-words tokens
+        to words
+        Args:
+            attributions: word importance scores
+            top_k: number of top word attributions
+            mode: whether to show attribution in question, context or both
+        Returns:
+            dict of processed words along with their scores
+        """
+
+        dec_text = self.decoded_text
+        word_map = self.words_mapping
+        # sub-words to original words
+        words = [dec_text[0]]
+        for idx, (word_idx, word) in enumerate(zip(word_map, dec_text[1:])):
+            if word_idx == word_map[idx + 1] and not word == self.tokenizer.sep_token:
+                words[-1] = f'{words[-1]}{word.replace("##", "")}'
+            else:
+                words.append(word)
+        # average scores
+        c_list = [1]
+        attr = [attributions[0]]
+        for idx, (word_idx, score) in enumerate(zip(word_map, attributions[1:])):
+            if word_idx == word_map[idx + 1] and word_idx is not None:
+                attr[-1] = attr[-1] + score
+                c_list[-1] = c_list[-1] + 1
+            else:
+                attr.append(score)
+                c_list.append(1)
+
+        assert len(words) == len(attr)
+        imp = [sum_imp / length for length, sum_imp in zip(c_list, attr)]
+        normed_imp = [np.round(float(i) / sum(imp), 3) for i in imp]
+        result = [(w, a) for w, a in zip(words, normed_imp)]
+
+        context_start = words.index(self.tokenizer.sep_token)
+
+        question = [(v[0], v[1]) for idx, v in enumerate(result) if idx < context_start and
+                    v[0] != self.tokenizer.cls_token]
+        context = [(v[0], v[1]) for idx, v in enumerate(result) if idx > context_start and
+                   v[0] != self.tokenizer.sep_token]
+
+        outputs, outputs_question, outputs_context = [], [], []
+        if mode == "question" or mode == "all":
+            outputs_question = [(k, v) for k, v in sorted(
+                question,
+                key=lambda item: item[1],
+                reverse=True)[:top_k]]
+        if mode == "context" or mode == "all":
+            outputs_context = [(k, v) for k, v in sorted(
+                context,
+                key=lambda item: item[1],
+                reverse=True)[:top_k]]
+
+        outputs = [{"question": outputs_question, "context": outputs_context}]
+        print(outputs)
+        return outputs
