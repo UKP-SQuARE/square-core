@@ -1,1 +1,4 @@
 square-auth>=0.0.3
+asyncio
+aiohttp==3.8.1
+requests==2.27.1

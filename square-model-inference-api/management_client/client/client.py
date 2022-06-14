@@ -1,8 +1,17 @@
-from time import sleep
+import json
+import time
 
 import requests
 import os
+import ast
 from square_auth.client_credentials import ClientCredentials
+
+import asyncio
+import aiohttp
+from aiohttp.client import ClientSession
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 REALM = os.getenv("REALM")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -40,14 +49,16 @@ class ManagementClient:
         self.client_credentials = ClientCredentials(keycloak_base_url, realm, client_id, client_secret)
         self.verify_ssl = verify_ssl
         self.max_attempts = 50
-        self.poll_interval = 20
+        self.poll_interval = 2
 
-    def _wait_for_task(self, identifier, task_id, max_attempts=None, poll_interval=None):
+    async def _wait_for_task(self, task_id: str,
+                             session: ClientSession,
+                             max_attempts=None,
+                             poll_interval=None):
         """
         Handling waiting for a task to finish. While the task has not finished request the result from
         the task_result endpoint and check whether it is finished
         Args:
-             identifier (str): the identifier of the container which queued the task
              task_id (str): the id of the task
              max_attempts (int, optional): the maximum number of attempts to get the result. If this is None the
                 self.max_attempts is used. The default is None.
@@ -60,20 +71,22 @@ class ManagementClient:
             poll_interval = self.poll_interval
         attempts = 0
         result = None
+
         while attempts < max_attempts:
             attempts += 1
-            result_response = requests.get(
-                url="{}/api/main/task_result/{}".format(self.url, task_id),
-                headers={"Authorization": f"Bearer {self.client_credentials()}"},
-                verify=self.verify_ssl,
-            )
-            if result_response.status_code == 200:
-                result = result_response.json()["result"]
-                break
-            sleep(poll_interval)
-        return result
+            async with session.get(
+                    url=f"{self.url}/api/main/task_result/{task_id}",
+                    headers={"Authorization": f"Bearer {self.client_credentials()}"},
+                    verify_ssl=self.verify_ssl) as response:
+                resp = await response.text()
 
-    def predict(self, model_identifier, prediction_method, input_data):
+                if response.status == 200:
+                    result = ast.literal_eval(json.dumps(resp))
+                    break
+                time.sleep(poll_interval)
+        return json.loads(result)["result"]
+
+    async def predict(self, model_identifier, prediction_method, input_data):
         """
         Request model prediction.
         Args:
@@ -88,16 +101,23 @@ class ManagementClient:
             raise ValueError(
                 f"Unknown prediction_method {prediction_method}. Please choose one of the "
                 f"following {supported_prediction_methods}")
-        response = requests.post(
-            url="{}/api/main/{}/{}".format(self.url, model_identifier, prediction_method),
-            headers={"Authorization": f"Bearer {self.client_credentials()}"},
-            json=input_data,
-            verify=self.verify_ssl,
-        )
-        if response.status_code == 200:
-            return self._wait_for_task(model_identifier, response.json()["task_id"])
-        else:
-            return response
+
+        my_conn = aiohttp.TCPConnector(limit=10)
+        async with aiohttp.ClientSession(connector=my_conn) as session:
+            async with session.post(
+                    url=f"{self.url}/api/main/{model_identifier}/{prediction_method}",
+                    json=input_data,
+                    headers={"Authorization": f"Bearer {self.client_credentials()}"},
+                    verify_ssl=self.verify_ssl) as response:
+                result = await response.text()
+                # print(response.status)
+                if response.status == 200:
+                    return await asyncio.ensure_future(self._wait_for_task(
+                        ast.literal_eval(result)["task_id"],
+                        session=session,
+                    ))
+                else:
+                    return response
 
     def stats(self, model_identifier):
         """
@@ -134,7 +154,7 @@ class ManagementClient:
         )
         return response.json()
 
-    def deploy(self, model_attributes):
+    async def deploy(self, model_attributes):
         """
         Deploy a new model.
         Args:
@@ -153,32 +173,46 @@ class ManagementClient:
                     "preloaded_adapters": True
                 }
         """
-        response = requests.post(
-            url="{}/api/models/deploy".format(self.url),
-            headers={"Authorization": f"Bearer {self.client_credentials()}"},
-            json=model_attributes,
-            verify=self.verify_ssl,
-        )
-        if response.status_code == 200:
-            return self._wait_for_task("models", response.json()["task_id"])
-        else:
-            return response
+        my_conn = aiohttp.TCPConnector(limit=10)
+        async with aiohttp.ClientSession(connector=my_conn) as session:
+            async with session.post(
+                    url=f"{self.url}/api/models/deploy",
+                    json=model_attributes,
+                    headers={"Authorization": f"Bearer {self.client_credentials()}"},
+                    verify_ssl=self.verify_ssl) as response:
+                result = await response.text()
+                # print(response.status)
+                if response.status == 200:
+                    return await asyncio.ensure_future(self._wait_for_task(
+                        ast.literal_eval(result)["task_id"],
+                        session=session,
+                        poll_interval=20
+                    ))
+                else:
+                    return response
 
-    def remove(self, model_identifier):
+    async def remove(self, model_identifier):
         """
         Remove the model with the given identifier
         Args:
             model_identifier (str): the identifier of the model that should be removed
         """
-        response = requests.delete(
-            url="{}/api/models/remove/{}".format(self.url, model_identifier),
-            headers={"Authorization": f"Bearer {self.client_credentials()}"},
-            verify=self.verify_ssl,
-        )
-        if response.status_code == 200:
-            return self._wait_for_task("models", response.json()["task_id"])
-        else:
-            return response
+        my_conn = aiohttp.TCPConnector(limit=10)
+        async with aiohttp.ClientSession(connector=my_conn) as session:
+            async with session.delete(
+                    url=f"{self.url}/api/models/remove/{model_identifier}",
+                    json=model_identifier,
+                    headers={"Authorization": f"Bearer {self.client_credentials()}"},
+                    verify_ssl=self.verify_ssl) as response:
+                result = await response.text()
+                # print(response.status)
+                if response.status == 200:
+                    return await asyncio.ensure_future(self._wait_for_task(
+                        ast.literal_eval(result)["task_id"],
+                        session=session
+                    ))
+                else:
+                    return response
 
     def update(self, model_identifier, updated_attributes):
         """
@@ -203,7 +237,7 @@ class ManagementClient:
         )
         return response.json()
 
-    def add_worker(self, model_identifier, number):
+    async def add_worker(self, model_identifier, number):
         """
         Adds workers of a specific model such that heavy workloads can be handled better.
         Note, that only the creater of the model is allowed to add new workers and only admins are allowed to have more than 2
@@ -212,23 +246,88 @@ class ManagementClient:
             model_identifier (str): the identifier of the model to add workers for
             number (int): the number of workers to add
         """
-        response = requests.patch(
-            url="{}/api/models/{}/add_worker/{}".format(self.url, model_identifier, number),
-            headers={"Authorization": f"Bearer {self.client_credentials()}"},
-            verify=self.verify_ssl,
-        )
-        if response.status_code == 200:
-            return self._wait_for_task("models", response.json()["task_id"])
-        else:
-            return response
 
-    def remove_worker(self, model_identifier, number):
-        response = requests.patch(
-            url="{}/api/models/{}/remove_worker/{}".format(self.url, model_identifier, number),
-            headers={"Authorization": f"Bearer {self.client_credentials()}"},
-            verify=self.verify_ssl,
-        )
-        if response.status_code == 200:
-            return self._wait_for_task("models", response.json()["task_id"])
-        else:
-            return response
+        my_conn = aiohttp.TCPConnector(limit=10)
+        async with aiohttp.ClientSession(connector=my_conn) as session:
+            async with session.patch(
+                    url=f"{self.url}/api/models/{model_identifier}/add_worker/{number}",
+                    json=model_identifier,
+                    headers={"Authorization": f"Bearer {self.client_credentials()}"},
+                    verify_ssl=self.verify_ssl) as response:
+                result = await response.text()
+                if response.status == 200:
+                    return await asyncio.ensure_future(self._wait_for_task(
+                        ast.literal_eval(result)["task_id"],
+                        session=session
+                    ))
+                else:
+                    return response
+
+    async def remove_worker(self, model_identifier, number):
+        """
+        Remove/down-scale model worker
+        """
+
+        my_conn = aiohttp.TCPConnector(limit=10)
+        async with aiohttp.ClientSession(connector=my_conn) as session:
+            async with session.patch(
+                    url=f"{self.url}/api/models/{model_identifier}/remove_worker/{number}",
+                    json=model_identifier,
+                    headers={"Authorization": f"Bearer {self.client_credentials()}"},
+                    verify_ssl=self.verify_ssl) as response:
+                result = await response.text()
+                if response.status == 200:
+                    return await asyncio.ensure_future(self._wait_for_task(
+                        ast.literal_eval(result)["task_id"],
+                        session=session
+                    ))
+                else:
+                    return response
+
+
+# dev test
+if __name__ == '__main__':
+    # data = {
+    #           "input": [
+    #             ["Who stars in The Matrix?",
+    #              "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis,"
+    #              " starring Keanu Reeves, Laurence."]
+    #           ],
+    #           "is_preprocessed": False,
+    #           "preprocessing_kwargs": {},
+    #           "model_kwargs": {},
+    #           "task_kwargs": {},
+    #           # "explain_kwargs": {"method": "simple_grads", "top_k": 5, "mode": "all"},
+    #           # "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
+    # }
+    # start = time.time()
+    # client = ManagementClient(client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
+    #                           api_url="https://localhost:8443",
+    #                           verify_ssl=False)
+    # result = asyncio.run(client.predict(model_identifier="bert-onnx",
+    #                                     prediction_method="embedding",
+    #                                     input_data=data))
+    # end = time.time()
+    # print(f"Time elapsed: {end - start} seconds")
+    # from pprint import pprint
+    # pprint(result)
+
+    data = {
+              "identifier": "bert-onnx",
+              "model_name": "bert-base-uncased",
+              "model_type": "onnx",
+              "model_path": "/onnx_models/bert-base-cased/model.onnx",
+              "disable_gpu": True,
+              "batch_size": 32,
+              "max_input": 1024,
+              "transformer_cache": "..\/.cache",
+              "model_class": "base",
+              "return_plaintext_arrays": False
+    }
+
+    client = ManagementClient(client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
+                              api_url="https://localhost:8443",
+                              verify_ssl=False)
+    result = asyncio.run(client.remove(model_identifier="bert-onnx"))
+    from pprint import pprint
+    pprint(result)
