@@ -13,6 +13,7 @@ from app.models.management import (
     DeployRequest,
     GetModelsHealth,
     GetModelsResult,
+    GetExplainersResult,
     TaskGenericModel,
     TaskResultModel,
     UpdateModel,
@@ -56,17 +57,46 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return result
 
 
+@router.get("/explainers", name="get-explanation-methods", response_model=List[GetExplainersResult])
+async def list_exp_methods():
+    """
+    Get all the explanation methods for models
+    """
+    exp_methods = [
+        {"identifier": "simple_grads", "name": "Vanilla gradients",
+         "description": "The attributions are calculated considering the model"
+                        " gradients multiplied by the input text embeddings."},
+        {"identifier": "integrated_grads", "name": "Integrated gradients",
+         "description": "The attributions are calculated considering the integral of the model"
+                       " gradients with respect to the word embedding layer along a straight path"
+                       " from a baseline instance  to the input instance  "},
+        {"identifier": "smooth_grads", "name": "Smooth gradients",
+         "description": "Take random samples in neighborhood of an input, and average the resulting"
+                       " saliency maps. These random samples are inputs with added noise."},
+        {"identifier": "attention", "name": "Attention",
+         "description": "Based on the model attention weights from the last layer."},
+        {"identifier": "scaled_attention", "name": "Scaled attention",
+         "description": "The attention weights are multiplied with their gradients to get the "
+                       "token attributions."},
+    ]
+    result = []
+    for e in exp_methods:
+        result.append(
+            GetExplainersResult(
+                identifier=e["identifier"],
+                method_name=e["name"],
+                description=e["description"]
+            )
+        )
+    return result
+
+
 @router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsHealth])
-async def get_all_models_health(token: str = Depends(client_credentials)):
+async def get_all_models_health():
     '''
     Check all worker's health (worker : inference model container)
-
-    Args:
-        token: Token
-
     Return:
-        result: GetModelsHealth structure for reporting the health information.
-
+        result[list]: the health of deployed workers/models.
     '''
 
     models = await mongo_client.get_models_db()
@@ -76,7 +106,7 @@ async def get_all_models_health(token: str = Depends(client_credentials)):
     for model in models:
         container_id = mongo_client.get_container_id(model["IDENTIFIER"])
         container_obj = docker_client.containers.get(container_id)
-        if container_obj in docker_client.containers.list() :
+        if container_obj in docker_client.containers.list():
             result.append(
                 GetModelsHealth(
                     identifier=model["IDENTIFIER"],
@@ -91,7 +121,6 @@ async def get_all_models_health(token: str = Depends(client_credentials)):
                 )
             )
     return result
-
 
 
 @router.get("/deployed-model-workers", name="get-deployed-models",)
