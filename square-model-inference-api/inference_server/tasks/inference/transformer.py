@@ -230,7 +230,6 @@ class Transformer(Model):
                                       return_tensors="pt",
                                       **request.preprocessing_kwargs)
             input_features = self._ensure_tensor_on_device(**features)
-            logger.info(input_features)
             outputs = self.model(
                 **input_features,
                 start_positions=answer_start.to(self.model.device),
@@ -727,23 +726,23 @@ class Transformer(Model):
 
         context_start = words.index(self.tokenizer.sep_token)
 
-        question = [(v[0], v[1]) for idx, v in enumerate(result) if idx < context_start and
+        question = [(idx, v[0], v[1]) for idx, v in enumerate(result) if idx < context_start and
                     v[0] != self.tokenizer.cls_token]
-        context = [(v[0], v[1]) for idx, v in enumerate(result) if idx > context_start and
+        # account for cls token in result
+        context = [(idx - len(question) - 1, v[0], v[1]) for idx, v in enumerate(result) if idx > context_start and
                    v[0] != self.tokenizer.sep_token]
 
         outputs, outputs_question, outputs_context = [], [], []
         if mode == "question" or mode == "all":
-            outputs_question = [(k, v) for k, v in sorted(
+            outputs_question = [(i, k, v) for i, k, v in sorted(
                 question,
-                key=lambda item: item[1],
+                key=lambda item: item[2],
                 reverse=True)[:top_k]]
         if mode == "context" or mode == "all":
-            outputs_context = [(k, v) for k, v in sorted(
+            outputs_context = [(i, k, v) for i, k, v in sorted(
                 context,
-                key=lambda item: item[1],
+                key=lambda item: item[2],
                 reverse=True)[:top_k]]
 
         outputs = [{"question": outputs_question, "context": outputs_context}]
-        print(outputs)
         return outputs
