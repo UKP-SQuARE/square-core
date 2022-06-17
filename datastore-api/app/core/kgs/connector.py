@@ -162,6 +162,38 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             results[nid] = edges
         return results
 
+    async def get_edge_msearch(self, kg_name, nids_pairs: List[Tuple[str, str]]):
+        """Returns all edges for a given node-pair.
+
+        Args:
+            kg_name (str):                          Name of the knowledge graph.
+            nids_pairs (List[Tuple[str, str]]):     Node-pair which is supposed to be retrieved.
+        """
+        index = f'{kg_name}{self.datastore_suffix}'
+        body = []
+        for in_id, out_id in nids_pairs:
+            body.append({'index': index})
+            body.append({
+                "query": {
+                    "bool": {
+                        "filter": {
+                            "bool" : {
+                                "must" : [
+                                    {"term" : { "in_id" : in_id } },
+                                    {"term" : { "out_id" : out_id } },
+                                ]
+                            }
+                        }
+                    }
+                }
+            })
+        responses = await self.es.msearch(body=body)
+        results = []
+        for response in responses['responses']:
+            edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
+            results.append(edges)
+        return results
+
     async def get_object_by_id_msearch(self, kg_name, ids):
         """Returns all nodes/edges for the given ids.
 

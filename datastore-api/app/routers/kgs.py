@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Iterable, List, Dict
+from typing import Iterable, List, Dict, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, File, UploadFile
 from fastapi.param_functions import Body, Path
@@ -60,7 +60,6 @@ async def get_kg(
     return schema
 
 
-###  BUG: PUT-Request goes through and kgs are being created. But is still returning a 500 ERROR
 @router.put(
     "/{kg_name}",
     summary="Create a knowledge graph",
@@ -191,6 +190,57 @@ async def get_kg_relations(
     else:
         raise HTTPException(status_code=404)
 
+###    Queries    ###
+@router.put(
+    "/{kg_name}/nodes/{node_id}",
+    summary="Insert/Update a node.",
+    description="Inserts/Updates a node with its ID as <node_id>.",
+    responses={
+        200: {
+            #"model": Datastore,
+            "description": "The node has been succesfully updated.",
+        },
+        400: {
+            "description": "Failed to update the node in the API database",
+        },
+        500: {
+            "description": "Failed to create the node in the storage backend.",
+        },
+    },
+    #response_model=Datastore,
+)
+async def put_node(
+    request: Request,
+    kg_name: str = Path(..., description="The knowledge graph name"),
+    node_id: str = Path(..., description="The node name"),
+    fields: DatastoreRequest = Body(..., description="The knowledge graph fields"),
+    conn: KnowledgeGraphConnector = Depends(get_kg_storage_connector),
+    response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
+):
+    # Update if existing, otherwise add new
+    schema = await conn.get_object_by_id_msearch(kg_name, [node_id])
+    success = False
+    if schema is None:
+        # creating a new datastore
+        schema = fields.to_datastore(kg_name)
+        success = await conn.add_datastore(schema)
+        response.status_code = status.HTTP_201_CREATED
+        if success:
+            await mongo.new_binding(request, kg_name, binding_item_type)  # It should be placed after conn.add_datastore to make sure the status consistent between conn.add_datastore and mongo.new_binding
+    else:
+        # updating an existing datastore
+        await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
+        schema = fields.to_datastore(kg_name)
+        success = await conn.update_datastore(schema)
+        response.status_code = status.HTTP_200_OK
+
+    if success:
+        await conn.commit_changes()
+        return schema
+    else:
+        raise HTTPException(status_code=400)
+
 @router.post(
     "/{kg_name}/nodes",
     summary="Upload a batch of nodes",
@@ -228,23 +278,80 @@ async def post_kg_nodes(
 
 
 @router.get(
+    "/{kg_name}/{object_id}",
+    summary="Get a node/edge from a knowledge graph",
+    description="Get a node/edge from the knowledge graph by its ID.",
+    responses={
+        200: {
+            "description": "The node/edge",
+            "model": Document,
+        },
+        400: {"model": HTTPError, "description": "Failed to retrieve node"},
+    },
+)
+async def get_object_by_id(
+    kg_name: str = Path(..., description="The name of the knowdledge graph"),
+    object_id: str = Path(..., description="The name of the node/edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.get_object_by_id_msearch(kg_name, [object_id])
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node/edge.")
+
+
+@router.delete(
+    "/{kg_name}/{object_id}",
+    summary="Delete a node/edge from knwoledge graph",
+    description="Delete a node/edge from the datastore API by its ID.",
+    responses={
+        204: {
+            "description": "The node/edge is deleted",
+        },
+        404: {"description": "The node/edge could not be deleted from the API database"},
+        500: {
+            "description": "Failed to delete the node/edge from the storage backend.",
+        },
+    },
+)
+async def delete_object(
+    request: Request,
+    kg_name: str = Path(..., description="The knowledge graph name"),
+    object_id: str = Path(..., description="The node/edge ID"),
+    conn: KnowledgeGraphConnector = Depends(get_kg_storage_connector),
+    mongo: MongoClient = Depends(get_mongo_client)
+):
+    if not (await conn.get_object_by_id_msearch(kg_name, [object_id])):
+        return Response(status_code=404)
+    
+    await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
+    success = await conn.delete_document(kg_name, object_id)
+    if success:
+        return Response(status_code=204)
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find document to delete.")
+
+
+###    QUERIES    ###
+@router.get(
     "/{kg_name}/nodes/query_by_name",
     summary="Get a node from a knowledge graph",
     description="Get a node from the knowledge graph by name",
     responses={
         200: {
             "description": "The node",
-            "model": Document,
+            #"model": Document,
         },
         400: {"model": HTTPError, "description": "Failed to retrieve node"},
     },
 )
 async def get_node_by_name(
     kg_name: str = Path(..., description="The name of the node"),
-    doc_id: str = Path(..., description="The name of the node to retrieve"),
+    doc_id: str = Body(..., description="The name of the node to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
-    result = await conn.get_node(kg_name, doc_id)
+    result = await conn.get_node_by_name(kg_name, doc_id)
     if result is not None:
         return result
     else:
@@ -276,3 +383,27 @@ async def subgraph_by_names(
         return stats
     else:
         raise HTTPException(status_code=404)
+
+ ### BUG: Rading of Tuple list makes does not work yet, need further investigation
+@router.get(
+    "/{kg_name}/edges/query_by_name",
+    summary="Get a edge from a knowledge graph",
+    description="Get a edge from the knowledge graph by name",
+    responses={
+        200: {
+            "description": "The edge",
+        },
+        400: {"model": HTTPError, "description": "Failed to retrieve edge"},
+    },
+)
+async def get_edge_by_name(
+    kg_name: str = Path(..., description="The name of the edge"),
+    doc_id: Tuple[str,str] = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    logger.info(doc_id)
+    result = await conn.get_edge_by_name(kg_name, doc_id)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
