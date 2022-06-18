@@ -351,7 +351,7 @@ async def get_node_by_name(
     doc_id: str = Body(..., description="The name of the node to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
-    result = await conn.get_node_by_name(kg_name, doc_id)
+    result = await conn.get_node_by_name(kg_name, doc_id[0])
     if result is not None:
         return result
     else:
