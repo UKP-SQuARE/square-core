@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+import string
 from typing import Union, Tuple, List, Dict, Any
 
 import numpy as np
@@ -8,13 +9,24 @@ import torch
 from torch.nn import Module, ModuleList
 from tasks.config.model_config import model_config
 from tasks.inference.model import Model
-from tasks.models.prediction import PredictionOutput, PredictionOutputForSequenceClassification, \
-    PredictionOutputForTokenClassification, \
-    PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
+from tasks.models.prediction import (
+    PredictionOutput,
+    PredictionOutputForSequenceClassification,
+    PredictionOutputForTokenClassification,
+    PredictionOutputForQuestionAnswering,
+    PredictionOutputForGeneration,
+    PredictionOutputForEmbedding
+)
 from tasks.models.request import Task, PredictionRequest
-from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
-    AutoModelForTokenClassification, AutoModelForQuestionAnswering, AutoModelForCausalLM
-
+from transformers import (
+    AutoTokenizer,
+    AutoModel,
+    AutoModelForSequenceClassification,
+    AutoModelForTokenClassification,
+    AutoModelForQuestionAnswering,
+    AutoModelForCausalLM
+)
+from transformers.models.gpt2.tokenization_gpt2 import bytes_to_unicode
 logger = logging.getLogger(__name__)
 
 CLASS_MAPPING = {
@@ -45,7 +57,8 @@ class Transformer(Model):
         # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         if model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
-        self._load_model(CLASS_MAPPING[model_config.model_class], model_config.model_name, model_config.disable_gpu)
+        self._load_model(CLASS_MAPPING[model_config.model_class],
+                         model_config.model_name, model_config.disable_gpu)
 
     def _load_model(self, model_cls, model_name, disable_gpu):
 
@@ -64,7 +77,9 @@ class Transformer(Model):
         self.model = model
         self.tokenizer = tokenizer
 
-    def encode(self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None):
+    def encode(self, inputs: list = None,
+               add_special_tokens: bool = True,
+               return_tensors=None):
         """
         Encode inputs using the model tokenizer
         Args:
@@ -74,24 +89,37 @@ class Transformer(Model):
         Return:
             tokenized inputs
         """
-        return self.tokenizer(inputs, add_special_tokens=add_special_tokens, return_tensors=return_tensors,
-                              padding=True, truncation=True, max_length=512)
+        return self.tokenizer(
+            inputs,
+            add_special_tokens=add_special_tokens,
+            return_tensors=return_tensors,
+            padding=True,
+            truncation=True,
+            max_length=512
+        )
 
-    def decode(self, input_ids: torch.Tensor, skip_special_tokens: bool) -> List[str]:
+    def decode(
+            self, input_ids: torch.Tensor,
+            skip_special_tokens: bool
+        ) -> List[str]:
         """
         Decode received input_ids into a list of word tokens.
         Args:
             input_ids (torch.Tensor): Input ids representing
             word tokens for a sentence/document.
         """
-        return self.tokenizer.convert_ids_to_tokens(input_ids[0], skip_special_tokens=skip_special_tokens)
+        return self.tokenizer.convert_ids_to_tokens(
+            input_ids[0],
+            skip_special_tokens=skip_special_tokens
+        )
 
     def _ensure_tensor_on_device(self, **inputs):
         """
         Ensure PyTorch tensors are on the specified device.
 
         Args:
-            inputs (keyword arguments that should be :obj:`torch.Tensor`): The tensors to place on :obj:`self.device`.
+            inputs (keyword arguments that should be :obj:`torch.Tensor`):
+                The tensors to place on :obj:`self.device`.
 
         Return:
             :obj:`Dict[str, torch.Tensor]`: The same as :obj:`inputs` but on the proper device.
@@ -104,7 +132,8 @@ class Transformer(Model):
         """
         Get the model embedding layer
         Args:
-            embedding_type: can be one of word_embeddings, token_type_embeddings or position_embeddings
+            embedding_type: can be one of word_embeddings,
+                token_type_embeddings or position_embeddings
         """
         embeddings = Module or ModuleList
         model_prefix = self.model.base_model_prefix
@@ -192,7 +221,7 @@ class Transformer(Model):
     def _register_attention_gradient_hooks(self, attn_grads: List):
         """
         Register the model gradients during the backward pass
-        :param embedding_grads:
+        :param attn_grads:
         :return:
         """
         def hook_layers(module, grad_in, grad_out):
@@ -296,7 +325,8 @@ class Transformer(Model):
 
         for start_idx in range(0, len(request.input), model_config.batch_size):
             with torch.no_grad():
-                input_features = {k: features[k][start_idx:start_idx+model_config.batch_size] for k in features.keys()}
+                input_features = {k: features[k][start_idx:start_idx+model_config.batch_size]
+                                  for k in features.keys()}
                 input_features = self._ensure_tensor_on_device(**input_features)
                 predictions = self.model(**input_features, **request.model_kwargs)
                 all_predictions.append(predictions)
@@ -307,7 +337,10 @@ class Transformer(Model):
             # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
             # Generation should NOT use this function
             if isinstance(all_predictions[0][key], tuple):
-                tuple_of_lists = list(zip(*[[torch.stack(p).cpu() if isinstance(p, tuple) else p.cpu() for p in tpl[key]] for tpl in all_predictions]))
+                tuple_of_lists = list(zip(*[[torch.stack(p).cpu()
+                                             if isinstance(p, tuple) else p.cpu()
+                                             for p in tpl[key]]
+                                            for tpl in all_predictions]))
                 final_prediction[key] = tuple(torch.cat(l) for l in tuple_of_lists)
             else:
                 final_prediction[key] = torch.cat([p[key].cpu() for p in all_predictions])
@@ -459,7 +492,8 @@ class Transformer(Model):
         }
 
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
-            raise ValueError(f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
+            raise ValueError(f"Embedding mode {embedding_mode} not in list "
+                             f"of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
 
         if embedding_mode == "cls":
             emb = hidden_state[:, 0, :]
@@ -493,7 +527,8 @@ class Transformer(Model):
             "id2label": id2label,
             "word_ids": [features.word_ids(i) for i in range(len(request.input))]
         }
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
+        if predictions["logits"].size()[-1] != 1 \
+                and not request.task_kwargs.get("is_regression", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
@@ -509,7 +544,8 @@ class Transformer(Model):
         }
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
+        if predictions["logits"].size()[-1] != 1 \
+                and not request.task_kwargs.get("is_regression", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
@@ -518,7 +554,8 @@ class Transformer(Model):
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", False)
-        request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens", False)
+        request.preprocessing_kwargs["add_special_tokens"] = \
+            request.preprocessing_kwargs.get("add_special_tokens", False)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
 
@@ -542,10 +579,11 @@ class Transformer(Model):
                     res[key] = res[key].cpu()
                 model_outputs[key].append(res[key])
 
-            generated_texts = [self.tokenizer.decode(seq,
-                                                     skip_special_tokens=True,
-                                                     clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
-                               for seq in res["sequences"]]
+            generated_texts = [self.tokenizer.decode(
+                seq,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
+                for seq in res["sequences"]]
             task_outputs["generated_texts"].append(generated_texts)
         return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
 
@@ -558,14 +596,24 @@ class Transformer(Model):
           request: the prediction request
 
         """
-        # Making heavy use of https://huggingface.co/transformers/_modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
-        def decode(start_: np.ndarray, end_: np.ndarray, topk: int, max_answer_len: int, undesired_tokens_: np.ndarray) -> Tuple:
+        # Making heavy use of https://huggingface.co/transformers/
+        # _modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
+        def decode(
+                start_: np.ndarray,
+               end_: np.ndarray,
+               topk: int,
+               max_answer_len: int,
+               undesired_tokens_: np.ndarray
+            ) -> Tuple:
                 """
-                Take the output of any :obj:`ModelForQuestionAnswering` and will generate probabilities for each span to be the
-                actual answer.
+                Take the output of any :obj:`ModelForQuestionAnswering` and
+                    will generate probabilities for each span to be the
+                    actual answer.
 
-                In addition, it filters out some unwanted/impossible cases like answer len being greater than max_answer_len or
-                answer end position being before the starting position. The method supports output the k-best answer through
+                In addition, it filters out some unwanted/impossible cases
+                like answer len being greater than max_answer_len or
+                answer end position being before the starting position.
+                The method supports output the k-best answer through
                 the topk argument.
 
                 Args:
@@ -599,7 +647,8 @@ class Transformer(Model):
                     idx_sort = idx[np.argsort(-scores_flat[idx])]
 
                 starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
-                desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
+                desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) \
+                                & np.isin(ends_, undesired_tokens_.nonzero())
                 starts_ = starts_[desired_spans]
                 ends_ = ends_[desired_spans]
                 scores_ = candidates[0, starts_, ends_]
@@ -610,7 +659,9 @@ class Transformer(Model):
         predictions, features = self._predict(request, output_features=True)
 
         task_outputs = {"answers": [], "attributions": []}
-        for idx, (start, end, (_, context)) in enumerate(zip(predictions["start_logits"], predictions["end_logits"], request.input)):
+        for idx, (start, end, (_, context)) in enumerate(zip(predictions["start_logits"],
+                                                             predictions["end_logits"],
+                                                             request.input)):
             start = start.numpy()
             end = end.numpy()
             # Ensure padded tokens & question tokens cannot belong to the set of candidate answers.
@@ -634,7 +685,9 @@ class Transformer(Model):
             start[0] = end[0] = 0.0
 
             starts, ends, scores = decode(
-                start, end, request.task_kwargs.get("topk", 1), request.task_kwargs.get("max_answer_len", 128), undesired_tokens
+                start, end, request.task_kwargs.get("topk", 1),
+                request.task_kwargs.get("max_answer_len", 128),
+                undesired_tokens
             )
             enc = features[idx]
             answers = [
@@ -649,7 +702,9 @@ class Transformer(Model):
                 }
                 for s, e, score in zip(starts, ends, scores)]
             answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
-            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
+            answers = sorted(answers,
+                             key=lambda x: x["score"],
+                             reverse=True)[: request.task_kwargs.get("topk", 1)]
             task_outputs["answers"].append(answers)
 
             # word attributions
@@ -672,9 +727,11 @@ class Transformer(Model):
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
-            raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+            raise ValueError("is_preprocessed=True is not supported for this model. "
+                             "Please use text as input.")
         if len(request.input) > model_config.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
+            raise ValueError(f"Input is too large. Max input size is "
+                             f"{model_config.max_input_size}")
 
         if task == Task.sequence_classification:
             return self._sequence_classification(request)
@@ -687,7 +744,115 @@ class Transformer(Model):
         elif task == Task.generation:
             return self._generation(request)
 
-    def process_outputs(self, attributions: List, top_k: int, mode: str) -> List[Dict]:
+    def _decode(
+            self,
+            tokens: List[str],
+            attributions: List
+    ) -> Tuple[List[str], np.array]:
+
+        byte_encoder = bytes_to_unicode()
+        byte_decoder = {v: k for k, v in byte_encoder.items()}
+        decoded_each_tok = [
+            bytearray([byte_decoder[c] for c in t]).decode(
+                encoding="utf-8",
+                errors="replace") for t in tokens
+        ]
+
+        end_points = []
+        force_break = False
+        for idx, token in enumerate(decoded_each_tok):
+            # special token, punctuation, alphanumeric
+            if token in self.tokenizer.all_special_tokens or \
+                    token in string.punctuation or \
+                    not any([x.isalnum() for x in token.lstrip()]) or \
+                    token.lstrip == "'s":
+                end_points.append(idx)
+                force_break = True
+                continue
+
+            if force_break:
+                end_points.append(idx)
+                force_break = False
+                continue
+
+            if token[0] == " ":
+                tokens[idx] = token[:]
+                end_points.append(idx)
+
+        end_points.append(len(tokens))
+
+        segments = []
+        for i in range(1, len(end_points)):
+            if end_points[i - 1] == end_points[i]:
+                continue
+            segments.append((end_points[i - 1], end_points[i]))
+
+        filtered_tokens, scores = [], []
+        for s0, s1 in segments:
+            filtered_tokens.append(''.join(decoded_each_tok[s0:s1]))
+            scores.append(np.sum(attributions[s0:s1], axis=0))
+        filtered_tokens = [token.lstrip() for token in filtered_tokens]
+        attribution_score = np.stack(scores, axis=0)
+
+        return filtered_tokens, attribution_score
+
+    def _bert_decode(
+            self,
+            tokens: List[str],
+            attributions: List
+    ) -> Tuple[List[str], np.array]:
+
+        decoded_each_tok = tokens
+        word_map = self.words_mapping
+        chars_to_handle = ["s", "t", "ve", "re", "m", "n't"]
+
+        context_start = tokens.index(self.tokenizer.sep_token)
+        for idx, token in enumerate(decoded_each_tok[:-1]):
+            if token not in self.tokenizer.all_special_tokens \
+                    and token == "'" \
+                    and decoded_each_tok[idx+1] in chars_to_handle \
+                    and idx < context_start:
+                word_map[idx] = word_map[idx-1]
+                word_map[idx+1] = word_map[idx-1]
+                word_map[idx+2:context_start] = [
+                    w-2
+                    for w in word_map[idx+2:context_start]
+                    if w
+                ]
+                continue
+            if token not in self.tokenizer.all_special_tokens \
+                    and token == "'" \
+                    and decoded_each_tok[idx+1] in chars_to_handle \
+                    and idx > context_start:
+                word_map[idx] = word_map[idx-1]
+                word_map[idx+1] = word_map[idx-1]
+                word_map[idx+2:-1] = [
+                    w-2
+                    for w in word_map[idx+2:-1]
+                    if w
+                ]
+                continue
+
+        filtered_tokens = [decoded_each_tok[0]]
+        for idx, (word_idx, word) in enumerate(zip(word_map, decoded_each_tok[1:])):
+            if word_idx == word_map[idx + 1] and not word == self.tokenizer.sep_token:
+                filtered_tokens[-1] = f'{filtered_tokens[-1]}{word.replace("##", "")}'
+            else:
+                filtered_tokens.append(word)
+
+        attribution_score = [attributions[0]]
+        for idx, (word_idx, score) in enumerate(zip(word_map, attributions[1:])):
+            if word_idx == word_map[idx + 1] and word_idx is not None:
+                attribution_score[-1] = attribution_score[-1] + score
+            else:
+                attribution_score.append(score)
+
+        return filtered_tokens, np.array(attribution_score)
+
+    def process_outputs(self,
+                        attributions: List,
+                        top_k: int,
+                        mode: str) -> List[Dict]:
         """
         post-process the word attributions to merge the sub-words tokens
         to words
@@ -699,50 +864,46 @@ class Transformer(Model):
             dict of processed words along with their scores
         """
 
+        filtered_tokens: list = []
+        importance: np.array = np.array([])
+        sep_tokens: int = 0
         dec_text = self.decoded_text
-        word_map = self.words_mapping
-        # sub-words to original words
-        words = [dec_text[0]]
-        for idx, (word_idx, word) in enumerate(zip(word_map, dec_text[1:])):
-            if word_idx == word_map[idx + 1] and not word == self.tokenizer.sep_token:
-                words[-1] = f'{words[-1]}{word.replace("##", "")}'
-            else:
-                words.append(word)
-        # average scores
-        c_list = [1]
-        attr = [attributions[0]]
-        for idx, (word_idx, score) in enumerate(zip(word_map, attributions[1:])):
-            if word_idx == word_map[idx + 1] and word_idx is not None:
-                attr[-1] = attr[-1] + score
-                c_list[-1] = c_list[-1] + 1
-            else:
-                attr.append(score)
-                c_list.append(1)
+        if self.model.config.model_type in ["roberta", "bart"]:
+            filtered_tokens, importance = self._decode(dec_text, attributions)
+            sep_tokens = 2
+        elif self.model.config.model_type == "bert":
+            filtered_tokens, importance = self._bert_decode(dec_text, attributions)
+            sep_tokens = 1
 
-        assert len(words) == len(attr)
-        imp = [sum_imp / length for length, sum_imp in zip(c_list, attr)]
-        normed_imp = [np.round(float(i) / sum(imp), 3) for i in imp]
-        result = [(w, a) for w, a in zip(words, normed_imp)]
-
-        context_start = words.index(self.tokenizer.sep_token)
-
-        question = [(idx, v[0], v[1]) for idx, v in enumerate(result) if idx < context_start and
-                    v[0] != self.tokenizer.cls_token]
+        normed_imp = [np.round(float(i) / sum(importance), 3)
+                      for i in importance]
+        result = [(w, a) for w, a in zip(filtered_tokens, normed_imp)
+                  if w != '']
+        assert len(filtered_tokens) == len(normed_imp)
+        # outputs = {"attributions": result}
+        context_start = filtered_tokens.index(self.tokenizer.sep_token)
         # account for cls token in result
-        context = [(idx - len(question) - 1, v[0], v[1]) for idx, v in enumerate(result) if idx > context_start and
-                   v[0] != self.tokenizer.sep_token]
+        question = [(idx, v[0], v[1])
+                    for idx, v in enumerate(result[1:])
+                    if idx < context_start - 1]
+
+        context = [(idx - len(question) - sep_tokens, v[0], v[1])
+                   for idx, v in enumerate(result[1:])
+                   if idx > context_start - 1
+                   and v[0] != self.tokenizer.sep_token]
 
         outputs, outputs_question, outputs_context = [], [], []
         if mode == "question" or mode == "all":
-            outputs_question = [(i, k, v) for i, k, v in sorted(
+            outputs_question = [(i, k.lower(), v) for i, k, v in sorted(
                 question,
                 key=lambda item: item[2],
                 reverse=True)[:top_k]]
         if mode == "context" or mode == "all":
-            outputs_context = [(i, k, v) for i, k, v in sorted(
+            outputs_context = [(i, k.lower(), v) for i, k, v in sorted(
                 context,
                 key=lambda item: item[2],
                 reverse=True)[:top_k]]
 
-        outputs = [{"question": outputs_question, "context": outputs_context}]
+        outputs = [{"question": outputs_question,
+                    "context": outputs_context}]
         return outputs
