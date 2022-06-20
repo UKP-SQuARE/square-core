@@ -63,21 +63,32 @@ async def list_exp_methods():
     Get all the explanation methods for models
     """
     exp_methods = [
-        {"identifier": "simple_grads", "name": "Vanilla gradients",
-         "description": "The attributions are calculated considering the model"
-                        " gradients multiplied by the input text embeddings."},
-        {"identifier": "integrated_grads", "name": "Integrated gradients",
-         "description": "The attributions are calculated considering the integral of the model"
-                       " gradients with respect to the word embedding layer along a straight path"
-                       " from a baseline instance  to the input instance  "},
-        {"identifier": "smooth_grads", "name": "Smooth gradients",
-         "description": "Take random samples in neighborhood of an input, and average the resulting"
-                       " saliency maps. These random samples are inputs with added noise."},
-        {"identifier": "attention", "name": "Attention",
-         "description": "Based on the model attention weights from the last layer."},
-        {"identifier": "scaled_attention", "name": "Scaled attention",
-         "description": "The attention weights are multiplied with their gradients to get the "
-                       "token attributions."},
+        {
+            "identifier": "simple_grads", "name": "Vanilla gradients",
+            "description": "The attributions are calculated considering the model "
+                           "gradients multiplied by the input text embeddings."
+        },
+        {
+            "identifier": "integrated_grads", "name": "Integrated gradients",
+            "description": "The attributions are calculated considering the "
+                           "integral of the model gradients with respect to the word "
+                           "embedding layer along a straight path from a "
+                           "baseline instance  to the input instance  "},
+        {
+            "identifier": "smooth_grads", "name": "Smooth gradients",
+            "description": "Take random samples in neighborhood of an input, "
+                           "and average the resulting saliency maps. These "
+                           "random samples are inputs with added noise."
+        },
+        {
+            "identifier": "attention", "name": "Attention",
+            "description": "Based on the model attention weights from the last layer."
+        },
+        {
+            "identifier": "scaled_attention", "name": "Scaled attention",
+            "description": "The attention weights are multiplied with their "
+                           "gradients to get the token attributions."
+        },
     ]
     result = []
     for e in exp_methods:
