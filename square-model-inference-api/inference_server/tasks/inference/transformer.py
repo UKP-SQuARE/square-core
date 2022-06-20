@@ -744,7 +744,7 @@ class Transformer(Model):
         elif task == Task.generation:
             return self._generation(request)
 
-    def _decode(
+    def _bpe_decode(
             self,
             tokens: List[str],
             attributions: List
@@ -796,7 +796,7 @@ class Transformer(Model):
 
         return filtered_tokens, attribution_score
 
-    def _bert_decode(
+    def _wordpiece_decode(
             self,
             tokens: List[str],
             attributions: List
@@ -869,10 +869,10 @@ class Transformer(Model):
         sep_tokens: int = 0
         dec_text = self.decoded_text
         if self.model.config.model_type in ["roberta", "bart"]:
-            filtered_tokens, importance = self._decode(dec_text, attributions)
+            filtered_tokens, importance = self._bpe_decode(dec_text, attributions)
             sep_tokens = 2
         elif self.model.config.model_type == "bert":
-            filtered_tokens, importance = self._bert_decode(dec_text, attributions)
+            filtered_tokens, importance = self._wordpiece_decode(dec_text, attributions)
             sep_tokens = 1
 
         normed_imp = [np.round(float(i) / sum(importance), 3)
