@@ -32,8 +32,10 @@ async def predict(request: QueryRequest) -> QueryOutput:
     model_request = {
         "input": prepared_input,
         "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
-        "adapter_name": request.skill_args["adapter"],
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
+    
     model_api_output = await model_api(
         model_name=request.skill_args["base_model"],
         pipeline="question-answering",

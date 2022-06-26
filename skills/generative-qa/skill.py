@@ -30,8 +30,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
             "output_scores": True,
             **request.skill_args.get("model_kwargs", {}),
         },
-        "adapter_name": request.skill_args["adapter"],
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
 
     model_api_output = await model_api(
         model_name=request.skill_args["base_model"],
