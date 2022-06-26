@@ -19,8 +19,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
     prepared_input = [[request.query, c] for c in choices]
     model_request = {
         "input": prepared_input,
-        "adapter_name": request.skill_args["adapter"],
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
     model_api_output = await model_api(
         model_name=request.skill_args["base_model"],
         pipeline="sequence-classification",
