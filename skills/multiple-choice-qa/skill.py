@@ -33,8 +33,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
     # Call Model API
     model_request = {
         "input": prepared_input,
-        "adapter_name": request.skill_args["adapter"],
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
     logger.debug("Request for model api:{}".format(model_request))
 
     model_api_output = await model_api(
