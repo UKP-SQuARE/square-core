@@ -277,6 +277,84 @@ async def post_kg_nodes(
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
+
+
+###    QUERIES    ###
+@router.post(
+    "/{kg_name}/nodes/query_by_name",
+    summary="Get a node from a knowledge graph",
+    description="Get a node from the knowledge graph by name",
+    responses={
+        200: {
+            "description": "The node",
+            #"model": Document,
+        },
+        404: {"description": "The nodes could not be retrieved"},
+    },
+)
+async def get_node_by_name(
+    kg_name: str = Path(..., description="The name of the node"),
+    doc_id: set = Body(..., description="The name of the node to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.get_node_by_name_msearch(kg_name, doc_id)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
+
+
+@router.post(
+    "/{kg_name}/subgraph/query_by_node_name",
+    summary="summary",
+    description="Get the subgraph of a given List of node-names and the number of hops",
+    responses={
+        200: {
+            #"model": DatastoreStats,
+            "description": "The subgraph as a set of nodes and edges",
+        },
+        404: {"description": "The subgraph could not be retrieved"},
+    },
+    #response_model=DatastoreStats,
+)
+async def subgraph_by_names(
+    kg_name: str = Path(..., description="The knowledge graph name"),
+    nids: set = Body(..., description="List of node names."),
+    hops: int = Body(2, description="Number of hops to retrieve."),
+    conn=Depends(get_kg_storage_connector),
+):
+    # Need to handle if wrong kg_name was gave as an input
+    stats = await conn.extract_subgraph_by_names(kg_name, names=nids, hops=hops)
+    if stats is not None:
+        return stats
+    else:
+        raise HTTPException(status_code=404)
+
+
+@router.get(
+    "/{kg_name}/edges/query_by_name",
+    summary="Get a edge from a knowledge graph",
+    description="Get a edge from the knowledge graph by name",
+    responses={
+        200: {
+            "description": "The edge",
+        },
+        404: {"description": "The edge could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_edge_by_name(
+    kg_name: str = Path(..., description="The name of the edge"),
+    docid: set = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.edges_from_msearch(kg_name, docid)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+
+
 @router.get(
     "/{kg_name}/{object_id}",
     summary="Get a node/edge from a knowledge graph",
@@ -331,79 +409,3 @@ async def delete_object(
         return Response(status_code=204)
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find document to delete.")
-
-
-###    QUERIES    ###
-@router.get(
-    "/{kg_name}/nodes/query_by_name",
-    summary="Get a node from a knowledge graph",
-    description="Get a node from the knowledge graph by name",
-    responses={
-        200: {
-            "description": "The node",
-            #"model": Document,
-        },
-        400: {"model": HTTPError, "description": "Failed to retrieve node"},
-    },
-)
-async def get_node_by_name(
-    kg_name: str = Path(..., description="The name of the node"),
-    doc_id: str = Body(..., description="The name of the node to retrieve"),
-    conn=Depends(get_kg_storage_connector),
-):
-    result = await conn.get_node_by_name(kg_name, doc_id[0])
-    if result is not None:
-        return result
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
-
-
-@router.post(
-    "/{kg_name}/subgraph/query_by_node_name",
-    summary="summary",
-    description="Get the subgraph of a given List of node-names and the number of hops",
-    responses={
-        200: {
-            #"model": DatastoreStats,
-            "description": "The subgraph as a set of nodes and edges",
-        },
-        404: {"description": "The subgraph could not be retrieved"},
-    },
-    #response_model=DatastoreStats,
-)
-async def subgraph_by_names(
-    kg_name: str = Path(..., description="The knowledge graph name"),
-    nids: set = Body(..., description="List of node names."),
-    hops: int = Body(2, description="Number of hops to retrieve."),
-    conn=Depends(get_kg_storage_connector),
-):
-
-    stats = await conn.extract_subgraph_by_names(kg_name, names=nids, hops=hops)
-    if stats is not None:
-        return stats
-    else:
-        raise HTTPException(status_code=404)
-
- ### BUG: Rading of Tuple list makes does not work yet, need further investigation
-@router.get(
-    "/{kg_name}/edges/query_by_name",
-    summary="Get a edge from a knowledge graph",
-    description="Get a edge from the knowledge graph by name",
-    responses={
-        200: {
-            "description": "The edge",
-        },
-        400: {"model": HTTPError, "description": "Failed to retrieve edge"},
-    },
-)
-async def get_edge_by_name(
-    kg_name: str = Path(..., description="The name of the edge"),
-    doc_id: Tuple[str,str] = Body(..., description="The name of the edge to retrieve"),
-    conn=Depends(get_kg_storage_connector),
-):
-    logger.info(doc_id)
-    result = await conn.get_edge_by_name(kg_name, doc_id)
-    if result is not None:
-        return result
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")

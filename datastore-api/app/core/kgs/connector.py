@@ -130,7 +130,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
 
         Args:
             kg_name (str):      Name of the knowledge graph.
-            node_name (str):    Name of the node.
+            nids (List[str]):   Node-pairs.
         """
         index = f'{kg_name}{self.datastore_suffix}'
 
@@ -152,7 +152,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 },
                 "size": 10000
             })
-
+    
         response = await self.es.msearch(body=body)
 
         results = {}
@@ -205,8 +205,10 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         result = await self.es.mget(index=index, body={'ids': list(ids)})
         objs = {}
         for obj in result['docs']:
-            objs[obj['_id']] = dict(obj['_source'], **{'_id': obj['_id']})
-
+            if obj['found']:
+                objs[obj['_id']] = dict(obj['_source'], **{'_id': obj['_id']})
+            else:
+                logger.info("Not FOUND")
         return objs
 
     async def extract_subgraph(self, kg_name, nids: List[str], hops=2):
@@ -291,7 +293,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 "size": 10000
             })  # 'must' for AND clause
         responses = await self.es.msearch(body=body)
-
+        logger.info(responses)
         results = []        
         for response in responses['responses']:
             nids = [hit['_id'] for hit in response["hits"]["hits"]]
@@ -309,5 +311,4 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         nids = set()
         for _nids in await self.get_node_by_name_msearch(kg_name, names):
             nids.update(_nids)
-        
         return await self.extract_subgraph(kg_name, nids, hops)
