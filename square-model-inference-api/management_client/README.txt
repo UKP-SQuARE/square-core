@@ -29,5 +29,5 @@ python setup.py sdist bdist_wheel
 Now the build package is created in `management_client/dist`. This needs to be uploaded to pypi.
 1. Ensure you have installed `twine` (`pip install twine`)
 2. Ensure you have a user account on pypi which can update the management client project
-3. Upload the pacakage using `twine upload dist/*`
+3. Upload the package using `twine upload dist/*`
 

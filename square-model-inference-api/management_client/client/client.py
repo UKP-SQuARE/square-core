@@ -21,8 +21,10 @@ KEYCLOAK_BASE_URL = os.getenv("KEYCLOAK_BASE_URL")
 
 class ManagementClient:
     """
-    This client provides an easy interface to the model-api from the square project.
-    It handles authentication, sends the requests and for those that only return the task id it
+    This client provides an easy interface to the model-api
+    from the square project.
+    It handles authentication, sends the requests and for
+    those that only return the task id it
     waits until the results are computed
     """
 
@@ -36,7 +38,8 @@ class ManagementClient:
             client_id="models",
     ):
         """
-        This method initializes the client and the credentials which will be needed for each access.
+        This method initializes the client and the credentials which
+        will be needed for each access.
         Args:
             api_url (str): The base url of the model-api
             client_secret (str): The secret of the client needed for authentication
@@ -46,7 +49,12 @@ class ManagementClient:
             client_id (str): the client id used by the client credentials
         """
         self.url = api_url
-        self.client_credentials = ClientCredentials(keycloak_base_url, realm, client_id, client_secret)
+        self.client_credentials = ClientCredentials(
+            keycloak_base_url,
+            realm,
+            client_id,
+            client_secret
+        )
         self.verify_ssl = verify_ssl
         self.max_attempts = 50
         self.poll_interval = 2
@@ -57,8 +65,8 @@ class ManagementClient:
                              poll_interval=None):
         """
         Handling waiting for a task to finish. While the task has
-        not finished request the result from
-        the task_result endpoint and check whether it is finished
+        not finished request the result from the task_result
+        endpoint and check whether it is finished
         Args:
              task_id (str): the id of the task
              max_attempts (int, optional): the maximum number of
@@ -108,8 +116,9 @@ class ManagementClient:
                                         "question-answering"]
         if prediction_method not in supported_prediction_methods:
             raise ValueError(
-                f"Unknown prediction_method {prediction_method}. Please choose one of the "
-                f"following {supported_prediction_methods}")
+                f"Unknown prediction_method {prediction_method}. "
+                f"Please choose one of the following "
+                f"{supported_prediction_methods}")
 
         my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:

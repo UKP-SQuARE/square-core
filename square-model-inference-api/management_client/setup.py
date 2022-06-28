@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 setup(
    name='management_client',
@@ -12,5 +12,8 @@ setup(
     ),
    install_requires=[
        "square-auth>=0.0.3",
+       "asyncio",
+       "aiohttp==3.8.1",
+       "requests==2.27.1"
    ],
 )
