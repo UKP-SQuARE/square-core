@@ -56,13 +56,16 @@ class ManagementClient:
                              max_attempts=None,
                              poll_interval=None):
         """
-        Handling waiting for a task to finish. While the task has not finished request the result from
+        Handling waiting for a task to finish. While the task has
+        not finished request the result from
         the task_result endpoint and check whether it is finished
         Args:
              task_id (str): the id of the task
-             max_attempts (int, optional): the maximum number of attempts to get the result. If this is None the
+             max_attempts (int, optional): the maximum number of
+                attempts to get the result. If this is None the
                 self.max_attempts is used. The default is None.
-             poll_interval (int, optional): the interval between the attempts to poll the results. If this is None
+             poll_interval (int, optional): the interval between the
+                attempts to poll the results. If this is None
                 self.poll_intervall is used. Defaults to None.
         """
         if max_attempts is None:
@@ -90,19 +93,25 @@ class ManagementClient:
         """
         Request model prediction.
         Args:
-            model_identifier (str): the identifier of the model that should be used for the prediction
-            prediction_method (str): what kind of prediction should be made. Possible values are embedding,
-                sequence-classification, token-classification, generation, question-answering
+            model_identifier (str): the identifier of the model that
+                should be used for the prediction
+            prediction_method (str): what kind of prediction should
+                be made. Possible values are embedding,
+                sequence-classification, token-classification,
+                generation, question-answering
             input_data (Dict): the input for the prediction
         """
-        supported_prediction_methods = ["embedding", "sequence-classification", "token-classification", "generation",
+        supported_prediction_methods = ["embedding",
+                                        "sequence-classification",
+                                        "token-classification",
+                                        "generation",
                                         "question-answering"]
         if prediction_method not in supported_prediction_methods:
             raise ValueError(
                 f"Unknown prediction_method {prediction_method}. Please choose one of the "
                 f"following {supported_prediction_methods}")
 
-        my_conn = aiohttp.TCPConnector(limit=10)
+        my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:
             async with session.post(
                     url=f"{self.url}/api/main/{model_identifier}/{prediction_method}",
@@ -123,7 +132,8 @@ class ManagementClient:
         """
         Get the statistics from the model with the given identifier
         Args:
-            model_identifier(str): the identifier of the model to provide the statistics for
+            model_identifier(str): the identifier of the model
+                to provide the statistics for
         """
         response = requests.get(
             url="{}/api/main/{}/stats".format(self.url, model_identifier),
@@ -173,7 +183,7 @@ class ManagementClient:
                     "preloaded_adapters": True
                 }
         """
-        my_conn = aiohttp.TCPConnector(limit=10)
+        my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:
             async with session.post(
                     url=f"{self.url}/api/models/deploy",
@@ -197,7 +207,7 @@ class ManagementClient:
         Args:
             model_identifier (str): the identifier of the model that should be removed
         """
-        my_conn = aiohttp.TCPConnector(limit=10)
+        my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:
             async with session.delete(
                     url=f"{self.url}/api/models/remove/{model_identifier}",
@@ -216,10 +226,12 @@ class ManagementClient:
 
     def update(self, model_identifier, updated_attributes):
         """
-        Updating the attributes of a deployed model. Note that only disable_gpu, batch_size,
+        Updating the attributes of a deployed model. Note that
+        only disable_gpu, batch_size,
         max_input, return_plaintext_arrays can be changed.
         Args:
-            model_identifier (str): the identifier of the model that should be updated
+            model_identifier (str): the identifier of the model
+                that should be updated
             updated_attributes (Dict): the new attributes of the model.
                 An example could look like this:
                 {
@@ -239,15 +251,18 @@ class ManagementClient:
 
     async def add_worker(self, model_identifier, number):
         """
-        Adds workers of a specific model such that heavy workloads can be handled better.
-        Note, that only the creater of the model is allowed to add new workers and only admins are allowed to have more than 2
+        Adds workers of a specific model such that heavy
+        workloads can be handled better.
+        Note, that only the creater of the model is allowed to add
+        new workers and only admins are allowed to have more than 2
         workers for each model.
         Args:
-            model_identifier (str): the identifier of the model to add workers for
+            model_identifier (str): the identifier of the model
+                to add workers for
             number (int): the number of workers to add
         """
 
-        my_conn = aiohttp.TCPConnector(limit=10)
+        my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:
             async with session.patch(
                     url=f"{self.url}/api/models/{model_identifier}/add_worker/{number}",
@@ -268,7 +283,7 @@ class ManagementClient:
         Remove/down-scale model worker
         """
 
-        my_conn = aiohttp.TCPConnector(limit=10)
+        my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:
             async with session.patch(
                     url=f"{self.url}/api/models/{model_identifier}/remove_worker/{number}",
@@ -283,51 +298,3 @@ class ManagementClient:
                     ))
                 else:
                     return response
-
-
-# dev test
-if __name__ == '__main__':
-    # data = {
-    #           "input": [
-    #             ["Who stars in The Matrix?",
-    #              "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis,"
-    #              " starring Keanu Reeves, Laurence."]
-    #           ],
-    #           "is_preprocessed": False,
-    #           "preprocessing_kwargs": {},
-    #           "model_kwargs": {},
-    #           "task_kwargs": {},
-    #           # "explain_kwargs": {"method": "simple_grads", "top_k": 5, "mode": "all"},
-    #           # "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
-    # }
-    # start = time.time()
-    # client = ManagementClient(client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
-    #                           api_url="https://localhost:8443",
-    #                           verify_ssl=False)
-    # result = asyncio.run(client.predict(model_identifier="bert-onnx",
-    #                                     prediction_method="embedding",
-    #                                     input_data=data))
-    # end = time.time()
-    # print(f"Time elapsed: {end - start} seconds")
-    # from pprint import pprint
-    # pprint(result)
-
-    data = {
-              "identifier": "bert-onnx",
-              "model_name": "bert-base-uncased",
-              "model_type": "onnx",
-              "model_path": "/onnx_models/bert-base-cased/model.onnx",
-              "disable_gpu": True,
-              "batch_size": 32,
-              "max_input": 1024,
-              "transformer_cache": "..\/.cache",
-              "model_class": "base",
-              "return_plaintext_arrays": False
-    }
-
-    client = ManagementClient(client_secret="2mNXNJJHysAmL8RV6GIAuotwQ6eDfkkt",
-                              api_url="https://localhost:8443",
-                              verify_ssl=False)
-    result = asyncio.run(client.remove(model_identifier="bert-onnx"))
-    from pprint import pprint
-    pprint(result)
