@@ -115,20 +115,28 @@ class PredictionOutput(BaseModel):
 
 
 class PredictionOutputForSequenceClassification(PredictionOutput):
-    labels: List[int] = Field([], description="List of the predicted label ids for the input. Not set for regression.")
-    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. Not set for regression.")
+    labels: List[int] = Field([], description="List of the predicted label ids for the input. "
+                                              "Not set for regression.")
+    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. "
+                                                     "Not set for regression.")
+    attributions: List[Dict] = Field(...,
+                                     description="scores for the input tokens which are "
+                                                 "important for the model prediction")
 
     def __init__(self, **data):
         super().__init__(**data)
 
 
 class PredictionOutputForTokenClassification(PredictionOutput):
-    labels: List[List[int]] = Field([], description="List of the predicted label ids for the input. Not set "
-                                                    "for regression.")
-    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. Not set for regression.")
-    word_ids: List[List[Optional[int]]] = Field(..., description="Mapping from each token to the corresponding word "
-                                                                 "in the input. 'None' represents special tokens added "
-                                                                 "by tokenizer")
+    labels: List[List[int]] = Field([],
+                                    description="List of the predicted label ids for the input. Not set "
+                                                "for regression.")
+    id2label: Dict[int, str] = Field({},
+                                     description="Mapping from label id to the label name. Not set for regression.")
+    word_ids: List[List[Optional[int]]] = Field(...,
+                                                description="Mapping from each token to the corresponding word "
+                                                            "in the input. 'None' represents special tokens "
+                                                            "added by tokenizer")
 
     def __init__(self, **data):
         super().__init__(**data)
