@@ -324,9 +324,36 @@ async def subgraph_by_names(
     conn=Depends(get_kg_storage_connector),
 ):
     # Need to handle if wrong kg_name was gave as an input
-    stats = await conn.extract_subgraph_by_names(kg_name, names=nids, hops=hops)
-    if stats is not None:
-        return stats
+    subgraph = await conn.extract_subgraph_by_names(kg_name, nodes=nids, hops=hops)
+    if subgraph is not None:
+        return subgraph
+    else:
+        raise HTTPException(status_code=404)
+        
+
+@router.post(
+    "/{kg_name}/subgraph/query_by_node_id",
+    summary="summary",
+    description="Get the subgraph of a given List of node-ids and the number of hops",
+    responses={
+        200: {
+            #"model": DatastoreStats,
+            "description": "The subgraph as a set of nodes and edges",
+        },
+        404: {"description": "The subgraph could not be retrieved"},
+    },
+    #response_model=DatastoreStats,
+)
+async def subgraph_by_ids(
+    kg_name: str = Path(..., description="The knowledge graph name"),
+    nids: set = Body(..., description="List of node ids."),
+    hops: int = Body(2, description="Number of hops to retrieve."),
+    conn=Depends(get_kg_storage_connector),
+):
+    # Need to handle if wrong kg_name was gave as an input
+    subgraph = await conn.extract_subgraph_by_ids(kg_name, nodes=nids, hops=hops)
+    if subgraph is not None:
+        return subgraph
     else:
         raise HTTPException(status_code=404)
 

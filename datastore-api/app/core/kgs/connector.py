@@ -270,7 +270,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         """Returns a List of nodes for the given name.
 
         Args:
-            kg_name (str):      Name of the knowledge graph.
+            kg_name (str):       Name of the knowledge graph.
             names (List[str]):   List of names of the nodes.
         """
         index = f'{kg_name}{self.datastore_suffix}'
@@ -300,7 +300,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             results.append(nids)
         return results
 
-    async def extract_subgraph_by_names(self, kg_name, names, hops=2):
+    async def extract_subgraph_by_names(self, kg_name, nodes, hops=2):
         """Returns a subgraph as a Set of nodes and edges.
 
         Args:
@@ -309,6 +309,16 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             hops (int):         Number of hops.
         """
         nids = set()
-        for _nids in await self.get_node_by_name_msearch(kg_name, names):
+        for _nids in await self.get_node_by_name_msearch(kg_name, nodes):
             nids.update(_nids)
         return await self.extract_subgraph(kg_name, nids, hops)
+
+    async def extract_subgraph_by_ids(self, kg_name, nodes, hops=2):
+        """Returns a subgraph as a Set of nodes and edges.
+
+        Args:
+            kg_name (str):      Name of the knowledge graph.
+            nids (List[str]):   List of ids of the nodes.
+            hops (int):         Number of hops.
+        """
+        return await self.extract_subgraph(kg_name, nodes, hops)
