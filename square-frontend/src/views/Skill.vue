@@ -200,6 +200,7 @@ export default Vue.component('edit-skill', {
     },
     updateSkill() {
       this.success = false
+      this.skillArguments['base_model'].replace("/", "-") // Replace / with - to avoid issues with paths in the backend
       this.$store
           .dispatch('updateSkill', { skill: this.skill })
           .then(() => {
@@ -212,6 +213,7 @@ export default Vue.component('edit-skill', {
           })
     },
     createSkill() {
+      this.skillArguments['base_model'].replace("/", "-") // Replace / with - to avoid issues with paths in the backend
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
