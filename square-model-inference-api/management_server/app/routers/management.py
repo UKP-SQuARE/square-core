@@ -90,7 +90,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     user_id = await utils.get_user_id(request)
     env = {
         "USER_ID": user_id,
-        "IDENTIFIER": model_params.identifier,
+        "IDENTIFIER": model_params.identifier.replace("/", "-"),
         "MODEL_NAME": model_params.model_name,
         "MODEL_PATH": model_params.model_path,
         "DECODER_PATH": model_params.decoder_path,
@@ -103,7 +103,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
         "WEB_CONCURRENCY": os.getenv("WEB_CONCURRENCY", 1),  # fixed processes, do not give the control to  end-user
-        "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
+        "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp.informatik.tu-darmstadt.de"),
     }
 
     identifier_new = await (mongo_client.check_identifier_new(env["IDENTIFIER"]))
@@ -119,6 +119,7 @@ async def remove_model(request: Request, identifier):
     """
     Remove a model from the platform
     """
+    identifier = identifier.replace("/", "-")
     # check if the model is deployed
     logger.info(identifier)
     check_model_id = await (mongo_client.check_identifier_new(identifier))
@@ -142,7 +143,7 @@ async def update_model(
     """
     update the model parameters
     """
-
+    identifier = identifier.replace("/", "-")
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")

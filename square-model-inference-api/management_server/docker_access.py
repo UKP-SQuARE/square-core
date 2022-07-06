@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
-MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
+MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1.1:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
 
