@@ -6,14 +6,14 @@ import requests
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from skill_manager import mongo_client
-from skill_manager.keycloak_api import KeycloakAPI
-from skill_manager.models import Prediction, Skill, SkillType
+from skill_manager.core.keycloak_client import KeycloakClient
+from skill_manager.models.skill import Prediction, Skill, SkillType
 from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
 from skill_manager.routers import client_credentials
-from skill_manager.auth_utils import (
+from skill_manager.core.auth_utils import (
     get_skill_if_authorized,
     get_payload_from_token,
     has_auth_header,
@@ -68,7 +68,7 @@ async def get_skills(request: Request):
 async def create_skill(
     request: Request,
     skill: Skill,
-    keycloak_api: KeycloakAPI = Depends(KeycloakAPI),
+    keycloak_client: KeycloakClient = Depends(KeycloakClient),
     token_payload: Dict = Depends(auth),
 ):
     """Creates a new skill and saves it."""
@@ -77,7 +77,7 @@ async def create_skill(
     username = token_payload["username"]
     skill.user_id = username
 
-    client = keycloak_api.create_client(
+    client = keycloak_client.create_client(
         realm=realm, username=username, skill_name=skill.name
     )
     skill.client_id = client["clientId"]
@@ -105,7 +105,7 @@ async def update_skill(request: Request, id: str, data: dict):
             setattr(skill, k, v)
 
     _ = mongo_client.client.skill_manager.skills.find_one_and_update(
-        {"_id": ObjectId(id)}, {"$set": data}
+        {"_id": ObjectId(id)}, {"$set": data}  # BUG: dont we need to use `skill`` here?
     )
     updated_skill = await get_skill_by_id(request, id)
 

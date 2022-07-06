@@ -1,7 +1,12 @@
 import jwt
 import pytest
-from skill_manager.models import Skill, SkillSettings
+from docker import DockerClient
+from fastapi.testclient import TestClient
 from testcontainers.mongodb import MongoDbContainer
+
+from skill_manager.main import app
+from skill_manager.models.skill import Skill, SkillSettings
+from skill_manager.models.skill_template import SkillTemplate
 
 
 @pytest.fixture(scope="module")
@@ -14,15 +19,34 @@ def monkeymodule():
 
 
 @pytest.fixture(scope="module")
-def init_mongo_db():
+def mongo_db(monkeymodule):
     mongo_db_test_container = MongoDbContainer("mongo:5.0.4")
     mongo_db_test_container.start()
+    monkeymodule.setenv(
+        "MONGO_INITDB_ROOT_USERNAME", mongo_db_test_container.MONGO_INITDB_ROOT_USERNAME
+    )
+    monkeymodule.setenv(
+        "MONGO_INITDB_ROOT_PASSWORD", mongo_db_test_container.MONGO_INITDB_ROOT_PASSWORD
+    )
+    monkeymodule.setenv("MONGO_HOST", mongo_db_test_container.get_container_host_ip())
+    monkeymodule.setenv("MONGO_PORT", mongo_db_test_container.get_exposed_port(27017))
     try:
         yield mongo_db_test_container
     except Exception as err:
         raise err
     finally:
         mongo_db_test_container.stop()
+
+
+@pytest.fixture(scope="module")
+def docker_client():
+    return DockerClient.from_env()
+
+
+@pytest.fixture(scope="module")
+def pers_client(mongo_db) -> TestClient:
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
@@ -94,3 +118,20 @@ def token_factory():
         )
 
     return token
+
+
+@pytest.fixture
+def skill_template_factory():
+    def create_skill_template(
+        name="test-skill-template",
+        user_id="test-user",
+        url="http://test-skill-template.test",
+        **kwargs,
+    ):
+        skill_template = SkillTemplate(name=name, user_id=user_id, url=url, **kwargs)
+        if not skill_template.id:
+            del skill_template.id
+
+        return skill_template
+
+    return create_skill_template

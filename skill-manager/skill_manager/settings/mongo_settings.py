@@ -17,6 +17,3 @@ class MongoSettings(BaseSettings):
             f"mongodb://{values['username']}:{values['password']}"
             f"@{values['host']}:{values['port']}"
         )
-
-    # class Config:
-    #     env_file = ".env"
