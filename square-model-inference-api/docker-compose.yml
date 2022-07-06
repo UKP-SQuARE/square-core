@@ -200,9 +200,9 @@ services:
     image: mongo-express:latest
     restart: always
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://root:2kJ!kJPQr7t39RGK*iiSzvhPLo8xEQi2@mongo:27017
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongo:27017
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=2kJ!kJPQr7t39RGK*iiSzvhPLo8xEQi2
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
     ports:
       - 8081:8081
 
