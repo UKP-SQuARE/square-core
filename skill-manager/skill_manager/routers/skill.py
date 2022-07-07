@@ -1,5 +1,6 @@
 import json
 import logging
+from threading import Thread
 from typing import Dict, List
 
 import requests
@@ -12,6 +13,7 @@ from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
+from skill_manager.core import ModelManagementClient
 from skill_manager.routers import client_credentials
 from skill_manager.auth_utils import (
     get_skill_if_authorized,
@@ -69,6 +71,7 @@ async def create_skill(
     request: Request,
     skill: Skill,
     keycloak_api: KeycloakAPI = Depends(KeycloakAPI),
+    models_client: ModelManagementClient = Depends(ModelManagementClient),
     token_payload: Dict = Depends(auth),
 ):
     """Creates a new skill and saves it."""
@@ -89,9 +92,18 @@ async def create_skill(
     skill = await get_skill_by_id(request, skill_id)
     logger.debug("create_skill: {skill}".format(skill=skill))
 
+    # check if the model exists, if not deploy
+    if "base_model" in skill.default_skill_args:
+        deploy_thread = Thread(
+            target=models_client.deploy_model_if_not_exists,
+            args=(skill.default_skill_args["base_model"],),
+        )
+        deploy_thread.start()
+
     # set the secret *after* saving the skill to mongoDB, so the secret will be
     # returned, but not logged and not persisted.
     skill.client_secret = client["secret"]
+
     return skill
 
 

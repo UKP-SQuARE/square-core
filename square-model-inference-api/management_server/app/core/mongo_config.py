@@ -18,5 +18,4 @@ class MongoSettings(BaseSettings):
     @validator("connection_url")
     def build_connection_url(cls, _, values) -> str:
         """builds the connection string for connecting to mongoDB."""
-        logger.info("Constructing url from {}".format(values))
         return f"mongodb://{values['username']}:{values['password']}" f"@{values['host']}:{values['port']}"

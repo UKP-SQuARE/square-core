@@ -63,7 +63,7 @@ def start_new_model_container(identifier, env):
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
-    logger.info(reference_container)
+    logger.info("Refernce Container: {}".format(reference_container))
     network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
 
     path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
@@ -73,7 +73,7 @@ def start_new_model_container(identifier, env):
 
     network = docker_client.networks.get(network_id)
     container_name = network.name + "-model-" + identifier
-    logger.info(container_name)
+    logger.info("Container name of model: {}".format(container_name))
 
     try:
         container = docker_client.containers.run(
@@ -94,6 +94,7 @@ def start_new_model_container(identifier, env):
 
         network.reload()
     except Exception as e:
+        logger.exception(e, exc_info=True)
         return {"container": None, "message": f"Caught exception. {e}"}
     return {"container": container, "message": "Success"}
 
