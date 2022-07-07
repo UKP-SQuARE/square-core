@@ -18,6 +18,7 @@ app = Celery(
     backend=f"redis://{redis_user}:{redis_password}@redishost:6379",
     broker=f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//",
     include=["tasks.tasks"],
+    result_extended=True
 )
 
 if __name__ == "__main__":
