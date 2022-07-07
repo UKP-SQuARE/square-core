@@ -16,7 +16,7 @@ class ModelManagementClient:
         self.settings = ModelManagementSettings()
 
         # HACK: Check if we are accessing the model api via the docker network, i.e. via
-        # the service name, or via the internet. 
+        # the service name, or via the internet.
         # For access via docker network, the requests are not routed via traefik, i.e.
         # the `/models` is not required
         if self.settings.model_api_url.startswith("https://"):
@@ -33,7 +33,7 @@ class ModelManagementClient:
         model_class="from_config",
     ) -> Dict[str, str]:
         """Deploys a model using the models managment api."""
-        
+
         url = f"{self.settings.model_api_url}/deploy"
         token = client_credentials()
         logger.info("Requesting deployment of {} via {}".format(model_name, url))
@@ -42,10 +42,12 @@ class ModelManagementClient:
             url=url,
             headers={
                 "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             json={
-                "identifier": identifier if identifier else model_name.replace("/", "-"),
+                "identifier": identifier
+                if identifier
+                else model_name.replace("/", "-"),
                 "model_name": model_name,
                 "model_type": model_type,
                 "disable_gpu": disable_gpu,
@@ -53,7 +55,7 @@ class ModelManagementClient:
                 "max_input": max_input,
                 "model_class": model_class,
             },
-            verify=False
+            verify=False,
         )
 
         logger.info("deploy model response: {}".format(response.content))
@@ -77,7 +79,7 @@ class ModelManagementClient:
 
         return deployed_models
 
-    def get_models_in_deployment(self)-> List[str]:
+    def get_models_in_deployment(self) -> List[str]:
         """Returns a list of model names that are currently beeing deployed."""
         token = client_credentials()
         response = requests.get(
@@ -100,10 +102,10 @@ class ModelManagementClient:
     def deploy_model_if_not_exists(self, model_name: str):
         """Deploys a model if it is not deployed and not currently deploying."""
         logger.info("Checking if model={} is already deployed.".format(model_name))
-        if model_name in self.get_deployed_models(): 
+        if model_name in self.get_deployed_models():
             logger.info("model={} is already deployed.".format(model_name))
             return
-        if model_name in self.get_models_in_deployment(): 
+        if model_name in self.get_models_in_deployment():
             logger.info("model={} is in deployment.".format(model_name))
             return
 
