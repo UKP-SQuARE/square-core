@@ -108,9 +108,16 @@ async def create_skill(
 
 
 @router.put("/{id}", response_model=Skill, dependencies=[Depends(auth)])
-async def update_skill(request: Request, id: str, data: dict):
+async def update_skill(
+    request: Request,
+    id: str,
+    data: dict,
+    models_client: ModelManagementClient = Depends(ModelManagementClient),
+):
     """Updates a skill with the provided data."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    skill: Skill = await get_skill_if_authorized(
+        request, skill_id=id, write_access=True
+    )
 
     for k, v in data.items():
         if hasattr(skill, k):
@@ -120,6 +127,16 @@ async def update_skill(request: Request, id: str, data: dict):
         {"_id": ObjectId(id)}, {"$set": data}
     )
     updated_skill = await get_skill_by_id(request, id)
+
+    # deploy base model if its not running yet
+    if data["default_skill_args"] is not None:
+        base_model = data.get("default_skill_args", {}).get("base_model", "")
+        if base_model:
+            deploy_thread = Thread(
+                target=models_client.deploy_model_if_not_exists,
+                args=(base_model,),
+            )
+            deploy_thread.start()
 
     logger.debug(
         "update_skill: old: {skill} updated: {updated_skill}".format(
