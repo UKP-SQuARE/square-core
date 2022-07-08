@@ -94,7 +94,7 @@ async def create_skill(
 
     # check if the model exists, if not deploy
     has_skill_args = skill.default_skill_args is not None
-    if  has_skill_args and "base_model" in skill.default_skill_args:
+    if has_skill_args and "base_model" in skill.default_skill_args:
         deploy_thread = Thread(
             target=models_client.deploy_model_if_not_exists,
             args=(skill.default_skill_args["base_model"],),
