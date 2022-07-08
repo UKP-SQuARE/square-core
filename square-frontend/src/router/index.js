@@ -13,7 +13,9 @@ const Skill = () => import('../views/Skill')
 const Feedback = () => import('../views/Feedback')
 const Terms = () => import('../views/Terms')
 const SignIn = () => import('../views/SignIn')
+const GraphViz = () => import('../views/GraphViz')
 const NotFound = () => import('../views/NotFound')
+
 
 Vue.use(VueRouter)
 
@@ -63,6 +65,11 @@ const routes = [
     path: '/signin',
     name: 'signIn',
     component: SignIn
+  },
+  {
+    path: '/graphviz',
+    name: 'GraphViz',
+    component: GraphViz
   },
   {
     path: '*',
