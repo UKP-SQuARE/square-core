@@ -130,7 +130,7 @@ async def update_skill(
     updated_skill = await get_skill_by_id(request, id)
 
     # deploy base model if its not running yet
-    if data["default_skill_args"] is not None:
+    if data.get("default_skill_args"):
         base_model = data.get("default_skill_args", {}).get("base_model", "")
         if base_model:
             deploy_thread = Thread(
