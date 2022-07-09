@@ -65,7 +65,7 @@ export function putSkill(headers, skillId, newSkill) {
 export function postQuery(headers, question, context, options) {
     let data = {
         query: question,
-        skill_args: skill_arg,
+        skill_args: {},
         num_results: options.maxResultsPerSkill
     }
     if (context.length > 0) {
