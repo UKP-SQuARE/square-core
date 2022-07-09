@@ -152,8 +152,8 @@ export default {
             "target-arrow-color": "gray",
           }),
         elements: {
-          nodes: nodes,
-          edges: edges,
+          nodes: [],
+          edges: [],
         },
         layout: {
           name: "dagre",
@@ -162,9 +162,21 @@ export default {
           fit: true,
         },
       });
-      cy.add({
-            data: { id: "Z", name: "Z" }
-            });
+      for (const n of nodes){
+          cy.add({
+            data: n['data']
+          });
+          // add edges from Z to all nodes
+      }
+      for (const e of edges){
+          cy.add({
+            data: e['data']
+          });
+          // add edges from Z to all nodes
+      }
+      cy.layout({ 
+          name: 'circle'
+        }).run();
     },
   },
 };
