@@ -69,7 +69,7 @@
 
 
           </a>
-          <ExplainOutput id="modaltest"> test</ExplainOutput>
+          <ExplainOutput id="modaltest" test="test1" > test</ExplainOutput>
 
         </div>
       </div>
