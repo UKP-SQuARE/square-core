@@ -39,7 +39,7 @@ import mixin from '@/components/results/mixin.vue'
 
 
 
-export default Vue.component("ExplainOutput",{
+export default Vue.component("explain-output",{
   props:['test'],  //args should be the test json file
   mixins:[mixin], // ??
   components:{
