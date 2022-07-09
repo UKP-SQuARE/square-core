@@ -20,8 +20,8 @@
          
           </h4>
             
-            <button v-on:click="greet" type="button" class="btn btn-default col-sm-2">Attention</button>
-            <button type="button" class="btn btn-default col-sm-2">Scaled Attention</button>
+            <button v-on:click="postReq" type="button" class="btn btn-default col-sm-2">Attention</button>
+            <button @click="greet" type="button" class="btn btn-default col-sm-2">Scaled Attention</button>
             <button type="button" class="btn btn-default col-sm-2">Simple Grad</button>
             <button type="button" class="btn btn-default col-sm-2">Smooth Grad</button>
             <button type="button" class="btn btn-default col-sm-2">Integrated Grad</button>
@@ -50,7 +50,7 @@
 import Vue from 'vue'
 //import BadgePopover from '../BadgePopover'
 import mixin from '@/components/results/mixin.vue'
-import { postQuery } from '../../api'
+// import { postQuery } from '../../api'
 
 
 
@@ -67,10 +67,24 @@ export default Vue.component("explain-output",{
     // write functions here
     postReq() {
 
-      postQuery()
+      // this.waiting = true
+      // this.$store.dispatch('query', {
+      //   question: this.$store.currentQuestion,
+      //   inputContext: this.$store.currentContext,
+      //   options: {
+      //     selectedSkills: this.selectedSkills,
+      //     maxResultsPerSkill: this.options.maxResultsPerSkill
+      //   }
+      // }).then(() => {
+      //   this.failure = false
+      // }).catch(() => {
+      //   this.failure = true
+      // }).finally(() => {
+      //   this.waiting = false
+      // })
     },
     greet: function() {
-      alert(this.$store)    }
+      alert(this.$store.state.currentContext)    }
   },
 }
 )
