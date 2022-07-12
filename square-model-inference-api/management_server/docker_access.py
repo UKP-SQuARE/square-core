@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-import uuid
 
 import docker
 from docker.types import Mount
@@ -41,13 +40,13 @@ def create_docker_labels(identifier: str, uid: str) -> dict:
     return labels
 
 
-def start_new_model_container(identifier, env):
+def start_new_model_container(identifier: str, uid: str, env):
     """
     Start a new container in the current network with a new model-api instance.
     identifier(str): the name/identifier of the new model api instance
     env(Dict): the environment for the container
     """
-    container = get_container_by_identifier(identifier)
+    container = get_container_by_identifier(identifier, uid)
     if container is not None:
         logger.info("Found old container for that identifier container")
         logger.info(container.status)
@@ -61,8 +60,7 @@ def start_new_model_container(identifier, env):
         container.remove()
     else:
         logger.info("Found no running instance, so we try to create it")
-    uid = str(uuid.uuid1())
-    labels = create_docker_labels(identifier, uid)
+    labels = create_docker_labels(identifier, uid=uid)
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
@@ -105,11 +103,11 @@ def start_new_model_container(identifier, env):
     return {"container": container, "message": "Success"}
 
 
-def get_container_by_identifier(identifier):
+def get_container_by_identifier(identifier: str, uid: str):
     """
     get the docker container based on the model identifier
     """
-    labels = create_docker_labels(identifier)
+    labels = create_docker_labels(identifier, uid)
     if (
         len(
             docker_client.containers.list(

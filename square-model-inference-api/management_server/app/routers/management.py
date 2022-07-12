@@ -5,6 +5,7 @@ management server of the models component of SQuARE.
 
 import logging
 import os
+import uuid
 from typing import List
 
 import requests
@@ -93,6 +94,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     env = {
         "USER_ID": user_id,
         "IDENTIFIER": model_params.model_name,
+        "UUID": str(uuid.uuid1()),
         "MODEL_NAME": model_params.model_name,
         "MODEL_PATH": model_params.model_path,
         "DECODER_PATH": model_params.decoder_path,
