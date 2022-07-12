@@ -26,7 +26,7 @@ class ModelAPIClient:
         if index.query_encoder_model is None:
             return False
 
-        request_url = f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/health/heartbeat"
+        request_url = f"{self.base_url}/{index.query_encoder_model}/health/heartbeat"
         try:
             response = requests.get(
                 request_url, 
@@ -52,7 +52,7 @@ class ModelAPIClient:
             raise EnvironmentError("Model API not available.")
 
         request_url = (
-            f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/embedding"
+            f"{self.base_url}/{index.query_encoder_model}/embedding"
         )
         data = {
             "input": [query],
