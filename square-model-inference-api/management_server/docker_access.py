@@ -19,7 +19,7 @@ def create_docker_labels(identifier: str, uid: str) -> dict:
     """
     creates the labels to enable traefik for the docker container
     """
-    traefik_identifier = identifier.replace("/", "-") + uid
+    traefik_identifier = identifier.replace("/", "-") + "-" + uid
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + traefik_identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -73,7 +73,7 @@ def start_new_model_container(identifier: str, uid: str, env):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    container_name = network.name + "-model-" + identifier.replace("/", "-") + uid
+    container_name = network.name + "-model-" + identifier.replace("/", "-")  "-" + uid
     logger.info("Container name of model: {}".format(container_name))
 
     try:
