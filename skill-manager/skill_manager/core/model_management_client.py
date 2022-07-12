@@ -25,8 +25,8 @@ class ModelManagementClient:
     def deploy_model(
         self,
         model_name: str,
+        model_type: str,
         identifier: str = None,
-        model_type: str = "transformer",
         disable_gpu: bool = True,
         batch_size: int = 1,
         max_input: int = 512,
@@ -36,7 +36,11 @@ class ModelManagementClient:
 
         url = f"{self.settings.model_api_url}/deploy"
         token = client_credentials()
-        logger.info("Requesting deployment of {} via {}".format(model_name, url))
+        logger.info(
+            "Requesting deployment of model={} of model_type={} via {}".format(
+                model_name, model_type, url
+            )
+        )
 
         response = requests.post(
             url=url,
@@ -63,8 +67,8 @@ class ModelManagementClient:
 
         return response.json()
 
-    def get_deployed_models(self) -> List[str]:
-        """Returns a list of model names that are currently deployed."""
+    def get_deployed_models(self) -> Dict[str, str]:
+        """Returns a dict mapping model names to types that are currently deployed."""
         token = client_credentials()
         response = requests.get(
             f"{self.settings.model_api_url}/deployed-models",
@@ -75,12 +79,12 @@ class ModelManagementClient:
         response.raise_for_status()
 
         deployed_models = response.json()
-        deployed_models = [dm["model_name"] for dm in deployed_models]
+        deployed_models = {dm["model_name"]: dm["model_type"] for dm in deployed_models}
 
         return deployed_models
 
-    def get_models_in_deployment(self) -> List[str]:
-        """Returns a list of model names that are currently beeing deployed."""
+    def get_models_in_deployment(self) -> Dict[str, str]:
+        """Returns dict mapping of model names to types are currently beeing deployed."""
         token = client_credentials()
         response = requests.get(
             f"{self.settings.model_api_url}/task",
@@ -91,23 +95,50 @@ class ModelManagementClient:
         response.raise_for_status()
 
         running_tasks = response.json()
-        models_in_deployment = []
+        models_in_deployment = {}
         for worker2tasks in running_tasks.values():
             for tasks in worker2tasks.values():
                 for task in tasks:
-                    models_in_deployment.append(task["args"][0]["MODEL_NAME"])
+                    model_name = task["args"][0]["MODEL_NAME"]
+                    model_type = task["args"][0]["MODEL_TYPE"]
+                    models_in_deployment[model_name] = model_type
 
         return models_in_deployment
 
-    def deploy_model_if_not_exists(self, model_name: str):
+    def deploy_model_if_not_exists(self, default_skill_args: Dict):
         """Deploys a model if it is not deployed and not currently deploying."""
-        logger.info("Checking if model={} is already deployed.".format(model_name))
-        if model_name in self.get_deployed_models():
-            logger.info("model={} is already deployed.".format(model_name))
+        model_name = default_skill_args.get("base_model")
+        if not model_name:
+            logger.info("No base_model in the skill args. Nothing to deploy.")
             return
-        if model_name in self.get_models_in_deployment():
-            logger.info("model={} is in deployment.".format(model_name))
+        model_type = "adapter" if "adapter" in default_skill_args else "transformer"
+        logger.info(
+            "Checking if model={} with model_type={} is already deployed.".format(
+                model_name, model_type
+            )
+        )
+
+        deployed_models = self.get_deployed_models()
+        if deployed_models.get(model_name, "") == model_type:
+            logger.info(
+                "model={} with model_type={} is already deployed.".format(
+                    model_name, model_type
+                )
+            )
             return
 
-        logger.info("model={} is not deployed. Starting deployment.".format(model_name))
-        self.deploy_model(model_name=model_name)
+        currently_deploying_models = self.get_models_in_deployment()
+        if currently_deploying_models.get(model_name, "") == model_type:
+            logger.info(
+                "model={} with model_type={} is in deployment.".format(
+                    model_name, model_type
+                )
+            )
+            return
+
+        logger.info(
+            "model={} with model_type={} is not deployed. Starting deployment.".format(
+                model_name, model_type
+            )
+        )
+        self.deploy_model(model_name=model_name, model_type=model_type)
