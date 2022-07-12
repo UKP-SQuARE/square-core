@@ -73,7 +73,7 @@ def start_new_model_container(identifier: str, uid: str, env):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    container_name = network.name + "-model-" + identifier.replace("/", "-")  "-" + uid
+    container_name = network.name + "-model-" + identifier.replace("/", "-") + "-" + uid
     logger.info("Container name of model: {}".format(container_name))
 
     try:
