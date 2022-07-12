@@ -58,7 +58,11 @@ async def get_skills(request: Request):
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
 
-    logger.debug("get_skills: {skills}".format(skills=skills))
+    logger.debug(
+        "get_skills: {skills}".format(
+            skills=", ".join(["{}:{}".format(s.name, str(s.id)) for s in skills])
+        )
+    )
     return skills
 
 
