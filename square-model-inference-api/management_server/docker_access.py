@@ -10,42 +10,43 @@ logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
-MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1:latest")
+MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1.1:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
 
 
-def create_docker_labels(identifier: str) -> dict:
+def create_docker_labels(identifier: str, uid: str) -> dict:
     """
     creates the labels to enable traefik for the docker container
     """
+    traefik_identifier = identifier.replace("/", "-") + "-" + uid
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + identifier + ".tls": "true",
-        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-" + traefik_identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + traefik_identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + traefik_identifier + ".tls": "true",
+        "traefik.http.routers.model-" + traefik_identifier + ".tls.certresolver": "le",
         "traefik.http.routers.model-"
-        + identifier
+        + traefik_identifier
         + ".middlewares": "model-"
-        + identifier
+        + traefik_identifier
         + "-stripprefix, "
         + "model-"
-        + identifier
+        + traefik_identifier
         + "-addprefix",
-        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
+        "traefik.http.middlewares.model-" + traefik_identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + traefik_identifier + "-addprefix.addPrefix.prefix": "/api",
     }
     return labels
 
 
-def start_new_model_container(identifier, env):
+def start_new_model_container(identifier: str, uid: str, env):
     """
     Start a new container in the current network with a new model-api instance.
     identifier(str): the name/identifier of the new model api instance
     env(Dict): the environment for the container
     """
-    container = get_container_by_identifier(identifier)
+    container = get_container_by_identifier(identifier, uid)
     if container is not None:
         logger.info("Found old container for that identifier container")
         logger.info(container.status)
@@ -59,11 +60,11 @@ def start_new_model_container(identifier, env):
         container.remove()
     else:
         logger.info("Found no running instance, so we try to create it")
-    labels = create_docker_labels(identifier)
+    labels = create_docker_labels(identifier, uid=uid)
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
-    logger.info(reference_container)
+    logger.info("Refernce Container: {}".format(reference_container))
     network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
 
     path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
@@ -72,17 +73,18 @@ def start_new_model_container(identifier, env):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    container_name = network.name + "-model-" + identifier
-    logger.info(container_name)
+    container_name = network.name + "-model-" + identifier.replace("/", "-") + "-" + uid
+    logger.info("Container name of model: {}".format(container_name))
 
     try:
-        container = docker_client.containers.run(
-            MODEL_API_IMAGE,
+        kwargs = dict(
+            image=MODEL_API_IMAGE,
             name=container_name,
             detach=True,
             environment=env,
             network=network.name,
-            volumes=[path + "/.cache/:/etc/huggingface/.cache/"],
+            # volumes=[path + "/.cache/:/etc/huggingface/.cache/"], # DO NOT COMMIT!
+            volumes=["/Users/tim/projects/square/square-core/.cache/:/etc/huggingface/.cache/"],
             mounts=[
                 Mount(
                     target="/onnx_models",
@@ -91,18 +93,21 @@ def start_new_model_container(identifier, env):
             ],
             labels=labels,
         )
+        logger.info("docker run kwargs: {}".format(kwargs))
+        container = docker_client.containers.run(**kwargs)
 
         network.reload()
     except Exception as e:
+        logger.exception(e, exc_info=True)
         return {"container": None, "message": f"Caught exception. {e}"}
     return {"container": container, "message": "Success"}
 
 
-def get_container_by_identifier(identifier):
+def get_container_by_identifier(identifier: str, uid: str):
     """
     get the docker container based on the model identifier
     """
-    labels = create_docker_labels(identifier)
+    labels = create_docker_labels(identifier, uid)
     if (
         len(
             docker_client.containers.list(

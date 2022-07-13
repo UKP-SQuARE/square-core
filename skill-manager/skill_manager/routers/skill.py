@@ -1,5 +1,6 @@
 import json
 import logging
+from threading import Thread
 from typing import Dict, List
 
 import requests
@@ -12,6 +13,7 @@ from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
+from skill_manager.core import ModelManagementClient
 from skill_manager.routers import client_credentials
 from skill_manager.auth_utils import (
     get_skill_if_authorized,
@@ -56,7 +58,11 @@ async def get_skills(request: Request):
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
     skills = [Skill.from_mongo(s) for s in skills]
 
-    logger.debug("get_skills: {skills}".format(skills=skills))
+    logger.debug(
+        "get_skills: {skills}".format(
+            skills=", ".join(["{}:{}".format(s.name, str(s.id)) for s in skills])
+        )
+    )
     return skills
 
 
@@ -69,6 +75,7 @@ async def create_skill(
     request: Request,
     skill: Skill,
     keycloak_api: KeycloakAPI = Depends(KeycloakAPI),
+    models_client: ModelManagementClient = Depends(ModelManagementClient),
     token_payload: Dict = Depends(auth),
 ):
     """Creates a new skill and saves it."""
@@ -89,16 +96,35 @@ async def create_skill(
     skill = await get_skill_by_id(request, skill_id)
     logger.debug("create_skill: {skill}".format(skill=skill))
 
+    # check if the model exists, if not deploy
+    has_skill_args = skill.default_skill_args is not None
+    if has_skill_args and "base_model" in skill.default_skill_args:
+        deploy_thread = Thread(
+            target=models_client.deploy_model_if_not_exists,
+            args=(skill.default_skill_args,),
+        )
+        deploy_thread.start()
+    else:
+        logger.info("No skill_args or no base_model provided. Nothing to deploy.")
+
     # set the secret *after* saving the skill to mongoDB, so the secret will be
     # returned, but not logged and not persisted.
     skill.client_secret = client["secret"]
+
     return skill
 
 
 @router.put("/{id}", response_model=Skill, dependencies=[Depends(auth)])
-async def update_skill(request: Request, id: str, data: dict):
+async def update_skill(
+    request: Request,
+    id: str,
+    data: dict,
+    models_client: ModelManagementClient = Depends(ModelManagementClient),
+):
     """Updates a skill with the provided data."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    skill: Skill = await get_skill_if_authorized(
+        request, skill_id=id, write_access=True
+    )
 
     for k, v in data.items():
         if hasattr(skill, k):
@@ -107,7 +133,15 @@ async def update_skill(request: Request, id: str, data: dict):
     _ = mongo_client.client.skill_manager.skills.find_one_and_update(
         {"_id": ObjectId(id)}, {"$set": data}
     )
-    updated_skill = await get_skill_by_id(request, id)
+    updated_skill: Skill = await get_skill_by_id(request, id)
+
+    # deploy base model if its not running yet
+    if updated_skill.default_skill_args:
+        deploy_thread = Thread(
+            target=models_client.deploy_model_if_not_exists,
+            args=(updated_skill.default_skill_args,),
+        )
+        deploy_thread.start()
 
     logger.debug(
         "update_skill: old: {skill} updated: {updated_skill}".format(

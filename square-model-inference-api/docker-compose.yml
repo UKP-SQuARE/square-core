@@ -87,8 +87,8 @@ services:
       - VERIFY_SSL=0
       - REDIS_USER=default
       - RABBITMQ_DEFAULT_USER=ukp
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-      - REALM=Models-test
+      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
+      - REALM=square
       - CLIENT_ID=models
     links:
       - rabbit
@@ -114,12 +114,12 @@ services:
       - ./management_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1.1:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=1
       - ONNX_VOLUME=square-model-inference-api_onnx-models
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-      - REALM=Models-test
+      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
+      - REALM=square
       - CLIENT_ID=models
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_HOST=mongo
@@ -147,7 +147,7 @@ services:
       - ./inference_server/.env.dpr
     environment:
       - WEB_CONCURRENCY=1
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
     labels:
@@ -159,6 +159,26 @@ services:
       - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
+  model_bert:
+    #    image: ukpsquare/square-model-api-v1:latest
+    build: ./inference_server
+    env_file:
+      - ./inference_server/.env.bert_adapter
+    environment:
+      - WEB_CONCURRENCY=1
+      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-bert.rule=PathPrefix(`/api/bert-base`)"
+      - "traefik.http.routers.model-bert.entrypoints=websecure"
+      - "traefik.http.routers.model-bert.tls=true"
+      - "traefik.http.routers.model-bert.tls.certresolver=le"
+      - "traefik.http.routers.model-bert.middlewares=model-bert-stripprefix,model-bert-addprefix"
+      - "traefik.http.middlewares.model-bert-stripprefix.stripprefix.prefixes=/api/bert-base"
+      - "traefik.http.middlewares.model-bert-addprefix.addPrefix.prefix=/api"
 
 
   mongo:
@@ -196,7 +216,7 @@ services:
 #      - ./inference_server/.env.bert_onnx
 #    environment:
 #      - WEB_CONCURRENCY=1
-#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
 #    volumes:
 #      - ./.cache/:/etc/onnx/.cache/
 #      - onnx-models:/onnx_models

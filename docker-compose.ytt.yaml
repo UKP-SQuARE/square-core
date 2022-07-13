@@ -51,7 +51,7 @@ VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+MODEL_API_IMAGE: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
 ONNX_VOLUME: square-model-inference-api_onnx-models
 REALM: #@ data.values.realm
 CLIENT_ID: models
@@ -185,6 +185,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      MODEL_API_URL: #@ data.values.model_url[data.values.environment]
+      VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
     depends_on:
       - mongodb
     labels:
@@ -278,7 +280,7 @@ services:
     environment: #@ model_management_environment()
 
   model_bert_adapter:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    image: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
     build: 
       context: ./square-model-inference-api/inference_server
       target: build
@@ -293,7 +295,7 @@ services:
       - #@ template.replace(traefik_prefix("bert-base-uncased"))
   
   model_roberta_adapter:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    image: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
     build: 
       context: ./square-model-inference-api/inference_server
       target: build
@@ -308,7 +310,7 @@ services:
       - #@ template.replace(traefik_prefix("roberta-base"))
       
   model_dpr:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    image: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
     build: 
       context: ./square-model-inference-api/inference_server
       target: build
@@ -326,7 +328,7 @@ services:
       - traefik.http.middlewares.dpr-addprefix.addPrefix.prefix=/api
 
   model_distilbert_st:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    image: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
     build: 
       context: ./square-model-inference-api/inference_server
       target: build
@@ -344,7 +346,7 @@ services:
       - traefik.http.middlewares.distilbert-addprefix.addPrefix.prefix=/api
 
   model_bert_onnx:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+    image: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
     build: 
       context: ./square-model-inference-api/inference_server
       target: build
