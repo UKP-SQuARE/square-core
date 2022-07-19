@@ -7,7 +7,7 @@
             <h2 class="display-5">News</h2>
             <div class="container">
             <div class="row" data-masonry='{"percentPosition": true }'>
-              <div class="col">
+              <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
                   <!-- <img src="..." class="card-img-top" alt="..."> -->
 
@@ -20,7 +20,7 @@
                 </div>
               </div>
 
-              <div class="col">
+              <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
                   <!-- <img src="..." class="card-img-top" alt="..."> -->
 
@@ -33,7 +33,7 @@
                 </div>
               </div>
 
-              <div class="col">
+              <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
                     <img :src="`${publicPath}logo.png`" class="card-img-top" alt="SQuARE logo">
 
@@ -45,9 +45,7 @@
                 </div>
               </div>
 
-            </div>
-            <div class="row" data-masonry='{"percentPosition": true }'>
-              <div class="col">
+              <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
                   <img :src="`${publicPath}podcast.jpg`" class="card-img-top" alt="Podcast logo">
 
@@ -59,21 +57,14 @@
                 </div>
               </div>
 
-              <div class="col">
-
-              </div>
-
-              <div class="col">
-                
-              </div>
-              
             </div>
+              
           </div>
 
-          </div>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 
