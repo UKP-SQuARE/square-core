@@ -22,6 +22,22 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ return ["./skills/" + skill.name + "/.env"]
 #@ end
 
+#@ def frontend_traefik_redirect():
+#@ if data.values.environment == "prod":
+#@  return [
+#@    "traefik.http.routers.frontend.rule=Host(`" + data.values.frontend_url[data.values.environment] + "`) || Host(`square.ukp.informatik.tu-darmstadt.de`)",
+#@    "traefik.http.routers.frontend.middlewares=tuda-redirect",
+#@    "traefik.http.middlewares.tuda-redirect.redirectregex.regex=^https://square.ukp.informatik.tu-darmstadt.de/(.*)",
+#@    "traefik.http.middlewares.tuda-redirect.redirectregex.replacement=https://" + data.values.frontend_url[data.values.environment] + "/$${1}",
+#@    "traefik.http.middlewares.tuda-redirect.redirectregex.permanent=true"
+#@  ]
+#@ else:
+#@  return [
+#@    "traefik.http.routers.frontend.rule=Host(`" + data.values.frontend_url[data.values.environment] + "`)"
+#@  ]
+#@ end
+#@ end
+
 #@ def traefik_tls(service):
 #@ return [
 #@  "traefik.http.routers." + service + ".entrypoints=websecure", 
@@ -151,8 +167,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.priority=1"
-      - #@ "traefik.http.routers.frontend.rule=Host(`" + data.values.frotnend_url[data.values.environment] + "`)"
       - #@ template.replace(traefik_tls("frontend"))
+      - #@ template.replace(frontend_traefik_redirect())
 
   documentation:
     image: #@ "ukpsquare/square-docs:" + data.values.tag
