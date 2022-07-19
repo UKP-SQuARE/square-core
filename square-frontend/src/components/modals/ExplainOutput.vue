@@ -6,40 +6,61 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
         </div>
         <div class="modal-body">
-          <!-- <div class="text-center">
-            <h3 class="card-title mb-3">Explain the output</h3>
-          </div> -->
+
         </div>
 
-   
-        <!-- <div>
-           <h3>{{test}}</h3> 
-        </div> -->
+ 
         <div class="row"> 
           <h4 class="col-sm-2">Method:
          
           </h4>
             
-            <button v-on:click="postReq" type="button" class="btn btn-default col-sm-2">Attention</button>
-            <button @click="greet" type="button" class="btn btn-default col-sm-2">Scaled Attention</button>
-            <button type="button" class="btn btn-default col-sm-2">Simple Grad</button>
-            <button type="button" class="btn btn-default col-sm-2">Smooth Grad</button>
-            <button type="button" class="btn btn-default col-sm-2">Integrated Grad</button>
+            <button v-on:click="postReq('Attention')" type="button" class="btn btn-default col-sm-2">Attention</button>
+            <button @click="postReq('Scaled Attention')" type="button" class="btn btn-default col-sm-2">Scaled Attention</button>
+            <button v-on:click="postReq('Simple Grad')" type="button" class="btn btn-default col-sm-2">Simple Grad</button>
+            <button v-on:click="postReq('Smooth Grad')"  type="button" class="btn btn-default col-sm-2">Smooth Grad</button>
+            <button v-on:click="postReq('Integrated Grad')"  type="button" class="btn btn-default col-sm-2">Integrated Grad</button>
 
-
-
-        </div>
+        
           
+          <!-- <p class="text-primary">.text-primary</p> -->
+ <!-- <mark class="text-primary text-opacity-100"> color test</mark>
+ <mark class="text-primary text-opacity-90"> color test</mark>
+  <mark class="text-primary text-opacity-80"> color test</mark>
+   <mark class="text-primary text-opacity-70"> color test</mark>
+    <mark class="text-primary text-opacity-60"> color test</mark>
+     <mark class="text-primary text-opacity-50"> color test</mark>
+      <mark class="text-primary text-opacity-40"> color test</mark>
+       <mark class="text-primary text-opacity-30"> color test</mark>
+        <mark class="text-primary text-opacity-20"> color test</mark>
+         <mark class="text-primary text-opacity-10"> color test</mark>
+ -->
 
-        <div> 
-          <h4>Question:</h4>
 
         </div>
 
-        <div> 
-          <h4>Context:</h4>
+
+    <div v-if="num_show != undefined" class="slidecontainer">
+      <h4>Showing the top {{num_Maxshow}} most important words  </h4>
+    <input type="range" min="1" :max="num_Maxshow" value="this.value" class="slider" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
+    <output ></output>
+
+    </div>
+        
+
+  
+
+    <div v-if="num_Maxshow != undefined "> 
+          <h4>Question:<span v-html="highlightedQuestion()"/></h4> 
+
+    </div>
+
+
+        <div v-if="num_Maxshow != undefined "> 
+          <h4>Context:<span v-html="highlightedContext()"/></h4> 
 
         </div>
+
 
       </div>
     </div>
@@ -51,40 +72,129 @@ import Vue from 'vue'
 //import BadgePopover from '../BadgePopover'
 import mixin from '@/components/results/mixin.vue'
 // import { postQuery } from '../../api'
-
-
+import context_json from './explainability_context.json'
+// import question_json from './explainability_question.json'
+import request_json from './explainability_request.json'
 
 export default Vue.component("explain-output",{
-  // data () { return {
-  //   count: 0
-  // }},
+  data () {
+     return {
+
+      num_Maxshow : this.num_Maxshow ,
+      num_show : this.num_show ,
+      
+
+  }
+  },
   props:['test'],  //args should be the test json file
   mixins:[mixin], // ??
   components:{
     //BadgePopover // maybe useful
   },
+  computed:{
+    selectedSkills() {
+      // remove None from skills list when send query
+      return this.$store.state.skillOptions['qa'].selectedSkills.filter(skill => skill !== 'None')
+    },
+  },
   methods:{
     // write functions here
-    postReq() {
 
-      // this.waiting = true
-      // this.$store.dispatch('query', {
-      //   question: this.$store.currentQuestion,
-      //   inputContext: this.$store.currentContext,
-      //   options: {
-      //     selectedSkills: this.selectedSkills,
-      //     maxResultsPerSkill: this.options.maxResultsPerSkill
-      //   }
-      // }).then(() => {
-      //   this.failure = false
-      // }).catch(() => {
-      //   this.failure = true
-      // }).finally(() => {
-      //   this.waiting = false
-      // })
+    postReq(method) {
+      // Post the query with selected skills and given question, context
+      // method for setting explain method : 'Attention','Scaled Attention','Simple Grad', 'Smooth Grad', 'Integrated Grad'
+      this.waiting = true
+      this.$store.dispatch('query', {
+        question: this.$store.state.currentQuestion,
+        inputContext: this.$store.state.currentContext,
+        options: {
+          selectedSkills: this.selectedSkills,
+          maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
+          attrib_method: method
+        }
+      }).then(() => {
+        this.failure = false,
+        this.num_Maxshow =  request_json['explain_kwargs']['top_k']
+        this.num_show = request_json['explain_kwargs']['top_k']
+        console.log("Query successed! "),
+        this.$store.state.currentQuestion = request_json['input'][0][0]
+        this.$store.state.currentContext = request_json['input'][0][1]
+        this.response = context_json //get the response from local json
+     
+      }).catch(() => {
+        this.failure = true
+      }).finally(() => {
+        this.waiting = false
+      })
     },
-    greet: function() {
-      alert(this.$store.state.currentContext)    }
+
+    highLight(sentence,mode){
+      
+    
+      for (let i = 0; i<this.num_show;i++)
+      {
+        var currentWord = context_json['result']['attributions'][0][mode][i][1]
+        let level = context_json['result']['attributions'][0][mode][i][2]
+        level = level.toFixed(1) * 100
+        level = Math.round(level) 
+        if (level==0){
+          level = 10
+        }
+        
+        //using word color to highlight
+        //var highLightedWord = '<mark class="bg-transparent text-opacity-'+ level.toString() +' text-danger">'+currentWord+'</mark>'
+        //using background to highlight
+        var highLightedWord = '<mark class="bg-danger p-2 text-dark bg-opacity-'+ level.toString() +' ">'+currentWord+'</mark>'
+
+        console.log(highLightedWord)
+        sentence =sentence.toLowerCase().replaceAll(context_json['result']['attributions'][0][mode][i][1],highLightedWord)   
+      }
+       return sentence
+
+    },
+
+    highlightedQuestion() {
+    
+    // Input:
+    //   Question: strings,
+    //   scores: a list of [word_idx,word,score]]
+    // Output: 
+    //   highlighted question
+      return this.highLight(this.$store.state.currentQuestion,'question') 
+    },
+
+    highlightedContext() {
+      
+       return this.highLight(this.$store.state.currentContext,'context') 
+    },
+
+
+
+    changeShowNum(){
+
+      var slider = document.getElementById("Range");
+      this.num_show = slider.value
+
+
+    },
+    
+    
+
+
+
+    // greet: function() {
+    //   this.num_show = this.num_show- 1;
+      
+    //   var slider = document.getElementById("Range");
+    //   console.log(slider.value)
+
+    //   this.num_show = slider.value
+    //   alert(this.num_show)
+    //   // this.$store.state.currentContext = {}
+    //   // alert(this.response)
+    //   // alert( this.response ) 
+    //   // alert( Object.values(this.$store.state.skillOptions['qa']) )  
+    //      }
   },
 }
 )
@@ -93,5 +203,12 @@ export default Vue.component("explain-output",{
 </script>
 
 <style scoped>
+
+/* mark { 
+  background-color:red;
+  color: black;
+} */
+
+
 
 </style>
