@@ -5,12 +5,70 @@
         <div class="bg-light flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 overflow-hidden">
           <div class="mb-3 pb-3">
             <h2 class="display-5">News</h2>
-            <ul>
-              <li>July 2022: SQuARE is presented at the <a href="https://scads.ai/education/summer-schools/scads-ai-summer-school-2022/prof-iryna-gurevychharitz-puerto/" target="_blank">ScaDS.AI Machine Learning Summer School</a> in Leipzig. Check the <a href="https://twitter.com/Sca_DS/status/1546789948644286465" target="_blank">Tweet</a>.</li>
-              <li>May 2022: SQuARE is presented at ACL as a <a href="https://aclanthology.org/2022.acl-demo.2/" target="_blank">demo paper</a>.</li>
-              <li>March 2022: SQuARE is publicly launched!</li>
-              <li>Feb 2022: Haritz Puerto talks about QA, <a href="https://arxiv.org/abs/2112.01922" target="_blank">MetaQA</a>, and introduces the soon-to-be-launched SQuARE at the <a href="https://anchor.fm/elia-ia/episodes/Ep-14---Haritz-Puerto-UKP-Lab---Haciendo-que-la-IA-resuelva-preguntas-e1ekdgl" target="_blank"> We Decentralize Tech Podcast</a> (in Spanish). </li>
-            </ul>
+            <div class="container">
+            <div class="row">
+              <div class="col">
+                <div class="card">
+                  <!-- <img src="..." class="card-img-top" alt="..."> -->
+
+                  <div class="card-body">
+                    <img :src="`${publicPath}scadsai.png`" class="card-img-top" alt="ScaDS.AI logo">
+                    <h5 class="card-title">Machine Learning Summer School</h5>
+                    <p class="card-text">SQuARE is presented at the <a href="https://scads.ai/education/summer-schools/scads-ai-summer-school-2022/prof-iryna-gurevychharitz-puerto/" target="_blank">ScaDS.AI Machine Learning Summer School</a> in Leipzig. Check the <a href="https://twitter.com/Sca_DS/status/1546789948644286465" target="_blank">Tweet</a>!</p>
+                    <div class="mt-3"> <span class="text1">Jul. 2022</span> </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="card">
+                  <!-- <img src="..." class="card-img-top" alt="..."> -->
+
+                  <div class="card-body">
+                    <img :src="`${publicPath}acl.png`" class="card-img-top" alt="acl logo">
+                    <h5 class="card-title">ACL 2022</h5>
+                    <p class="card-text">SQuARE is presented at ACL as a <a href="https://aclanthology.org/2022.acl-demo.2/" target="_blank">demo paper</a>.</p>
+                    <div class="mt-3"> <span class="text1">May 2022</span> </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="card">
+                    <img :src="`${publicPath}logo.png`" class="card-img-top" alt="SQuARE logo">
+
+                  <div class="card-body">
+                    <h5 class="card-title">1st Public Release</h5>
+                    <p class="card-text"> SQuARE is publicly launched!</p>
+                    <div class="mt-3"> <span class="text1">Mar. 2022</span> </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="row">
+              <div class="col">
+                <div class="card">
+                  <img :src="`${publicPath}podcast.jpg`" class="card-img-top" alt="Podcast logo">
+
+                  <div class="card-body">
+                    <h5 class="card-title">SQuARE in We Decentralize Tech Podcast</h5>
+                    <p class="card-text"> Haritz Puerto talks about QA, <a href="https://arxiv.org/abs/2112.01922" target="_blank">MetaQA</a>, and introduces the soon-to-be-launched SQuARE at the <a href="https://anchor.fm/elia-ia/episodes/Ep-14---Haritz-Puerto-UKP-Lab---Haciendo-que-la-IA-resuelva-preguntas-e1ekdgl" target="_blank"> We Decentralize Tech Podcast</a> (in Spanish).</p>
+                    <div class="mt-3"> <span class="text1">Feb. 2022</span> </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col">
+
+              </div>
+
+              <div class="col">
+                
+              </div>
+              
+            </div>
+          </div>
 
           </div>
         </div>
@@ -22,6 +80,12 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('show-news', {})
+export default Vue.component('show-news', {
+   data() {
+    return {
+      publicPath: process.env.BASE_URL
+    }
+  },
+})
 </script>
 
