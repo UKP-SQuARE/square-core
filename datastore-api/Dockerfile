@@ -16,17 +16,22 @@ COPY ./app ./app
 # -- Test stage --
 FROM base as test
 
-RUN pip install pytest pytest-cov pytest-mock requests-mock
+RUN apt -y install docker.io
+
+COPY ./requirements.dev.txt requirements.dev.txt
+RUN pip install -r requirements.dev.txt
+
 COPY ./tests ./tests
-COPY ./.env ./.env
-RUN mkdir test-reports
-RUN PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest \
-    --junitxml=test-reports/junit.xml \
-    --cov \
-    --cov-report=xml:test-reports/coverage.xml \
-    --cov-report=html:test-reports/coverage.html \
-    ./tests; \
-    echo $? > test-reports/pytest.exitcode
+COPY ./.env.test ./.env
+COPY ./pytest.ini ./pytest.ini
+# RUN mkdir test-reports
+# RUN PYTHONPATH="." MOCK_DEPENDENCIES=1 pytest \
+#     --junitxml=test-reports/junit.xml \
+#     --cov \
+#     --cov-report=xml:test-reports/coverage.xml \
+#     --cov-report=html:test-reports/coverage.html \
+#     ./tests; \
+#     echo $? > test-reports/pytest.exitcode
 
 # -- Deploy stage --
 FROM base as build

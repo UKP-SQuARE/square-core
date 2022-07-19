@@ -133,3 +133,6 @@ venv/
 
 # model cache
 .cache
+
+# dry run test files
+test.py

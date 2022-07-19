@@ -1,11 +1,21 @@
 from collections.abc import Mapping
 from typing import Any, Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+
+ID_FIELD = 'id'
 
 class Document(Mapping, BaseModel):
-    __root__: Dict[str, Any]
+    __root__: Dict[str, Any] 
+
+    def __init__(self, __root__):
+        assert ID_FIELD in __root__, "A document must have its id"
+        super(Document, self).__init__(__root__=__root__)
+
+    @property
+    def id(self):
+        return self[ID_FIELD]
 
     def __iter__(self):
         return self.__root__.__iter__()

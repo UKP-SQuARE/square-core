@@ -11,12 +11,14 @@ from ..core.config import settings
 from ..models.document import Document
 from ..models.httperror import HTTPError
 from ..models.upload import UploadResponse, UploadUrlSet
-from .dependencies import get_storage_connector
+from .dependencies import get_storage_connector, get_mongo_client
+from ..core.mongo import MongoClient
 
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Documents"])
+binding_item_type = 'datastore'
 
 
 async def upload_document_file(
@@ -71,14 +73,18 @@ async def upload_document_file(
     },
 )
 async def upload_documents(
+    request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
-    file: UploadFile = File(..., description="The filecontaining the documents to upload"),
-    conn=Depends(get_storage_connector),
+    file: UploadFile = File(..., description="The file containing the documents to upload"),
+    conn = Depends(get_storage_connector),
     response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
     datastore = await conn.get_datastore(datastore_name)
     if datastore is None:
         raise HTTPException(status_code=404, detail="Datastore not found.")
+
+    await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
 
     uploaded_docs, upload_response = await upload_document_file(conn, datastore_name, file.filename, file.file)
     if upload_response is not None:
@@ -102,14 +108,18 @@ async def upload_documents(
     },
 )
 async def upload_documents_from_urls(
+    request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
     urlset: UploadUrlSet = Body(..., description="The url containing the documents to upload"),
-    conn=Depends(get_storage_connector),
+    conn = Depends(get_storage_connector),
     api_response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
     datastore = await conn.get_datastore(datastore_name)
     if datastore is None:
         raise HTTPException(status_code=404, detail="Datastore not found.")
+
+    await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
 
     total_docs = 0  # total uploaded items across all files
 
@@ -145,17 +155,22 @@ async def upload_documents_from_urls(
         200: {"description": "Number of successfully uploaded documents to the datastore."},
         400: {"model": UploadResponse, "description": "Error during Upload"},
         404: {"model": HTTPError, "description": "The datastore does not exist."},
+        422: {"description": "Cannot instantiate a Document object"}
     },
 )
 async def post_documents(
+    request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
     documents: List[Document] = Body(..., description="Batch of documents to be uploaded."),
-    conn=Depends(get_storage_connector),
+    conn = Depends(get_storage_connector),
     response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
     datastore = await conn.get_datastore(datastore_name)
     if datastore is None:
         raise HTTPException(status_code=404, detail="Datastore not found.")
+
+    await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
 
     successes, errors = await conn.add_document_batch(datastore_name, documents)
     if errors > 0:
@@ -167,6 +182,7 @@ async def post_documents(
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
+#TODO: Remove this and use the collection_url from the index meta data instead
 @router.get(
     "",
     summary="Get all documents from the datastore",
@@ -204,7 +220,7 @@ async def get_all_documents(
 )
 async def get_document(
     datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to retrieve"),
+    doc_id: str = Path(..., description="The id of the document to retrieve"),
     conn=Depends(get_storage_connector),
 ):
     result = await conn.get_document(datastore_name, doc_id)
@@ -222,18 +238,22 @@ async def get_document(
         200: {"description": "The document has been created successfully."},
         201: {"description": "The document has been created successfully."},
         400: {"model": HTTPError, "description": "Failed to update document"},
+        422: {"description": "Cannot instantiate a Document object"}
     },
 )
 async def update_document(
     request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to update"),
+    doc_id: str = Path(..., description="The id of the document to update"),
     document: Document = Body(..., description="The document to update"),
-    conn=Depends(get_storage_connector),
+    conn = Depends(get_storage_connector),
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
     datastore = await conn.get_datastore(datastore_name)
     if datastore is None:
         raise HTTPException(status_code=404, detail="Datastore not found.")
+
+    await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
 
     # First, check if all fields in the uploaded document are valid.
     if not datastore.is_valid_document(document):
@@ -242,7 +262,7 @@ async def update_document(
             detail="The given document does not have the correct format.",
         )
     # also check if the doc id in the body matches the path
-    if doc_id != document[datastore.id_field.name]:
+    if doc_id != document.id:
         raise HTTPException(
             status_code=400,
             detail="The document ID specified in the path and in the request body must match.",
@@ -269,10 +289,13 @@ async def update_document(
     responses={204: {"description": "The document was deleted"}},
 )
 async def delete_document(
+    request: Request,
     datastore_name: str = Path(..., description="The name of the datastore"),
-    doc_id: int = Path(..., description="The id of the document to delete"),
-    conn=Depends(get_storage_connector),
+    doc_id: str = Path(..., description="The id of the document to delete"),
+    conn = Depends(get_storage_connector),
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
+    await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
     success = await conn.delete_document(datastore_name, doc_id)
     if success:
         return Response(status_code=204)

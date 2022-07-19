@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://square.ukp-lab.de/</loc>
+        <changefreq>monthly</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://square.ukp-lab.de/qa</loc>
+        <changefreq>monthly</changefreq>
+    </url>
+    <url>
+        <loc>https://square.ukp-lab.de/explain</loc>
+        <changefreq>monthly</changefreq>
+    </url>
+    <url>
+        <loc>https://square.ukp-lab.de/docs</loc>
+        <changefreq>weekly</changefreq>
+    </url>
+    <url>
+        <loc>https://square.ukp-lab.de/feedback</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+</urlset>

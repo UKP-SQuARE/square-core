@@ -1,0 +1,5 @@
+# env files
+.env
+
+# rabbitmq cache
+.rabbitmq

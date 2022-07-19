@@ -1,5 +1,6 @@
 .idea/
 *iml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,7 +15,23 @@ __pycache__/
 
 env
 .vscode
+*.code-workspace
 .cache
-
+# github action local
+bin
 # ignore build folder for docs
 docs/_build
+
+
+# libs and configs
+lib/
+lib64
+pyvenv.cfg
+share/
+
+# only used for docs
+square-skill-api
+square-skill-helpers
+
+**/.env
+docker-compose.yaml

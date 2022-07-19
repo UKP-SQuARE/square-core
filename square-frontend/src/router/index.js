@@ -3,15 +3,17 @@
  */
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
-import Signup from '@/views/Signup.vue'
-import Signin from '@/views/Signin.vue'
-import Skills from '@/views/Skills.vue'
-import Skill from '@/views/Skill.vue'
-import Home from '@/views/Home.vue'
-import Train from '@/views/Train.vue'
-import Explain from '@/views/Explain.vue'
-import NotFound from '@/views/NotFound.vue'
+
+// Use lazy loading to improve page size
+const Home = () => import('../views/Home')
+const QA = () => import('../views/QA')
+const Explain = () => import('../views/Explain')
+const Skills = () => import('../views/Skills')
+const Skill = () => import('../views/Skill')
+const Feedback = () => import('../views/Feedback')
+const Terms = () => import('../views/Terms')
+const SignIn = () => import('../views/SignIn')
+const NotFound = () => import('../views/NotFound')
 
 Vue.use(VueRouter)
 
@@ -22,63 +24,45 @@ const routes = [
     component: Home
   },
   {
-    path: '/signup',
-    name: 'signup',
-    component: Signup
-  },
-  {
-    path: '/signin',
-    name: 'signin',
-    component: Signin,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next()
-      } else {
-        // If already signed in navigate to root
-        next('/')
-      }
-    }
+    path: '/qa',
+    name: 'qa',
+    component: QA
   },
   {
     path: '/skills',
     name: 'skills',
     component: Skills,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next('/signin')
-      } else {
-        next()
-      }
+    meta: {
+      requiresAuthentication: true
     }
   },
   {
     path: '/skills/:id',
     name: 'skill',
     component: Skill,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next('/signin')
-      } else {
-        next()
-      }
-    }
-  },
-  {
-    path: '/train/:id',
-    name: 'train',
-    component: Train,
-    beforeEnter(to, from, next) {
-      if (!store.getters.isAuthenticated()) {
-        next('/signin')
-      } else {
-        next()
-      }
+    meta: {
+      requiresAuthentication: true
     }
   },
   {
     path: '/explain',
     name: 'explain',
     component: Explain
+  },
+  {
+    path: '/feedback',
+    name: 'feedback',
+    component: Feedback
+  },
+  {
+    path: '/terms-and-conditions',
+    name: 'terms',
+    component: Terms
+  },
+  {
+    path: '/signin',
+    name: 'signIn',
+    component: SignIn
   },
   {
     path: '*',
@@ -89,7 +73,14 @@ const routes = [
 
 const router = new VueRouter({
   routes,
-  mode: 'history'
+  mode: 'history',
+  scrollBehavior (to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { x: 0, y: 0 }
+    }
+  }
 })
 
 export default router

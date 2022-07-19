@@ -7,27 +7,42 @@ services:
     environment:
       - discovery.type=single-node
     volumes:
-      - ./storage/es/data:/usr/share/elasticsearch/data
+      - ./storage:/usr/share/elasticsearch/data
     # Port exposure not needed in production (comment out)
     ports:
       - 7200:9200
 
   reverse-proxy:
-      image: traefik:v2.5
-      command:
-        - "--providers.docker"
-        - "--providers.docker.exposedbydefault=false"
-        - "--providers.file.filename=/config/traefik.yaml"
-        - "--entrypoints.web.address=:7010"
-        - "--entrypoints.web.http.middlewares=prefix-strip@file"
-        - "--providers.docker.defaultRule=PathPrefix(`{{ index .Labels \"square.datastore\"}}`)"
-      ports:
-        - "7010:7010"
-      volumes:
-        # The configuration file
-        - ./traefik.yaml:/config/traefik.yaml
-        # So that Traefik can listen to the Docker events
-        - /var/run/docker.sock:/var/run/docker.sock
+    image: traefik:v2.5
+    command:
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.filename=/config/traefik.yaml"
+      - "--entrypoints.web.address=:7010"
+      - "--entrypoints.web.http.middlewares=prefix-strip@file"
+      - "--providers.docker.defaultRule=PathPrefix(`{{ index .Labels \"square.datastore\"}}`)"
+    ports:
+      - "7010:7010"
+    volumes:
+      # The configuration file
+      - ./traefik.yaml:/config/traefik.yaml
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+  
+  datastore_mongo:
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+      - datastore-mongo-data:/data/db
+      - datastore-mongo-dumps:/dumps
+    expose:
+      - 27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: datastore_mongo
+      MONGO_PORT: 27017
+    env_file:
+      - ./.env
 
 ##### BEGIN FAISS Service Containers #####
 
@@ -61,3 +76,5 @@ services:
   #     # Specify Model API
   #     - MODEL_API_URL=http://130.83.167.232:8989/api
   #     - MODEL_API_KEY=xyz
+
+

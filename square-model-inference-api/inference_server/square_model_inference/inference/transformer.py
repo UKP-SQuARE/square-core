@@ -3,7 +3,7 @@ from typing import Union, Tuple
 
 import torch
 import numpy as np
-from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
+from transformers import AutoConfig, AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
     AutoModelForTokenClassification, AutoModelForQuestionAnswering, AutoModelForCausalLM
 
 from square_model_inference.inference.model import Model
@@ -11,6 +11,7 @@ from square_model_inference.models.request import PredictionRequest, Task
 
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForSequenceClassification, PredictionOutputForTokenClassification, \
     PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
+from square_model_inference.core.config import model_config
 
 import logging
 
@@ -30,23 +31,30 @@ class Transformer(Model):
     """
     SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token", "pooler"]
 
-    def __init__(self, model_name, model_class, batch_size, disable_gpu, max_input_size, **kwargs):
+    def __init__(self, **kwargs):
         """
         Initialize the Transformer
 
         Args:
              model_name: the Huggingface model name
              model_class: the class name (according to CLASS_MAPPING) to use
-             batch_size: batch size used for inference
              disable_gpu: do not move model to GPU even if CUDA is available
-             max_input_size: requests with a larger input are rejected
              kwargs: Not used
         """
-        if model_class not in CLASS_MAPPING:
+        if model_config.model_class == "from_config":
+            config = AutoConfig.from_pretrained(model_config.model_name)
+            model_arch = config.architectures[0]
+            hf_modelling = model_arch.split("For")[-1]
+            for task, hf_model in CLASS_MAPPING.items():
+                if hf_modelling in hf_model.__name__:
+                    model_cls = CLASS_MAPPING[task]
+                    break
+                else:
+                    model_cls = CLASS_MAPPING["base"]
+            CLASS_MAPPING["from_config"] = model_cls
+        elif model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
-        self._load_model(CLASS_MAPPING[model_class], model_name, disable_gpu)
-        self.batch_size = batch_size
-        self.max_input_size = max_input_size
+        self._load_model(CLASS_MAPPING[model_config.model_class], model_config.model_name, model_config.disable_gpu)
 
     def _load_model(self, model_cls, model_name, disable_gpu):
 
@@ -93,12 +101,14 @@ class Transformer(Model):
         all_predictions = []
         request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
         request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get("truncation", True)
+        self.model.to("cuda" if torch.cuda.is_available() and not model_config.disable_gpu else "cpu")
+
         features = self.tokenizer(request.input,
                                   return_tensors="pt",
                                   **request.preprocessing_kwargs)
-        for start_idx in range(0, len(request.input), self.batch_size):
+        for start_idx in range(0, len(request.input), model_config.batch_size):
             with torch.no_grad():
-                input_features = {k: features[k][start_idx:start_idx+self.batch_size] for k in features.keys()}
+                input_features = {k: features[k][start_idx:start_idx+model_config.batch_size] for k in features.keys()}
                 input_features = self._ensure_tensor_on_device(**input_features)
                 predictions = self.model(**input_features, **request.model_kwargs)
                 all_predictions.append(predictions)
@@ -199,7 +209,8 @@ class Transformer(Model):
         request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get("add_special_tokens", False)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
-        # We cannot batch generate so we have to to it separately for each input prompt.
+
+        # We cannot batch generate, so we have to do it separately for each input prompt.
         for prompt in request.input:
             features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
             input_ids = features["input_ids"]
@@ -219,8 +230,9 @@ class Transformer(Model):
                     res[key] = res[key].cpu()
                 model_outputs[key].append(res[key])
 
-            generated_texts = [self.tokenizer.decode(seq, skip_special_tokens=True,
-                                         clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
+            generated_texts = [self.tokenizer.decode(seq,
+                                                     skip_special_tokens=True,
+                                                     clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False))
                                for seq in res["sequences"]]
             task_outputs["generated_texts"].append(generated_texts)
         return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
@@ -324,7 +336,8 @@ class Transformer(Model):
                               enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]],
                 }
                 for s, e, score in zip(starts, ends, scores)]
-            answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
+            if request.task_kwargs.get("return_no_answer_score", False):
+                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
             answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
             task_outputs["answers"].append(answers)
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
@@ -332,8 +345,8 @@ class Transformer(Model):
     async def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
-        if len(request.input) > self.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is {self.max_input_size}")
+        if len(request.input) > model_config.max_input_size:
+            raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
 
         if task == Task.sequence_classification:
             return self._sequence_classification(request)

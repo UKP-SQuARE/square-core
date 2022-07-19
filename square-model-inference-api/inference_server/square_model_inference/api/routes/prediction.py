@@ -1,13 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from starlette.requests import Request
 
 from square_model_inference.models.request import PredictionRequest, Task
 from square_model_inference.models.prediction import PredictionOutputForSequenceClassification, \
     PredictionOutputForTokenClassification, \
     PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
-from square_model_inference.models.statistics import ModelStatistics
-from square_model_inference.core.config import MODEL_TYPE, MODEL_NAME, MODEL_CLASS, DISABLE_GPU, BATCH_SIZE, \
-    MAX_INPUT_SIZE
+from square_model_inference.models.statistics import ModelStatistics, UpdateModel
+from square_model_inference.core.config import model_config
 
 import logging
 
@@ -80,12 +79,36 @@ async def generation(
 
 @router.get("/stats", response_model=ModelStatistics, name="statistics")
 async def statistics() -> ModelStatistics:
-    logger.info("Supplieng statistics for ")
-    return ModelStatistics(
-        model_type=MODEL_TYPE,
-        model_name=MODEL_NAME,
-        model_class=MODEL_CLASS,
-        batch_size=BATCH_SIZE,
-        max_input=MAX_INPUT_SIZE,
-        disable_gpu=DISABLE_GPU,
-    )
+    """
+    Returns the statistics of the model
+    :return: the ModelStatistics for the model
+    """
+    logger.info("Getting statistics for ")
+    return get_statistics()
+
+
+@router.post("/update")
+async def update(updated_param: UpdateModel):
+    """
+    Update the model with the given parameters.
+    (not all parameters can be updated through this method e.g. the model class
+    is linked to the model, hence it can't be updated during runtime)
+    :param updated_param: the new parameters
+    :return: the information about the updated model
+    """
+    logger.info("Updating model parameters")
+    if model_config.model_type in ["onnx", "sentence-transformer"] and model_config.disable_gpu != updated_param.disable_gpu:
+        raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
+    model_config.disable_gpu = updated_param.disable_gpu
+    model_config.batch_size = updated_param.batch_size
+    model_config.max_input_size = updated_param.max_input
+    model_config.return_plaintext_arrays = updated_param.return_plaintext_arrays
+    return get_statistics()
+
+
+def get_statistics():
+    """
+    Get the information about the model
+    :return: the ModelStatistics for the model
+    """
+    return model_config.to_statistics()

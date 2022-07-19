@@ -5,35 +5,33 @@
   },
   "tasks": [
     {
-      "endpoint": "sequence-classification",
-      "model": "bert-base-uncased",
+      "endpoint": "embedding",
+      "model": "facebook-dpr-question_encoder-single-nq-base",
       "weight": 1,
       "query_json": {
-        "input":
-        [
-          "test input"
-        ],
-        "is_preprocessed": false,
-        "preprocessing_kwargs": { },
-        "model_kwargs": { },
-        "task_kwargs": { },
-        "adapter_name": "nli/rte@ukp"
+        "input": [
+        "Do aliens exist?"
+      ],
+      "is_preprocessed": false,
+      "preprocessing_kwargs": {},
+      "model_kwargs": {},
+      "task_kwargs": {},
+      "adapter_name": ""
       }
     },
-    {
+     {
       "endpoint": "embedding",
-      "model": "facebook/dpr-question_encoder-single-nq-base",
+      "model": "distilbert",
       "weight": 1,
       "query_json": {
-        "input":
-        [
-          "test input"
-        ],
-        "is_preprocessed": false,
-        "preprocessing_kwargs": { },
-        "model_kwargs": { },
-        "task_kwargs": { },
-        "adapter_name": ""
+        "input": [
+        "Do aliens exist?"
+      ],
+      "is_preprocessed": false,
+      "preprocessing_kwargs": {},
+      "model_kwargs": {},
+      "task_kwargs": {},
+      "adapter_name": ""
       }
     }
   ]

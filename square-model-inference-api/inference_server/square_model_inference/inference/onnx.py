@@ -14,6 +14,8 @@ from square_model_inference.models.request import PredictionRequest, Task
 from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForEmbedding, \
     PredictionOutputForSequenceClassification, PredictionOutputForGeneration, PredictionOutputForTokenClassification
 
+from square_model_inference.core.config import model_config
+
 
 def to_numpy(x):
     if type(x) is not np.ndarray:
@@ -22,33 +24,25 @@ def to_numpy(x):
 
 
 class Onnx(Transformer):
-    def __init__(self, model_path: str, model_name: str, batch_size: int, disable_gpu: bool,
-                 max_input_size: int, decoder_path: str = None, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
 
         """
          Args:
              model_path: patyh where the model is stored
              model_name: the ONNX model name
-             batch_size: batch size used for inference
-             disable_gpu: do not move model to GPU even if CUDA is available
-             max_input_size: requests with a larger input are rejected
              decoder_path: path to the decoder ONNX model
              kwargs: Not used
         """
         # This assumes that a corresponding onnx file exists
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_config.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.session = onnxruntime.InferenceSession(model_path)
+        self.session = onnxruntime.InferenceSession(model_config.model_path)
         # check whether a decoder model is available
-        self.is_encoder_decoder = decoder_path is not None and decoder_path != ""
+        self.is_encoder_decoder = model_config.decoder_path is not None and model_config.decoder_path != ""
         if self.is_encoder_decoder:
             # if available load the decoder model in a onnx session
-            self.decoder_session = onnxruntime.InferenceSession(decoder_path)
-
-        self.batch_size = batch_size
-        self.diable_gpu = disable_gpu
-        self.max_input_size = max_input_size
+            self.decoder_session = onnxruntime.InferenceSession(model_config.decoder_path)
 
     def _predict(self, request: PredictionRequest, output_features=False, features=None) \
             -> Union[dict, Tuple[dict, dict]]:
@@ -70,10 +64,10 @@ class Onnx(Transformer):
             features = self.tokenizer(request.input,
                                       return_tensors="pt",
                                       **request.preprocessing_kwargs)
-        for start_idx in range(0, features["input_ids"].shape[0], self.batch_size):
+        for start_idx in range(0, features["input_ids"].shape[0], model_config.batch_size):
             input_names = [self.session.get_inputs()[i].name for i in range(len(self.session.get_inputs()))]
             ort_inputs = dict(
-                (k, to_numpy(input_data[start_idx:start_idx + self.batch_size])) for k, input_data in features.items()
+                (k, to_numpy(input_data[start_idx:start_idx + model_config.batch_size])) for k, input_data in features.items()
                 if k in input_names)
 
             res = self.session.run([], ort_inputs)

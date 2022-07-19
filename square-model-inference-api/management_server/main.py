@@ -1,63 +1,80 @@
-import os
 import logging
+import os
+from logging.config import fileConfig
 
-import requests
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
+from square_auth.auth import Auth
 
-from docker_access import get_all_model_prefixes, start_new_model_container
-from models import ModelRequest
+from app.core.config import settings
+from app.core.event_handlers import start_app_handler, stop_app_handler
+from app.routers.api import api_router
+
+
+auth = Auth(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"))
 
 logger = logging.getLogger(__name__)
 
-# API_URL = "http://172.17.0.1"
-# set this ENV varibale to `host.docker.internal` for Mac 
-API_URL = os.getenv("DOCKER_HOST_URL", "http://172.17.0.1")
-AUTH_USER = os.getenv("AUTH_USER", "admin")
-AUTH_PASSWORD = os.getenv("AUTH_USER", "example_key")
 
-app = FastAPI()
+def get_app() -> FastAPI:
+    # Set logging config.
+    try:
+        fileConfig("logging.conf", disable_existing_loggers=False)
+    except Exception:
+        logger.info("Failed to load 'logging.conf'. Continuing without configuring the server logger")
+    fast_app = FastAPI(
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        openapi_url=settings.OPENAPI_URL,
+        dependencies=[Depends(auth)],
+    )
+
+    fast_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    fast_app.include_router(api_router, prefix=settings.API_PREFIX)
+
+    fast_app.add_event_handler("startup", start_app_handler())
+    fast_app.add_event_handler("shutdown", stop_app_handler())
+
+    return fast_app
 
 
-@app.get("/api")
-async def get_all_models():
-    lst_prefix, port = await(get_all_model_prefixes())
-    lst_models = []
-    for prefix in lst_prefix:
-        r = requests.get(
-            url="{}:{}{}/stats".format(API_URL, port, prefix), 
-            # auth=(AUTH_USER, AUTH_PASSWORD), 
-            verify=os.getenv("VERIFY_SSL", 1) == 1
-        )
-        # if the model-api instance has not finished loading the model it is not available yet
-        if r.status_code == 200:
-            lst_models.append(r.json())
-        else:
-            logger.debug(f"Model not up yet:\n{r.content}")
+def custom_openapi():
+    """
+    change api paths as per the end-user requirements
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        description="API reference for model management.",
+        routes=app.routes,
+    )
+    replaced_keys = dict()
+    prefix = os.getenv("API_PREFIX", "models")
+    for api in openapi_schema["paths"].keys():
+        api_split = list(api.split("/"))
+        api_split.insert(2, prefix)
+        api_mod = "/".join(api_split)
+        replaced_keys[api] = api_mod
 
-    return lst_models
+    new_openapi_paths = {replaced_keys[k]: v for k, v in openapi_schema["paths"].items()}
+    openapi_schema["paths"] = new_openapi_paths
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
 
 
-@app.post("/api/deploy")
-async def add_new_model(model_params: ModelRequest):
-    identifier = model_params.identifier
-    env = {
-        "MODEL_NAME": model_params.model_name,
-        "MODEL_PATH": model_params.model_path,
-        "DECODER_PATH": model_params.decoder_path,
-        "MODEL_TYPE": model_params.model_type,
-        "MODEL_CLASS": model_params.model_class,
-        "DISABLE_GPU": model_params.disable_gpu,
-        "BATCH_SIZE": model_params.batch_size,
-        "MAX_INPUT_SIZE": model_params.max_input,
-        "TRANSFORMERS_CACHE": model_params.transformers_cache,
-        "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
+app = get_app()
+app.openapi_schema = custom_openapi()
 
-    }
-    container = await(start_new_model_container(identifier, env))
+if __name__ == "__main__":
+    import uvicorn
 
-    if container:
-        return {
-            "success": True,
-            "container": container.id,
-        }
-    return HTTPException(status_code=400)
+    uvicorn.run(app, host="0.0.0.0", port=8004)

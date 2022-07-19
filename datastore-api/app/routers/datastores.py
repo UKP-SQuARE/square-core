@@ -1,15 +1,17 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
 from fastapi.param_functions import Body, Path
 
 from ..models.datastore import Datastore, DatastoreRequest
 from ..models.stats import DatastoreStats
-from .dependencies import get_storage_connector
+from .dependencies import get_storage_connector, get_mongo_client
+from ..core.mongo import MongoClient
+from ..core.es.connector import ElasticsearchConnector
 
 
 router = APIRouter(tags=["Datastores"])
-
+binding_item_type = 'datastore'
 
 @router.get(
     "",
@@ -50,7 +52,7 @@ async def get_datastore(
         return Response(status_code=404)
     return schema
 
-
+###  BUG: PUT-Request goes through and kgs are being created. But is still returning a 500 ERROR
 @router.put(
     "/{datastore_name}",
     summary="Create a datastore",
@@ -70,19 +72,26 @@ async def get_datastore(
     response_model=Datastore,
 )
 async def put_datastore(
+    request: Request,
     datastore_name: str = Path(..., description="The datastore name"),
     fields: DatastoreRequest = Body(..., description="The datastore fields"),
-    conn=Depends(get_storage_connector),
+    conn: ElasticsearchConnector = Depends(get_storage_connector),
     response: Response = None,
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
     # Update if existing, otherwise add new
     schema = await conn.get_datastore(datastore_name)
     success = False
     if schema is None:
+        # creating a new datastore
         schema = fields.to_datastore(datastore_name)
         success = await conn.add_datastore(schema)
         response.status_code = status.HTTP_201_CREATED
+        if success:
+            await mongo.new_binding(request, datastore_name, binding_item_type)  # It should be placed after conn.add_datastore to make sure the status consistent between conn.add_datastore and mongo.new_binding
     else:
+        # updating an existing datastore
+        await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
         schema = fields.to_datastore(datastore_name)
         success = await conn.update_datastore(schema)
         response.status_code = status.HTTP_200_OK
@@ -109,12 +118,20 @@ async def put_datastore(
     },
 )
 async def delete_datastore(
+    request: Request,
     datastore_name: str = Path(..., description="The datastore name"),
-    conn=Depends(get_storage_connector),
+    conn: ElasticsearchConnector = Depends(get_storage_connector),
+    mongo: MongoClient = Depends(get_mongo_client)
 ):
+    if not (await conn.get_datastore(datastore_name)):
+        return Response(status_code=404)
+    
+    await mongo.autonomous_access_checking(request, datastore_name, binding_item_type)
     success = await conn.delete_datastore(datastore_name)
-    if success:
-        conn.commit_changes()
+
+    if success:    
+        await mongo.delete_binding(request, datastore_name, binding_item_type)
+        await conn.commit_changes()
         return Response(status_code=204)
     else:
         return Response(status_code=404)

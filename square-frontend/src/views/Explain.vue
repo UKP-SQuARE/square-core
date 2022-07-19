@@ -1,122 +1,141 @@
-<!-- The Explainability Page. Contains information about this project -->
 <template>
   <div>
-    <div class="card border-primary shadow">
-      <div class="card-body p-4">
-        <form v-on:submit.prevent="onSubmit">
-          <div class="row">
-            <div class="col-lg">
-              <div class="row">
-                <div class="col">
-                  <div class="input-group flex-nowrap">
-                    <div class="form-floating flex-grow-1">
-                      <select v-model="options.selectedSkill" class="form-select rounded-0 rounded-start" id="skillSelect">
-                        <option v-for="skill in availableSkills" v-bind:value="skill.id" v-bind:key="skill.id">
-                          {{ skill.name }} — {{ skill.description }}
-                        </option>
-                      </select>
-                      <label for="skillSelect" class="form-label col-form-label-sm text-muted">Skill selector</label>
-                    </div>
-                    <button
-                        class="btn btn-lg btn-primary d-inline-flex align-items-center"
-                        :class="`btn-${availableTestData ? 'primary' : 'secondary'}`"
-                        type="submit"
-                        :disabled="waiting || !availableTestData">
-                      <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
-                      &nbsp;<span v-if="availableTestData">Show Checklist</span>
-                      <span v-else>Not yet available</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div v-if="tests.length > 0" class="card-footer bg-white p-3">
-        <h5 class="card-title">{{ this.skill.name }}</h5>
-        <p class="card-text">We show up to 5 failed test cases for each of the tests below. You can download all examples, including successful ones, as a JSON file.</p>
-        <a v-on:click="downloadExamples" ref="downloadButton" class="btn btn-outline-secondary d-inline-flex align-items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-          </svg>
-          &nbsp;Download all examples
-        </a>
-      </div>
-    </div>
-    <div v-if="tests.length > 0" class="card-columns">
-      <Card
-          v-for="(test, index) in tests"
-          :key="index"
-          class="d-inline-block w-100">
-        <template #topItem>
-          <div class="progress flex-grow-1 align-self-center mx-2" title="Failure rate">
-            <div
-                class="progress-bar bg-danger"
-                role="progressbar"
-                :style="{ width: `${roundScore(test.failed_cases / test.total_cases)}%` }"
-                :aria-valuenow="roundScore(test.failed_cases / test.total_cases)"
-                aria-valuemin="0"
-                aria-valuemax="100">
-              {{ test.failed_cases }}
-            </div>
-            <div
-                class="progress-bar bg-success"
-                role="progressbar"
-                :style="{ width: `${roundScore(test.success_cases / test.total_cases)}%` }"
-                :aria-valuenow="roundScore(test.success_cases / test.total_cases)"
-                aria-valuemin="0"
-                aria-valuemax="100">
-              {{ test.success_cases }}
-            </div>
-          </div>
-        </template>
-        <template #rightItem>
-          <a
-              class="btn btn-outline-secondary d-inline-flex align-items-center"
-              data-bs-toggle="modal"
-              :data-bs-target="`#modal-${index}`"
-              role="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-arrows-angle-expand" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707z"/>
-            </svg>
-          </a>
-        </template>
-        <div class="text-center">
-          <h3 class="card-title mb-3">{{ test.test_name }}</h3>
-          <p class="d-inline-flex align-items-center">
-            <span class="badge bg-primary d-inline-flex align-items-center me-2 py-2">{{ mapTestType(test.test_type) }}</span>
-            test on
-            <span class="badge bg-primary d-inline-flex align-items-center ms-2 py-2">{{ test.capability }}</span>
-          </p>
+    <form v-on:submit.prevent="showCheckList">
+      <div class="row">
+        <div class="col">
+          <CompareSkills
+              selector-target="explain"
+              :skill-filter="skillId => skillId in checklistData"
+              v-on:input="changeSelectedSkills"
+              class="border-success" />
         </div>
-        <ExplainModal :id="`modal-${index}`" :test="test" />
-      </Card>
+      </div>
+      <div v-if="selectedSkills.length > 0" class="row">
+        <div class="col mt-4">
+          <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button type="submit" class="btn btn-success btn-lg shadow text-white" :disabled="waiting">
+              <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+              &nbsp;Show CheckList</button>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div v-if="currentTests.length > 0">
+      <div class="row">
+        <div class="col table-responsive bg-light border border-primary rounded shadow p-3 mx-3 mt-4">
+          <table class="table table-borderless">
+            <thead class="border-bottom border-dark">
+            <tr>
+              <th
+                  v-for="(skill, index) in currentSkillsFulfilled"
+                  :key="index"
+                  scope="col"
+                  class="fs-2 fw-light text-center">{{ skill.name }}</th>
+            </tr>
+            <tr>
+              <th
+                  v-for="index in currentSkillsFulfilled.length"
+                  :key="index"
+                  scope="col"
+                  class="fw-normal text-center">
+                <a
+                    v-on:click="downloadExamples(index)"
+                    :ref="`downloadButton${index}`"
+                    class="btn btn-outline-secondary d-inline-flex align-items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                  </svg>
+                  &nbsp;Download all examples
+                </a>
+              </th>
+            </tr>
+            <tr>
+              <th
+                  v-for="(skill, index) in currentSkillsFulfilled"
+                  :key="index"
+                  scope="col"
+                  class="fw-normal text-center">{{ skill.description }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="row in currentTests[0].length"
+                :key="row">
+              <td
+                  v-for="index in currentSkillsFulfilled.length"
+                  :key="index"
+                  :width="`${100 / currentSkillsFulfilled.length }%`"
+                  style="min-width: 320px;">
+                <div class="progress flex-grow-1 align-self-center m-2" title="Failure rate">
+                  <div
+                      class="progress-bar bg-danger"
+                      role="progressbar"
+                      :style="{ width: `${roundScore(getTest(index, row).failed_cases / getTest(index, row).total_cases)}%` }"
+                      :aria-valuenow="roundScore(getTest(index, row).failed_cases / getTest(index, row).total_cases)"
+                      aria-valuemin="0"
+                      aria-valuemax="100">{{ getTest(index, row).failed_cases }}</div>
+                  <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      :style="{ width: `${roundScore(getTest(index, row).success_cases / getTest(index, row).total_cases)}%` }"
+                      :aria-valuenow="roundScore(getTest(index, row).success_cases / getTest(index, row).total_cases)"
+                      aria-valuemin="0"
+                      aria-valuemax="100">{{ getTest(index, row).success_cases }}</div>
+                </div>
+                <div class="text-center">
+                  <h3 class="my-3">{{ getTest(index, row).test_name }}</h3>
+                  <p class="d-inline-flex align-items-center">
+                    <BadgePopover :popover-title="mapTestType(getTest(index, row).test_type)" :popover-content="getTest(index, row).test_type_description" />
+                    test on
+                    <BadgePopover :popover-title="getTest(index, row).capability" :popover-content="getTest(index, row).capability_description" />
+                  </p>
+                  <div>
+                  <a
+                      class="btn btn-outline-secondary d-inline-flex align-items-center"
+                      data-bs-toggle="modal"
+                      :data-bs-target="`#modal-${index}-${row}`"
+                      role="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-arrows-angle-expand" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707z"/>
+                    </svg>
+                    &nbsp;Expand
+                  </a>
+                    </div>
+                </div>
+                <ExplainDetail :id="`modal-${index}-${row}`" :test="getTest(index, row)" />
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div v-else class="col-lg-6 mx-auto mt-5 p-5 bg-light border rounded-3">
-      <h2 class="d-inline-flex align-items-center mb-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
-          <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
-        </svg>
-        &nbsp;Explainability
-      </h2>
-      <p>Behavioural testing is a way to test the behaviour of black-box models under certain conditions defined by experts. This is simply done via implementing tests for certain capabilities such as robustness and checking whether the models output the expected answers.</p>
-      <p>We refer you to CheckList <a class="text-decoration-none" href="https://aclanthology.org/2020.acl-main.442/" target="_blank">(Ribeiro et. al., 2020)</a> for the predefined machine reading tests used in this work.</p>
-      <p>Select a skill to get started.</p>
+    <div v-else class="row">
+      <div class="col-md-8 mx-auto mt-4 text-center">
+        <div class="bg-light border rounded shadow p-5 text-center">
+          <div class="feature-icon bg-success bg-gradient">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </div>
+          <h2 class="display-5">Explainability</h2>
+          <p class="lead fs-2">For now we are testing the <span class="text-success">behaviour</span> of <span class="text-success">black-box</span> models with more to come.</p>
+          <p class="lead fs-2">Explore capabilities such as the <span class="text-success">robustness</span> of model output.</p>
+          <p class="lead fs-2"><span class="text-success">Get started</span> by selecting up to three skills.</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import Card from '@/components/Card.vue'
-import ExplainModal from '@/components/ExplainModal.vue'
-import mixin from '@/components/results/mixin.vue'
-import { getSkill } from '@/api'
-import squad2 from '../../checklist/61a9f57935adbbf1f2433073.json'
-import boolq from '../../checklist/61a9f66935adbbf1f2433077.json'
-import commonsense from '../../checklist/61a9f6d035adbbf1f243307d.json'
+import BadgePopover from '../components/BadgePopover'
+import CompareSkills from '../components/CompareSkills'
+import ExplainDetail from '../components/modals/ExplainDetail'
+import mixin from '../components/results/mixin'
+import { getSkill } from '../api'
 
 export default Vue.component('explainability-page', {
   mixins: [mixin],
@@ -124,68 +143,75 @@ export default Vue.component('explainability-page', {
     return {
       waiting: false,
       options: {
-        selectedSkill: ''
+        selectedSkills: []
       },
-      data: {
-        '61a9f57935adbbf1f2433073': squad2,
-        '61a9f66935adbbf1f2433077': boolq,
-        '61a9f6d035adbbf1f243307d': commonsense
-      },
-      skill: {},
-      tests: [],
+      currentSkills: [],
+      currentTests: [],
       selectedTest: -1
     }
   },
   components: {
-    Card,
-    ExplainModal
+    ExplainDetail,
+    BadgePopover,
+    CompareSkills
   },
   computed: {
     availableSkills() {
       return this.$store.state.availableSkills
     },
-    availableTestData() {
-      return this.options.selectedSkill in this.data
+    selectedSkills() {
+      return this.options.selectedSkills.filter(skill => skill !== 'None')
+    },
+    currentSkillsFulfilled() {
+      // Returns current skills array based on fulfilled promises
+      return this.currentSkills.filter(skill => Object.keys(skill).length > 0)
+    },
+    checklistData() {
+      // Dynamically require available CheckList data
+      let requireComponent = require.context('../../checklist', false, /[a-z0-9]+\.json$/)
+      return Object.assign({}, ...requireComponent.keys().map(
+          fileName => ({[fileName.substr(2, fileName.length - 7)]: requireComponent(fileName).tests})))
     }
   },
   methods: {
-    onSubmit() {
-      if (this.options.selectedSkill in this.data) {
-        getSkill(this.options.selectedSkill)
-            .then((response) => {
-              this.skill = response.data
-            })
-        let tests = this.data[this.options.selectedSkill].tests
-        tests.sort((a, b) => b.failure_rate - a.failure_rate)
-        tests.forEach(test => test.test_cases = test.test_cases.filter(
-            test_case => test_case['success_failed'] === 'failed'))
-        this.tests = tests
-      }
+    changeSelectedSkills(options, skillSettings) {
+      skillSettings
+      this.options = options
     },
-    downloadExamples() {
-      let data = JSON.stringify(this.data[this.options.selectedSkill], null, 2)
+    showCheckList() {
+      this.waiting = true
+      let currentTests = []
+      this.selectedSkills.forEach((skillId, index) => {
+        if (skillId in this.checklistData) {
+          getSkill(this.$store.getters.authenticationHeader(), skillId)
+              .then((response) => {
+                this.$set(this.currentSkills, index, response.data)
+              })
+          let tests = this.checklistData[skillId]
+          // Sort first skill by failure rate and subsequent skills based on the sorting of the first one
+          if (currentTests.length === 0) {
+            tests.sort((a, b) => b.failure_rate - a.failure_rate)
+          } else {
+            tests.sort((a, b) => currentTests[0].findIndex(e => e.test_name === a.test_name) - currentTests[0].findIndex(e => e.test_name === b.test_name))
+          }
+          tests.forEach(test => test.test_cases = test.test_cases.filter(
+              test_case => test_case['success_failed'] === 'failed'))
+          currentTests.push(tests)
+        }
+      })
+      this.currentTests = currentTests
+      this.waiting = false
+    },
+    getTest(skillIndex, testIndex) {
+      return this.currentTests[skillIndex - 1][testIndex - 1]
+    },
+    downloadExamples(skillIndex) {
+      let skill = this.currentSkills[skillIndex - 1]
+      let data = JSON.stringify(this.checklistData[skill.id], null, 2)
       let blob = new Blob([data], {type: 'application/json;charset=utf-8'})
-      this.$refs.downloadButton.href = URL.createObjectURL(blob)
-      this.$refs.downloadButton.download = `${this.skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
-    },
-    isActiveTest(index) {
-      return index === this.selectedTest
+      this.$refs[`downloadButton${skillIndex}`][0].href = URL.createObjectURL(blob)
+      this.$refs[`downloadButton${skillIndex}`][0].download = `${skill.name} ${new Date().toLocaleString().replaceAll(/[\\/:]/g, '-')}.json`
     }
-  },
-  /**
-   * Make the store update the skills and init the explain options
-   */
-  beforeMount() {
-    this.$store.dispatch('updateSkills')
-        .then(() => {
-          this.$store.commit('initExplainOptions', {})
-        })
-        .then(() => {
-          // Copy the object so we do not change the state before a query is issued
-          this.options = JSON.parse(
-              JSON.stringify(this.$store.state.explainOptions)
-          )
-        })
   }
 })
 </script>

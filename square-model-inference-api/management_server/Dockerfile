@@ -14,10 +14,11 @@ RUN pip install -r requirements.txt
 # Deployment stage
 FROM base as build
 
+COPY ./app app
 COPY main.py main.py
-COPY models.py models.py
 COPY docker_access.py docker_access.py
 COPY logging.conf logging.conf
+COPY ./tasks tasks
+COPY ./mongo_access.py mongo_access.py
 
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "logging.conf"]
+EXPOSE 9001

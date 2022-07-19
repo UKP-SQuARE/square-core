@@ -1,4 +1,4 @@
-<!-- The About Page. Contains information about this project -->
+<!-- The Error 404 page. -->
 <template>
   <div class="d-flex justify-content-center">
     <div class="align-self-center text-center">
