@@ -1,55 +1,53 @@
-## SQuARE Documentation 
+# SQuARE Documentation Website
 
-### Libraries used
+This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-1. Sphinx
-2. [Material UI theme](https://bashtage.github.io/sphinx-material/)
-
-### Requirements
-
-`see requirements.txt`
-
-### Folder Structure
+# Project structure
 
 ```
-├───_build              # contains all build files
-├───_static             # custom css files
-├───_templates          # custom templates to change website layout
-├───images              # add images to use here 
-├───pages               # website pages
-│   ├───api             # api documentation files
-│       ├───datastore_api
-│       ├───explainability_api
-│       ├───model_api
-│       ├───skill_api
-│   ├───components      # Docs for different square components
-│       ├───datastores.md
-│       ├───explainability.md
-│       ├───models.md
-│       ├───skills.md
-│   └───overview        # project overview docs
-│       ├───faq.md
-│       ├───get_started.md
-│       ├───overview.md
-│       ├───roadmap.md
-│       ├───tutorials.md
-│       ├───use_cases.md
-├───conf.py              # main configuration for the website
-├───index.rst            # main page
-├───make.bat             # makefile for windows
-├───Makefile             # Makefile to run the project
-├───README.md            # documentation
-├───requirements.txt     # libraries needed
+├───build                      # contains all build files after build
+├───static                     # image files
+├───home                       # main docs
+│   ├───components             # models, datastores, and skills docs
+│   ├───overview               # overview docs
+│   └───changelog.md           # docs versions
+├───src               
+│   ├───components             # Home page elements
+│   ├───css                    # website styling
+│   └───pages                  # index page
+├───docusaurus.config.js       # website config
+├───nginx.conf                 # webserver config
+├───pakage.json                # scripts and packages
+├───dockerfile                 # docker build 
+├───docker-compose.yml         # build config
+├───sidebars.js                # sidebars config
+└───requirements.txt           # libraries needed
 ```
 
+### How to use?
 
-### Run
+#### Adding static content
 
-```python
-# point to the docs folder
-cd docs/
-# clean any previous builds
-make clean
-# create a fresh build
-make html
+1. <u>Images:</u> add all the images in the ``static/img`` folder.
+
+#### Installation
+
 ```
+$ yarn or npm
+```
+
+#### Local Development
+
+```
+$ yarn start or npm start
+```
+
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+
+#### Build
+
+```
+$ yarn build or npm run build
+```
+
+This command generates static content into the `build` directory and can be served using any static contents hosting service.

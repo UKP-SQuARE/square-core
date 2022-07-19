@@ -112,7 +112,3 @@ def get_statistics():
     :return: the ModelStatistics for the model
     """
     return model_config.to_statistics()
-
-
-
-

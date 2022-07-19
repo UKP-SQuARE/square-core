@@ -1,22 +1,19 @@
 import logging
-import uuid
 
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, QueryRequest
 
-from square_skill_helpers.config import SquareSkillHelpersConfig
-from square_skill_helpers.square_api import ModelAPI, DataAPI
+from square_skill_helpers import ModelAPI, DataAPI
 
 logger = logging.getLogger(__name__)
 
-config = SquareSkillHelpersConfig.from_dotenv()
-model_api = ModelAPI(config)
-data_api = DataAPI(config)
+model_api = ModelAPI()
+data_api = DataAPI()
+
 
 async def predict(request: QueryRequest) -> QueryOutput:
-    """Given a question, performs open-domain, extractive QA. First, background 
+    """Given a question, performs open-domain, extractive QA. First, background
     knowledge is retrieved using BM25 and the PubMed document collection. Next, the top
-    10 documents are used for span extraction. Finally, the extracted answers are 
+    10 documents are used for span extraction. Finally, the extracted answers are
     returned.
     """
     # empty index_name will use bm25
@@ -32,18 +29,16 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "preprocessing_kwargs": {},
         "model_kwargs": {},
         "task_kwargs": {"topk": 1},
-        "adapter_name": "qa/squad2@ukp"
+        "adapter_name": "qa/squad2@ukp",
     }
 
     model_api_output = await model_api(
-        model_name="bert-base-uncased", 
-        pipeline="question-answering", 
-        model_request=model_request
+        model_name="bert-base-uncased",
+        pipeline="question-answering",
+        model_request=model_request,
     )
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_question_answering(
-        model_api_output=model_api_output,
-        context=context,
-        context_score=context_score
+        model_api_output=model_api_output, context=context, context_score=context_score
     )

@@ -18,6 +18,7 @@ COPY ./app app
 COPY main.py main.py
 COPY docker_access.py docker_access.py
 COPY logging.conf logging.conf
+COPY ./tasks tasks
+COPY ./mongo_access.py mongo_access.py
 
 EXPOSE 9001
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9001", "--log-config", "logging.conf"]

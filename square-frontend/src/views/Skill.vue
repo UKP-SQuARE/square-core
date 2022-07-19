@@ -3,7 +3,7 @@
   <form v-on:submit.prevent="onSubmit">
     <Card :title="originalName ? originalName : 'New skill'">
       <template #leftItem>
-        <router-link to="/skills" class="btn btn-outline-primary d-inline-flex align-items-center" role="button">
+        <router-link to="/skills" class="btn btn-outline-danger d-inline-flex align-items-center" role="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-caret-left-square" viewBox="0 0 16 16">
             <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
             <path d="M10.205 12.456A.5.5 0 0 0 10.5 12V4a.5.5 0 0 0-.832-.374l-4.5 4a.5.5 0 0 0 0 .748l4.5 4a.5.5 0 0 0 .537.082z"/>
@@ -12,7 +12,7 @@
         </router-link>
       </template>
       <template #rightItem>
-        <button class="btn btn-outline-primary d-inline-flex align-items-center" type="submit">
+        <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-save" viewBox="0 0 16 16">
             <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
           </svg>
@@ -20,7 +20,7 @@
         </button>
       </template>
       <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
-      <Alert v-if="failure" class="alert-danger" dismissible>There was a problem: {{ failureMessage }}</Alert>
+      <Alert v-if="failure" class="alert-danger" dismissible>An error occurred</Alert>
       <div class="row">
         <div class="col-md-6 mt-3">
           <label for="name" class="form-label">Skill name</label>
@@ -31,7 +31,7 @@
             <select v-model="skill.skill_type" class="form-select" id="skillType">
               <option v-for="skillType in skillTypes" v-bind:value="skillType" v-bind:key="skillType">
                 {{ skillType }}
-              </option>
+              </option>             
             </select>
         </div>
       </div>
@@ -48,7 +48,8 @@
       <div class="row">
         <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
-            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context" class="form-check-input" type="checkbox" id="requiresContext">
+            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context" class="form-check-input" type="checkbox" id="requiresContext"
+            v-on:change="SetSkillURL()">
             <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-card-text" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
@@ -76,6 +77,15 @@
             <input v-model="skill.url" type="url" class="form-control" id="url" placeholder="Skill URL">
             <small class="text-muted">URL to the hosted skill (<span class="text-info">scheme</span>://<span class="text-info">host</span>:<span class="text-info">port</span>/<span class="text-info">base_path</span>)</small>
             <div class="mt-2"><Status :url="skill.url" /></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col mt-3">
+          <label for="args" class="form-label">Skill arguments</label>
+          <input v-model="skillArguments" type="text" class="form-control" :class="{ 'is-invalid': !validJSON }" id="args" placeholder="Skill argument as JSON">
+          <div v-if="!validJSON" class="invalid-feedback">
+            JSON is invalid
+          </div>
         </div>
       </div>
       <div class="row">
@@ -143,7 +153,8 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
-      failureMessage: '',
+      stringifiedJSON: '',
+      validJSON: true,
       numberSkillExamples: 3
     }
   },
@@ -158,7 +169,26 @@ export default Vue.component('edit-skill', {
      */
     isCreateSkill() {
       return this.$route.params.id === 'new_skill'
-    }
+    },
+    skillArguments: {
+      // Use intermediate stringified variable to not interrupt the users typing
+      get: function () {
+        return this.stringifiedJSON
+      },
+      set: function (newValue) {
+        this.stringifiedJSON = newValue
+        try {
+          if (newValue.length > 0) {
+            this.skill.default_skill_args = JSON.parse(newValue)
+          } else {
+            this.skill.default_skill_args = null
+          }
+          this.validJSON = true
+        } catch (e) {
+          this.validJSON = false
+        }
+      }
+    },
   },
   methods: {
     onSubmit() {
@@ -177,18 +207,16 @@ export default Vue.component('edit-skill', {
             this.success = true
             this.failure = false
           })
-          .catch(failureMessage => {
+          .catch(() => {
             this.failure = true
-            this.failureMessage = failureMessage
           })
     },
     createSkill() {
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
-          .catch(error => {
+          .catch(() => {
             this.failure = true
-            this.failureMessage = error.data.msg
           })
     },
     addInputExampleFields() {
@@ -197,27 +225,61 @@ export default Vue.component('edit-skill', {
       while (this.skill.skill_input_examples.length < this.numberSkillExamples) {
         this.skill.skill_input_examples.push({ 'query': '', 'context': '' })
       }
+    },
+    SetSkillURL() {
+      if(this.skill.skill_type=='span-extraction') {
+        this.skill.skill_settings.requires_context ? this.skill.url = 'http://extractive-qa' : this.skill.url = 'http://open-extractive-qa'
+      }
+    }
+  },
+  watch: {
+    'skill.skill_type'(){
+      switch(this.skill.skill_type){
+        case 'abstractive':
+          this.skill.url = 'http://generative-qa'
+          break
+        case 'span-extraction':
+          if(this.skill.skill_settings.requires_context){
+            this.skill.url = 'http://extractive-qa'
+          }
+          else{
+            this.skill.url = 'http://open-extractive-qa'
+          }
+          break
+        case 'multiple-choice':
+          this.skill.url = 'http://multiple-choice-qa'
+          break
+        case 'categorical':
+          this.skill.url = 'http://multiple-choice-qa'
+          break
+        default:
+          // 
+          break
+      }
     }
   },
   beforeMount() {
-    getSkillTypes()
+    getSkillTypes(this.$store.getters.authenticationHeader())
         .then((response) => {
           this.skillTypes = response.data
         })
     if (!this.isCreateSkill) {
-      getSkill(this.$route.params.id)
+      getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
           .then((response) => {
-            this.skill = response.data
-            this.originalName = this.skill.name
-            if (response.data.skill_input_examples == null) {
-              this.skill.skill_input_examples = []
+            let data = response.data
+            if (data.skill_input_examples == null) {
+              data.skill_input_examples = []
             }
+            this.skill = data
+            this.originalName = this.skill.name
+            // Trigger setter
+            this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
           })
     } else {
       this.addInputExampleFields()
     }
-    this.skill.user_id = this.$store.state.user.name
+    this.skill.user_id = this.$store.state.userInfo.preferred_username
   }
 })
 </script>

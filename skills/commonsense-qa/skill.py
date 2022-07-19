@@ -1,38 +1,34 @@
 import logging
-import uuid
 
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, QueryRequest
 
-from square_skill_helpers.config import SquareSkillHelpersConfig
-from square_skill_helpers.square_api import ModelAPI
+from square_skill_helpers import ModelAPI
 
 logger = logging.getLogger(__name__)
 
-config = SquareSkillHelpersConfig.from_dotenv()
-model_api = ModelAPI(config)
+model_api = ModelAPI()
+
 
 async def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and a set of answer candidates, predicts the most likely answer."""
 
-    answers = request.skill_args.get("answers")
-    if answers is None:
-        answers = request.skill_args["context"].split("\n")
+    # commonsense-qa does not take a context, but the skill-manager put the first
+    # answer choice into the context field, therefore adding it back to choices
+    choices = [request.skill_args["context"]] + request.skill_args["choices"]
 
-    prepared_input = [[request.query, c] for c in answers] 
-    model_request = { 
+    prepared_input = [[request.query, c] for c in choices]
+    model_request = {
         "input": prepared_input,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
-        "adapter_name": "AdapterHub/bert-base-uncased-pf-commonsense_qa"
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
     model_api_output = await model_api(
-        model_name="bert-base-uncased", 
-        pipeline="sequence-classification", 
-        model_request=model_request
+        model_name=request.skill_args["base_model"],
+        pipeline="sequence-classification",
+        model_request=model_request,
     )
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_sequence_classification(
-        answers=answers, model_api_output=model_api_output
+        answers=choices, model_api_output=model_api_output
     )

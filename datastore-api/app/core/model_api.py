@@ -7,8 +7,6 @@ import numpy as np
 import requests
 
 from ..models.index import Index
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -18,15 +16,22 @@ class ModelAPIClient:
     def __init__(self, base_url: str):
         self.base_url = base_url
 
-    def is_alive(self, index: Index) -> bool:
+    def is_alive(self, index: Index, credential_token: str) -> bool:
         if not self.base_url:
             raise EnvironmentError("Model API not available.")
+
+        if credential_token is None:
+            raise ValueError("Credential token is None")
+
         if index.query_encoder_model is None:
             return False
 
-        request_url = f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/health/heartbeat"
+        request_url = f"{self.base_url}/{index.query_encoder_model}/health/heartbeat"
         try:
-            response = requests.get(request_url)
+            response = requests.get(
+                request_url, 
+                headers={"Authorization": f"Bearer {credential_token}"}
+            )
             if response.status_code != 200:
                 return False
             else:
@@ -40,21 +45,28 @@ class ModelAPIClient:
         arr = np.load(BytesIO(arr_binary))
         return arr
 
-    def encode_query(self, query: str, index: Index):
+    def encode_query(self, query: str, index: Index, credential_token: str):
         if index.query_encoder_model is None:
             return None
         if not self.base_url:
             raise EnvironmentError("Model API not available.")
 
         request_url = (
-            f"{self.base_url}/{index.query_encoder_model.replace('/', '-')}/embedding"
+            f"{self.base_url}/{index.query_encoder_model}/embedding"
         )
         data = {
             "input": [query],
             "adapter_name": index.query_encoder_adapter,
+            "task_kwargs": {
+                "embedding_mode": index.embedding_mode
+            }
         }
         logger.info(f"{request_url} : {data}")
-        response = requests.post(request_url, json=data)
+        response = requests.post(
+            request_url, 
+            json=data, 
+            headers={"Authorization": f"Bearer {credential_token}"}
+        )
         if response.status_code != 200:
             logger.error(response.json())
             raise EnvironmentError(f"Model API returned {response.status_code}.")

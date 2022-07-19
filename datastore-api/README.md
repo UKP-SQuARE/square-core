@@ -15,6 +15,8 @@ The Datastore API is dependent upon the following services:
 
 We now have a [tutorial&exercises](https://docs.google.com/document/d/1r-CeFB7jKZaMAAyjSgbkHVYi1cYpqNoo7PUcTkPqJ6M/edit#) document for learning about SQuARE - Datastores easier and fast!
 
+For access to the Datastore API for adding new datastores, please refer to [this notebook](https://colab.research.google.com/drive/1siJPwcl-UcvBYY-JhQIzS7i5obxo51hN?usp=sharing) as an example.
+
 ## Quick (production) setup
 
 1. Open the [docker-compose.yml](docker-compose.yml). Find the service declaration for `datastore_api` and uncomment it. In the `environment` section, optionally set an API key and the connection to the Model API.
@@ -28,6 +30,7 @@ We now have a [tutorial&exercises](https://docs.google.com/document/d/1r-CeFB7jK
 3. [Upload documents](#upload-documents).
 
 4. For dense retrieval, [configure a FAISS container](#configure-dense-retrieval-with-faiss) per datastore index.
+5. **(TODO: Need more details!!!)** Configure arguments for authorization with SQuARE-Auth: `KEYCLOAK_BASE_URL`, `CLIENT_ID`, `CLIENT_SECRET` and `REALM`.
 
 ## Development setup
 
@@ -99,16 +102,12 @@ The Datastore API provides different methods for uploading documents.
 Documents are expected to be uploaded as `.jsonl` files.
 
 We first create a demo datastore to upload some documents to:
-```
+```bash
 curl -X 'PUT' \
   'http://localhost:7000/datastores/demo' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '[
-  {
-    "name": "id",
-    "type": "long"
-  },
   {
     "name": "title",
     "type": "text"
@@ -122,7 +121,7 @@ curl -X 'PUT' \
 
 Some example documents adhering to the required format can be found at `tests/fixtures/0.jsonl`.
 We can upload these documents to the Datastore API as follows:
-```
+```bash
 curl -X 'POST' \
   'http://localhost:7000/datastores/wiki/demo/upload' \
   -H 'Authorization: abcdefg' \
@@ -134,22 +133,18 @@ curl -X 'POST' \
 As an example, we upload the Wikipedia split used by DPR (containing 21M passages) into a datastore named "wiki".
 
 1. First, we download and unzip the documents:
-    ```
+    ```bash
     curl https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz -o psgs_w100.tsv.gz
     gunzip psgs_w100.tsv.gz
     ```
 
 2. Create the datastore:
-    ```
+    ```bash
     curl -X 'PUT' \
       'http://localhost:7000/datastores/wiki' \
       -H 'accept: application/json' \
       -H 'Content-Type: application/json' \
       -d '[
-      {
-        "name": "id",
-        "type": "long"
-      },
       {
         "name": "title",
         "type": "text"
@@ -162,7 +157,7 @@ As an example, we upload the Wikipedia split used by DPR (containing 21M passage
     ```
 
 3. Upload documents:
-    ```
+    ```bash
     python upload.py\
       -s wiki \
       -t <access_token> \
@@ -181,7 +176,7 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
 1. Embed the document corpus using the document encoder model & create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this. There are some pre-build Faiss indexes and they are hosted [here](https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/).
 
 2. Register the new index with its name via the Datastore API:
-    ```
+    ```json
     curl -X 'PUT' \
     'http://localhost:7000/datastores/wiki/indices/dpr' \
     -H 'accept: application/json' \
@@ -189,12 +184,17 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     -d '{
       "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
       "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
-      "embedding_size": 768
+      "embedding_size": 768,
+      "embedding_mode": "pooler",
+      "index_url": "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.index",
+      "index_ids_url": "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.txt",
+      "index_description": "It uses Faiss-IVF-SQ with nlist = 2^18, nprobe = 512 and 8bit uniform. For the indexing script, please refer to https://gist.github.com/kwang2049/d23550604059ed1576ac6cffb7e09fb2",
+      "collection_url": "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz"
     }'
     ```
 
 3. Specify the FAISS web service container for the new index: Open the [docker-compose.yml](docker-compose.yml) and in the section for FAISS service containers, add the following: (The pre-built index used here is `nq-QT_8bit_uniform-ivf262144.index` and `nq-QT_8bit_uniform-ivf262144.txt` under the [public folder](https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/))
-    ```
+    ```yaml
     faiss-wiki-dpr:
       image: kwang2049/faiss-instant:latest
       volumes:
@@ -206,6 +206,15 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     ```
 
 4. Restart the Docker Compose setup:
-    ```
+    ```bash
     docker compose up -d
     ```
+## Pytest
+As the usual way, for running tests on the host machine, just run:
+```
+make test-api
+```
+However, the CI test actually run the test inside a docker container. To simulate this, we can run:
+```
+make docker-test
+```

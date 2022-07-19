@@ -20,7 +20,6 @@ MODEL_MAPPING = {
 }
 
 
-
 def _startup_model(app: FastAPI) -> None:
     """
     Initialize the model used by the server and set it to the app state for global access

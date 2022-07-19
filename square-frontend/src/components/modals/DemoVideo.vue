@@ -9,7 +9,7 @@
         </svg>
       </div>
     </a>
-    <div class="modal fade" id="modal-demo" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modal-demo" data-bs-backdrop="static" tabindex="-1" v-on:keydown.esc="stopDemoVideo" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content bg-black">
           <div class="modal-header border-0">

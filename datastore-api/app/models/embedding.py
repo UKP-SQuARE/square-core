@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class DocumentEmbedding(BaseModel):
     """Models the embeddings for one document."""
-    id: int
+    id: str
     embedding: List[float]
 
     class Config:

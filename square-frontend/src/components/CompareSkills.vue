@@ -3,18 +3,25 @@
   <div class="bg-light border rounded shadow h-100 p-3">
     <div class="w-100">
       <div class="mb-3">
-        <label for="skill1" class="form-label">1. Select a skill</label>
+        <label for="skill1" class="form-label d-block placeholder-glow">
+          <span v-if="waiting" class="placeholder w-25" />
+          <span v-else>1. Select a skill</span>
+        </label>
         <SkillSelector
             v-model="options.selectedSkills[0]"
-            v-on:input="$emit('input', options, skillSettings)"
+            v-on:input="selectSkill"
             :skills="availableSkills"
-            id="skill1" />
+            id="skill1"
+            :disabled="waiting" />
       </div>
       <div class="mb-3">
-        <label for="skill2" class="form-label">Compare up to three skills</label>
+        <label for="skill2" class="form-label d-block placeholder-glow">
+          <span v-if="waiting" class="placeholder w-50" />
+          <span v-else>Compare up to three skills</span>
+        </label>
         <SkillSelector
             v-model="options.selectedSkills[1]"
-            v-on:input="$emit('input', options, skillSettings)"
+            v-on:input="selectSkill"
             :skills="availableSkillsBasedOnSettings"
             id="skill2"
             :disabled="!minSkillsSelected(1)" />
@@ -22,7 +29,7 @@
       <div class="mb-3">
         <SkillSelector
             v-model="options.selectedSkills[2]"
-            v-on:input="$emit('input', options, skillSettings)"
+            v-on:input="selectSkill"
             :skills="availableSkillsBasedOnSettings"
             id="skill3"
             :disabled="!minSkillsSelected(2)" />
@@ -36,9 +43,10 @@ import Vue from 'vue'
 import SkillSelector from '@/components/SkillSelector.vue'
 
 export default Vue.component('compare-skills', {
-  props: ['skillFilter'],
+  props: ['selectorTarget', 'skillFilter'],
   data() {
     return {
+      waiting: false,
       options: {
         selectedSkills: []
       }
@@ -70,18 +78,22 @@ export default Vue.component('compare-skills', {
         requiresContext: false,
         requiresMultipleChoices: 0
       }
-      this.availableSkills.forEach(skill => {
-        if (this.selectedSkills.includes(skill.id)) {
-          if (settings.skillType === null) {
-            settings.skillType = skill.skill_type
+      this.selectedSkills.forEach((skillId, index) => {
+        this.availableSkills.forEach(skill => {
+          if (skillId === skill.id) {
+            if (index === 0) {
+              settings.skillType = skill.skill_type
+              settings.requiresContext = skill.skill_settings.requires_context
+            } else if (skill.skill_type !== settings.skillType || skill.skill_settings.requires_context !== settings.requiresContext) {
+              this.options.selectedSkills[index] = 'None'
+            }
+            // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
+            settings.requiresMultipleChoices = Math.max(
+                settings.requiresContext ? 1 : 0,
+                settings.requiresMultipleChoices,
+                skill.skill_settings.requires_multiple_choices)
           }
-          settings.requiresContext = settings.requiresContext || skill.skill_settings.requires_context
-          // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
-          settings.requiresMultipleChoices = Math.max(
-              settings.requiresContext ? 1 : 0,
-              settings.requiresMultipleChoices,
-              skill.skill_settings.requires_multiple_choices)
-        }
+        })
       })
       return settings
     }
@@ -89,13 +101,22 @@ export default Vue.component('compare-skills', {
   methods: {
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
+    },
+    selectSkill() {
+      this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
+      this.$emit('input', this.options, this.skillSettings)
     }
   },
   beforeMount() {
+    this.waiting = true
     this.$store.dispatch('updateSkills')
         .then(() => {
-          // Copy the object so we do not change the state before a query is issued
-          this.options = JSON.parse(JSON.stringify(this.$store.state.skillOptions))
+          this.$store.state.skillOptions[this.selectorTarget].selectedSkills.forEach((skill, index) => {
+            this.$set(this.options.selectedSkills, index, skill)
+          })
+          this.$emit('input', this.options, this.skillSettings)
+        }).finally(() => {
+          this.waiting = false
         })
   }
 })

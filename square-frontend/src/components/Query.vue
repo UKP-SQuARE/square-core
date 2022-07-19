@@ -3,7 +3,7 @@
   <form v-on:submit.prevent="askQuestion">
     <div class="row">
       <div class="col-md-4 ms-auto">
-        <CompareSkills v-on:input="changeSelectedSkills" class="border-danger" />
+        <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="border-danger" />
       </div>
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -44,8 +44,13 @@
         </div>
       </div>
     </div>
+    <div v-if="failure" class="row">
+      <div class="col-md-4 mx-auto mt-4">
+        <Alert class="bg-warning" :dismissible="true">An error occurred</Alert>
+      </div>
+    </div>
     <div v-if="minSkillsSelected(1)" class="row">
-      <div class="col my-3">
+      <div class="col mt-4">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <button
               type="submit"
@@ -61,7 +66,8 @@
 
 <script>
 import Vue from 'vue'
-import CompareSkills from '@/components/CompareSkills.vue'
+import CompareSkills from '../components/CompareSkills'
+import Alert from '../components/Alert'
 
 export default Vue.component('query-skills', {
   data() {
@@ -73,7 +79,6 @@ export default Vue.component('query-skills', {
       inputQuestion: '',
       inputContext: '',
       failure: false,
-      failureMessage: '',
       skillSettings: {
         skillType: null,
         requiresContext: false,
@@ -82,7 +87,8 @@ export default Vue.component('query-skills', {
     }
   },
   components: {
-    CompareSkills
+    CompareSkills,
+    Alert
   },
   computed: {
     selectedSkills() {
@@ -146,10 +152,8 @@ export default Vue.component('query-skills', {
         }
       }).then(() => {
         this.failure = false
-        this.failureMessage = ''
-      }).catch(error => {
+      }).catch(() => {
         this.failure = true
-        this.failureMessage = error.data.msg
       }).finally(() => {
         this.waiting = false
       })
