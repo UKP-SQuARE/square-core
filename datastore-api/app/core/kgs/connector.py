@@ -162,6 +162,62 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             results[nid] = edges
         return results
 
+    async def edges_in_out_msearch(self, kg_name, nids):
+        """Returns all edges which go either in or out from a knowledge graph.
+
+        Args:
+            kg_name (str):      Name of the knowledge graph.
+            nids (List[str]):   List of nodes.
+        """
+
+        index = f'{kg_name}{self.datastore_suffix}'
+
+        body = []
+        for nid in nids:
+            body.append({'index': index})
+            body.append({
+                "query": {
+                    "bool": {
+                        "filter": {
+                            "bool" : {
+                                "should" : [
+                                    {"term" : { "in_id" : nid } },
+                                    {"term" : { "out_id" : nid } },
+                                ]
+                            }
+                        }
+                    }
+                },
+                "size": 10000
+            })
+    
+        response = await self.es.msearch(body=body)
+
+        results = {}
+        for nid, response in zip(nids, response['responses']):
+            edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
+
+            results[nid] = edges
+        return results
+
+    async def extract_nodes(self,kg_name, nids):
+        """Returns all nodes which go in or out a given node.
+
+        Args:
+            kg_name (str):          Name of the knowledge graph.
+            nids (List[str]]):      List of nodes for which the in- and out-nodes should be retrieved.
+        """
+        edges = await self.edges_in_out_msearch(kg_name, nids)
+        results_nids = []
+        for nid in nids:
+            for edge in edges[nid]:
+                if edges[nid][edge]["in_id"] == nid:
+                    extra_node = edges[nid][edge]["out_id"]
+                else:
+                    extra_node = edges[nid][edge]["in_id"]
+                results_nids.append(extra_node)
+        return results_nids
+
     async def get_edge_msearch(self, kg_name, nids_pairs: List[Tuple[str, str]]):
         """Returns all edges for a given node-pair.
 
