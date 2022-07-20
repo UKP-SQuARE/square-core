@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 from typing import List
 import docker
 
@@ -159,7 +160,8 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     user_id = await utils.get_user_id(request)
     env = {
         "USER_ID": user_id,
-        "IDENTIFIER": model_params.identifier,
+        "IDENTIFIER": model_params.model_name,
+        "UUID": str(uuid.uuid1()),
         "MODEL_NAME": model_params.model_name,
         "MODEL_PATH": model_params.model_path,
         "DECODER_PATH": model_params.decoder_path,
@@ -173,6 +175,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
         "WEB_CONCURRENCY": os.getenv("WEB_CONCURRENCY", 1),  # fixed processes, do not give the control to  end-user
         "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
+        "VERIFY_ISSUER": os.getenv("VERIFY_ISSUER", "1")
     }
 
     identifier_new = await (mongo_client.check_identifier_new(env["IDENTIFIER"]))
@@ -184,11 +187,15 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
 
 
 @router.delete("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
-async def remove_model(request: Request, identifier):
+@router.delete("/remove/{hf_username}/{identifier}", name="remove-model", response_model=TaskGenericModel)
+async def remove_model(request: Request, identifier: str, hf_username: str = None):
     """
     Remove a model from the platform
     """
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
     # check if the model is deployed
+    logger.info(identifier)
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
@@ -238,30 +245,39 @@ async def remove_model_container(request: Request, identifier: str, num: int):
 
 
 @router.patch("/update/{identifier}")
+@router.patch("/update/{hf_username}/{identifier}")
 async def update_model(
-    request: Request,
-    identifier: str,
-    update_parameters: UpdateModel,
-    token: str = Depends(client_credentials),
+        request: Request,
+        identifier: str,
+        update_parameters: UpdateModel,
+        hf_username: str = None,
+        token: str = Depends(client_credentials),
 ):
-
+    """
+    update the model parameters
+    """
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    logger.info("Updating model: {}".format(identifier))
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
     if await mongo_client.check_user_id(request, identifier):
         await (mongo_client.update_model_db(identifier, update_parameters))
         logger.info(
-            "Update parameters Type {},dict  {}".format(type(update_parameters.dict()), update_parameters.dict())
+            "Update parameters Type %s,dict  %s", type(update_parameters.dict()), update_parameters.dict()
         )
-        r = requests.post(
-            url="{}/api/main/{}/update".format(settings.API_URL, identifier),
+        response = requests.post(
+            url=f"{settings.API_URL}/api/{identifier}/update",
             json=update_parameters.dict(),
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
-    else:
-        raise HTTPException(status_code=403, detail="Cannot update a model deployed by another user")
-    return {"status_code": r.status_code, "content": r.json()}
+        logger.info("response: {}".format(response.text))
+
+        return {"status_code": response.status_code, "content": response.json()}
+
+    raise HTTPException(status_code=403, detail="Cannot update a model deployed by another user")
 
 
 @router.get("/task_result/{task_id}", name="task-status", response_model=TaskResultModel)

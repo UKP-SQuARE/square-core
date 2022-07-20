@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 
 import docker
 from docker.types import Mount
@@ -18,37 +17,38 @@ USER = os.getenv("USERNAME", "user")
 PASSWORD = os.getenv("PASSWORD", "user")
 
 
-def create_docker_labels(identifier: str) -> dict:
+def create_docker_labels(identifier: str, uid: str) -> dict:
     """
     creates the labels to enable traefik for the docker container
     """
+    traefik_identifier = identifier.replace("/", "-") + uid
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers.model-" + identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + identifier + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + identifier + ".tls": "true",
-        "traefik.http.routers.model-" + identifier + ".tls.certresolver": "le",
+        "traefik.http.routers.model-" + traefik_identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
+        "traefik.http.routers.model-" + traefik_identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-" + traefik_identifier + ".tls": "true",
+        "traefik.http.routers.model-" + traefik_identifier + ".tls.certresolver": "le",
         "traefik.http.routers.model-"
-        + identifier
+        + traefik_identifier
         + ".middlewares": "model-"
-        + identifier
+        + traefik_identifier
         + "-stripprefix, "
         + "model-"
-        + identifier
+        + traefik_identifier
         + "-addprefix",
-        "traefik.http.middlewares.model-" + identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + identifier + "-addprefix.addPrefix.prefix": "/api",
+        "traefik.http.middlewares.model-" + traefik_identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
+        "traefik.http.middlewares.model-" + traefik_identifier + "-addprefix.addPrefix.prefix": "/api",
     }
     return labels
 
 
-def start_new_model_container(identifier, env, id=1):
+def start_new_model_container(identifier: str, uid: str, env):
     """
     Start a new container in the current network with a new model-api instance.
     identifier(str): the name/identifier of the new model api instance
     env(Dict): the environment for the container
     """
-    container = get_container_by_identifier(identifier)
+    container = get_container_by_identifier(identifier, uid)
     if container is not None:
         logger.info("Found old container for that identifier container")
         logger.info(container.status)
@@ -74,11 +74,11 @@ def start_new_model_container(identifier, env, id=1):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    worker_name = network.name + "-model-" + identifier + "-worker-" + str(id)
+    worker_name = network.name + "-model-" + identifier.replace("/", "-") + "-worker-" + uid
 
     env["WEB_CONCURRENCY"] = 1
-    env["KEYCLOAK_BASE_URL"] = "https://square.ukp-lab.de"
-    env["QUEUE"] = identifier
+    env["KEYCLOAK_BASE_URL"] = os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de")
+    env["QUEUE"] = identifier.replace("/", "-")
     env["RABBITMQ_DEFAULT_USER"] = os.getenv("RABBITMQ_DEFAULT_USER", "ukp")
     env["RABBITMQ_DEFAULT_PASS"] = os.getenv("RABBITMQ_DEFAULT_PASS", "secret")
 
@@ -89,7 +89,7 @@ def start_new_model_container(identifier, env, id=1):
     try:
         container = docker_client.containers.run(
             MODEL_API_IMAGE,
-            command=f"celery -A tasks worker -Q {identifier} --loglevel=info",
+            command=f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info",
             name=worker_name,
             detach=True,
             environment=env,
@@ -108,11 +108,11 @@ def start_new_model_container(identifier, env, id=1):
     return {"container": container, "message": "Success"}
 
 
-def get_container_by_identifier(identifier):
+def get_container_by_identifier(identifier: str, uid: str):
     """
     get the docker container based on the model identifier
     """
-    labels = create_docker_labels(identifier)
+    labels = create_docker_labels(identifier, uid=uid)
     if (
         len(
             docker_client.containers.list(

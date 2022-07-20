@@ -58,7 +58,7 @@ def deploy_task(self, env, allow_overwrite=False):
         logger.exception(e)
         return {"success": False, "message": "Connection to the database failed."}
     try:
-        deployment_result = start_new_model_container(identifier, env)
+        deployment_result = start_new_model_container(identifier, uid=env["UUID"], env=env)
         logger.info(deployment_result)
         container = deployment_result["container"]
         # models = asyncio.run(self.client.get_models_db())
