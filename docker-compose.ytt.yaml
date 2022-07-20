@@ -43,7 +43,7 @@ version: "3.4"
 
 services:
   traefik:
-    image: traefik:v2.6.1
+    image: traefik:v2.8.1
     container_name: traefik
     command:
       - --api.insecure=true
@@ -184,8 +184,55 @@ services:
     env_file:
       - ./skill-manager/.env
 
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    env_file:
+      - ./square-model-inference-api/management_server/.env
+
+  redishost:
+    hostname: redishost
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    env_file:
+      - .env
+    command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
+
+  maintaining_worker:
+    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    build:
+      context: ./square-model-inference-api/management_server
+      target: build
+    command: celery -A tasks worker --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./square-model-inference-api/management_server/.env
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      ONNX_VOLUME: square-model-inference-api_onnx-models
+      REALM: #@ data.values.realm
+      CLIENT_ID: models
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
   maintaining:
-    image: #@ "ukpsquare/square-model-management:" + data.values.tag
+    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     build: 
       context: ./square-model-inference-api/management_server
       target: build
@@ -200,10 +247,11 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
       ONNX_VOLUME: square-model-inference-api_onnx-models
       REALM: #@ data.values.realm
       CLIENT_ID: models
+      CONFIG_PATH: /model_configs
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -211,98 +259,123 @@ services:
       - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
       - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
-  
-  model_bert_adapter:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: 
+
+  main_model:
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    build:
       context: ./square-model-inference-api/inference_server
       target: build
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.bert_adapter
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("bert-base-uncased"))
-      - #@ template.replace(traefik_prefix("bert-base-uncased"))
-  
-  model_roberta_adapter:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: 
-      context: ./square-model-inference-api/inference_server
-      target: build
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.roberta_adapter
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
-    volumes:
-      - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("roberta-base"))
-      - #@ template.replace(traefik_prefix("roberta-base"))
-      
-  model_dpr:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: 
-      context: ./square-model-inference-api/inference_server
-      target: build
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./square-model-inference-api/inference_server/.env.dpr
+      - ./square-model-inference-api/inference_server/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      CONFIG_PATH: /model_configs
+      QUEUE: facebook-dpr-question_encoder-single-nq-base
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
-    labels:
-      - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("dpr"))
-      - traefik.http.routers.dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)
-      - traefik.http.routers.dpr.middlewares=dpr-stripprefix,dpr-addprefix
-      - traefik.http.middlewares.dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base
-      - traefik.http.middlewares.dpr-addprefix.addPrefix.prefix=/api
-
-  model_distilbert_st:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: 
-      context: ./square-model-inference-api/inference_server
-      target: build
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-    volumes:
-      - ./.cache/:/etc/sentence-transformers/.cache/
-    labels:
-      - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("distilbert"))
-      - traefik.http.routers.distilbert.rule=PathPrefix(`/api/msmarco-distilbert-base-tas-b`)
-      - traefik.http.routers.distilbert.middlewares=distilbert-stripprefix,distilbert-addprefix
-      - traefik.http.middlewares.distilbert-stripprefix.stripprefix.prefixes=/api/msmarco-distilbert-base-tas-b
-      - traefik.http.middlewares.distilbert-addprefix.addPrefix.prefix=/api
-
-  model_bert_onnx:
-    image: #@ "ukpsquare/square-model-api-v1:" + data.values.tag
-    build: 
-      context: ./square-model-inference-api/inference_server
-      target: build
-    env_file:
-      - ./square-model-inference-api/inference_server/.env.bert_onnx
-    environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-    volumes:
-      - ./.cache/:/etc/onnx/.cache/
+      - model_configs:/model_configs
       - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("bert-onnx"))
-      - #@ template.replace(traefik_prefix("bert-onnx"))
+      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
+      - "traefik.http.routers.model-dpr.entrypoints=websecure"
+      - "traefik.http.routers.model-dpr.tls=true"
+      - "traefik.http.routers.model-dpr.tls.certresolver=le"
+      - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
+      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main"
+      - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
+  dpr_worker:
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.dpr
+      - ./square-model-inference-api/inference_server/.env
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      ONNX_VOLUME: square-model-inference-api_onnx-models
+      REALM: #@ data.values.realm
+      CLIENT_ID: models
+      CONFIG_PATH: /model_configs
+      QUEUE: facebook-dpr-question_encoder-single-nq-base
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+  bert_worker:
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.bert_adapter
+      - ./square-model-inference-api/inference_server/.env
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      ONNX_VOLUME: square-model-inference-api_onnx-models
+      REALM: #@ data.values.realm
+      CLIENT_ID: models
+      CONFIG_PATH: /model_configs
+      QUEUE: bert-base-uncased
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+  roberta_worker:
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    command: celery -A tasks worker -Q roberta-base --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.roberta_adapter
+      - ./square-model-inference-api/inference_server/.env
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      ONNX_VOLUME: square-model-inference-api_onnx-models
+      REALM: #@ data.values.realm
+      CLIENT_ID: models
+      CONFIG_PATH: /model_configs
+      QUEUE: roberta-base
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
 
   datastore_api:
     privileged: true
@@ -401,6 +474,8 @@ volumes:
   datastore-api-faiss-msmarco-distilbert:
     driver: local
   datastore-api-faiss-bioasq-distilbert:
+    driver: local
+  model_configs:
     driver: local
 
   onnx-models:
