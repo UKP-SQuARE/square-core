@@ -9,10 +9,8 @@
             <div class="row" data-masonry='{"percentPosition": true }'>
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
-                  <!-- <img src="..." class="card-img-top" alt="..."> -->
-
+                  <img :src="`${publicPath}scadsai.png`" class="card-img-top" alt="ScaDS.AI logo">
                   <div class="card-body">
-                    <img :src="`${publicPath}scadsai.png`" class="card-img-top" alt="ScaDS.AI logo">
                     <h5 class="card-title">Machine Learning Summer School</h5>
                     <p class="card-text">SQuARE is presented at the <a href="https://scads.ai/education/summer-schools/scads-ai-summer-school-2022/prof-iryna-gurevychharitz-puerto/" target="_blank">ScaDS.AI Machine Learning Summer School</a> in Leipzig. Check the <a href="https://twitter.com/Sca_DS/status/1546789948644286465" target="_blank">Tweet</a>!</p>
                     <p class="card-text"><small class="text-muted">Jul. 2022</small></p>
@@ -22,10 +20,8 @@
 
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
-                  <!-- <img src="..." class="card-img-top" alt="..."> -->
-
+                  <img :src="`${publicPath}acl2022.png`" class="card-img-top" alt="acl logo">
                   <div class="card-body">
-                    <img :src="`${publicPath}acl.png`" class="card-img-top" alt="acl logo">
                     <h5 class="card-title">ACL 2022</h5>
                     <p class="card-text">SQuARE is presented at ACL as a <a href="https://aclanthology.org/2022.acl-demo.2/" target="_blank">demo paper</a>.</p>
                     <p class="card-text"><small class="text-muted">May 2022</small></p>
@@ -35,8 +31,7 @@
 
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
-                    <img :src="`${publicPath}logo.png`" class="card-img-top" alt="SQuARE logo">
-
+                  <img :src="`${publicPath}SQuARE_Banner.png`" class="card-img-top" alt="SQuARE logo">
                   <div class="card-body">
                     <h5 class="card-title">1st Public Release</h5>
                     <p class="card-text"> SQuARE is publicly launched!</p>
@@ -47,8 +42,7 @@
 
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
-                  <img :src="`${publicPath}podcast.jpg`" class="card-img-top" alt="Podcast logo">
-
+                  <img :src="`${publicPath}podcast.png`" class="card-img-top" alt="Podcast logo">
                   <div class="card-body">
                     <h5 class="card-title">SQuARE in We Decentralize Tech Podcast</h5>
                     <p class="card-text"> Haritz Puerto talks about QA, <a href="https://arxiv.org/abs/2112.01922" target="_blank">MetaQA</a>, and introduces the soon-to-be-launched SQuARE at the <a href="https://anchor.fm/elia-ia/episodes/Ep-14---Haritz-Puerto-UKP-Lab---Haciendo-que-la-IA-resuelva-preguntas-e1ekdgl" target="_blank"> We Decentralize Tech Podcast</a> (in Spanish).</p>
@@ -79,4 +73,3 @@ export default Vue.component('show-news', {
   },
 })
 </script>
-
