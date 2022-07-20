@@ -112,12 +112,14 @@ class ModelConfig(Mapping):
 
     @staticmethod
     def load_from_file(identifier):
+        identifier = identifier.replace("/", "-")
         with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
             with open(f"{CONFIG_PATH}/{identifier}.json", 'r') as f:
                 config = json.load(f)
         return ModelConfig(**config)
 
     def save(self, identifier):
+        identifier = identifier.replace("/", "-")
         if not os.path.exists(f'{CONFIG_PATH}/{identifier}.json'):
             try:
                 os.makedirs(os.path.dirname(f'{CONFIG_PATH}/{identifier}.json'))

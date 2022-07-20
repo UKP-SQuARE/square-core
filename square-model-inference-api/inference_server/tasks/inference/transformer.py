@@ -19,6 +19,7 @@ from tasks.models.prediction import (
 )
 from tasks.models.request import Task, PredictionRequest
 from transformers import (
+    AutoConfig,
     AutoTokenizer,
     AutoModel,
     AutoModelForSequenceClassification,
@@ -34,7 +35,7 @@ CLASS_MAPPING = {
     "sequence_classification": AutoModelForSequenceClassification,
     "token_classification": AutoModelForTokenClassification,
     "question_answering": AutoModelForQuestionAnswering,
-    "generation": AutoModelForCausalLM
+    "generation": AutoModelForCausalLM,
 }
 
 
@@ -47,18 +48,30 @@ class Transformer(Model):
     def __init__(self, **kwargs):
         """
         Initialize the Transformer
-
         Args:
              model_name: the Huggingface model name
              model_class: the class name (according to CLASS_MAPPING) to use
              disable_gpu: do not move model to GPU even if CUDA is available
              kwargs: Not used
         """
-        # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        if model_config.model_class not in CLASS_MAPPING:
+        if model_config.model_class == "from_config":
+            config = AutoConfig.from_pretrained(model_config.model_name)
+            model_arch = config.architectures[0]
+            hf_modelling = model_arch.split("For")[-1]
+            for task, hf_model in CLASS_MAPPING.items():
+                if hf_modelling in hf_model.__name__:
+                    model_cls = CLASS_MAPPING[task]
+                    break
+                else:
+                    model_cls = CLASS_MAPPING["base"]
+            CLASS_MAPPING["from_config"] = model_cls
+        elif model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
-        self._load_model(CLASS_MAPPING[model_config.model_class],
-                         model_config.model_name, model_config.disable_gpu)
+        self._load_model(
+            CLASS_MAPPING[model_config.model_class],
+            model_config.model_name,
+            model_config.disable_gpu
+        )
 
     def _load_model(self, model_cls, model_name, disable_gpu):
 
@@ -274,8 +287,10 @@ class Transformer(Model):
             loss = outputs.loss
 
             # Zero gradients.
-            # NOTE: this is actually more efficient than calling `self._model.zero_grad()`
-            # because it avoids a read op when the gradients are first updated below.
+            # NOTE: this is actually more efficient than
+            # calling `self._model.zero_grad()`
+            # because it avoids a read op when the
+            # gradients are first updated below.
             for p in self.model.parameters():
                 p.grad = None
             loss.backward()
@@ -308,18 +323,24 @@ class Transformer(Model):
              The model outputs and optionally the input features
         """
         all_predictions = []
-        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
-        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get("truncation", True)
-        self.model.to("cuda" if torch.cuda.is_available() and not model_config.disable_gpu else "cpu")
+        request.preprocessing_kwargs["padding"] = \
+            request.preprocessing_kwargs.get("padding", True)
+        request.preprocessing_kwargs["truncation"] = \
+            request.preprocessing_kwargs.get("truncation", True)
+        self.model.to("cuda" if torch.cuda.is_available()
+                      and not model_config.disable_gpu else "cpu")
 
         features = self.tokenizer(request.input,
                                   return_tensors="pt",
                                   **request.preprocessing_kwargs)
         if request.explain_kwargs:
             if self.model.config.model_type == "roberta":
-                self.decoded_text = [token.replace("Ġ", "") for token in self.decode(
-                    features["input_ids"],
-                    skip_special_tokens=False)]
+                self.decoded_text = [
+                    token.replace("Ġ", "")
+                    for token in self.decode(
+                        features["input_ids"],
+                        skip_special_tokens=False)
+                ]
             else:
                 self.decoded_text = self.decode(
                     features["input_ids"],
@@ -339,8 +360,10 @@ class Transformer(Model):
         keys = all_predictions[0].keys()
         final_prediction = {}
         for key in keys:
-            # HuggingFace outputs for 'attentions' and more is returned as tuple of tensors
-            # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
+            # HuggingFace outputs for 'attentions' and more is
+            # returned as tuple of tensors
+            # Tuple of tuples only exists for 'past_key_values'
+            # which is only relevant for generation.
             # Generation should NOT use this function
             if isinstance(all_predictions[0][key], tuple):
                 tuple_of_lists = list(zip(*[[torch.stack(p).cpu()
