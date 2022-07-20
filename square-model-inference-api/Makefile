@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 # Target section and Global definitions
 # -----------------------------------------------------------------------------
-.PHONY: all clean test install run deploy down
+.PHONY: all clean test install run deploy clean-deploy down
 
 all: clean test install run deploy down
 
@@ -24,7 +24,8 @@ install:
 	pip install -r inference_server/requirements2.txt
 
 run:
-	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8000 --env-file inference_server/.env.dpr
+	export CONFIG_PATH="./.test_configs"  && \
+	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8000 --env-file inference_server/.env.bert_adapter
 
 build:
 	docker-compose build
@@ -32,6 +33,12 @@ build:
 deploy:
 	docker-compose build
 	docker-compose up -d
+
+clean-deploy:
+	docker-compose down
+	docker rm -f $(docker ps -a -q)
+	docker volume rm $(docker volume ls -q)
+	docker-compose up
 
 down:
 	docker-compose down
