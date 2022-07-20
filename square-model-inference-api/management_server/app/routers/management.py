@@ -296,6 +296,29 @@ async def get_task_status(task_id):
     result = task.get()
     return {"task_id": str(task_id), "status": "Finished", "result": result}
 
+@router.get("/task", name="")
+async def get_all_tasks():
+    # https://docs.celeryq.dev/en/latest/userguide/workers.html#inspecting-workers
+    i = celery_app.control.inspect()
+    # Show the items that have an ETA or are scheduled for later processing
+    scheduled = i.scheduled()
+
+    # Show tasks that are currently active.
+    active = i.active()
+
+    # Show tasks that have been claimed by workers
+    reserved = i.reserved()
+
+    tasks = {
+        "scheduled": scheduled,
+        "active": active,
+        "reserved": reserved,
+    }
+
+    logger.info("/tasks: {}".format(tasks))
+
+    return tasks
+
 
 @router.put("/db/update")
 async def init_db_from_docker(token: str = Depends(client_credentials)):

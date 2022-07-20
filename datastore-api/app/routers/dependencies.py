@@ -4,6 +4,7 @@ from ..core.base_connector import BaseConnector
 from ..core.config import settings
 from ..core.dense_retrieval import DenseRetrieval
 from ..core.es.connector import ElasticsearchConnector
+from ..core.kgs.connector import KnowledgeGraphConnector
 from ..core.faiss import FaissClient
 from ..core.model_api import ModelAPIClient
 from ..core.mongo import MongoClient
@@ -15,6 +16,10 @@ client_credentials = ClientCredentials()  # For getting tokens and enable access
 @lru_cache()
 def get_storage_connector() -> BaseConnector:
     return ElasticsearchConnector(settings.ES_URL)
+
+@lru_cache()
+def get_kg_storage_connector() -> ElasticsearchConnector:
+    return KnowledgeGraphConnector(settings.ES_URL)
 
 
 # IMPORTANT: When altering this, make sure to also alter the corresponding mock in conftest.py!

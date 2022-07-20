@@ -287,7 +287,7 @@ services:
 #      - ./inference_server/.env.bert_onnx
 #    environment:
 #      - WEB_CONCURRENCY=1
-#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
 #    volumes:
 #      - ./.cache/:/etc/onnx/.cache/
 #      - onnx-models:/onnx_models

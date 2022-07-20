@@ -52,7 +52,7 @@ async def get_datastore(
         return Response(status_code=404)
     return schema
 
-
+###  BUG: PUT-Request goes through and kgs are being created. But is still returning a 500 ERROR
 @router.put(
     "/{datastore_name}",
     summary="Create a datastore",
