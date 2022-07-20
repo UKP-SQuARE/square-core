@@ -4,7 +4,7 @@ version: "3.3"
 
 services:
   traefik:
-    image: traefik:v2.6.1
+    image: traefik:v2.8.1
     container_name: traefik
     command:
       - --api.insecure=true
@@ -63,7 +63,7 @@ services:
       - '6379:6379'
     env_file:
       - .env
-    command: [ "redis-server", "--appendonly yes", "--requirepass ${REDIS_PASSWORD}" ]
+    command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
 #    volumes:
 #      - square-redis-data:/square/redis/data:rw
@@ -184,6 +184,58 @@ services:
       - maintaining
       - rabbit
       - redishost
+
+  bert_worker:
+    build: ./inference_server
+    command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./inference_server/.env.bert_adapter
+      - inference_server/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=bert-base-uncased
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+#  bart_worker:
+#    build: ./inference_server
+#    command: celery -A tasks worker -Q bart-base --loglevel=info
+#    volumes:
+#      - ./:/usr/src/app
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - model_configs:/model_configs
+#    env_file:
+#      - ./inference_server/.env.bart_adapter
+#      - inference_server/.env
+#    environment:
+#      - DOCKER_HOST_URL=https://172.17.0.1:8443
+#      - VERIFY_SSL=0
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - REALM=square
+#      - CLIENT_ID=models
+#      - QUEUE=bart-base
+#      - CONFIG_PATH=/model_configs
+#    links:
+#      - rabbit
+#      - redishost
+#    depends_on:
+#      - maintaining
+#      - rabbit
+#      - redishost
 
 #  # --------- Example config for abstractive QA adapter model server ---------
 #  model_bart_base_adapter:
