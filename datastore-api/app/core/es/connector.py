@@ -60,7 +60,6 @@ class ElasticsearchConnector(BaseConnector):
         docs_index = self._datastore_docs_index_name(datastore_name)
         try:
             index = await self.es.indices.get(index=docs_index)
-            print(index)
             return self.converter.convert_to_datastore(datastore_name, index[docs_index])
         except elasticsearch.exceptions.NotFoundError:
             return None
@@ -386,7 +385,7 @@ class ElasticsearchConnector(BaseConnector):
 
     # --- Management methods ---
 
-    async def commit_changes(self):
+    async def commit_changes(self):  # TODO: Bad name. Change it to refresh
         """Commits all changes. E.g., in the case of Vespa, this would export & upload an application package."""
         await self.es.indices.refresh(index="")
 

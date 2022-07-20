@@ -12,7 +12,7 @@ generate_password () {
 	echo "$PASSWORD"
 }
 
-SQUARE_URL=${1:-"square.ukp-lab.local"}
+SQUARE_URL=${1:-"square.ukp-lab.localhost"}
 REALM=${2:-"square"}
 KEYCLOAK_PASSWORD=${3:-$(generate_password)}
 POSTGRES_PASSWORD=${4:-$(generate_password)}
@@ -20,7 +20,7 @@ MONGO_PASSWORD=${5:-$(generate_password)}
 
 keycloak_get_admin_token () {
 	# returns an admin token from the master realm
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/realms/master/protocol/openid-connect/token/" \
 		-H 'Content-Type: application/x-www-form-urlencoded' \
 		--data-urlencode "grant_type=password" \
@@ -39,11 +39,12 @@ keycloak_create_realm () {
 	PAYLOAD=$(cat <<- EOF
 		{
 			"realm": "$REALM", 
-			"enabled": true
+			"enabled": true,
+			"registrationAllowed": true
 		}
 		EOF
 	)
-	curl -s -k -L --fail-with-body -o /dev/null -X POST \
+	curl -s -k -L -o /dev/null -X POST \
 		"https://$SQUARE_URL/auth/admin/realms" \
 		-H "Authorization: Bearer $ADMIN_TOKEN" \
 		-H 'Content-Type: application/json' \
@@ -53,7 +54,7 @@ keycloak_create_realm () {
 keycloak_get_initial_access_token () {
 	# gets a new initial access token for a realm that can be used once
 
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/admin/realms/$REALM/clients-initial-access" \
 		-H "Authorization: Bearer $ADMIN_TOKEN" \
 		-H 'Content-Type: application/json' \
@@ -68,7 +69,7 @@ keycloak_get_client_token () {
 	# returns an access token obtained by the client credentials flow
 	CLIENT_ID=$1
 	CLIENT_SECRET=$2
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/realms/$REALM/protocol/openid-connect/token" \
 		-H 'Content-Type: application/x-www-form-urlencoded' \
 		--data-urlencode 'grant_type=client_credentials' \
@@ -97,7 +98,7 @@ keycloak_create_client_registration_client () {
 	)
 
 	# ===== Create the `skill-manager` client =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X POST \
+	RESPONSE=$(curl -s -k -L -X POST \
 		"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 		-H "Authorization: Bearer $INITIAL_ACCESS_TOKEN" \
 		-H 'Content-Type: application/json' \
@@ -111,21 +112,21 @@ keycloak_create_client_registration_client () {
 	ADMIN_TOKEN=$(keycloak_get_admin_token)
 
 	# ===== Get the ID of the `realm-management` user =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X GET \
+	RESPONSE=$(curl -s -k -L -X GET \
 		"https://$SQUARE_URL/auth/admin/realms/$REALM/clients?clientId=realm-management&max=20&search=true" \
 		-H "Authorization: Bearer $ADMIN_TOKEN"
 	)
 	REALM_MANAGEMENT_ID=$(echo $RESPONSE | jq -r '.[0].id')
 
 	# ===== Get the ID of the service account of the skill-manager =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X GET \
+	RESPONSE=$(curl -s -k -L -X GET \
 		"https://$SQUARE_URL/auth/admin/realms/$REALM/clients/$SKILL_MANAGER_ID/service-account-user" \
 		-H "Authorization: Bearer $ADMIN_TOKEN"
 	)
 	SERVICE_ACCOUNT_ID=$(echo $RESPONSE | jq -r '.id')
 
 	# ===== Get the `create-client` role id of the realm-management client for the service account  =====
-	RESPONSE=$(curl -s -k -L --fail-with-body -X GET \
+	RESPONSE=$(curl -s -k -L -X GET \
 	"https://$SQUARE_URL/auth/admin/realms/$REALM/users/$SERVICE_ACCOUNT_ID/role-mappings/clients/$REALM_MANAGEMENT_ID/available" \
 	-H "Authorization: Bearer $ADMIN_TOKEN")
 	CREATE_CLIENT_ID=$(echo $RESPONSE | jq -r '.[] | select(.name | contains("create-client")) | .id')
@@ -145,7 +146,7 @@ keycloak_create_client_registration_client () {
 	)
 
 	# ===== Assign the service account the `create-client` role from the realm-management  =====
-	curl -s -k -L --fail-with-body -o /dev/null -X POST \
+	curl -s -k -L -o /dev/null -X POST \
 	"https://$SQUARE_URL/auth/admin/realms/$REALM/users/$SERVICE_ACCOUNT_ID/role-mappings/clients/$REALM_MANAGEMENT_ID" \
 	-H "Authorization: Bearer $ADMIN_TOKEN" \
 	-H 'Content-Type: application/json' \
@@ -174,7 +175,7 @@ keycloak_create_client () {
 		EOF
 	)
 
-	curl -s -k -L --fail-with-body -o /dev/null -g -X POST \
+	curl -s -k -L -o /dev/null -g -X POST \
 	"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 	-H "Authorization: Bearer $TOKEN" \
 	-H "Content-Type: application/json" \
@@ -201,7 +202,7 @@ keycloak_create_frontend_client () {
 		EOF
 	)
 
-	curl -s -k -L --fail-with-body -o /dev/null -g -X POST \
+	curl -s -k -L -o /dev/null -g -X POST \
 	"https://$SQUARE_URL/auth/realms/$REALM/clients-registrations/default" \
 	-H "Authorization: Bearer $TOKEN" \
 	-H "Content-Type: application/json" \
@@ -218,16 +219,15 @@ else
 	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.template > ./postgres/.env 
 fi
 
-if [ -f ./skill-manager/.env ]; then
-	echo "./skill-manager/.env already exists. Skipping."
-	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./skill-manager/.env)"    
+if [ -f ./mongodb/.env ]; then
+	echo "./mongodb/.env already exists. Skipping."
+	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./mongodb/.env)"    
 else
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./mongodb/.env.template > ./mongodb/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./datastore-api/.env.template > ./datastore-api/.env
 	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.template > ./skill-manager/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./square-model-inference-api/management_server/.env.template > ./square-model-inference-api/management_server/.env
 fi
-
-# initilize env files for model management service and datastore
-cp ./square-model-inference-api/management_server/.env.template ./square-model-inference-api/management_server/.env 
-cp ./datastore-api/.env.template ./datastore-api/.env 
 
 # get all servies that need to be registered as clients keycloak
 CLIENTS=( "models" "datastores" ) 
@@ -242,7 +242,7 @@ done
 cd ..
 
 # bring up services required to setup authentication
-ytt -f docker-compose.ytt.yaml -f config.yaml >> docker-compose.yaml
+ytt -f docker-compose.ytt.yaml -f config.yaml > docker-compose.yaml
 sleep 1
 echo "Pulling Images. This might take a while. Meanwhile grab a coffe c[_]. "
 docker-compose pull -q
@@ -263,17 +263,19 @@ mv ./skill-manager/.env.tmp ./skill-manager/.env
 
 # create clients in keycloak and save client secret
 for CLIENT_ID in ${CLIENTS[@]}; do
-	CLIENT_SECRET=$(keycloak_create_client $CLIENT_ID $SKILL_MANAGER_SECRET)
 	
 	if [[ $CLIENT_ID == "models" ]]; then
 		CLIENT_PATH="square-model-inference-api/management_server"
 	
 	elif [[ $CLIENT_ID == "datastores" ]]; then
 		CLIENT_PATH="datastore-api"
-	
 	else
 		CLIENT_PATH="skills/$CLIENT_ID"
+		# add ukp- to client ID to register client under ukp username
+		CLIENT_ID="ukp-$CLIENT_ID"
 	fi
+	
+	CLIENT_SECRET=$(keycloak_create_client $CLIENT_ID $SKILL_MANAGER_SECRET)
 	
 	sed -e "s/%%CLIENT_SECRET%%/$CLIENT_SECRET/g" ./$CLIENT_PATH/.env > ./$CLIENT_PATH/.env.tmp
 	mv ./$CLIENT_PATH/.env.tmp ./$CLIENT_PATH/.env
@@ -286,7 +288,7 @@ docker-compose down
 echo "Building frontend."
 # build frontend with updated env file
 cp square-frontend/.env.production square-frontend/.env.production-backup
-cp square-frontend/.env.development square-frontend/.env.production
+sed -e "s/%%SQUARE_URL%%/https:\/\/$SQUARE_URL/g" square-frontend/.env.template > square-frontend/.env.production
 
 docker-compose build -q frontend
 

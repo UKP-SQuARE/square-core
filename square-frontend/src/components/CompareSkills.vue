@@ -78,18 +78,22 @@ export default Vue.component('compare-skills', {
         requiresContext: false,
         requiresMultipleChoices: 0
       }
-      this.availableSkills.forEach(skill => {
-        if (this.selectedSkills.includes(skill.id)) {
-          if (settings.skillType === null) {
-            settings.skillType = skill.skill_type
+      this.selectedSkills.forEach((skillId, index) => {
+        this.availableSkills.forEach(skill => {
+          if (skillId === skill.id) {
+            if (index === 0) {
+              settings.skillType = skill.skill_type
+              settings.requiresContext = skill.skill_settings.requires_context
+            } else if (skill.skill_type !== settings.skillType || skill.skill_settings.requires_context !== settings.requiresContext) {
+              this.options.selectedSkills[index] = 'None'
+            }
+            // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
+            settings.requiresMultipleChoices = Math.max(
+                settings.requiresContext ? 1 : 0,
+                settings.requiresMultipleChoices,
+                skill.skill_settings.requires_multiple_choices)
           }
-          settings.requiresContext = settings.requiresContext || skill.skill_settings.requires_context
-          // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
-          settings.requiresMultipleChoices = Math.max(
-              settings.requiresContext ? 1 : 0,
-              settings.requiresMultipleChoices,
-              skill.skill_settings.requires_multiple_choices)
-        }
+        })
       })
       return settings
     }
@@ -107,8 +111,10 @@ export default Vue.component('compare-skills', {
     this.waiting = true
     this.$store.dispatch('updateSkills')
         .then(() => {
-          // Copy the object so we do not change the state before a query is issued
-          this.options = JSON.parse(JSON.stringify(this.$store.state.skillOptions[this.selectorTarget]))
+          this.$store.state.skillOptions[this.selectorTarget].selectedSkills.forEach((skill, index) => {
+            this.$set(this.options.selectedSkills, index, skill)
+          })
+          this.$emit('input', this.options, this.skillSettings)
         }).finally(() => {
           this.waiting = false
         })

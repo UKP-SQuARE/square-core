@@ -49,6 +49,7 @@ def add_prefix_to_openapi():
     }
     return openapi_schema
 
+
 app.openapi_schema = add_prefix_to_openapi()
 
 
