@@ -3,12 +3,9 @@ FROM python:3.7.6-slim-buster as base
 ENV PYTHONUNBUFFERED 1
 
 # required to install packages from github
-RUN apt-get -y update
-RUN apt-get -y install git
+RUN apt-get -y update && apt-get -y install git rabbitmq-server
 
 RUN pip install --upgrade pip
-# install rabbit mq backend
-RUN apt-get install -y rabbitmq-server
 
 WORKDIR /app
 
