@@ -105,19 +105,29 @@
           <div class="my-3 py-3">
             <h2 class="display-5">Latest News!</h2>
             <p class="lead fs-4">SQuARE is presented at the <a href="https://scads.ai/education/summer-schools/scads-ai-summer-school-2022/prof-iryna-gurevychharitz-puerto/" target="_blank"> <span class="text-warning">ScaDS.AI Machine Learning Summer School</span></a> in Leipzig.</p>
-            <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
-              <a href="https://twitter.com/Sca_DS/status/1546789948644286465" target="_blank"  class="btn btn-light btn-lg px-4">Check the Tweet!
-                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-twitter" viewBox="0 0 16 16">
+            
+            <div class="d-grid gap-2 d-flex justify-content-center mt-5">
+              <a
+                  href="https://twitter.com/Sca_DS/status/1546789948644286465"
+                  target="_blank"
+                  role="button"
+                  class="btn btn-light btn-lg px-4 d-flex justify-content-center align-items-center">
+                Check the Tweet! &nbsp;
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-book" viewBox="0 0 16 16">
                   <path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>
                 </svg>
+                
               </a>
-              <router-link class="btn btn-light btn-lg px-4" to="/news">Read more news 
+
+              <router-link class="btn btn-light btn-lg px-4 justify-content-center align-items-center" to="/news">Read more news&nbsp; 
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-newspaper" viewBox="0 0 16 16">
                   <path d="M0 2.5A1.5 1.5 0 0 1 1.5 1h11A1.5 1.5 0 0 1 14 2.5v10.528c0 .3-.05.654-.238.972h.738a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 1 1 0v9a1.5 1.5 0 0 1-1.5 1.5H1.497A1.497 1.497 0 0 1 0 13.5v-11zM12 14c.37 0 .654-.211.853-.441.092-.106.147-.279.147-.531V2.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5v11c0 .278.223.5.497.5H12z"/>
                   <path d="M2 3h10v2H2V3zm0 3h4v3H2V6zm0 4h4v1H2v-1zm0 2h4v1H2v-1zm5-6h2v1H7V6zm3 0h2v1h-2V6zM7 8h2v1H7V8zm3 0h2v1h-2V8zm-3 2h2v1H7v-1zm3 0h2v1h-2v-1zm-3 2h2v1H7v-1zm3 0h2v1h-2v-1z"/>
                 </svg>
               </router-link>
+              
             </div>
+            
           </div>
         </div>
         
