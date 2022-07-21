@@ -245,8 +245,6 @@ services:
       REDIS_USER: default
     env_file:
       - .env
-      #! - ./redis/.env
-    #! command: [ 'redis-server', '--requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"' ]
     command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
   maintaining_worker:
