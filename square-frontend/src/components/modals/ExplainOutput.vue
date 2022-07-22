@@ -45,7 +45,7 @@
                   <h4>Showing the top {{num_show}} most important words</h4>
                 </div>
                 <div class="col-6">
-                  <input type="range" min="0" :max="num_Maxshow" value="3" class="form-range" id="Range" @click="changeShowNum()"  >
+                  <input type="range" min="1" :max="num_Maxshow" value="3" class="form-range" id="Range" @click="changeShowNum()"  >
                 </div>
               </div>
             </div>
