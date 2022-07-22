@@ -6,62 +6,51 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
         </div>
         <div class="modal-body">
+          <div class="container text-center">
+            <div class="row">
+              <div class="col-12">
+                  <h1>Saliency Map</h1>
+                  <hr/>
+              </div>
+            </div>
 
-        </div>
+            <div class="row">
+              <div class="col-2">
+                  <h4>Method:</h4>
+              </div>
+              <div class="col-2">
+                <button v-on:click="postReq('Attention')" type="button" class="btn btn-outline-primary">Attention</button>
+              </div>
+              <div class="col-2">
+                <button @click="postReq('Scaled Attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
+              </div>
+              <div class="col-2">
+                <button v-on:click="postReq('Simple Grad')" type="button" class="btn btn-outline-primary">Simple Grad</button>
+              </div>
+              <div class="col-2">
+                <button v-on:click="postReq('Smooth Grad')"  type="button" class="btn btn-outline-primary">Smooth Grad</button>
+              </div>
+              <div class="col-2">
+                <button v-on:click="postReq('Integrated Grad')"  type="button" class="btn btn-outline-primary">Integrated Grad</button>
+              </div>
+            </div>
 
- 
-        <div class="row"> 
-          <h4 class="col-sm-2">Method:
-         
-          </h4>
-            
-            <button v-on:click="postReq('Attention')" type="button" class="btn btn-default col-sm-2">Attention</button>
-            <button @click="postReq('Scaled Attention')" type="button" class="btn btn-default col-sm-2">Scaled Attention</button>
-            <button v-on:click="postReq('Simple Grad')" type="button" class="btn btn-default col-sm-2">Simple Grad</button>
-            <button v-on:click="postReq('Smooth Grad')"  type="button" class="btn btn-default col-sm-2">Smooth Grad</button>
-            <button v-on:click="postReq('Integrated Grad')"  type="button" class="btn btn-default col-sm-2">Integrated Grad</button>
+            <div v-if="num_show != undefined" class="slidecontainer">
+              <h4>Showing the top {{num_Maxshow}} most important words  </h4>
+              <input type="range" min="1" :max="num_Maxshow" value="this.value" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
+              <output ></output>
+            </div>
 
-        
+            <div v-if="num_Maxshow != undefined "> 
+              <h4>Question:<span v-html="highlightedQuestion()"/></h4> 
+            </div>
+
+            <div v-if="num_Maxshow != undefined "> 
+              <h4>Context:<span v-html="highlightedContext()"/></h4> 
+            </div>
           
-          <!-- <p class="text-primary">.text-primary</p> -->
- <!-- <mark class="text-primary text-opacity-100"> color test</mark>
- <mark class="text-primary text-opacity-90"> color test</mark>
-  <mark class="text-primary text-opacity-80"> color test</mark>
-   <mark class="text-primary text-opacity-70"> color test</mark>
-    <mark class="text-primary text-opacity-60"> color test</mark>
-     <mark class="text-primary text-opacity-50"> color test</mark>
-      <mark class="text-primary text-opacity-40"> color test</mark>
-       <mark class="text-primary text-opacity-30"> color test</mark>
-        <mark class="text-primary text-opacity-20"> color test</mark>
-         <mark class="text-primary text-opacity-10"> color test</mark>
- -->
-
-
+          </div>
         </div>
-
-
-    <div v-if="num_show != undefined" class="slidecontainer">
-      <h4>Showing the top {{num_Maxshow}} most important words  </h4>
-    <input type="range" min="1" :max="num_Maxshow" value="this.value" class="slider" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
-    <output ></output>
-
-    </div>
-        
-
-  
-
-    <div v-if="num_Maxshow != undefined "> 
-          <h4>Question:<span v-html="highlightedQuestion()"/></h4> 
-
-    </div>
-
-
-        <div v-if="num_Maxshow != undefined "> 
-          <h4>Context:<span v-html="highlightedContext()"/></h4> 
-
-        </div>
-
-
       </div>
     </div>
   </div>
