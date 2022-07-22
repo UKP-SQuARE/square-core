@@ -45,7 +45,7 @@
                   <h4>Showing the top {{num_show}} most important words</h4>
                 </div>
                 <div class="col-6">
-                  <input type="range" min="0" :max="num_Maxshow" value="0" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
+                  <input type="range" min="0" :max="num_Maxshow" value="3" class="form-range" id="Range" @click="changeShowNum()"  >
                 </div>
               </div>
             </div>
@@ -131,7 +131,7 @@ export default Vue.component("explain-output",{
       }).then(() => {
         this.failure = false,
         this.num_Maxshow = request_json['explain_kwargs']['top_k']
-        this.num_show = 0
+        this.num_show = 3
         console.log("Query successed! "),
         this.$store.state.currentQuestion = request_json['input'][0][0]
         this.$store.state.currentContext = request_json['input'][0][1]
@@ -145,25 +145,25 @@ export default Vue.component("explain-output",{
     },
 
     highLight(sentence,mode){ // add here skill param
-      for (let i = 0; i<this.num_show;i++)
-      {
+      for (let i = 0; i<this.num_show;i++) {
         var currentWord = context_json['result']['attributions'][0][mode][i][1]
         let level = context_json['result']['attributions'][0][mode][i][2]
         level = level.toFixed(1) * 100
         level = Math.round(level) 
-        if (level==0){
+        if (level==0) {
           level = 10
         }
-        
-        //using word color to highlight
-        //var highLightedWord = '<mark class="bg-transparent text-opacity-'+ level.toString() +' text-danger">'+currentWord+'</mark>'
-        //using background to highlight
-        var highLightedWord = '<mark class="bg-warning p-2 text-dark bg-opacity-'+ level.toString() +' ">'+currentWord+'</mark>'
+        level = level/100
+        // put this color rgb(249, 248, 113) to currentWord
+        // var highLightedWord = '<span style="background-color:rgb(249, 248, 113,'+level.toString()+');">'+currentWord+'</span>'
+
+        // var highLightedWord = '<span class="badge rounded-pill badge-warning" style="opacity: '+ level.toString() +';">'+currentWord+'</span>'
+        var highLightedWord = '<mark class="bg-warning p-2 text-dark" style="--bs-bg-opacity: '+ level.toString() +'">'+currentWord+'</mark>'
 
         console.log(highLightedWord)
         sentence =sentence.toLowerCase().replaceAll(context_json['result']['attributions'][0][mode][i][1],highLightedWord)   
       }
-       return sentence
+      return sentence
 
     },
 
