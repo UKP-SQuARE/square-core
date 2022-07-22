@@ -145,25 +145,27 @@ export default Vue.component("explain-output",{
     },
 
     highLight(sentence,mode){ // add here skill param
+      var listWords = sentence.split(' ');
+      var highlightedSentence = "";
       for (let i = 0; i<this.num_show;i++) {
+        var wordIdx = context_json['result']['attributions'][0][mode][i][0]
         var currentWord = context_json['result']['attributions'][0][mode][i][1]
-        let level = context_json['result']['attributions'][0][mode][i][2]
-        level = level.toFixed(1) * 100
-        level = Math.round(level) 
+        var level = context_json['result']['attributions'][0][mode][i][2]
+        level = level.toFixed(1) * 100;
+        level = Math.round(level) ;
         if (level==0) {
-          level = 10
+          level = 10;
         }
-        level = level/100
-        // put this color rgb(249, 248, 113) to currentWord
-        // var highLightedWord = '<span style="background-color:rgb(249, 248, 113,'+level.toString()+');">'+currentWord+'</span>'
+        level = level/100;
 
-        // var highLightedWord = '<span class="badge rounded-pill badge-warning" style="opacity: '+ level.toString() +';">'+currentWord+'</span>'
         var highLightedWord = '<mark class="bg-warning p-2 text-dark" style="--bs-bg-opacity: '+ level.toString() +'">'+currentWord+'</mark>'
-
         console.log(highLightedWord)
-        sentence =sentence.toLowerCase().replaceAll(context_json['result']['attributions'][0][mode][i][1],highLightedWord)   
+        listWords[wordIdx] = highLightedWord;
       }
-      return sentence
+      for (let i = 0; i<listWords.length;i++) {
+        highlightedSentence += listWords[i] + " ";
+      }
+      return highlightedSentence
 
     },
 
