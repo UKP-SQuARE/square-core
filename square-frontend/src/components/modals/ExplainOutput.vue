@@ -38,7 +38,7 @@
             <div v-if="num_show != undefined" class="slidecontainer">
               <div class="row mt-3">
                 <div class="col-4">
-                  Showing the top {{num_show}} most important words
+                  <h4>Showing the top {{num_show}} most important words</h4>
                 </div>
                 <div class="col-8">
                   <input type="range" min="1" :max="num_Maxshow" value="this.value" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
@@ -50,7 +50,7 @@
             <div v-if="num_Maxshow != undefined "> 
               <div class="row mt-3">
                 <div class="col-2">
-                  Question:
+                  <h4>Question:</h4>
                 </div>
                 <div class="col-10">
                   <span v-html="highlightedQuestion()"/>
@@ -61,7 +61,7 @@
             <div v-if="num_Maxshow != undefined ">
               <div class="row mt-3">
                 <div class="col-2">
-                  Context:
+                  <h4>Context:</h4>
                 </div>
                 <div class="col-10">
                   <span v-html="highlightedContext()"/>
@@ -153,7 +153,7 @@ export default Vue.component("explain-output",{
         //using word color to highlight
         //var highLightedWord = '<mark class="bg-transparent text-opacity-'+ level.toString() +' text-danger">'+currentWord+'</mark>'
         //using background to highlight
-        var highLightedWord = '<mark class="bg-danger p-2 text-dark bg-opacity-'+ level.toString() +' ">'+currentWord+'</mark>'
+        var highLightedWord = '<mark class="bg-warning p-2 text-dark bg-opacity-'+ level.toString() +' ">'+currentWord+'</mark>'
 
         console.log(highLightedWord)
         sentence =sentence.toLowerCase().replaceAll(context_json['result']['attributions'][0][mode][i][1],highLightedWord)   
