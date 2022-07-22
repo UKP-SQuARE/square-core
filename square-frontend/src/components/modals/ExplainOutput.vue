@@ -87,7 +87,6 @@
 <script>
 import Vue from 'vue'
 //import BadgePopover from '../BadgePopover'
-import mixin from '@/components/results/mixin.vue'
 // import { postQuery } from '../../api'
 import context_json from './explainability_context.json'
 // import question_json from './explainability_question.json'
@@ -103,7 +102,6 @@ export default Vue.component("explain-output",{
   }
   },
   props:['test'],  //args should be the test json file
-  mixins:[mixin], // ??
   components:{
     //BadgePopover // maybe useful
   },
