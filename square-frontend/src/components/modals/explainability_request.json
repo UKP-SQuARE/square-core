@@ -1,0 +1,12 @@
+{
+    "input": [
+      ["Who stars in The Matrix?",
+       "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis, starring Keanu Reeves, Laurence."]
+    ],
+    "is_preprocessed": false,
+    "preprocessing_kwargs": {},
+    "model_kwargs": {},
+    "task_kwargs": {},
+    "explain_kwargs": {"method": "simple_grads", "top_k":5, "mode":"all"},
+    "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
+   }
