@@ -37,17 +37,25 @@
 
             <div v-if="num_show != undefined" class="slidecontainer">
               <div class="row mt-3">
-                <div class="col-4">
+                <div class="col-6">
                   <h4>Showing the top {{num_show}} most important words</h4>
                 </div>
-                <div class="col-8">
+                <div class="col-6">
                   <input type="range" min="1" :max="num_Maxshow" value="this.value" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
                   <output ></output>
                 </div>
               </div>
             </div>
+            
+            <div class="row mt-3" v-for="(skillResult, index) in currentResults" :key="index">
+              <div class="col-12">
+                <h4>{{ skillResult.skill.name }}</h4>
+                <hr/>
+              </div>
+            </div>
 
-            <div v-if="num_Maxshow != undefined "> 
+            
+            <div v-if="num_show != undefined ">
               <div class="row mt-3">
                 <div class="col-2">
                   <h4>Question:</h4>
@@ -58,7 +66,7 @@
               </div>
             </div>
 
-            <div v-if="num_Maxshow != undefined ">
+            <div v-if="num_show != undefined ">
               <div class="row mt-3">
                 <div class="col-2">
                   <h4>Context:</h4>
@@ -86,13 +94,12 @@ import context_json from './explainability_context.json'
 import request_json from './explainability_request.json'
 
 export default Vue.component("explain-output",{
+  inject: ['currentResults'],
   data () {
      return {
-
-      num_Maxshow : this.num_Maxshow ,
-      num_show : this.num_show ,
-      
-
+      num_Maxshow : this.num_Maxshow,
+      num_show : undefined,
+      currentResults: this.currentResults,
   }
   },
   props:['test'],  //args should be the test json file
@@ -163,7 +170,6 @@ export default Vue.component("explain-output",{
     },
 
     highlightedQuestion() {
-    
     // Input:
     //   Question: strings,
     //   scores: a list of [word_idx,word,score]]
@@ -180,44 +186,12 @@ export default Vue.component("explain-output",{
 
 
     changeShowNum(){
-
       var slider = document.getElementById("Range");
-      this.num_show = slider.value
-
-
+      this.num_show = slider.value;
     },
-    
-    
 
-
-
-    // greet: function() {
-    //   this.num_show = this.num_show- 1;
-      
-    //   var slider = document.getElementById("Range");
-    //   console.log(slider.value)
-
-    //   this.num_show = slider.value
-    //   alert(this.num_show)
-    //   // this.$store.state.currentContext = {}
-    //   // alert(this.response)
-    //   // alert( this.response ) 
-    //   // alert( Object.values(this.$store.state.skillOptions['qa']) )  
-    //      }
   },
-}
-)
+})
 
 
 </script>
-
-<style scoped>
-
-/* mark { 
-  background-color:red;
-  color: black;
-} */
-
-
-
-</style>

@@ -90,6 +90,11 @@ export default Vue.component('skill-results', {
       showWithContext: false
     }
   },
+  provide() {
+    return {
+      currentResults: this.$store.state.currentResults
+    }
+  },
   components: {
     Categorical,
     SpanExtraction,
