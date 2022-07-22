@@ -375,12 +375,34 @@ async def get_edge_by_name(
     docid: set = Body(..., description="The name of the edge to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
-    result = await conn.edges_from_msearch(kg_name, docid)
+    result = await conn.edges_in_out_msearch(kg_name, docid)
     if result is not None:
         return result
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
 
+@router.get(
+    "/{kg_name}/edges/query_by_id_as_nodes",
+    summary="Get list of nodes which go in or out of given node for given knowledge graph",
+    description="Returns a list of nodes, which either go in or out of the given node.",
+    responses={
+        200: {
+            "description": "List of nodes",
+        },
+        404: {"description": "The edges could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_edges_by_id_as_nodes(
+    kg_name: str = Path(..., description="The name of the edge"),
+    docid: set = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.extract_nodes(kg_name, docid)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
 
 @router.get(
     "/{kg_name}/{object_id}",
