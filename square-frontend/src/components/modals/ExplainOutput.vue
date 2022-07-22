@@ -46,7 +46,6 @@
                 </div>
                 <div class="col-6">
                   <input type="range" min="0" :max="num_Maxshow" value="0" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
-                  <output ></output>
                 </div>
               </div>
             </div>
