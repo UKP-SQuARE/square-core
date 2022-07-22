@@ -18,11 +18,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     context = request.skill_args["context"]
+    explain_kwargs = request.skill_args.get("explain_kwargs", {})
 
     prepared_input = [[query, context]]
     model_request = {
         "input": prepared_input,
         "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
+        "explain_kwargs": explain_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
