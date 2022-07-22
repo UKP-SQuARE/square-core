@@ -15,7 +15,7 @@
             </div>
 
             <div class="row">
-              <div class="col-2">
+              <div class="col-2 text-start">
                   <h4>Method:</h4>
               </div>
               <div class="col-2">
@@ -37,7 +37,7 @@
 
             <div v-if="num_show != undefined" class="slidecontainer">
               <div class="row mt-3">
-                <div class="col-6">
+                <div class="col-6 text-start">
                   <h4>Showing the top {{num_show}} most important words</h4>
                 </div>
                 <div class="col-6">
@@ -52,31 +52,30 @@
                 <h4>{{ skillResult.skill.name }}</h4>
                 <hr/>
               </div>
-            </div>
 
-            
-            <div v-if="num_show != undefined ">
-              <div class="row mt-3">
-                <div class="col-2">
-                  <h4>Question:</h4>
+              <div v-if="num_show != undefined ">
+                <div class="row mt-3">
+                  <div class="col-2 text-start">
+                    <h4>Question:</h4>
+                  </div>
+                  <div class="col-10">
+                    <span v-html="highlightedQuestion()"/>
+                  </div>
                 </div>
-                <div class="col-10">
-                  <span v-html="highlightedQuestion()"/>
+              </div>
+
+              <div v-if="num_show != undefined ">
+                <div class="row mt-3">
+                  <div class="col-2 text-start">
+                    <h4>Context:</h4>
+                  </div>
+                  <div class="col-10">
+                    <span v-html="highlightedContext()"/>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div v-if="num_show != undefined ">
-              <div class="row mt-3">
-                <div class="col-2">
-                  <h4>Context:</h4>
-                </div>
-                <div class="col-10">
-                  <span v-html="highlightedContext()"/>
-                </div>
-              </div>
-            </div>
-          
           </div>
         </div>
       </div>
@@ -142,9 +141,7 @@ export default Vue.component("explain-output",{
       })
     },
 
-    highLight(sentence,mode){
-      
-    
+    highLight(sentence,mode){ // add here skill param
       for (let i = 0; i<this.num_show;i++)
       {
         var currentWord = context_json['result']['attributions'][0][mode][i][1]
@@ -177,11 +174,8 @@ export default Vue.component("explain-output",{
     },
 
     highlightedContext() {
-      
        return this.highLight(this.$store.state.currentContext,'context') 
     },
-
-
 
     changeShowNum(){
       var slider = document.getElementById("Range");
