@@ -19,9 +19,10 @@ const nodes = [
   {
     data: {
       id: 0,
-      name: "Animal",
+      name: "Q_Node",
       description: "",
-      active: true,
+      q_node: true,
+      ans_node: false,
       width: 140,
     },
   },
@@ -30,7 +31,8 @@ const nodes = [
       id: 1,
       name: "Mammal",
       description: "",
-      active: false,
+      q_node: false,
+      ans_node: false,
       width: 140,
     },
   },
@@ -39,7 +41,8 @@ const nodes = [
       id: 2,
       name: "Reptile",
       description: "",
-      active: false,
+      q_node: false,
+      ans_node: false,
       width: 140,
     },
   },
@@ -48,7 +51,8 @@ const nodes = [
       id: 3,
       name: "Horse",
       description: "",
-      active: false,
+      q_node: false,
+      ans_node: false,
       width: 140,
     },
   },
@@ -57,7 +61,8 @@ const nodes = [
       id: 4,
       name: "Dog",
       description: "Join",
-      active: false,
+      q_node: false,
+      ans_node: false,
       width: 140,
     },
   },
@@ -66,7 +71,8 @@ const nodes = [
       id: 5,
       name: "Goat",
       description: "Branch Out",
-      active: false,
+      q_node: false,
+      ans_node: false,
       width: 140,
     },
   },
@@ -75,7 +81,8 @@ const nodes = [
       id: 6,
       name: "Hound",
       description: "",
-      active: false,
+      q_node: false,
+      ans_node: false,
       width: 140,
     },
   },
@@ -84,20 +91,21 @@ const nodes = [
       id: 7,
       name: "German Shephard",
       description: "",
-      active: false,
+      q_node: false,
+      ans_node: true,
       width: 140,
     },
   },
 ];
 
 const edges = [
-  { data: { source: 0, target: 1, label: "Sub" } },
-  { data: { source: 0, target: 2, label: "Sub" } },
-  { data: { source: 1, target: 3, label: "Sub" } },
-  { data: { source: 1, target: 4, label: "Sub" } },
-  { data: { source: 1, target: 5, label: "Sub" } },
-  { data: { source: 4, target: 6, label: "Sub" } },
-  { data: { source: 4, target: 7, label: "Sub" } },
+  { data: { source: 0, target: 1, label: "Sub", width: 10 } },
+  { data: { source: 0, target: 2, label: "Sub", width: 20  } },
+  { data: { source: 1, target: 3, label: "Sub", width: 30  } },
+  { data: { source: 1, target: 4, label: "Sub", width: 40  } },
+  { data: { source: 1, target: 5, label: "Sub", width: 50  } },
+  { data: { source: 4, target: 6, label: "Sub", width: 60  } },
+  { data: { source: 4, target: 7, label: "Sub", width: 70  } },
 ];
 
 export default {
@@ -125,9 +133,8 @@ export default {
             shape: "roundrectangle",
             height: 40,
             width: "data(width)",
-            "background-color": (node) =>
-              node.data("active") ? "green" : "white",
-            color: (node) => (node.data("active") ? "white" : "black"),
+            "background-color": "white",
+            "color": "black",
             "border-color": "gray",
             "border-width": 3,
             "border-radius": 4,
@@ -136,6 +143,15 @@ export default {
             "text-valign": "center",
             "text-halign": "center",
           })
+          .selector("node[?q_node]").css({
+            "background-color": "#B238DF",
+            "color": "white",
+          })
+          .selector("node[?ans_node]").css({
+            "background-color": "green",
+            "color": "white",
+          })
+          
           .selector("edge")
           .css({
             // http://js.cytoscape.org/#style/labels
@@ -145,11 +161,11 @@ export default {
             "text-valign": "top",
             "text-halign": "left",
             // https://js.cytoscape.org/demos/edge-types/
-            "curve-style": "bezier",
-            width: 3,
-            "target-arrow-shape": "triangle",
-            "line-color": "gray",
-            "target-arrow-color": "gray",
+            "curve-style": "straight-triangle",
+            "width": "data(width)",
+            "line-color": "#48A7DB",
+            "target-arrow-color": "#48A7DB",
+            "opacity": "data(opacity)",
           }),
         elements: {
           nodes: [],
@@ -169,6 +185,7 @@ export default {
           // add edges from Z to all nodes
       }
       for (const e of edges){
+          e['data']['opacity'] = e['data']['width']/100;
           cy.add({
             data: e['data']
           });
