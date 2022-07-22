@@ -26,7 +26,7 @@
                 <button v-on:click="postReq('Attention')" type="button" class="btn btn-outline-primary">Attention</button>
               </div>
               <div class="col-2">
-                <button @click="postReq('Scaled Attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
+                <button v-on:click="postReq('Scaled Attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
               </div>
               <div class="col-2">
                 <button v-on:click="postReq('Simple Grad')" type="button" class="btn btn-outline-primary">Simple Grad</button>
