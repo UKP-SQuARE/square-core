@@ -36,17 +36,37 @@
             </div>
 
             <div v-if="num_show != undefined" class="slidecontainer">
-              <h4>Showing the top {{num_Maxshow}} most important words  </h4>
-              <input type="range" min="1" :max="num_Maxshow" value="this.value" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
-              <output ></output>
+              <div class="row mt-3">
+                <div class="col-4">
+                  Showing the top {{num_show}} most important words
+                </div>
+                <div class="col-8">
+                  <input type="range" min="1" :max="num_Maxshow" value="this.value" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
+                  <output ></output>
+                </div>
+              </div>
             </div>
 
             <div v-if="num_Maxshow != undefined "> 
-              <h4>Question:<span v-html="highlightedQuestion()"/></h4> 
+              <div class="row mt-3">
+                <div class="col-2">
+                  Question:
+                </div>
+                <div class="col-10">
+                  <span v-html="highlightedQuestion()"/>
+                </div>
+              </div>
             </div>
 
-            <div v-if="num_Maxshow != undefined "> 
-              <h4>Context:<span v-html="highlightedContext()"/></h4> 
+            <div v-if="num_Maxshow != undefined ">
+              <div class="row mt-3">
+                <div class="col-2">
+                  Context:
+                </div>
+                <div class="col-10">
+                  <span v-html="highlightedContext()"/>
+                </div>
+              </div>
             </div>
           
           </div>
