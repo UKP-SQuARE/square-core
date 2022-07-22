@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
+import uuid
 
 import pytest
 import responses
@@ -438,7 +439,7 @@ def test_query_skill(
         status=200,
     )
 
-    query = "a unique query form test_query_skill"
+    query = "a unique query form test_query_skill " + str(uuid.uuid1())
     query_request = QueryRequest(
         query=query,
         user_id="test-user",
