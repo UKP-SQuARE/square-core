@@ -45,7 +45,7 @@
                   <h4>Showing the top {{num_show}} most important words</h4>
                 </div>
                 <div class="col-6">
-                  <input type="range" min="1" :max="num_Maxshow" value="this.value" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
+                  <input type="range" min="0" :max="num_Maxshow" value="0" class="form-range" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
                   <output ></output>
                 </div>
               </div>
@@ -131,8 +131,8 @@ export default Vue.component("explain-output",{
         }
       }).then(() => {
         this.failure = false,
-        this.num_Maxshow =  request_json['explain_kwargs']['top_k']
-        this.num_show = request_json['explain_kwargs']['top_k']
+        this.num_Maxshow = request_json['explain_kwargs']['top_k']
+        this.num_show = 0
         console.log("Query successed! "),
         this.$store.state.currentQuestion = request_json['input'][0][0]
         this.$store.state.currentContext = request_json['input'][0][1]
