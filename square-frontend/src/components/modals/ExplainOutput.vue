@@ -138,7 +138,6 @@ export default Vue.component("explain-output",{
         console.log("Query successed! "),
         this.failure = false,
         this.num_show = 3
-     
       }).catch(() => {
         this.failure = true
       }).finally(() => {
@@ -147,7 +146,10 @@ export default Vue.component("explain-output",{
     },
 
     highLight(sentence,attributions){ // add here skill param
-      var listWords = sentence.split(' ');
+      // tokenize sentence by whitespace, . , ! ? and ; using regex      
+      //eslint-disable-next-line
+      var listWords = sentence.split(/\s+|\.|\!|\?|\;/);
+      // var listWords = sentence.split(' ');
       var highlightedSentence = "";
       // iterate over attributions to normalize the scores to [0,1]
       var maxScore = Math.max.apply(Math, attributions.map(function(o){return o[2];}));
@@ -167,8 +169,10 @@ export default Vue.component("explain-output",{
           level = 10;
         }
         level = level/100;
-
-        var highLightedWord = '<mark class="bg-warning p-2 text-dark" style="--bs-bg-opacity: '+ level.toString() +'">'+currentWord+'</mark>'
+        level = level.toString()
+        // tooltip the word with the level
+        var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+level+'"';
+        var highLightedWord = '<mark class="bg-warning p-2 text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
         console.log(highLightedWord)
         listWords[wordIdx] = highLightedWord;
       }
