@@ -6,51 +6,81 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
         </div>
         <div class="modal-body">
-            <div class="container text-center">
-                <div class="row">
-                    <div class="col-12">
-                        <h1> Attack Mode </h1>
-                        <hr/>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-2">
-                        <h4>Method:</h4>
-                    </div>
-                    <div class="col-5">
-                        <button v-on:click="postReq('HotFlip')" type="button" class="btn btn-outline-warning">HotFlip</button>
-                    </div>
-                    <div class="col-5">
-                        <button @click="postReq('Input_Red')" type="button" class="btn btn-outline-warning">Input Reduction</button>
-                    </div>
-                </div>
+          <div class="container text-center">
+            <div class="row">
+              <div class="col-12">
+                  <h1> Attack Mode </h1>
+                  <hr/>
+              </div>
             </div>
+
+            <div class="row">
+              <div class="col-2 text-start">
+                  <h4>Method:</h4>
+              </div>
+              <div class="col-5">
+                  <button v-on:click="postReq('HotFlip')" type="button" class="btn btn-outline-warning">HotFlip</button>
+              </div>
+              <div class="col-5">
+                  <button v-on:click="postReq('Input_Red')" type="button" class="btn btn-outline-warning">Input Reduction</button>
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-4 text-start">
+                  <h4>Gradient Method:</h4>
+              </div>
+              <div class="col-8">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="SimpleGrad" value="SimpleGrad" v-model="gradient_way"/>
+                  <label class="form-check-label" for="SimpleGrad">Simple Gradients</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="SmoothGrad" value="SmoothGrad" v-model="gradient_way"/>
+                  <label class="form-check-label" for="SmoothGrad">Simple Gradients</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="IntegratedGrad" value="IntegratedGrad" v-model="gradient_way"/>
+                  <label class="form-check-label" for="IntegratedGrad">IntegratedGrad</label>
+                </div>  
+              </div>
+            </div>
+
+            <div class="row mt-3">
+              <div class="col-2 text-start">
+                  <h4>Parameters:</h4>
+              </div>
+              <div class="col-4">
+                <div class="form-floating">
+                  <select class="form-select" id="gradientWay" v-model="gradient_way">
+                    <option value="SimpleGrad">Simple Gradients</option>
+                    <option value="SmoothGrad">Smooth Gradients</option>
+                    <option value="IntegratedGrad">Integrated Gradients</option>
+                  </select>
+                  <label for="gradientWay">Gradient Method..</label>
+                </div>
+              </div>
+
+              <div class="col-2">
+                <div class="form-check form-switch">
+                  <label class="form-check-label" for="includeAns">Include Answer</label>
+                  <input class="form-check-input" type="checkbox" id="includeAns">
+                </div>
+              </div>
+              
+              <div class="col-4">
+                <div class="form-check form-switch">
+                  <label class="form-check-label" for="includeAns"># of flips:</label>
+                  <input type="range" min="0" :max="10" v-model="numFlips" class="form-range" id="numFlips" >
+                  <output ></output>
+                </div>
+              </div>
+              
+
+            </div>
+
+          </div>
         </div>
-
-
-
-    <div v-if="num_show != undefined" class="slidecontainer">
-      <h4>Showing the top {{num_Maxshow}} most important words  </h4>
-    <input type="range" min="1" :max="num_Maxshow" value="this.value" class="slider" id="Range" oninput="this.nextElementSibling.value = this.value" @click="changeShowNum()"  >
-    <output ></output>
-
-    </div>
-        
-
-  
-
-    <div v-if="num_Maxshow != undefined "> 
-          <h4>Question:<span v-html="highlightedQuestion()"/></h4> 
-
-    </div>
-
-
-        <div v-if="num_Maxshow != undefined "> 
-          <h4>Context:<span v-html="highlightedContext()"/></h4> 
-
-        </div>
-
-
       </div>
     </div>
   </div>
@@ -58,25 +88,21 @@
 
 <script>
 import Vue from 'vue'
-//import BadgePopover from '../BadgePopover'
-import mixin from '@/components/results/mixin.vue'
-// import { postQuery } from '../../api'
-import context_json from './explainability_context.json'
-// import question_json from './explainability_question.json'
-import request_json from './explainability_request.json'
+// import hotflip from './hotflip_squad_v1.json'
+// import input_red from './input_reduction_squad.json'
 
 export default Vue.component("attack-output",{
   data () {
      return {
-
       num_Maxshow : this.num_Maxshow ,
       num_show : this.num_show ,
-      
+      gradient_way: 'SimpleGrad',
+      includeAns: false,
+      numFlips: 0
 
   }
   },
   props:['test'],  //args should be the test json file
-  mixins:[mixin], // ??
   components:{
     //BadgePopover // maybe useful
   },
@@ -102,13 +128,13 @@ export default Vue.component("attack-output",{
           attrib_method: method
         }
       }).then(() => {
-        this.failure = false,
-        this.num_Maxshow =  request_json['explain_kwargs']['top_k']
-        this.num_show = request_json['explain_kwargs']['top_k']
-        console.log("Query successed! "),
-        this.$store.state.currentQuestion = request_json['input'][0][0]
-        this.$store.state.currentContext = request_json['input'][0][1]
-        this.response = context_json //get the response from local json
+        // this.failure = false,
+        // this.num_Maxshow =  request_json['explain_kwargs']['top_k']
+        // this.num_show = request_json['explain_kwargs']['top_k']
+        // console.log("Query successed! "),
+        // this.$store.state.currentQuestion = request_json['input'][0][0]
+        // this.$store.state.currentContext = request_json['input'][0][1]
+        // this.response = context_json //get the response from local json
      
       }).catch(() => {
         this.failure = true
@@ -117,87 +143,9 @@ export default Vue.component("attack-output",{
       })
     },
 
-    highLight(sentence,mode){
-      
     
-      for (let i = 0; i<this.num_show;i++)
-      {
-        var currentWord = context_json['result']['attributions'][0][mode][i][1]
-        let level = context_json['result']['attributions'][0][mode][i][2]
-        level = level.toFixed(1) * 100
-        level = Math.round(level) 
-        if (level==0){
-          level = 10
-        }
-        
-        //using word color to highlight
-        //var highLightedWord = '<mark class="bg-transparent text-opacity-'+ level.toString() +' text-danger">'+currentWord+'</mark>'
-        //using background to highlight
-        var highLightedWord = '<mark class="bg-danger p-2 text-dark bg-opacity-'+ level.toString() +' ">'+currentWord+'</mark>'
-
-        console.log(highLightedWord)
-        sentence =sentence.toLowerCase().replaceAll(context_json['result']['attributions'][0][mode][i][1],highLightedWord)   
-      }
-       return sentence
-
-    },
-
-    highlightedQuestion() {
-    
-    // Input:
-    //   Question: strings,
-    //   scores: a list of [word_idx,word,score]]
-    // Output: 
-    //   highlighted question
-      return this.highLight(this.$store.state.currentQuestion,'question') 
-    },
-
-    highlightedContext() {
-      
-       return this.highLight(this.$store.state.currentContext,'context') 
-    },
-
-
-
-    changeShowNum(){
-
-      var slider = document.getElementById("Range");
-      this.num_show = slider.value
-
-
-    },
-    
-    
-
-
-
-    // greet: function() {
-    //   this.num_show = this.num_show- 1;
-      
-    //   var slider = document.getElementById("Range");
-    //   console.log(slider.value)
-
-    //   this.num_show = slider.value
-    //   alert(this.num_show)
-    //   // this.$store.state.currentContext = {}
-    //   // alert(this.response)
-    //   // alert( this.response ) 
-    //   // alert( Object.values(this.$store.state.skillOptions['qa']) )  
-    //      }
   },
-}
-)
+})
 
 
 </script>
-
-<style scoped>
-
-/* mark { 
-  background-color:red;
-  color: black;
-} */
-
-
-
-</style>
