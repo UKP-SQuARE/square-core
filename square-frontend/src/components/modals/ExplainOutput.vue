@@ -22,27 +22,27 @@
               <div class="col-2 text-start">
                   <h4>Method:</h4>
               </div>
-              <div class="col-2">
+              <div class="col-auto">
                 <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
                   <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
                 </button>
               </div>
-              <div class="col-2">
+              <div class="col-auto">
                 <button id="Scaled_attention_btn" v-on:click="postReq('Scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_Scaled_attention">
                   <span v-show="waiting_Scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
                 </button>
               </div>
-              <div class="col-2">
+              <div class="col-auto">
                 <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
                   <span v-show="waiting_simple_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Simple Gradients
                 </button>
               </div>
-              <div class="col-2">
+              <div class="col-auto">
                 <button id="smooth_grads_btn" v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_smooth_grads">
                   <span v-show="waiting_smooth_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Smooth Gradients
                 </button>
               </div>
-              <div class="col-2">
+              <div class="col-auto">
                 <button id="integrated_grads_bnt" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
                   <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
                 </button>
