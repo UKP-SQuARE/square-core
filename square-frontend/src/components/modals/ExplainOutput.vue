@@ -92,7 +92,7 @@ import Vue from 'vue'
 // import { postQuery } from '../../api'
 import context_json from './explainability_context.json'
 // import question_json from './explainability_question.json'
-import request_json from './explainability_request.json'
+// import request_json from './explainability_request.json'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
@@ -126,16 +126,17 @@ export default Vue.component("explain-output",{
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
-          attrib_method: method
+          explain_kwargs: {
+            method: method,
+            top_k: 20,
+            mode: 'all' // can be 'all', 'question', 'context'
+          }
         }
       }).then(() => {
-        this.failure = false,
-        this.num_Maxshow = request_json['explain_kwargs']['top_k']
-        this.num_show = 3
         console.log("Query successed! "),
-        this.$store.state.currentQuestion = request_json['input'][0][0]
-        this.$store.state.currentContext = request_json['input'][0][1]
-        this.response = context_json //get the response from local json
+        this.failure = false,
+        this.num_Maxshow = 20
+        this.num_show = 3
      
       }).catch(() => {
         this.failure = true
