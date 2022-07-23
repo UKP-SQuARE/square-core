@@ -1,5 +1,7 @@
-from square_model_inference.models.request import PredictionRequest, Task
-from square_model_inference.models.prediction import PredictionOutput
+from typing import Dict
+
+from tasks.models.prediction import PredictionOutput
+from tasks.models.request import Task
 
 
 class Model:
@@ -8,7 +10,8 @@ class Model:
     __init__ is supposed to load all weights and other necessary files (e.g. tokenizer)
     so that the model can directly perform inference on request
     """
-    async def predict(self, payload: PredictionRequest, task: Task) -> PredictionOutput:
+
+    def predict(self, payload: Dict, task: Task) -> PredictionOutput:
         """
         Take an input, pre-process it accordingly, perform inference according to the task,
         post-process the result and return it

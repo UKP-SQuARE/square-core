@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 
 import docker
 from docker.types import Mount
@@ -10,16 +9,19 @@ logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
-MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v1.1:latest")
+MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v2:latest")
 ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
+CONFIG_VOLUME = os.getenv("CONFIG_VOLUME", "square-model-inference-api_model_configs")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
+USER = os.getenv("USERNAME", "user")
+PASSWORD = os.getenv("PASSWORD", "user")
 
 
 def create_docker_labels(identifier: str, uid: str) -> dict:
     """
     creates the labels to enable traefik for the docker container
     """
-    traefik_identifier = identifier.replace("/", "-") + "-" + uid
+    traefik_identifier = identifier.replace("/", "-") + uid
     labels = {
         "traefik.enable": "true",
         "traefik.http.routers.model-" + traefik_identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
@@ -60,7 +62,6 @@ def start_new_model_container(identifier: str, uid: str, env):
         container.remove()
     else:
         logger.info("Found no running instance, so we try to create it")
-    labels = create_docker_labels(identifier, uid=uid)
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
@@ -73,30 +74,35 @@ def start_new_model_container(identifier: str, uid: str, env):
     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    container_name = network.name + "-model-" + identifier.replace("/", "-") + "-" + uid
-    logger.info("Container name of model: {}".format(container_name))
+    worker_name = network.name + "-model-" + identifier.replace("/", "-") + "-worker-" + uid
+
+    env["WEB_CONCURRENCY"] = 1
+    env["KEYCLOAK_BASE_URL"] = os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de")
+    env["QUEUE"] = identifier.replace("/", "-")
+    env["RABBITMQ_DEFAULT_USER"] = os.getenv("RABBITMQ_DEFAULT_USER", "ukp")
+    env["RABBITMQ_DEFAULT_PASS"] = os.getenv("RABBITMQ_DEFAULT_PASS", "secret")
+
+    env["REDIS_USER"] = os.getenv("REDIS_USER", "ukp")
+    env["REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD", "secret")
+    env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
     try:
-        kwargs = dict(
-            image=MODEL_API_IMAGE,
-            name=container_name,
+        container = docker_client.containers.run(
+            MODEL_API_IMAGE,
+            command=f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info",
+            name=worker_name,
             detach=True,
             environment=env,
             network=network.name,
-            # volumes=[path + "/.cache/:/etc/huggingface/.cache/"], # DO NOT COMMIT!
-            volumes=["/Users/tim/projects/square/square-core/.cache/:/etc/huggingface/.cache/"],
-            mounts=[
-                Mount(
-                    target="/onnx_models",
-                    source=ONNX_VOLUME,
-                )
-            ],
-            labels=labels,
+            volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
+            mounts=[Mount(target="/model_configs", source=CONFIG_VOLUME,),
+                    Mount(target="/onnx_models", source=ONNX_VOLUME,)],
         )
-        logger.info("docker run kwargs: {}".format(kwargs))
-        container = docker_client.containers.run(**kwargs)
-
+        logger.info(f"Worker container {container}")
         network.reload()
+        entries_to_remove = ["RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS", "REDIS_USER", "REDIS_PASSWORD"]
+        for k in entries_to_remove:
+            env.pop(k, None)
     except Exception as e:
         logger.exception(e, exc_info=True)
         return {"container": None, "message": f"Caught exception. {e}"}
@@ -107,7 +113,7 @@ def get_container_by_identifier(identifier: str, uid: str):
     """
     get the docker container based on the model identifier
     """
-    labels = create_docker_labels(identifier, uid)
+    labels = create_docker_labels(identifier, uid=uid)
     if (
         len(
             docker_client.containers.list(
@@ -160,11 +166,14 @@ def get_all_model_prefixes():
     for container in lst_container:
         logger.debug("Found candidate model container: %s", container.name)
         if "model" in container.name:
-            for _, label in container.labels.items():
-                if "PathPrefix" in label and MODELS_API_PATH not in label:
-                    prefix = re.search(r"PathPrefix\(`(.+?)`\)", label).group(1)
-                    lst_prefix.append(prefix)
-                    lst_container_ids.append(container.id)
+            for env_var in container.attrs["Config"]["Env"]:
+                if "QUEUE" in env_var:
+                    logger.info(env_var)
+                    key, val = env_var.split("=")
+                    if "QUEUE" == key:
+                        lst_prefix.append(val)
+                        lst_container_ids.append(container.id)
+                # maybe we can achieve this by finding the container with the same queue name
 
     logger.debug("Found model containers: %s on port %s", lst_prefix, port)
     return lst_prefix, lst_container_ids, port

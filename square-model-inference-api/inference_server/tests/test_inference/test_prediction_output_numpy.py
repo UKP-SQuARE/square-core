@@ -1,5 +1,5 @@
 from starlette.config import Environ
-from square_model_inference.models.prediction import PredictionOutput, _encode_numpy
+from tasks.models.prediction import PredictionOutput, _encode_numpy
 from io import BytesIO
 import base64
 import torch

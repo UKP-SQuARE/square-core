@@ -17,7 +17,7 @@ class TestOnnxSequenceClassification:
         prediction_request.input = input
         prediction_request.task_kwargs["embedding_mode"] = "pooler"
 
-        prediction = await test_onnx_sequence_classification.predict(prediction_request, Task.sequence_classification)
+        prediction = test_onnx_sequence_classification.predict(prediction_request, Task.sequence_classification)
         np.testing.assert_allclose(np.sum(prediction.model_outputs["logits"], axis=-1), [1.0] * len(input),
                                    err_msg="logits are softmax")
         assert len(prediction.labels) == len(input)
@@ -35,7 +35,7 @@ class TestOnnxSequenceClassification:
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
 
-        prediction = await test_onnx_sequence_classification.predict(prediction_request,
+        prediction = test_onnx_sequence_classification.predict(prediction_request,
                                                                      Task.sequence_classification)
         assert not np.array_equal(np.sum(prediction.model_outputs["logits"], axis=-1) - 1,
                                   [0.0] * len(input)), "logits are not softmax"
@@ -56,7 +56,7 @@ class TestOnnxTokenClassification:
             pytest.skip("No model found.")
         prediction_request.input = input
 
-        prediction = await test_onnx_token_classification.predict(prediction_request, Task.token_classification)
+        prediction = test_onnx_token_classification.predict(prediction_request, Task.token_classification)
         np.testing.assert_allclose(np.sum(prediction.model_outputs["logits"], axis=-1),
                                    np.ones(shape=(len(input), len(word_ids[0]))), rtol=1e-6,
                                    err_msg="logits are softmax")
@@ -78,7 +78,7 @@ class TestOnnxTokenClassification:
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
 
-        prediction = await test_onnx_token_classification.predict(prediction_request, Task.token_classification)
+        prediction = test_onnx_token_classification.predict(prediction_request, Task.token_classification)
         assert not np.array_equal((np.sum(prediction.model_outputs["logits"], axis=-1), np.ones_like(word_ids)),
                                   "logits are not softmax")
         assert "logits" in prediction.model_outputs
@@ -103,7 +103,7 @@ class TestOnnxEmbedding:
         prediction_request.input = input
         prediction_request.task_kwargs = {"embedding_mode": mode}
 
-        prediction = await test_onnx_embedding.predict(prediction_request, Task.embedding)
+        prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
         assert np.array(prediction.model_outputs["embeddings"]).shape[1] == 768
         assert np.array(prediction.model_outputs["embeddings"]).shape[0] == len(input)
         assert "hidden_states" not in prediction.model_outputs
@@ -116,7 +116,7 @@ class TestOnnxEmbedding:
         prediction_request.task_kwargs = {"embedding_mode": "this mode does not exist"}
 
         with pytest.raises(ValueError):
-            prediction = await test_onnx_embedding.predict(prediction_request, Task.embedding)
+            prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
 
     @pytest.mark.asyncio
     async def test_forbid_is_preprocessed(self, prediction_request, test_onnx_embedding):
@@ -125,7 +125,7 @@ class TestOnnxEmbedding:
         prediction_request.is_preprocessed = True
 
         with pytest.raises(ValueError):
-            prediction = await test_onnx_embedding.predict(prediction_request, Task.embedding)
+            prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
 
     @pytest.mark.asyncio
     async def test_input_too_big(self, prediction_request, test_onnx_embedding):
@@ -134,7 +134,7 @@ class TestOnnxEmbedding:
         prediction_request.input = ["test"] * 1000
 
         with pytest.raises(ValueError):
-            prediction = await test_onnx_embedding.predict(prediction_request, Task.embedding)
+            prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
 
 
 @pytest.mark.usefixtures("test_onnx_question_answering")
@@ -152,7 +152,7 @@ class TestOnnxQuestionAnswering:
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 1}
 
-        prediction = await test_onnx_question_answering.predict(prediction_request, Task.question_answering)
+        prediction = test_onnx_question_answering.predict(prediction_request, Task.question_answering)
         answers = [input[i][1][prediction.answers[i][0].start:prediction.answers[i][0].end] for i in range(len(input))]
         assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
         assert len(prediction.answers) == len(input)
@@ -166,7 +166,7 @@ class TestOnnxQuestionAnswering:
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 2}
 
-        prediction = await test_onnx_question_answering.predict(prediction_request, Task.question_answering)
+        prediction = test_onnx_question_answering.predict(prediction_request, Task.question_answering)
         answers = [input[0][1][prediction.answers[0][i].start:prediction.answers[0][i].end] for i in range(2)]
         assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
         assert len(prediction.answers) == len(input)
@@ -185,7 +185,7 @@ class TestOnnxGeneration:
             pytest.skip("No model found.")
         prediction_request.input = input
 
-        prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
+        prediction = test_onnx_generation.predict(prediction_request, Task.generation)
         assert all(isinstance(prediction.generated_texts[i][0], str) for i in range(len(input)))
 
 
@@ -206,7 +206,7 @@ class TestOnnxGeneration:
             "num_return_sequences": 4
         }
 
-        prediction = await test_onnx_generation.predict(prediction_request, Task.generation)
+        prediction = test_onnx_generation.predict(prediction_request, Task.generation)
         assert len(prediction.generated_texts[0]) == 4
 
 

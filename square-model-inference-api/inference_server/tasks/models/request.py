@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, List, Optional
+from typing import Optional, Union, List
 
 from pydantic import BaseModel, Field
 
@@ -50,7 +50,7 @@ class PredictionRequest(BaseModel):
                     "Transformer/ Adapter: See the forward method of the Huggingface models for possible parameters"
                     "For example, set ‘output_attentions=True’ to receive the attention results in the output."
     )
-    #task: Task = Field(...)
+    # task: Task = Field(...)
     task_kwargs: dict = Field(
         default={},
         description="Optional dictionary containing additional parameters for handling of the task and "

@@ -21,6 +21,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Data API output:\n{data}")
     context = [d["document"]["text"] for d in data]
     context_score = [d["score"] for d in data]
+    explain_kwargs = request.explain_kwargs or {}
 
     # Call Model API
     prepared_input = [[request.query, c] for c in context]  # Change as needed
@@ -30,6 +31,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "model_kwargs": {},
         "task_kwargs": {"topk": 1},
         "adapter_name": "qa/squad2@ukp",
+        "explain_kwargs": explain_kwargs,
     }
 
     model_api_output = await model_api(

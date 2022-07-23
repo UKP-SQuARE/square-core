@@ -27,7 +27,7 @@ def init_mongo_db():
 
 @pytest.fixture
 def skill_prediction_factory():
-    def skill_prediction():
+    def skill_prediction(**kwargs):
         return {
             "predictions": [
                 {
@@ -44,6 +44,7 @@ def skill_prediction_factory():
                             "document_score": 0.0,
                         }
                     ],
+                    **kwargs
                 }
             ]
         }

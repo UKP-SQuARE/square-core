@@ -3,7 +3,8 @@
 # This way, adding new tests or even changing the server code does NOT trigger a new download during building
 from sentence_transformers import SentenceTransformer
 from starlette.config import environ
-from transformers import AutoTokenizer, AutoAdapterModel, list_adapters
+from transformers import AutoTokenizer, list_adapters
+from transformers.adapters import AutoAdapterModel
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,20 +1,18 @@
-from abc import ABC
 from collections import defaultdict
-
-from torch import nn
-from transformers import AutoTokenizer
-
-from .transformer import Transformer
-import torch
-from torch.nn import functional as F
-import onnxruntime
-import numpy as np
 from typing import Union, Tuple
-from square_model_inference.models.request import PredictionRequest, Task
-from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForEmbedding, \
-    PredictionOutputForSequenceClassification, PredictionOutputForGeneration, PredictionOutputForTokenClassification
 
-from square_model_inference.core.config import model_config
+import numpy as np
+import onnxruntime
+import torch
+from tasks.config.model_config import model_config
+from tasks.models.prediction import PredictionOutput, PredictionOutputForEmbedding, \
+    PredictionOutputForSequenceClassification, PredictionOutputForGeneration, PredictionOutputForTokenClassification
+from tasks.models.request import PredictionRequest
+from torch import nn
+from torch.nn import functional as F
+
+from transformers import AutoTokenizer
+from .transformer import Transformer
 
 
 def to_numpy(x):
@@ -28,7 +26,7 @@ class Onnx(Transformer):
 
         """
          Args:
-             model_path: patyh where the model is stored
+             model_path: path where the model is stored
              model_name: the ONNX model name
              decoder_path: path to the decoder ONNX model
              kwargs: Not used
@@ -67,7 +65,8 @@ class Onnx(Transformer):
         for start_idx in range(0, features["input_ids"].shape[0], model_config.batch_size):
             input_names = [self.session.get_inputs()[i].name for i in range(len(self.session.get_inputs()))]
             ort_inputs = dict(
-                (k, to_numpy(input_data[start_idx:start_idx + model_config.batch_size])) for k, input_data in features.items()
+                (k, to_numpy(input_data[start_idx:start_idx + model_config.batch_size])) for k, input_data in
+                features.items()
                 if k in input_names)
 
             res = self.session.run([], ort_inputs)
@@ -334,7 +333,7 @@ class Onnx(Transformer):
                     next_token_scores = F.softmax(next_token_logits, dim=1)
                     if do_sample:
                         next_token_scores = self._preprocess_logits(next_token_scores, top_k=top_k, top_p=top_p,
-                                                                    min_tokens_to_keep=2*num_beams)
+                                                                    min_tokens_to_keep=2 * num_beams)
 
                     if no_repeat_ngram_size > 0:
                         banned_batch_tokens = calc_banned_ngram_tokens(

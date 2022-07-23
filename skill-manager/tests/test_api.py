@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
+import uuid
 
 import pytest
 import responses
@@ -438,7 +439,7 @@ def test_query_skill(
         status=200,
     )
 
-    query = "a unique query form test_query_skill"
+    query = "a unique query form test_query_skill " + str(uuid.uuid1())
     query_request = QueryRequest(
         query=query,
         user_id="test-user",
@@ -458,8 +459,15 @@ def test_query_skill(
             {"query": query}
         )
 
+        response = response.json()
+        # HACK: remove attributions from repsonse since the object saved in mongo does
+        # not contain it because it is "unset" and we remove all unset values when
+        # creating the mongo object
+        for p in response["predictions"]:
+            p.pop("attributions")
+
         TestCase().assertDictEqual(
-            response.json(), {"predictions": saved_prediction["predictions"]}
+            response, {"predictions": saved_prediction["predictions"]}
         )
     else:
         assert response.status_code == 403
@@ -516,3 +524,59 @@ def test_query_skill_with_default_skill_args(
     expected_skill_query_body = default_skill_args
     expected_skill_query_body["context"] = query_context["context"]
     TestCase().assertDictEqual(actual_skill_query_body, expected_skill_query_body)
+
+@responses.activate
+def test_query_skill_with_attributions(
+    pers_client,
+    skill_factory,
+    skill_prediction_factory,
+    token_factory,
+    create_skill_via_api,
+):
+    test_realm = "test-realm"
+    test_user = "test-user"
+    default_skill_args = {"adapter": "my-adapter", "context": "default context"}
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=test_user,
+        published=False,
+        default_skill_args=default_skill_args,
+    )
+
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
+    response = pers_client.post(
+        "/api/skill", data=skill.json(), headers=dict(Authorization="Bearer " + token)
+    )
+    skill_id = response.json()["id"]
+
+    attributions = {
+        "question": [[1, "hello", 0.2], [2, "world", 0.8]],
+        "context": [[1, "how", 0.2], [2, "are", 0.3], [2, "you", 0.5]],
+    }
+
+    responses.add(
+        responses.POST,
+        url=f"{skill.url}/query",
+        json=skill_prediction_factory(attributions=attributions),
+        status=200,
+    )
+
+    query_context = {"context": "hello"}
+    query_request = QueryRequest(
+        query="query",
+        user_id="test-user",
+        skill_args=query_context,
+        num_results=1,
+    )
+    response = pers_client.post(
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+    assert response.status_code == 200
+
+    response = response.json()
+    TestCase().assertDictEqual(response["predictions"][0]["attributions"], attributions)
