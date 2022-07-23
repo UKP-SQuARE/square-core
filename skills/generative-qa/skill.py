@@ -18,7 +18,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     context = request.skill_args.get("context", "")
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
 
     if context:
         query_context_seperator = request.skill_args.get("query_context_seperator", " ")

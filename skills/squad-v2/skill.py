@@ -14,7 +14,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     SQuADV2.0.
     """
     context = request.skill_args["context"]
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
 
     prepared_input = [[request.query, context]]  # Change as needed
     model_request = {  # Fill as needed

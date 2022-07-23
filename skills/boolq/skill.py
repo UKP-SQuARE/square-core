@@ -13,7 +13,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """Predicts yes/no for a boolean question with context"""
     query = request.query
     context = request.skill_args["context"]
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
 
     prepared_input = [context, query]
 
