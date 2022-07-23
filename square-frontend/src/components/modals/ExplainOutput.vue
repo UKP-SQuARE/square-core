@@ -23,19 +23,19 @@
                   <h4>Method:</h4>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('Attention')" type="button" class="btn btn-outline-primary">Attention</button>
+                <button v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary">Attention</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('Scaled Attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
+                <button v-on:click="postReq('Scaled_attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('Simple Grad')" type="button" class="btn btn-outline-primary">Simple Grad</button>
+                <button v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary">Simple Grad</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('Smooth Grad')"  type="button" class="btn btn-outline-primary">Smooth Grad</button>
+                <button v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary">Smooth Grad</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('Integrated Grad')"  type="button" class="btn btn-outline-primary">Integrated Grad</button>
+                <button v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary">Integrated Grad</button>
               </div>
             </div>
 
