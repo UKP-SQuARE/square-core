@@ -94,8 +94,13 @@ import Vue from 'vue'
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
   data () {
+      // num words in context
+      var numWords = this.$store.state.currentQuestion.split(' ').length;
+      // num_Maxshow for explain method is the min(numWords, numContextWords)
+      var numContextWords = this.$store.state.currentContext.split(' ').length;
+      console.log( Math.min(numWords, numContextWords));
      return {
-      num_Maxshow : this.num_Maxshow,
+      num_Maxshow :  Math.min(numWords, numContextWords),
       num_show : undefined,
       currentResults: this.currentResults,
   }
@@ -115,7 +120,7 @@ export default Vue.component("explain-output",{
 
     postReq(method) {
       // Post the query with selected skills and given question, context
-      // method for setting explain method : 'Attention','Scaled Attention','Simple Grad', 'Smooth Grad', 'Integrated Grad'
+      // method for setting explain method : 'Attention','Scaled Attention','Simple Grad', 'Smooth Grad', 'Integrated Grad'      
       this.waiting = true
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
@@ -125,14 +130,13 @@ export default Vue.component("explain-output",{
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
           explain_kwargs: {
             method: method,
-            top_k: 20,
+            top_k: this.num_Maxshow,
             mode: 'all' // can be 'all', 'question', 'context'
           }
         }
       }).then(() => {
         console.log("Query successed! "),
         this.failure = false,
-        this.num_Maxshow = 20
         this.num_show = 3
      
       }).catch(() => {
@@ -145,6 +149,14 @@ export default Vue.component("explain-output",{
     highLight(sentence,attributions){ // add here skill param
       var listWords = sentence.split(' ');
       var highlightedSentence = "";
+      // iterate over attributions to normalize the scores to [0,1]
+      var maxScore = Math.max.apply(Math, attributions.map(function(o){return o[2];}));
+      var minScore = Math.min.apply(Math, attributions.map(function(o){return o[2];}));
+      var scoreRange = maxScore - minScore;
+      attributions.forEach(function(attribution){
+        attribution[2] = (attribution[2] - minScore)/scoreRange;
+      });
+
       for (let i = 0; i<this.num_show;i++) {
         var wordIdx = attributions[i][0]
         var currentWord = attributions[i][1]
