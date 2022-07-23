@@ -14,6 +14,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     SQuADV2.0.
     """
     context = request.skill_args["context"]
+    explain_kwargs = request.skill_args.get("explain_kwargs", {})
 
     prepared_input = [[request.query, context]]  # Change as needed
     model_request = {  # Fill as needed
@@ -22,6 +23,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "model_kwargs": {},
         "task_kwargs": {"topk": 10},
         "adapter_name": "qa/squad2@ukp",
+        "explain_kwargs": explain_kwargs,
     }
 
     model_api_output = await model_api(

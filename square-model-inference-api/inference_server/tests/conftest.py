@@ -1,10 +1,13 @@
 import pytest
 
-from fastapi.testclient import TestClient
-from pre_test_setup_for_docker_caching import TRANSFORMERS_TESTING_CACHE, TRANSFORMER_MODEL, SENTENCE_MODEL, ONNX_MODEL
+from pre_test_setup_for_docker_caching import (
+    TRANSFORMERS_TESTING_CACHE,
+    TRANSFORMER_MODEL,
+    SENTENCE_MODEL,
+    ONNX_MODEL
+)
 import torch
 import os
-import subprocess
 
 # Due to import and config reasons, the environ is set in pre_test_setup_for_docker_caching !
 # (because we import Transformer, which imports Model, imports PredictionOutput, which imports
@@ -19,38 +22,21 @@ import subprocess
 # environ["BATCH_SIZE"] = "1"
 # environ["RETURN_PLAINTEXT_ARRAYS"] = "False"
 
-from main import get_app
-from square_model_inference.inference.model import Model
-from square_model_inference.models.prediction import PredictionOutput, PredictionOutputForGeneration, \
-    PredictionOutputForEmbedding, PredictionOutputForTokenClassification, PredictionOutputForSequenceClassification,\
-    PredictionOutputForQuestionAnswering
-from square_model_inference.models.request import PredictionRequest, Task
-from square_model_inference.inference.transformer import Transformer
-from square_model_inference.inference.adaptertransformer import AdapterTransformer
-from square_model_inference.inference.sentencetransformer import SentenceTransformer
-from square_model_inference.inference.onnx import Onnx
-from square_model_inference.core.config import ModelConfig, set_test_config, model_config
+from main import get_app, auth
+
+from tasks.inference.transformer import Transformer
+from tasks.inference.adaptertransformer import AdapterTransformer
+from tasks.inference.sentencetransformer import SentenceTransformer
+from tasks.inference.onnx import Onnx
+from tasks.config.model_config import ModelConfig, set_test_config, model_config
+from square_model_inference.models.request import PredictionRequest
 
 
 @pytest.fixture(scope="session")
 def test_app():
     app = get_app()
-    app.state.model = TestModel()
+    app.dependency_overrides[auth] = lambda: True
     return app
-
-
-class TestModel(Model):
-    async def predict(self, payload, task) -> PredictionOutput:
-        if task == Task.generation:
-            return PredictionOutputForGeneration(generated_texts=[[""]])
-        elif task == Task.question_answering:
-            return PredictionOutputForQuestionAnswering(answers=[[{"score": 0, "start": 0, "end": 0, "answer": ""}]])
-        elif task == Task.embedding:
-            return PredictionOutputForEmbedding(word_ids=[[0]])
-        elif task == Task.token_classification:
-            return PredictionOutputForTokenClassification(word_ids=[[0]])
-        elif task == Task.sequence_classification:
-            return PredictionOutputForSequenceClassification()
 
 
 # We only load bert-base-uncased, so we fix the random seed to always get the same randomly generated heads on top
@@ -62,7 +48,8 @@ def test_transformer_sequence_classification():
         model_class="sequence_classification",
         disable_gpu=True,
         batch_size=1,
-        max_input_size=50
+        max_input_size=50,
+        model_type="transformer",
 
     )
     return Transformer()
@@ -76,7 +63,8 @@ def test_transformer_embedding():
         model_class="base",
         disable_gpu=True,
         batch_size=1,
-        max_input_size=50
+        max_input_size=50,
+        model_type="transformers",
 
     )
     return Transformer()
@@ -90,7 +78,8 @@ def test_transformer_token_classification():
         model_class="token_classification",
         disable_gpu=True,
         batch_size=1,
-        max_input_size=50
+        max_input_size=50,
+        model_type="transformers",
 
     )
     return Transformer()
@@ -104,8 +93,8 @@ def test_transformer_question_answering():
         model_class="question_answering",
         disable_gpu=True,
         batch_size=1,
-        max_input_size=50
-
+        max_input_size=50,
+        model_type="transformers",
     )
     return Transformer()
 
@@ -118,8 +107,8 @@ def test_transformer_generation():
         model_class="generation",
         disable_gpu=True,
         batch_size=1,
-        max_input_size=50
-
+        max_input_size=50,
+        model_type = "transformers",
     )
     return Transformer()
 
@@ -133,6 +122,7 @@ def test_adapter():
         max_input_size=50,
         cache=TRANSFORMERS_TESTING_CACHE,
         preloaded_adapters=False,
+        model_type="adapter",
 
     )
     return AdapterTransformer()
@@ -145,6 +135,7 @@ def test_sentence_transformer():
         disable_gpu=True,
         batch_size=1,
         max_input_size=50,
+        model_type="sentence-transformer"
     )
     return SentenceTransformer()
 
@@ -159,6 +150,7 @@ def test_onnx_sequence_classification():
             batch_size=1,
             max_input_size=50,
             onnx_path=onnx_path,
+            model_type="onnx",
         )
         return Onnx()
     else:
@@ -175,6 +167,7 @@ def test_onnx_token_classification():
             batch_size=1,
             max_input_size=50,
             onnx_path=onnx_path,
+            model_type="onnx",
         )
         return Onnx()
     else:
@@ -191,6 +184,7 @@ def test_onnx_embedding():
             batch_size=1,
             max_input_size=50,
             onnx_path=onnx_path,
+            model_type="onnx",
         )
         return Onnx()
     else:
@@ -207,6 +201,7 @@ def test_onnx_question_answering():
             batch_size=1,
             max_input_size=50,
             onnx_path=onnx_path,
+            model_type="onnx",
         )
         return Onnx()
     else:
@@ -225,6 +220,7 @@ def test_onnx_generation():
             max_input_size=50,
             onnx_path=onnx_path,
             decoder_path=decoder_init_path,
+            model_type="onnx",
         )
         return Onnx()
     else:

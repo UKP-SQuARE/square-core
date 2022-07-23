@@ -12,7 +12,7 @@ generate_password () {
 	echo "$PASSWORD"
 }
 
-SQUARE_URL=${1:-"square.ukp-lab.local"}
+SQUARE_URL=${1:-"square.ukp-lab.localhost"}
 REALM=${2:-"square"}
 KEYCLOAK_PASSWORD=${3:-$(generate_password)}
 POSTGRES_PASSWORD=${4:-$(generate_password)}
@@ -219,16 +219,15 @@ else
 	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.template > ./postgres/.env 
 fi
 
-if [ -f ./skill-manager/.env ]; then
-	echo "./skill-manager/.env already exists. Skipping."
-	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./skill-manager/.env)"    
+if [ -f ./mongodb/.env ]; then
+	echo "./mongodb/.env already exists. Skipping."
+	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./mongodb/.env)"    
 else
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./mongodb/.env.template > ./mongodb/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./datastore-api/.env.template > ./datastore-api/.env
 	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.template > ./skill-manager/.env
+	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./square-model-inference-api/management_server/.env.template > ./square-model-inference-api/management_server/.env
 fi
-
-# initilize env files for model management service and datastore
-cp ./square-model-inference-api/management_server/.env.template ./square-model-inference-api/management_server/.env 
-cp ./datastore-api/.env.template ./datastore-api/.env 
 
 # get all servies that need to be registered as clients keycloak
 CLIENTS=( "models" "datastores" ) 
@@ -264,17 +263,19 @@ mv ./skill-manager/.env.tmp ./skill-manager/.env
 
 # create clients in keycloak and save client secret
 for CLIENT_ID in ${CLIENTS[@]}; do
-	CLIENT_SECRET=$(keycloak_create_client $CLIENT_ID $SKILL_MANAGER_SECRET)
 	
 	if [[ $CLIENT_ID == "models" ]]; then
 		CLIENT_PATH="square-model-inference-api/management_server"
 	
 	elif [[ $CLIENT_ID == "datastores" ]]; then
 		CLIENT_PATH="datastore-api"
-	
 	else
 		CLIENT_PATH="skills/$CLIENT_ID"
+		# add ukp- to client ID to register client under ukp username
+		CLIENT_ID="ukp-$CLIENT_ID"
 	fi
+	
+	CLIENT_SECRET=$(keycloak_create_client $CLIENT_ID $SKILL_MANAGER_SECRET)
 	
 	sed -e "s/%%CLIENT_SECRET%%/$CLIENT_SECRET/g" ./$CLIENT_PATH/.env > ./$CLIENT_PATH/.env.tmp
 	mv ./$CLIENT_PATH/.env.tmp ./$CLIENT_PATH/.env

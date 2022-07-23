@@ -13,6 +13,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """Predicts yes/no for a boolean question with context"""
     query = request.query
     context = request.skill_args["context"]
+    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+
     prepared_input = [context, query]
 
     model_request = {
@@ -20,6 +22,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "preprocessing_kwargs": {},
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq",
+        "explain_kwargs": explain_kwargs,
     }
     model_api_output = await model_api(
         model_name="bert-base-uncased",

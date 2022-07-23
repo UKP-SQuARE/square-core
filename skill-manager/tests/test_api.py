@@ -1,20 +1,19 @@
 import json
-
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
+import uuid
 
 import pytest
 import responses
 from fastapi.testclient import TestClient
-from square_skill_api.models.request import QueryRequest
-from testcontainers.mongodb import MongoDbContainer
-
 from skill_manager import mongo_client
+from skill_manager.core.model_management_client import ModelManagementClient
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
-from skill_manager.models import Skill, SkillSettings
 from skill_manager.routers import client_credentials
+from skill_manager.routers.skill import auth
+from square_skill_api.models.request import QueryRequest
 
 keycloak_api_mock = MagicMock()
 keycloak_api_mock.create_client.return_value = {
@@ -26,28 +25,10 @@ app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
 
+mock_model_management_client = lambda: MagicMock()
+app.dependency_overrides[ModelManagementClient] = mock_model_management_client
+
 client = TestClient(app)
-
-
-@pytest.fixture(scope="module")
-def monkeymodule():
-    from _pytest.monkeypatch import MonkeyPatch
-
-    mpatch = MonkeyPatch()
-    yield mpatch
-    mpatch.undo()
-
-
-@pytest.fixture(scope="module")
-def init_mongo_db():
-    mongo_db_test_container = MongoDbContainer("mongo:5.0.4")
-    mongo_db_test_container.start()
-    try:
-        yield mongo_db_test_container
-    except Exception as err:
-        raise err
-    finally:
-        mongo_db_test_container.stop()
 
 
 @pytest.fixture(scope="module")
@@ -77,68 +58,33 @@ def pers_client(monkeymodule, init_mongo_db):
         yield client
 
 
-@pytest.fixture
-def skill_prediction_factory():
-    def skill_prediction():
-        return {
-            "predictions": [
-                {
-                    "prediction_score": 1,
-                    "prediction_output": {"output": "answer", "output_score": "1"},
-                    "prediction_documents": [
-                        {
-                            "index": "",
-                            "document_id": "",
-                            "document": "doc one",
-                            "span": None,
-                            "url": "",
-                            "source": "",
-                            "document_score": 0.0,
-                        }
-                    ],
-                }
-            ]
-        }
-
-    return skill_prediction
-
-
 @pytest.fixture(scope="function")
 def client():
     return TestClient(app)
 
 
-@pytest.fixture
-def skill_factory():
-    def skill_init(
-        name="test-skill",
-        url="http://test-skill.square:1234",
-        skill_type="abstractive",
-        skill_settings=SkillSettings(),
-        user_id="test-user-id",
-        description="skill for testing",
-        published=False,
-        default_skill_args=None,
-        **kwargs,
+@pytest.fixture(scope="module")
+def create_skill_via_api():
+    def _create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username="test-user",
+        realm="test-realm",
+        **skill_kwargs,
     ):
-        # pass `id` or `created_at` as kwargs to add them explicitly
-        skill = Skill(
-            name=name,
-            url=url,
-            skill_type=skill_type,
-            skill_settings=skill_settings,
-            user_id=user_id,
-            description=description,
-            published=published,
-            default_skill_args=default_skill_args,
-            **kwargs,
+
+        skill = skill_factory(**{"user_id": username, **skill_kwargs})
+        token = token_factory(preferred_username=username)
+        app.dependency_overrides[auth] = lambda: dict(realm=realm, username=username)
+        response = pers_client.post(
+            "/api/skill",
+            data=skill.json(),
+            headers=dict(Authorization="Bearer " + token),
         )
-        if not skill.id:
-            del skill.id
+        return response, skill
 
-        return skill
-
-    yield skill_init
+    return _create_skill_via_api
 
 
 def assert_skills_equal_from_response(skill, response):
@@ -194,191 +140,369 @@ def test_skill_types(client):
     assert isinstance(skill_types, list), type(skill_types)
 
 
-def test_create_skill(pers_client, skill_factory):
+@pytest.mark.asyncio
+async def test_create_skill(pers_client: TestClient, skill_factory, token_factory):
 
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
-    assert response.status_code == 201
+    test_user = "test-user"
+    app.dependency_overrides[auth] = lambda: dict(
+        realm="test-realm", username=test_user
+    )
+
+    test_skill = skill_factory(user_id=test_user)
+    token = token_factory(preferred_username=test_user)
+
+    response = pers_client.post(
+        "/api/skill",
+        data=test_skill.json(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+    assert response.status_code == 201, response.content
 
     assert_skills_equal_from_response(test_skill, response)
 
 
-def test_get_skill_by_id(pers_client, skill_factory):
+@pytest.mark.parametrize("published", [True, False], ids=["published", "private"])
+def test_get_skill_by_id_authorized(
+    published, pers_client, skill_factory, token_factory, create_skill_via_api
+):
 
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
+    test_user = "test-user"
+    response, skill = create_skill_via_api(
+        pers_client, token_factory, skill_factory, username=test_user, published=True
+    )
     added_skill_id = response.json()["id"]
 
-    response = pers_client.get(f"/api/skill/{added_skill_id}")
+    token = token_factory(preferred_username=test_user)
+    response = pers_client.get(
+        f"/api/skill/{added_skill_id}", headers=dict(Authorization="Bearer " + token)
+    )
     assert response.status_code == 200
 
-    assert_skills_equal_from_response(test_skill, response)
+    assert_skills_equal_from_response(skill, response)
 
-@pytest.mark.asyncio
-def test_get_skill_by_id_token(pers_client: TestClient, skill_factory, token):
-    test_skill = skill_factory(user_id="test-user")
-    response = pers_client.post("/api/skill", data=test_skill.json())
+
+def test_get_skill_by_id_unauthorized(
+    pers_client, skill_factory, token_factory, create_skill_via_api
+):
+
+    # create a private skill for skill_creator_user
+    skill_creator_user = "skill-creator"
+    response, _ = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=skill_creator_user,
+        published=False,
+    )
     added_skill_id = response.json()["id"]
+
+    test_user = "test-user"
+    test_user_token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(
+        realm="test-realm", username=test_user
+    )
 
     response = pers_client.get(
-        f"/api/skill/{added_skill_id}", headers={"Authorization": f"Bearer {token}"}
+        f"/api/skill/{added_skill_id}",
+        headers=dict(Authorization="Bearer " + test_user_token),
     )
-    assert response.status_code == 200
+    assert response.status_code == 403
 
 
-def test_get_all_skills(pers_client, skill_factory):
+def test_get_all_skills(
+    pers_client, skill_factory, token_factory, create_skill_via_api
+):
 
-    current_user = "current-user"
-    public_skill = skill_factory(user_id="another-user", published=True)
-    private_skill = skill_factory(user_id="another-user", published=False)
-    user_skill = skill_factory(user_id=current_user, published=False)
-    skills_to_add = dict(
-        public_skill=public_skill, private_skill=private_skill, user_skill=user_skill
-    )
+    test_user = "test-user"
+    skill_creator_user = "skill-creator"
 
     skill_name_to_id = {}
-    for skill_name, skill in skills_to_add.items():
-        response = pers_client.post("/api/skill", data=skill.json())
-        skill_name_to_id[skill_name] = response.json()["id"]
+    for skill_type in ["public", "private", "user"]:
+        if skill_type == "public":
+            username, published = skill_creator_user, True
+        elif skill_type == "private":
+            username, published = skill_creator_user, False
+        elif skill_type == "user":
+            username, published = test_user, False
+        response, skill = create_skill_via_api(
+            pers_client,
+            token_factory,
+            skill_factory,
+            username=username,
+            published=published,
+        )
+        skill_name_to_id[skill_type] = response.json()["id"]
 
     # test with anonymous user
     response = pers_client.get(f"/api/skill")
     assert response.status_code == 200
 
     returned_skill_ids = [skill["id"] for skill in response.json()]
-    assert skill_name_to_id["public_skill"] in returned_skill_ids
-    assert skill_name_to_id["private_skill"] not in returned_skill_ids
-    assert skill_name_to_id["user_skill"] not in returned_skill_ids
+    assert skill_name_to_id["public"] in returned_skill_ids
+    assert skill_name_to_id["private"] not in returned_skill_ids
+    assert skill_name_to_id["user"] not in returned_skill_ids
 
     # test with registered user
-    response = pers_client.get(f"/api/skill", params=dict(user_id=current_user))
+    token = token_factory(preferred_username=test_user)
+    response = pers_client.get(
+        f"/api/skill", headers=dict(Authorization="Bearer " + token)
+    )
     assert response.status_code == 200
 
     returned_skill_ids = [skill["id"] for skill in response.json()]
-    assert skill_name_to_id["public_skill"] in returned_skill_ids
-    assert skill_name_to_id["private_skill"] not in returned_skill_ids
-    assert skill_name_to_id["user_skill"] in returned_skill_ids
+    assert skill_name_to_id["public"] in returned_skill_ids
+    assert skill_name_to_id["private"] not in returned_skill_ids
+    assert skill_name_to_id["user"] in returned_skill_ids
 
 
-def test_get_public_user_skill_only_once(pers_client, skill_factory):
-    """test if a user publised their skill, that GET /skills only returns it once"""
+def test_get_public_user_skill_only_once(
+    pers_client, skill_factory, token_factory, create_skill_via_api
+):
+    """test if a user published their skill, that GET /skills only returns it once"""
 
-    current_user = "current-user-2"
-    skill = skill_factory(user_id=current_user, published=True)
-
-    response = pers_client.post("/api/skill", data=skill.json())
+    test_user = "test-user"
+    response, _ = create_skill_via_api(
+        pers_client, token_factory, skill_factory, username=test_user, published=True
+    )
     skill_id = response.json()["id"]
 
-    response = pers_client.get(f"/api/skill", params=dict(user_id=current_user))
+    token = token_factory(preferred_username=test_user)
+    response = pers_client.get(
+        f"/api/skill", headers=dict(Authorization="Bearer " + token)
+    )
     assert response.status_code == 200
     returned_skills = response.json()
 
     # filter skills by user
-    user_skills = list(filter(lambda s: s["user_id"] == current_user, returned_skills))
-
-    assert user_skills[0]["id"] == skill_id
-    assert len(user_skills) == 1
+    skill_ids = [skill["id"] for skill in returned_skills]
+    assert sorted(skill_ids) == sorted(set(skill_ids))
 
 
-def test_update_skill(pers_client, skill_factory):
+@pytest.mark.parametrize(
+    "authorized", [True, False], ids=["authorized", "unauthorized"]
+)
+def test_update_skill(
+    authorized, pers_client, skill_factory, token_factory, create_skill_via_api
+):
 
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
-
+    test_realm = "test-realm"
+    test_user = "test-user"
+    skill_creator = test_user if authorized else "skill-creator"
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=skill_creator,
+        published=True,
+    )
     skill_id = response.json()["id"]
-    test_skill.id = skill_id
+
+    skill.id = skill_id
     updated_skill_name = "updated skill"
-    test_skill.name = updated_skill_name
+    skill.name = updated_skill_name
+
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
     response = pers_client.put(
-        f"/api/skill/{skill_id}", json=dict(name=updated_skill_name)
+        f"/api/skill/{skill_id}",
+        json=dict(name=updated_skill_name),
+        headers=dict(Authorization="Bearer " + token),
     )
-    assert response.status_code == 200
-    assert response.json()["name"] == updated_skill_name
+    if authorized:
+        assert response.status_code == 200
+        assert response.json()["name"] == updated_skill_name
+        assert_skills_equal_from_response(skill, response)
+    else:
+        assert response.status_code == 403
 
-    assert_skills_equal_from_response(test_skill, response)
 
+@pytest.mark.parametrize(
+    "authorized", [True, False], ids=["authorized", "unauthorized"]
+)
+def test_delete_skill(
+    authorized, pers_client, skill_factory, token_factory, create_skill_via_api
+):
 
-def test_delete_skill(pers_client, skill_factory):
-
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
-
+    test_realm = "test-realm"
+    test_user = "test-user"
+    skill_creator = test_user if authorized else "skill-creator"
+    response, _ = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=skill_creator,
+        published=True,
+    )
     skill_id = response.json()["id"]
 
-    response = pers_client.delete(f"/api/skill/{skill_id}")
-    assert response.status_code == 204
-
-    response = pers_client.get(
-        f"/api/skill/{skill_id}", params=dict(user_id=test_skill.user_id)
+    token = token_factory(preferred_username=test_user)
+    response = pers_client.delete(
+        f"/api/skill/{skill_id}", headers=dict(Authorization="Bearer " + token)
     )
-    assert response.status_code == 200
-    assert response.json() == None
+
+    if authorized:
+        assert response.status_code == 204
+
+        response = pers_client.get(
+            f"/api/skill/{skill_id}", headers=dict(Authorization="Bearer " + token)
+        )
+        assert response.status_code == 404
+    else:
+        assert response.status_code == 403
+        token = token_factory(preferred_username=skill_creator)
+        app.dependency_overrides[auth] = lambda: dict(
+            realm=test_realm, username=skill_creator
+        )
+        response = pers_client.get(
+            f"/api/skill/{skill_id}", headers=dict(Authorization="Bearer " + token)
+        )
+        assert response.status_code == 200
+        assert response.json()["id"] == skill_id
 
 
-def test_publish_unpublish(pers_client, skill_factory):
+@pytest.mark.parametrize(
+    "authorized", [True, False], ids=["authorized", "unauthorized"]
+)
+def test_publish_unpublish(
+    authorized, pers_client, skill_factory, token_factory, create_skill_via_api
+):
 
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
+    test_realm = "test-realm"
+    test_user = "test-user"
+    skill_creator = test_user if authorized else "skill-creator"
+
+    response, _ = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=skill_creator,
+        published=True,
+    )
     skill_id = response.json()["id"]
 
-    response = pers_client.post(f"/api/skill/{skill_id}/unpublish")
-    assert response.status_code == 201
-    unpublished_skill = response.json()
-    assert not unpublished_skill["published"], unpublished_skill
+    # appempt publishing/unpublihsing it
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
+    response = pers_client.post(
+        f"/api/skill/{skill_id}/unpublish",
+        headers=dict(Authorization="Bearer " + token),
+    )
+    if authorized:
+        assert response.status_code == 201
+        unpublished_skill = response.json()
+        assert not unpublished_skill["published"]
+    else:
+        assert response.status_code == 403
 
-    response = pers_client.post(f"/api/skill/{skill_id}/publish")
-    assert response.status_code == 201
-    published_skill = response.json()
-    assert published_skill["published"], published_skill
+    if authorized:
+        response = pers_client.post(
+            f"/api/skill/{skill_id}/publish",
+            headers=dict(Authorization="Bearer " + token),
+        )
+        assert response.status_code == 201
+        published_skill = response.json()
+        assert published_skill["published"]
+    else:
+        assert response.status_code == 403
 
 
 @responses.activate
-def test_query_skill(pers_client, skill_factory, skill_prediction_factory):
-    test_skill = skill_factory()
-    response = pers_client.post("/api/skill", data=test_skill.json())
+@pytest.mark.parametrize(
+    "authorized", [True, False], ids=["authorized", "unauthorized"]
+)
+def test_query_skill(
+    authorized,
+    pers_client,
+    skill_factory,
+    skill_prediction_factory,
+    token_factory,
+    create_skill_via_api,
+):
+
+    test_realm = "test-realm"
+    test_user = "test-user"
+    skill_creator = test_user if authorized else "skill-creator"
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=skill_creator,
+        published=False,
+    )
+
     skill_id = response.json()["id"]
 
     responses.add(
         responses.POST,
-        url=f"{test_skill.url}/query",
+        url=f"{skill.url}/query",
         json=skill_prediction_factory(),
         status=200,
     )
 
-    query = "a unique query form test_query_skill"
+    query = "a unique query form test_query_skill " + str(uuid.uuid1())
     query_request = QueryRequest(
         query=query,
         user_id="test-user",
         skill_args={"context": "hello"},
         num_results=1,
     )
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
     response = pers_client.post(
-        f"/api/skill/{skill_id}/query", json=query_request.dict()
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
     )
+    if authorized:
+        assert response.status_code == 200
+        saved_prediction = mongo_client.client.skill_manager.predictions.find_one(
+            {"query": query}
+        )
 
-    assert response.status_code == 200
-    saved_prediction = mongo_client.client.skill_manager.predictions.find_one(
-        {"query": query}
-    )
+        response = response.json()
+        # HACK: remove attributions from repsonse since the object saved in mongo does
+        # not contain it because it is "unset" and we remove all unset values when
+        # creating the mongo object
+        for p in response["predictions"]:
+            p.pop("attributions")
 
-    TestCase().assertDictEqual(
-        response.json(), {"predictions": saved_prediction["predictions"]}
-    )
+        TestCase().assertDictEqual(
+            response, {"predictions": saved_prediction["predictions"]}
+        )
+    else:
+        assert response.status_code == 403
 
 
 @responses.activate
 def test_query_skill_with_default_skill_args(
-    pers_client, skill_factory, skill_prediction_factory
+    pers_client,
+    skill_factory,
+    skill_prediction_factory,
+    token_factory,
+    create_skill_via_api,
 ):
+    test_realm = "test-realm"
+    test_user = "test-user"
     default_skill_args = {"adapter": "my-adapter", "context": "default context"}
-    test_skill = skill_factory(default_skill_args=default_skill_args)
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=test_user,
+        published=False,
+        default_skill_args=default_skill_args,
+    )
 
-    response = pers_client.post("/api/skill", data=test_skill.json())
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
+    response = pers_client.post(
+        "/api/skill", data=skill.json(), headers=dict(Authorization="Bearer " + token)
+    )
     skill_id = response.json()["id"]
 
     responses.add(
         responses.POST,
-        url=f"{test_skill.url}/query",
+        url=f"{skill.url}/query",
         json=skill_prediction_factory(),
         status=200,
     )
@@ -391,10 +515,68 @@ def test_query_skill_with_default_skill_args(
         num_results=1,
     )
     response = pers_client.post(
-        f"/api/skill/{skill_id}/query", json=query_request.dict()
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
     )
 
     actual_skill_query_body = json.loads(responses.calls[0].request.body)["skill_args"]
     expected_skill_query_body = default_skill_args
     expected_skill_query_body["context"] = query_context["context"]
     TestCase().assertDictEqual(actual_skill_query_body, expected_skill_query_body)
+
+@responses.activate
+def test_query_skill_with_attributions(
+    pers_client,
+    skill_factory,
+    skill_prediction_factory,
+    token_factory,
+    create_skill_via_api,
+):
+    test_realm = "test-realm"
+    test_user = "test-user"
+    default_skill_args = {"adapter": "my-adapter", "context": "default context"}
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=test_user,
+        published=False,
+        default_skill_args=default_skill_args,
+    )
+
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
+    response = pers_client.post(
+        "/api/skill", data=skill.json(), headers=dict(Authorization="Bearer " + token)
+    )
+    skill_id = response.json()["id"]
+
+    attributions = {
+        "question": [[1, "hello", 0.2], [2, "world", 0.8]],
+        "context": [[1, "how", 0.2], [2, "are", 0.3], [2, "you", 0.5]],
+    }
+
+    responses.add(
+        responses.POST,
+        url=f"{skill.url}/query",
+        json=skill_prediction_factory(attributions=attributions),
+        status=200,
+    )
+
+    query_context = {"context": "hello"}
+    query_request = QueryRequest(
+        query="query",
+        user_id="test-user",
+        skill_args=query_context,
+        num_results=1,
+    )
+    response = pers_client.post(
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+    assert response.status_code == 200
+
+    response = response.json()
+    TestCase().assertDictEqual(response["predictions"][0]["attributions"], attributions)

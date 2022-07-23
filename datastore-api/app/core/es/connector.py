@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import logging
 from typing import Iterable, List, Optional, Tuple
 
@@ -21,13 +22,16 @@ logger = logging.getLogger(__name__)
 class ElasticsearchConnector(BaseConnector):
     """Provides a connector for an Elasticsearch backend."""
 
-    def __init__(self, host: str):
+    datastore_suffix = "-docs"
+    datastore_search_suffix = "-search-indices"
+
+    def __init__(self, host: str, converter = ElasticsearchClassConverter()):
         """Initializes a new instance of ElasticsearchConnector.
 
         Args:
             host (str): Hostname of the Elasticsearch instance.
         """
-        super().__init__(converter=ElasticsearchClassConverter())
+        super().__init__(converter=converter)
         self.es = AsyncElasticsearch(hosts=[host], timeout=settings.ES_SEARCH_TIMEOUT)
 
     # --- Datastore schemas ---
@@ -36,17 +40,17 @@ class ElasticsearchConnector(BaseConnector):
     # - _datastore_search_index_name stores the search indices of the datastore
 
     def _datastore_docs_index_name(self, datastore_name: str) -> str:
-        return datastore_name + "-docs"
+        return datastore_name + self.datastore_suffix
 
     def _datastore_search_index_name(self, datastore_name: str) -> str:
-        return datastore_name + "-search-indices"
+        return datastore_name + self.datastore_search_suffix
 
     async def get_datastores(self) -> List[Datastore]:
         """Returns a list of all datastores."""
         datastores = []
-        indices = await self.es.indices.get(index="*-docs")
+        indices = await self.es.indices.get(index="*"+self.datastore_suffix)
         for name, obj in indices.items():
-            display_name = name[: -len("-docs")]  # remove the "-docs" suffix
+            display_name = name[: -len(self.datastore_suffix)]  # remove the "-docs" suffix
             datastores.append(self.converter.convert_to_datastore(display_name, obj))
 
         return datastores
@@ -60,7 +64,6 @@ class ElasticsearchConnector(BaseConnector):
         docs_index = self._datastore_docs_index_name(datastore_name)
         try:
             index = await self.es.indices.get(index=docs_index)
-            print(index)
             return self.converter.convert_to_datastore(datastore_name, index[docs_index])
         except elasticsearch.exceptions.NotFoundError:
             return None
@@ -386,7 +389,7 @@ class ElasticsearchConnector(BaseConnector):
 
     # --- Management methods ---
 
-    async def commit_changes(self):
+    async def commit_changes(self):  # TODO: Bad name. Change it to refresh
         """Commits all changes. E.g., in the case of Vespa, this would export & upload an application package."""
         await self.es.indices.refresh(index="")
 

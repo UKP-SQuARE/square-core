@@ -18,6 +18,22 @@ COPY ./app app
 COPY main.py main.py
 COPY docker_access.py docker_access.py
 COPY logging.conf logging.conf
+COPY ./tasks tasks
+#COPY ./mongo_access.py mongo_access.py
 
 EXPOSE 9001
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9001", "--log-config", "logging.conf"]
+
+# Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
+# run the tests
+FROM base as test
+
+COPY ./tests tests
+COPY . ./
+RUN pip install pytest pytest-cov pytest-asyncio
+RUN mkdir test-reports
+RUN PYTHONPATH=./ pytest \
+    --junitxml=test-reports/junit.xml \
+    --cov \
+    --cov-report=xml:test-reports/coverage.xml \
+    --cov-report=html:test-reports/coverage.html; \
+    echo $? > test-reports/pytest.existcode

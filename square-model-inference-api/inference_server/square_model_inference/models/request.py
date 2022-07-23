@@ -73,6 +73,14 @@ class PredictionRequest(BaseModel):
                     "Note, 'model_kwargs' and 'task_kwargs' are merged for generation."
 
     )
+    explain_kwargs: dict = Field(
+        default={},
+        description="Optional dictionary containing additional parameters for explaining predictions<br>"
+                    "- 'method': explanation method such as 'simple_grads, integrated_grads,"
+                    "smooth_grads, attention or scaled_attention':<br>"
+                    "- 'top_k': number of word attributions to return:<br>"
+                    "- 'mode: One of 'question', 'context', 'all'. Returns respective attributions. "
+    )
     adapter_name: Optional[str] = Field(
         default="",
         description="Only necessary for Adapter. "

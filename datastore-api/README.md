@@ -15,6 +15,8 @@ The Datastore API is dependent upon the following services:
 
 We now have a [tutorial&exercises](https://docs.google.com/document/d/1r-CeFB7jKZaMAAyjSgbkHVYi1cYpqNoo7PUcTkPqJ6M/edit#) document for learning about SQuARE - Datastores easier and fast!
 
+For access to the Datastore API for adding new datastores, please refer to [this notebook](https://colab.research.google.com/drive/1siJPwcl-UcvBYY-JhQIzS7i5obxo51hN?usp=sharing) as an example.
+
 ## Quick (production) setup
 
 1. Open the [docker-compose.yml](docker-compose.yml). Find the service declaration for `datastore_api` and uncomment it. In the `environment` section, optionally set an API key and the connection to the Model API.
@@ -208,7 +210,11 @@ The new index should use Facebook's DPR model and should be called `"dpr"`.
     docker compose up -d
     ```
 ## Pytest
-Run
+As the usual way, for running tests on the host machine, just run:
 ```
 make test-api
+```
+However, the CI test actually run the test inside a docker container. To simulate this, we can run:
+```
+make docker-test
 ```

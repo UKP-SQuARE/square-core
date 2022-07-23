@@ -16,7 +16,7 @@ COPY ./skill_manager skill_manager
 COPY logging.conf logging.conf
 
 FROM base as test
-RUN apt -y install docker.io
+RUN apt update && apt -y install docker.io
 
 COPY requirements.dev.txt requirements.dev.txt 
 RUN pip install -r requirements.dev.txt

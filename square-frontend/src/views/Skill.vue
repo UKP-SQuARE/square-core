@@ -31,7 +31,7 @@
             <select v-model="skill.skill_type" class="form-select" id="skillType">
               <option v-for="skillType in skillTypes" v-bind:value="skillType" v-bind:key="skillType">
                 {{ skillType }}
-              </option>
+              </option>             
             </select>
         </div>
       </div>
@@ -48,7 +48,8 @@
       <div class="row">
         <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
-            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context" class="form-check-input" type="checkbox" id="requiresContext">
+            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context" class="form-check-input" type="checkbox" id="requiresContext"
+            v-on:change="SetSkillURL()">
             <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-card-text" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
@@ -152,6 +153,7 @@ export default Vue.component('edit-skill', {
       originalName: '',
       success: false,
       failure: false,
+      stringifiedJSON: '',
       validJSON: true,
       numberSkillExamples: 3
     }
@@ -169,13 +171,17 @@ export default Vue.component('edit-skill', {
       return this.$route.params.id === 'new_skill'
     },
     skillArguments: {
+      // Use intermediate stringified variable to not interrupt the users typing
       get: function () {
-        return JSON.stringify(this.skill.default_skill_args)
+        return this.stringifiedJSON
       },
       set: function (newValue) {
+        this.stringifiedJSON = newValue
         try {
           if (newValue.length > 0) {
             this.skill.default_skill_args = JSON.parse(newValue)
+          } else {
+            this.skill.default_skill_args = null
           }
           this.validJSON = true
         } catch (e) {
@@ -219,6 +225,37 @@ export default Vue.component('edit-skill', {
       while (this.skill.skill_input_examples.length < this.numberSkillExamples) {
         this.skill.skill_input_examples.push({ 'query': '', 'context': '' })
       }
+    },
+    SetSkillURL() {
+      if(this.skill.skill_type=='span-extraction') {
+        this.skill.skill_settings.requires_context ? this.skill.url = 'http://extractive-qa' : this.skill.url = 'http://open-extractive-qa'
+      }
+    }
+  },
+  watch: {
+    'skill.skill_type'(){
+      switch(this.skill.skill_type){
+        case 'abstractive':
+          this.skill.url = 'http://generative-qa'
+          break
+        case 'span-extraction':
+          if(this.skill.skill_settings.requires_context){
+            this.skill.url = 'http://extractive-qa'
+          }
+          else{
+            this.skill.url = 'http://open-extractive-qa'
+          }
+          break
+        case 'multiple-choice':
+          this.skill.url = 'http://multiple-choice-qa'
+          break
+        case 'categorical':
+          this.skill.url = 'http://multiple-choice-qa'
+          break
+        default:
+          // 
+          break
+      }
     }
   },
   beforeMount() {
@@ -235,6 +272,8 @@ export default Vue.component('edit-skill', {
             }
             this.skill = data
             this.originalName = this.skill.name
+            // Trigger setter
+            this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
           })
     } else {
