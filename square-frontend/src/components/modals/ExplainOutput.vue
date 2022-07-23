@@ -66,7 +66,7 @@
                 <hr/>
               </div>
 
-              <div v-if="num_show != undefined ">
+              <div v-if="show_saliency_map">
                 <div class="row mt-3">
                   <div class="col-2 text-start">
                     <h4>Question:</h4>
@@ -77,7 +77,7 @@
                 </div>
               </div>
 
-              <div v-if="num_show != undefined ">
+              <div v-if="show_saliency_map">
                 <div class="row mt-3">
                   <div class="col-2 text-start">
                     <h4>Context:</h4>
@@ -116,14 +116,15 @@ export default Vue.component("explain-output",{
       //eslint-disable-next-line
       var numContextWords = this.$store.state.currentContext.split(/\s+|\.|\!|\?|\;/).length;
      return {
-      num_Maxshow :  Math.min(numQuestionWords, numContextWords),
-      num_show : undefined,
+      num_Maxshow:  Math.min(numQuestionWords, numContextWords),
+      num_show: undefined,
       currentResults: this.currentResults,
       waiting_attention: false,
       waiting_scaled_attention: false,
       waiting_simple_grads: false,
       waiting_smooth_grads: false,
       waiting_integrated_grads: false,
+      show_saliency_map: false,
       }
   },
   components:{
@@ -157,7 +158,7 @@ export default Vue.component("explain-output",{
           this.waiting_integrated_grads = true;
           break;
       }
-
+      this.show_saliency_map = false;
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
         inputContext: this.$store.state.currentContext,
@@ -195,6 +196,7 @@ export default Vue.component("explain-output",{
             this.waiting_integrated_grads = false;
             break;
         }
+        this.show_saliency_map = true;
       })
     },
 
