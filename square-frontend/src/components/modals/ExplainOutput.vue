@@ -62,7 +62,7 @@
                     <h4>Question:</h4>
                   </div>
                   <div class="col-10">
-                    <span v-html="highlightedQuestion()"/>
+                    <span v-html="highlightedQuestion(index)"/>
                   </div>
                 </div>
               </div>
@@ -73,7 +73,7 @@
                     <h4>Context:</h4>
                   </div>
                   <div class="col-10">
-                    <span v-html="highlightedContext()"/>
+                    <span v-html="highlightedContext(index)"/>
                   </div>
                 </div>
               </div>
@@ -179,19 +179,19 @@ export default Vue.component("explain-output",{
 
     },
 
-    highlightedQuestion() {
+    highlightedQuestion(idx) {
     // Input:
     //   Question: strings,
     //   attributions: a list of [word_idx,word,score]]
     // Output: 
     //   highlighted question
       return this.highLight(this.$store.state.currentQuestion,
-                            this.$store.state.currentResults[0].predictions[0].attributions.question) 
+                            this.$store.state.currentResults[idx].predictions[0].attributions.question) 
     },
 
-    highlightedContext() {
+    highlightedContext(idx) {
       return this.highLight(this.$store.state.currentContext,
-                            this.$store.state.currentResults[0].predictions[0].attributions.context)
+                            this.$store.state.currentResults[idx].predictions[0].attributions.context)
     },
 
     changeShowNum(){
