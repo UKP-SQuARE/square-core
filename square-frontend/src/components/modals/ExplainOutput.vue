@@ -28,8 +28,8 @@
                 </button>
               </div>
               <div class="col-auto">
-                <button id="Scaled_attention_btn" v-on:click="postReq('Scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_Scaled_attention">
-                  <span v-show="waiting_Scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
+                <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
+                  <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
                 </button>
               </div>
               <div class="col-auto">
@@ -119,7 +119,7 @@ export default Vue.component("explain-output",{
       num_show : undefined,
       currentResults: this.currentResults,
       waiting_attention: false,
-      waiting_Scaled_attention: false,
+      waiting_scaled_attention: false,
       waiting_simple_grads: false,
       waiting_smooth_grads: false,
       waiting_integrated_grads: false,
@@ -146,8 +146,8 @@ export default Vue.component("explain-output",{
         case 'attention':
           this.waiting_attention = true;
           break;
-        case 'Scaled_attention':
-          this.waiting_Scaled_attention = true;
+        case 'scaled_attention':
+          this.waiting_scaled_attention = true;
           break;
         case 'simple_grads':
           this.waiting_simple_grads = true;
@@ -184,8 +184,8 @@ export default Vue.component("explain-output",{
           case 'attention':
             this.waiting_attention = false;
             break;
-          case 'Scaled_attention':
-            this.waiting_Scaled_attention = false;
+          case 'scaled_attention':
+            this.waiting_scaled_attention = false;
             break;
           case 'simple_grads':
             this.waiting_simple_grads = false;
