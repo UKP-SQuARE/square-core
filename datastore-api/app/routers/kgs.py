@@ -357,6 +357,33 @@ async def subgraph_by_ids(
     else:
         raise HTTPException(status_code=404)
 
+@router.get(
+    "/{kg_name}/edges/query_by_ids",
+    summary="Get edges between given node ids",
+    description="Get edges between nodes from the knowledge graph by node ids. Edges with the same in_node and out_node are ignored.",
+    responses={
+        200: {
+            "description": "The edges",
+        },
+        404: {"description": "The edges could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_edges_by_nids(
+    kg_name: str = Path(..., description="The name of the knowledge graph"),
+    nids: set = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    query_list = []
+    for nid in nids:
+        for n_id in nids:
+            query_list.append((nid, n_id))
+    result = await conn.get_edge_msearch(kg_name, query_list)
+    
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
 
 @router.get(
     "/{kg_name}/edges/query_by_name",
@@ -371,7 +398,7 @@ async def subgraph_by_ids(
     },
 )
 async def get_edge_by_name(
-    kg_name: str = Path(..., description="The name of the edge"),
+    kg_name: str = Path(..., description="The name of the knowledge graph"),
     docid: set = Body(..., description="The name of the edge to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
