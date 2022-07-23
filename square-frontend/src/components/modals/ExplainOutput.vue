@@ -110,12 +110,13 @@ export default Vue.component("explain-output",{
   inject: ['currentResults'],
   data () {
       // num words in context
-      var numWords = this.$store.state.currentQuestion.split(' ').length;
+      //eslint-disable-next-line
+      var numQuestionWords = this.$store.state.currentQuestion.split(/\s+|\.|\!|\?|\;/).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
-      var numContextWords = this.$store.state.currentContext.split(' ').length;
-      console.log( Math.min(numWords, numContextWords));
+      //eslint-disable-next-line
+      var numContextWords = this.$store.state.currentContext.split(/\s+|\.|\!|\?|\;/).length;
      return {
-      num_Maxshow :  Math.min(numWords, numContextWords),
+      num_Maxshow :  Math.min(numQuestionWords, numContextWords),
       num_show : undefined,
       currentResults: this.currentResults,
       waiting_attention: false,
@@ -125,7 +126,6 @@ export default Vue.component("explain-output",{
       waiting_integrated_grads: false,
       }
   },
-  props:['test'],  //args should be the test json file
   components:{
     //BadgePopover // maybe useful
   },
@@ -136,11 +136,9 @@ export default Vue.component("explain-output",{
     },
   },
   methods:{
-    // write functions here
-
     postReq(method) {
-      // Post the query with selected skills and given question, context
-      // method for setting explain method : 'Attention','Scaled Attention','Simple Grad', 'Smooth Grad', 'Integrated Grad'      
+      // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
+      
       // switch the waiting_* variables to true to show the loading spinner
       switch(method){
         case 'attention':
