@@ -1,10 +1,12 @@
 import asyncio
 from unittest.mock import patch
+
 import pytest
 from app.core.config import settings
+from app.core.faiss import FaissClient
+from app.core.model_api import ModelAPIClient
 from app.models.query import QueryResult
 from requests_mock import Mocker
-from app.core.faiss import FaissClient
 
 
 class TestQuery:
