@@ -57,20 +57,13 @@
           </a>
         </div>
       </div>
+
       <div class="col mt-3">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-
-          <a
-              data-bs-toggle="modal"
-              data-bs-target="#modaltest"
-              role="button"
-              class="btn btn-primary shadow">
+          <a data-bs-toggle="modal" data-bs-target="#modalExplain" role="button" class="btn btn-primary shadow">
             Explain this output
-
-
           </a>
-          <ExplainOutput id="modaltest" test="test1" > test</ExplainOutput>
-
+          <ExplainOutput id="modalExplain"/>
         </div>
       </div>
 
