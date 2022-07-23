@@ -65,7 +65,7 @@ class DenseRetrieval:
 
         #TODO: Reuse search_by_vector
         # 1. Get the query embedding from the model api
-        query_vector = self.model_api.encode_query(query, index, credential_token)
+        query_vector = await self.model_api.encode_query(query, index, credential_token)
         logger.debug(f"Received query embedding:{query_vector}")
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
         queried = self.faiss.search(datastore_name, index_name, query_vector, top_k)
@@ -138,7 +138,7 @@ class DenseRetrieval:
             raise ValueError("Datastore or index not found.")
 
         # 1. Get the query embedding from the model api
-        query_vector = self.model_api.encode_query(query, index, credential_token)
+        query_vector = await self.model_api.encode_query(query, index, credential_token)
         # 2. Search for the query in the FAISS store. This will return ids of matched docs.
         queried = self.faiss.explain(
             datastore_name, 

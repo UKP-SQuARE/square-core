@@ -2,9 +2,12 @@ uvicorn==0.13.4                 # ASGI server
 fastapi>=0.73.0                 # REST API Framework
 pydantic==1.8.2                 # Input/ output modelling
 python-dotenv==0.17.1           # Required for .env configs
-sentencepiece==0.1.95
-torch==1.8.1
-sentence-transformers==1.2.0
-onnxruntime==1.8.1
-square-auth>=0.0.7
-git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2
+sentencepiece==0.1.95           # tokenizer
+torch==1.11.0                   # pytorch libs
+sentence-transformers==1.2.0    # sentence transformers libs
+onnxruntime==1.8.1              # onnx inference and models
+square-auth>=0.0.7              # keycloak authentication
+celery==5.1.2                   # queue requests
+redis==4.1.4
+pytest-env==0.6.2
+git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # ELK logger

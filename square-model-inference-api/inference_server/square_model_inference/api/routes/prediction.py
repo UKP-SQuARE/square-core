@@ -1,94 +1,178 @@
+from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException
-from starlette.requests import Request
+import os
 
 from square_model_inference.models.request import PredictionRequest, Task
-from square_model_inference.models.prediction import PredictionOutputForSequenceClassification, \
-    PredictionOutputForTokenClassification, \
-    PredictionOutputForQuestionAnswering, PredictionOutputForGeneration, PredictionOutputForEmbedding
+from square_model_inference.models.prediction import AsyncTaskResult
 from square_model_inference.models.statistics import ModelStatistics, UpdateModel
-from square_model_inference.core.config import model_config
+from starlette.responses import JSONResponse
+
+from tasks.config.model_config import ModelConfig
+from tasks.tasks import prediction_task
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+QUEUE = os.getenv("QUEUE", os.getenv("MODEL_NAME", None))
 
 
-@router.post("/sequence-classification", response_model=PredictionOutputForSequenceClassification,
+def check_valid_request(request):
+    if request.input is None:
+        return False, "Missing input"
+    return True, None
+
+
+@router.post("/{identifier}/sequence-classification", response_model=AsyncTaskResult,
+             name="sequence classification")
+@router.post("/{hf_username}/{identifier}/sequence-classification", response_model=AsyncTaskResult,
              name="sequence classification")
 async def sequence_classification(
-        request: Request,
+        identifier: str,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForSequenceClassification:
-    logger.info(f"Sequence Classification Request: {prediction_request.dict()}")
-    model = request.app.state.model  # Access model from global app state
-    prediction = await model.predict(prediction_request, Task.sequence_classification)
+        hf_username: str = None
+) -> AsyncTaskResult:
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async(
+        (
+            prediction_request.dict(),
+            Task.sequence_classification,
+            model_config.to_dict()),
+        queue=identifier.replace("/", "-")
+    )
 
-    return prediction
+    return AsyncTaskResult(message="Queued sequence classification", task_id=res.id)
 
 
-@router.post("/token-classification", response_model=PredictionOutputForTokenClassification,
+@router.post("/{identifier}/token-classification", response_model=AsyncTaskResult,
+             name="token classification")
+@router.post("/{hf_username}/{identifier}/token-classification", response_model=AsyncTaskResult,
              name="token classification")
 async def token_classification(
-        request: Request,
+        identifier: str,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForTokenClassification:
-    logger.info(f"Token Classification Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.token_classification)
+        hf_username: str = None
+) -> AsyncTaskResult:
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async(
+        (
+            prediction_request.dict(),
+            Task.token_classification,
+            model_config.to_dict()
+        ),
+        queue=identifier.replace("/", "-")
+    )
+    return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
-    return prediction
 
-
-@router.post("/embedding", response_model=PredictionOutputForEmbedding, name="embedding")
+@router.post("/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding")
+@router.post("/{hf_username}/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding")
 async def embedding(
-        request: Request,
+        identifier: str,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForEmbedding:
-    logger.info(f"Embedding Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.embedding)
+        hf_username: str = None
+) -> AsyncTaskResult:
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async(
+        (
+            prediction_request.dict(),
+            Task.embedding,
+            model_config.to_dict()
+        ),
+        queue=identifier.replace("/", "-")
+    )
+    return AsyncTaskResult(message="Queued embedding", task_id=res.id)
 
-    return prediction
 
-
-@router.post("/question-answering", response_model=PredictionOutputForQuestionAnswering, name="question answering")
+@router.post("/{identifier}/question-answering", response_model=AsyncTaskResult, name="question answering")
+@router.post("/{hf_username}/{identifier}/question-answering", response_model=AsyncTaskResult, name="question answering")
 async def question_answering(
-        request: Request,
+        identifier: str,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForQuestionAnswering:
-    logger.info(f"Question Answering Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.question_answering)
+        hf_username: str = None
+) -> AsyncTaskResult:
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async(
+        (
+            prediction_request.dict(),
+            Task.question_answering,
+            model_config.to_dict()
+        ),
+        queue=identifier.replace("/", "-")
+    )
+    return AsyncTaskResult(message="Queued question answering", task_id=res.id)
 
-    return prediction
 
-
-@router.post("/generation", response_model=PredictionOutputForGeneration, name="generation")
+@router.post("/{identifier}/generation", response_model=AsyncTaskResult, name="generation")
+@router.post("/{hf_username}/{identifier}/generation", response_model=AsyncTaskResult, name="generation")
 async def generation(
-        request: Request,
+        identifier: str,
         prediction_request: PredictionRequest,
-) -> PredictionOutputForGeneration:
-    logger.info(f"Generation Request: {prediction_request.dict()}")
-    model = request.app.state.model
-    prediction = await model.predict(prediction_request, Task.generation)
+        hf_username: str = None
+) -> AsyncTaskResult:
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
+    model_config = ModelConfig.load_from_file(identifier)
+    res = prediction_task.apply_async(
+        (
+            prediction_request.dict(),
+            Task.generation,
+            model_config.to_dict()
+        ),
+        queue=identifier.replace("/", "-")
+    )
+    return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
-    return prediction
+
+@router.get("/task_result/{task_id}")
+async def get_task_results(task_id: str):
+    task = AsyncResult(task_id)
+    if not task.ready():
+        return JSONResponse(status_code=202, content={'task_id': str(task_id), 'status': 'Processing'})
+    result = task.get()
+    return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
 
 
-@router.get("/stats", response_model=ModelStatistics, name="statistics")
-async def statistics() -> ModelStatistics:
+@router.get("/{identifier}/stats", response_model=ModelStatistics, name="statistics")
+@router.get("/{hf_username}/{identifier}/stats", response_model=ModelStatistics, name="statistics")
+async def statistics(identifier: str, hf_username: str = None) -> ModelStatistics:
     """
     Returns the statistics of the model
     :return: the ModelStatistics for the model
     """
     logger.info("Getting statistics for ")
-    return get_statistics()
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    return get_statistics(identifier)
 
 
-@router.post("/update")
-async def update(updated_param: UpdateModel):
+@router.post("/{identifier}/update")
+@router.post("/{hf_username}/{identifier}/update")
+async def update(identifier: str, updated_param: UpdateModel, hf_username: str = None):
     """
     Update the model with the given parameters.
     (not all parameters can be updated through this method e.g. the model class
@@ -96,19 +180,30 @@ async def update(updated_param: UpdateModel):
     :param updated_param: the new parameters
     :return: the information about the updated model
     """
-    logger.info("Updating model parameters")
-    if model_config.model_type in ["onnx", "sentence-transformer"] and model_config.disable_gpu != updated_param.disable_gpu:
+    logger.info("Updating model parameters with {}".format(updated_param))
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    model_config = ModelConfig.load_from_file(identifier)
+    if model_config.model_type in ["onnx", "sentence-transformer"] and \
+            model_config.disable_gpu != updated_param.disable_gpu:
         raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
     model_config.disable_gpu = updated_param.disable_gpu
     model_config.batch_size = updated_param.batch_size
     model_config.max_input_size = updated_param.max_input
     model_config.return_plaintext_arrays = updated_param.return_plaintext_arrays
-    return get_statistics()
+    logger.info(model_config)
+    model_config.save(identifier)
+    logger.info(model_config)
+    return model_config.to_statistics()
 
 
-def get_statistics():
+def get_statistics(identifier):
     """
     Get the information about the model
     :return: the ModelStatistics for the model
     """
+    logger.info("Reloading config")
+    model_config = ModelConfig.load_from_file(identifier)
+    model_config.update()
+    logger.info(model_config)
     return model_config.to_statistics()

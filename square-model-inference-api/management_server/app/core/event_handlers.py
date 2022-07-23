@@ -1,7 +1,7 @@
 import logging
 from typing import Callable
 
-from mongo_access import MongoClass
+from app.db.database import MongoClass
 
 
 logger = logging.getLogger(__name__)

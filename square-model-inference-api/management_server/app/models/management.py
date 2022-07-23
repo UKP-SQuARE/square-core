@@ -22,6 +22,14 @@ class GetModelsResult(BaseModel):
     return_plaintext_arrays: bool = Field(description="whether to encode outputs")
 
 
+class GetExplainersResult(BaseModel):
+    """list the explanation methods for models"""
+
+    identifier: str = Field(description="The explanation method identifier to be used in prediction API")
+    method_name: str = Field(description="name of the explanation method")
+    description: str = Field(description="description of the method")
+
+
 class GetModelsHealth(BaseModel):
     identifier: str
     is_alive: bool

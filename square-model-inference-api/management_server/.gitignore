@@ -3,3 +3,8 @@
 
 # rabbitmq cache
 .rabbitmq
+
+# rabbitmq files
+rabbitmq
+# redis files
+redis
