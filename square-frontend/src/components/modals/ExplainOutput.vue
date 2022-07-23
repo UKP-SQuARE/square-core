@@ -23,19 +23,21 @@
                   <h4>Method:</h4>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary">Attention</button>
+                <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
+                  <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
+                </button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('Scaled_attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
+                <button id="Scaled_attention_btn" v-on:click="postReq('Scaled_attention')" type="button" class="btn btn-outline-primary">Scaled Attention</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary">Simple Grad</button>
+                <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary">Simple Grad</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary">Smooth Grad</button>
+                <button id="smooth_grads_btn" v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary">Smooth Grad</button>
               </div>
               <div class="col-2">
-                <button v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary">Integrated Grad</button>
+                <button id="integrated_grads_bnt" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary">Integrated Grad</button>
               </div>
             </div>
 
@@ -108,7 +110,12 @@ export default Vue.component("explain-output",{
       num_Maxshow :  Math.min(numWords, numContextWords),
       num_show : undefined,
       currentResults: this.currentResults,
-  }
+      waiting_attention: false,
+      waiting_Scaled_attention: false,
+      waiting_simple_grads: false,
+      waiting_smooth_grads: false,
+      waiting_integrated_grads: false,
+      }
   },
   props:['test'],  //args should be the test json file
   components:{
@@ -126,7 +133,25 @@ export default Vue.component("explain-output",{
     postReq(method) {
       // Post the query with selected skills and given question, context
       // method for setting explain method : 'Attention','Scaled Attention','Simple Grad', 'Smooth Grad', 'Integrated Grad'      
-      this.waiting = true
+      // switch the waiting_* variables to true to show the loading spinner
+      switch(method){
+        case 'attention':
+          this.waiting_attention = true;
+          break;
+        case 'Scaled_attention':
+          this.waiting_Scaled_attention = true;
+          break;
+        case 'simple_grads':
+          this.waiting_simple_grads = true;
+          break;
+        case 'smooth_grads':
+          this.waiting_smooth_grads = true;
+          break;
+        case 'integrated_grads':
+          this.waiting_integrated_grads = true;
+          break;
+      }
+
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
         inputContext: this.$store.state.currentContext,
@@ -146,7 +171,24 @@ export default Vue.component("explain-output",{
       }).catch(() => {
         this.failure = true
       }).finally(() => {
-        this.waiting = false
+        // switch the waiting_* variables to false to stop loading spinner
+        switch(method){
+          case 'attention':
+            this.waiting_attention = false;
+            break;
+          case 'Scaled_attention':
+            this.waiting_Scaled_attention = false;
+            break;
+          case 'simple_grads':
+            this.waiting_simple_grads = false;
+            break;
+          case 'smooth_grads':
+            this.waiting_smooth_grads = false;
+            break;
+          case 'integrated_grads':
+            this.waiting_integrated_grads = false;
+            break;
+        }
       })
     },
 
