@@ -45,8 +45,8 @@
         </table>
       </div>
     </div>
-    <div v-if="showContextToggle" class="row">
-      <div class="col mt-3">
+    <div class="row">
+      <div class="col mt-3" v-if="showContextToggle">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a
               v-on:click="showWithContext = !showWithContext"
