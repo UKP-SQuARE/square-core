@@ -90,9 +90,6 @@
 import Vue from 'vue'
 //import BadgePopover from '../BadgePopover'
 // import { postQuery } from '../../api'
-import context_json from './explainability_context.json'
-// import question_json from './explainability_question.json'
-// import request_json from './explainability_request.json'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
@@ -145,13 +142,13 @@ export default Vue.component("explain-output",{
       })
     },
 
-    highLight(sentence,mode){ // add here skill param
+    highLight(sentence,attributions){ // add here skill param
       var listWords = sentence.split(' ');
       var highlightedSentence = "";
       for (let i = 0; i<this.num_show;i++) {
-        var wordIdx = context_json['result']['attributions'][0][mode][i][0]
-        var currentWord = context_json['result']['attributions'][0][mode][i][1]
-        var level = context_json['result']['attributions'][0][mode][i][2]
+        var wordIdx = attributions[i][0]
+        var currentWord = attributions[i][1]
+        var level = attributions[i][2]
         level = level.toFixed(1) * 100;
         level = Math.round(level) ;
         if (level==0) {
@@ -173,14 +170,16 @@ export default Vue.component("explain-output",{
     highlightedQuestion() {
     // Input:
     //   Question: strings,
-    //   scores: a list of [word_idx,word,score]]
+    //   attributions: a list of [word_idx,word,score]]
     // Output: 
     //   highlighted question
-      return this.highLight(this.$store.state.currentQuestion,'question') 
+      return this.highLight(this.$store.state.currentQuestion,
+                            this.$store.state.currentResults[0].predictions[0].attributions.question) 
     },
 
     highlightedContext() {
-       return this.highLight(this.$store.state.currentContext,'context') 
+      return this.highLight(this.$store.state.currentContext,
+                            this.$store.state.currentResults[0].predictions[0].attributions.context)
     },
 
     changeShowNum(){
