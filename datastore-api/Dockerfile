@@ -1,8 +1,7 @@
 FROM python:3.7.6-slim-buster as base
 
 # required to install packages from github
-RUN apt-get -y update
-RUN apt-get -y install git
+RUN apt-get -y update && apt-get -y install git
 
 RUN pip install --upgrade pip
 
@@ -16,7 +15,7 @@ COPY ./app ./app
 # -- Test stage --
 FROM base as test
 
-RUN apt -y install docker.io
+RUN apt-get -y update && apt -y install docker.io
 
 COPY ./requirements.dev.txt requirements.dev.txt
 RUN pip install -r requirements.dev.txt

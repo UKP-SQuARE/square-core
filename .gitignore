@@ -34,4 +34,4 @@ square-skill-api
 square-skill-helpers
 
 **/.env
-docker-compose.yaml
+square-model-inference-api/docker-compose.yaml

@@ -18,9 +18,11 @@ class MongoClass:
         get mongo settings and initialize db
         """
         mongo_settings = MongoSettings()
+        logger.info(mongo_settings.connection_url)
         self.client = MongoClient(mongo_settings.connection_url)
         self.db = self.client.model_management  # database
         self.models = self.db.models  # collection
+        self.containers = self.db.containers  # collection
 
     def close(self):
         """
@@ -54,7 +56,8 @@ class MongoClass:
         """
         data = env.copy()
         identifier = data["IDENTIFIER"]
-
+        container = env["CONTAINER"]
+        del env["CONTAINER"]
         if self.models.count_documents({"IDENTIFIER": identifier}) >= 1:
             if allow_overwrite:
                 query = {"IDENTIFIER": identifier}
@@ -63,16 +66,43 @@ class MongoClass:
                 return False
 
         self.models.insert_one(data)
+
+        return await self.add_container(env["IDENTIFIER"], container)
+
+    async def add_container(self, identifier, container):
+        container_data = {
+            "IDENTIFIER": identifier,
+            "CONTAINER": container
+        }
+        self.containers.insert_one(container_data)
         return True
+
+    async def remove_container(self, containers):
+        for c in containers:
+            query = {"CONTAINER": c}
+            self.containers.delete_one(query)
+        return True
+
+    def get_model_container_ids(self, identifier):
+        query = {"IDENTIFIER": identifier}
+        result = self.containers.find(query)
+        return result
+
+    async def get_model_containers(self):
+        pipeline = [
+            {"$group": {"_id": "$IDENTIFIER", "count": {"$sum": 1}}},
+        ]
+        logger.info(self.containers.aggregate(pipeline))
+        return self.containers.aggregate(pipeline)
 
     def get_container_id(self, identifier):
         """
         get container id from db
         """
         query = {"IDENTIFIER": identifier}
-        result = self.models.find_one(query)
+        result = self.containers.find_one(query)
         logger.info(result)
-        return result["container"]
+        return result["CONTAINER"]
 
     async def remove_model_db(self, identifier):
         """
@@ -80,6 +110,7 @@ class MongoClass:
         """
         query = {"IDENTIFIER": identifier}
         self.models.delete_one(query)
+        self.containers.delete_many(query)
 
     async def get_models_db(self):
         """
@@ -113,6 +144,18 @@ class MongoClass:
         added_models = []
         for data in deployed_models:
             if self.models.count_documents({"IDENTIFIER": data["IDENTIFIER"]}) == 0:
-                self.models.insert_one(data)
+                await self.add_model_db(data)
                 added_models.append(data["IDENTIFIER"])
         return added_models
+
+    async def get_model_stats(self, identifier):
+        query = {"IDENTIFIER": identifier}
+        return self.models.find_one(query)
+
+    async def get_containers(self, identifier, num):
+        query = {"IDENTIFIER": identifier}
+        result = self.containers.find(query, sort=[('_id', -1)]).limit(num)
+        containers = []
+        for c in result:
+            containers.append(c["CONTAINER"])
+        return containers

@@ -7,6 +7,7 @@ import logging
 import os
 import uuid
 from typing import List
+import docker
 
 import requests
 from celery.result import AsyncResult
@@ -18,16 +19,19 @@ from app.models.management import (
     DeployRequest,
     GetModelsHealth,
     GetModelsResult,
+    GetExplainersResult,
     TaskGenericModel,
     TaskResultModel,
     UpdateModel,
 )
 from app.routers import client_credentials, utils
+from app.db.database import MongoClass
 from docker_access import get_all_model_prefixes
-from mongo_access import MongoClass
-from tasks import tasks
-from tasks.celery import app as celery_app
 
+from tasks import tasks
+# from tasks.celery import app
+import json
+from bson import json_util
 
 
 logger = logging.getLogger(__name__)
@@ -59,30 +63,98 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return result
 
 
-@router.get(
-    "/deployed-models-health",
-    response_model=List[GetModelsHealth],
-    name="get-deployed-models-health",
-)
-async def get_models_health(token: str = Depends(client_credentials)):
+@router.get("/explainers", name="get-explanation-methods", response_model=List[GetExplainersResult])
+async def list_exp_methods():
     """
-    gets the health of all the deployed models
+    Get all the explanation methods for models
     """
-    models = await mongo_client.get_models_db()
-    lst_models = []
-    for model in models:
-        response = requests.get(
-            url=f'{settings.API_URL}/api/{model["IDENTIFIER"]}/health/heartbeat',
-            headers={"Authorization": f"Bearer {token}"},
-            verify=os.getenv("VERIFY_SSL", 1) == 1,
+    exp_methods = [
+        {
+            "identifier": "simple_grads", "name": "Vanilla gradients",
+            "description": "The attributions are calculated considering the model "
+                           "gradients multiplied by the input text embeddings."
+        },
+        {
+            "identifier": "integrated_grads", "name": "Integrated gradients",
+            "description": "The attributions are calculated considering the "
+                           "integral of the model gradients with respect to the word "
+                           "embedding layer along a straight path from a "
+                           "baseline instance  to the input instance  "},
+        {
+            "identifier": "smooth_grads", "name": "Smooth gradients",
+            "description": "Take random samples in neighborhood of an input, "
+                           "and average the resulting saliency maps. These "
+                           "random samples are inputs with added noise."
+        },
+        {
+            "identifier": "attention", "name": "Attention",
+            "description": "Based on the model attention weights from the last layer."
+        },
+        {
+            "identifier": "scaled_attention", "name": "Scaled attention",
+            "description": "The attention weights are multiplied with their "
+                           "gradients to get the token attributions."
+        },
+    ]
+    result = []
+    for e in exp_methods:
+        result.append(
+            GetExplainersResult(
+                identifier=e["identifier"],
+                method_name=e["name"],
+                description=e["description"]
+            )
         )
-        # if the model-api instance has not finished loading the model it is not available yet
-        if response.status_code == 200:
-            lst_models.append({"identifier": model["IDENTIFIER"], "is_alive": response.json()["is_alive"]})
-        else:
-            lst_models.append({"identifier": model["IDENTIFIER"], "is_alive": False})
+    return result
 
-    return lst_models
+
+@router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsHealth])
+async def get_all_models_health():
+    '''
+    Check all worker's health (worker : inference model container)
+    Return:
+        result[list]: the health of deployed workers/models.
+    '''
+
+    models = await mongo_client.get_models_db()
+    result = []
+    docker_client = docker.from_env()
+
+    for model in models:
+        container_id = mongo_client.get_container_id(model["IDENTIFIER"])
+        container_obj = docker_client.containers.get(container_id)
+        if container_obj in docker_client.containers.list():
+            result.append(
+                GetModelsHealth(
+                    identifier=model["IDENTIFIER"],
+                    is_alive=True,
+                )
+            )
+        else:
+            result.append(
+                GetModelsHealth(
+                    identifier=model["IDENTIFIER"],
+                    is_alive=False,
+                )
+            )
+    return result
+
+
+@router.get("/deployed-model-workers", name="get-deployed-models",)
+async def get_model_containers():  # token: str = Depends(client_credentials)):
+    """
+    Get all the models deployed on the platform in list format
+    """
+    models = await mongo_client.get_model_containers()
+    result = []
+    for m in models:
+        result.append(
+            {
+                "identifier": m["_id"],
+                "num_containers": m["count"],
+            }
+        )
+    return result
 
 
 @router.post("/deploy", name="deploy-model", response_model=TaskGenericModel)
@@ -107,7 +179,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
         "WEB_CONCURRENCY": os.getenv("WEB_CONCURRENCY", 1),  # fixed processes, do not give the control to  end-user
-        "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp.informatik.tu-darmstadt.de"),
+        "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
         "VERIFY_ISSUER": os.getenv("VERIFY_ISSUER", "1")
     }
 
@@ -121,7 +193,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
 
 @router.delete("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
 @router.delete("/remove/{hf_username}/{identifier}", name="remove-model", response_model=TaskGenericModel)
-async def remove_model(request: Request, identifier: str, hf_username:str = None):
+async def remove_model(request: Request, identifier: str, hf_username: str = None):
     """
     Remove a model from the platform
     """
@@ -140,14 +212,51 @@ async def remove_model(request: Request, identifier: str, hf_username:str = None
     return {"message": "Queued removing model.", "task_id": res.id}
 
 
+@router.post("/{identifier}/add_worker/{num}")
+async def add_model_container(request: Request, identifier: str, num: int):
+    check_model_id = await (mongo_client.check_identifier_new(identifier))
+    if check_model_id:
+        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+    # check if the user deployed this model
+    if await mongo_client.check_user_id(request, identifier):
+        env = await mongo_client.get_model_stats(identifier)
+        env = json.loads(json_util.dumps(env))
+        models = await mongo_client.get_model_containers()
+        for m in models:
+            if m["_id"] == identifier:
+                res = tasks.add_worker.delay(identifier, env, m["count"]+1, num)
+                return {"message": f"Queued adding worker for {identifier}", "task_id": res.id}
+        return {"message": f"No model with that identifier"}
+    else:
+        raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
+
+
+@router.delete("/{identifier}/remove_worker/{num}")
+async def remove_model_container(request: Request, identifier: str, num: int):
+    check_model_id = await (mongo_client.check_identifier_new(identifier))
+    if check_model_id:
+        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+    if await mongo_client.check_user_id(request, identifier):
+        models = await mongo_client.get_model_containers()
+        for m in models:
+            if m["_id"] == identifier:
+                if m["count"] <= num:
+                    return HTTPException(status_code=403, detail=f"Only {m['count']} worker left. To remove that remove the whole model.")
+        containers = await mongo_client.get_containers(identifier, num)
+        res = tasks.remove_worker.delay(containers)
+        return {"message": f"Queued removing worker for {identifier}", "task_id": res.id}
+    else:
+        raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
+
+
 @router.patch("/update/{identifier}")
 @router.patch("/update/{hf_username}/{identifier}")
 async def update_model(
-    request: Request,
-    identifier: str,
-    update_parameters: UpdateModel,
-    hf_username: str = None,
-    token: str = Depends(client_credentials),
+        request: Request,
+        identifier: str,
+        update_parameters: UpdateModel,
+        hf_username: str = None,
+        token: str = Depends(client_credentials),
 ):
     """
     update the model parameters
@@ -172,11 +281,11 @@ async def update_model(
         logger.info("response: {}".format(response.text))
 
         return {"status_code": response.status_code, "content": response.json()}
-    
+
     raise HTTPException(status_code=403, detail="Cannot update a model deployed by another user")
 
 
-@router.get("/task/{task_id}", name="task-status", response_model=TaskResultModel)
+@router.get("/task_result/{task_id}", name="task-status", response_model=TaskResultModel)
 async def get_task_status(task_id):
     """
     Get results from a celery task
@@ -222,7 +331,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
 
     for prefix, container in zip(lst_prefix, lst_container_ids):
         response = requests.get(
-            url=f"{settings.API_URL}{prefix}/stats",
+            url="{}/api/main/{}/stats".format(settings.API_URL, prefix),
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
@@ -244,7 +353,7 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                     "TRANSFORMERS_CACHE": data.get("transformers_cache", ""),
                     "MODEL_PATH": data.get("model_path", ""),
                     "DECODER_PATH": data.get("decoder_path", ""),
-                    "container": container,
+                    "CONTAINER": container,
                 }
             )
         else:
