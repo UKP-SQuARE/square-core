@@ -18,6 +18,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     context = request.skill_args.get("context", "")
+    explain_kwargs = request.explain_kwargs or {}
 
     if context:
         query_context_seperator = request.skill_args.get("query_context_seperator", " ")
@@ -30,6 +31,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
             "output_scores": True,
             **request.skill_args.get("model_kwargs", {}),
         },
+        "explain_kwargs": explain_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
