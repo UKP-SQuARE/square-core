@@ -126,14 +126,33 @@ Don't hesitate to send us an e-mail or report an issue, if something is broken (
 
 ## Citation
 
-To appear at [ACL 2022 Demo Track](https://www.2022.aclweb.org/).      
+[ACL 2022 Demo Track](https://aclanthology.org/2022.acl-demo.2/).      
 ```
-@article{baumgartner2022ukp,
-  title={UKP-SQUARE: An Online Platform for Question Answering Research},
-  author={Baumg{\"a}rtner, Tim and Wang, Kexin and Sachdeva, Rachneet and Eichler, Max and Geigle, Gregor and Poth, Clifton and Sterz, Hannah and Puerto, Haritz and Ribeiro, Leonardo FR and Pfeiffer, Jonas and Reimers, Nils and \c{S}ahin, G{\"o}zde G{\"u}l and Gurevych, Iryna},
-  journal={arXiv preprint arXiv:2203.13693},
-  year={2022}
+@inproceedings{baumgartner-etal-2022-ukp,
+    title = "{UKP}-{SQUARE}: An Online Platform for Question Answering Research",
+    author = {Baumg{\"a}rtner, Tim  and
+      Wang, Kexin  and
+      Sachdeva, Rachneet  and
+      Geigle, Gregor  and
+      Eichler, Max  and
+      Poth, Clifton  and
+      Sterz, Hannah  and
+      Puerto, Haritz  and
+      Ribeiro, Leonardo F. R.  and
+      Pfeiffer, Jonas  and
+      Reimers, Nils  and
+      {\c{S}}ahin, G{\"o}zde  and
+      Gurevych, Iryna},
+    booktitle = "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics: System Demonstrations",
+    month = may,
+    year = "2022",
+    address = "Dublin, Ireland",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.acl-demo.2",
+    doi = "10.18653/v1/2022.acl-demo.2",
+    pages = "9--22",
 }
+
 ```
         
 > This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication.

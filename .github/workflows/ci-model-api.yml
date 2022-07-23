@@ -24,7 +24,7 @@ jobs:
         id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-api-v1"
+          IMAGE="ukpsquare/square-model-api-v1.1"
           echo ::set-output name=image::${IMAGE}
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx

@@ -1,3 +1,4 @@
+from typing import Dict
 import jwt
 from bson import ObjectId
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
@@ -9,11 +10,11 @@ from skill_manager import mongo_client
 from skill_manager.models import Skill
 
 
-def has_auth_header(request: Request):
+def has_auth_header(request: Request) -> bool:
     return request.headers.get("Authorization", "").lower().startswith("bearer")
 
 
-async def get_payload_from_token(request: Request):
+async def get_payload_from_token(request: Request) -> Dict[str, str]:
     http_bearer = HTTPBearer()
     auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
     token = auth_credentials.credentials
@@ -23,7 +24,9 @@ async def get_payload_from_token(request: Request):
     return {"realm": realm, "username": payload["preferred_username"]}
 
 
-async def get_skill_if_authorized(request, skill_id, write_access):
+async def get_skill_if_authorized(
+    request: Request, skill_id: str, write_access: bool
+) -> Skill:
     if has_auth_header(request):
         payload = await get_payload_from_token(request)
     else:

@@ -45,7 +45,7 @@ keycloak_base_url:
   prod: square.ukp-lab.de
   local: square.ukp-lab.localhost
 
-frotnend_url:
+frontend_url:
   prod: square.ukp-lab.de
   local: square.ukp-lab.localhost
 

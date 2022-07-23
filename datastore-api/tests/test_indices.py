@@ -25,7 +25,7 @@ class TestIndices:
     def test_get_index_status(self, requests_mock: Mocker, client, datastore_name, dpr_index):
         requests_mock.real_http = True
         requests_mock.get(
-            f"{settings.MODEL_API_URL}/{dpr_index.query_encoder_model.replace('/', '-')}/health/heartbeat",
+            f"{settings.MODEL_API_URL}/{dpr_index.query_encoder_model}/health/heartbeat",
             json={"is_alive": True},
         )
         requests_mock.get(

@@ -7,6 +7,7 @@ import pytest
 import responses
 from fastapi.testclient import TestClient
 from skill_manager import mongo_client
+from skill_manager.core.model_management_client import ModelManagementClient
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
 from skill_manager.routers import client_credentials
@@ -22,6 +23,9 @@ keycloak_api_override = lambda: keycloak_api_mock
 app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
+
+mock_model_management_client = lambda: MagicMock()
+app.dependency_overrides[ModelManagementClient] = mock_model_management_client
 
 client = TestClient(app)
 
@@ -142,6 +146,7 @@ async def test_create_skill(pers_client: TestClient, skill_factory, token_factor
     app.dependency_overrides[auth] = lambda: dict(
         realm="test-realm", username=test_user
     )
+
     test_skill = skill_factory(user_id=test_user)
     token = token_factory(preferred_username=test_user)
 

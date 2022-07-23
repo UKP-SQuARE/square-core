@@ -3,7 +3,7 @@ from typing import Union, Tuple
 
 import torch
 import numpy as np
-from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
+from transformers import AutoConfig, AutoTokenizer, AutoModel, AutoModelForSequenceClassification, \
     AutoModelForTokenClassification, AutoModelForQuestionAnswering, AutoModelForCausalLM
 
 from square_model_inference.inference.model import Model
@@ -41,7 +41,18 @@ class Transformer(Model):
              disable_gpu: do not move model to GPU even if CUDA is available
              kwargs: Not used
         """
-        if model_config.model_class not in CLASS_MAPPING:
+        if model_config.model_class == "from_config":
+            config = AutoConfig.from_pretrained(model_config.model_name)
+            model_arch = config.architectures[0]
+            hf_modelling = model_arch.split("For")[-1]
+            for task, hf_model in CLASS_MAPPING.items():
+                if hf_modelling in hf_model.__name__:
+                    model_cls = CLASS_MAPPING[task]
+                    break
+                else:
+                    model_cls = CLASS_MAPPING["base"]
+            CLASS_MAPPING["from_config"] = model_cls
+        elif model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
         self._load_model(CLASS_MAPPING[model_config.model_class], model_config.model_name, model_config.disable_gpu)
 
