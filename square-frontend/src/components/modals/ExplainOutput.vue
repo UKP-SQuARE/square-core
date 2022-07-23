@@ -87,9 +87,14 @@
 </template>
 
 <script>
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+// eslint-disable-next-line
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  // eslint-disable-next-line
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
 import Vue from 'vue'
-//import BadgePopover from '../BadgePopover'
-// import { postQuery } from '../../api'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
