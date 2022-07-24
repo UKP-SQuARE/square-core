@@ -287,9 +287,9 @@ export default Vue.component("attack-output",{
           }
         }
         // Line-through the left context
-        var leftContextHtml= '<span class="text-decoration-line-through">'+listLeftContext.join(' ')+'</span>';
+        var leftContextHtml= '<span class="text-decoration-line-through text-secondary">'+listLeftContext.join(' ')+'</span>';
         // Line-through the right context
-        var rightContextHtml= '<span class="text-decoration-line-through">'+listRightContext.join(' ')+'</span>';
+        var rightContextHtml= '<span class="text-decoration-line-through text-secondary">'+listRightContext.join(' ')+'</span>';
         // highlight the kept span
         var keptSpanHtml = '<span class="bg-success text-white">'+listKeptSpan.join(' ')+'</span>';
         // join tokens back to string
