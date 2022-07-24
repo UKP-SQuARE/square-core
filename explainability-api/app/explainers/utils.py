@@ -180,7 +180,7 @@ def dot_and_normalize(gradients, forward_embeddings):
     #normalization_factor = float("{:.2f}".format(normalization_factor))
     for i in range(len(l1_normalized_scores)):
         l1_normalized_scores[i] = l1_normalized_scores[i]/normalization_factor
-        l1_normalized_scores[i] = float("{:.3f}".format(l1_normalized_scores[i]))
+        #l1_normalized_scores[i] = float("{:.3f}".format(l1_normalized_scores[i]))
     return l1_normalized_scores
     
 def get_max(saliencies, chosen_tokens):
@@ -195,9 +195,6 @@ def get_max(saliencies, chosen_tokens):
 def get_min(saliencies):
     #to get the index with maximum saliency score in context
     min_index = np.argmin(saliencies)
-    while min_index == (len(saliencies) -1):
-        saliencies[min_index] = 100
-        min_index = np.argmin(saliencies)
     return min_index
 
 def get_random_token(tokens, already_generated, tokenizer):
@@ -242,4 +239,67 @@ def write_to_file(json_dict, file_name):
     file_to_write = open(file_name, 'w')
     json.dump(json_dict, file_to_write, indent = 4)
     file_to_write.close()
+
+
+def process(tokens, saliencies, tokenizer):
+    temp_data = [0] * len(tokens)
+    current = 1
+    for i in range(1,len(tokens)-1):
+        if '##' in tokens[i]:
+            temp_data[i-1] = current
+            temp_data[i] = current
+            if "##" not in tokens[i+1]: 
+                current = current + 1
+    current = 1 
+    processed_tokens = []
+    processed_saliencies = []
+    temp_tokens = []
+    temp_saliencies = []
+    for i in range(len(tokens)):
+        if temp_data[i] == 0:
+            processed_tokens.append(tokens[i])
+            processed_saliencies.append(saliencies[i])
+        if temp_data[i] == current:
+            temp_tokens.append(tokens[i])
+            temp_saliencies.append(saliencies[i])
+            if temp_data[i+1] != current:
+                current = current + 1
+                token_now = tokenizer.decode(tokenizer.convert_tokens_to_ids(temp_tokens), skip_special_tokens=False)
+                processed_tokens.append(token_now)
+                processed_saliencies.append(float(sum(temp_saliencies)/len(temp_saliencies)))
+                temp_tokens = []
+                temp_saliencies = []
+    return processed_tokens, processed_saliencies
+
+def process_answer(tokens, tokenizer):
+    temp_data = [0] * len(tokens)
+    current = 1
+    for i in range(1,len(tokens)-1):
+        if '##' in tokens[i]:
+            temp_data[i-1] = current
+            temp_data[i] = current
+            if "##" not in tokens[i+1]: 
+                current = current + 1
+    current = 1 
+    processed_tokens = []
+    temp_tokens = []
+    temp_saliencies = []
+
+    for i in range(len(tokens)):
+        if temp_data[i] == 0:
+            processed_tokens.append(tokens[i])
+        if temp_data[i] == current:
+            temp_tokens.append(tokens[i])
+            if temp_data[i+1] != current:
+                current = current + 1
+                token_now = tokenizer.decode(tokenizer.convert_tokens_to_ids(temp_tokens), skip_special_tokens=False)
+                processed_tokens.append(token_now)
+                temp_tokens = []
+    return processed_tokens
+
+def find_answer_index(processed_tokens, answer_tokens, length):
+    for i in range(len(processed_tokens)-length):
+        j = i + length
+        if processed_tokens[i:j] == answer_tokens:
+            return i, j-1
 
