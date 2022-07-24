@@ -13,22 +13,27 @@ def topk_tokens(model, tokenizer, question, context, answer, answer_start, answe
 
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
-    sep_index = tokens.index(sep_token)
+    
     saliencies, start, end = interpret(model, gradient_way, inputs, answer_start, answer_end)
+    tokens, saliencies = process(tokens, saliencies, tokenizer)
+    sep_index = tokens.index(sep_token) 
+
+    context_tokens = tokens[sep_index+1 : (len(tokens) -1)]
+    context = " ".join(context_tokens)
+
     saliencies[0:sep_index+1] = [0] * len(saliencies[0:sep_index+1])
     indexes = []
-    max_sal = []
     max_tokens = []
     for i in range(len(saliencies)):
         max_index = np.argmax(saliencies)
-        indexes.append(int(max_index))
+        val = max_index-sep_index-1
+        indexes.append(int(val))
         max_tokens.append(tokens[max_index])
-        max_sal.append(inputs.input_ids[0][max_index])
         saliencies[max_index] = 0
-        if len(max_sal) >= topk:
+        if len(max_tokens) >= topk:
             break
-    max_sal = torch.tensor(max_sal)
-    new_context = tokenizer.decode(max_sal, skip_special_tokens = True)
+
+    new_context = " ".join(max_tokens)
     inputs = tokenizer(question, new_context, return_tensors="pt")
     new_answer, start, end = get_answer(model, tokenizer, inputs)
 
@@ -36,7 +41,7 @@ def topk_tokens(model, tokenizer, question, context, answer, answer_start, answe
         new_answer = "Undefined Answer"
     return_dict = {
         "question": question.lower(),
-        "context" : context.lower(),
+        "context" : context,
         "answer" : answer,
         "tokens" : max_tokens,
         "indexes" : indexes,
@@ -49,10 +54,14 @@ def tokens_span(model, tokenizer, question, context, answer, answer_start, answe
 
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
-    sep_index = tokens.index(sep_token)
+    
     saliencies, start, end = interpret(model, gradient_way, inputs, answer_start, answer_end)
-    saliencies[0:sep_index+1] = [0] * len(saliencies[0:sep_index+1])
+    tokens, saliencies = process(tokens, saliencies, tokenizer)
+    sep_index = tokens.index(sep_token) 
 
+    context_tokens = tokens[sep_index+1 : (len(tokens) -1)]
+    context = " ".join(context_tokens)
+    saliencies[0:sep_index+1] = [0] * len(saliencies[0:sep_index+1])
     high = 0
     for i in range(len(saliencies)- window):
         j = i + window
@@ -61,8 +70,8 @@ def tokens_span(model, tokenizer, question, context, answer, answer_start, answe
             high = temp
             start_span = i
             end_span = j
-
-    new_context = tokenizer.decode(inputs.input_ids[0][start_span:end_span], skip_special_tokens = True)
+    new_context = " ".join(tokens[start_span:end_span])
+    #new_context = tokenizer.decode(inputs.input_ids[0][start_span:end_span], skip_special_tokens = True)
     inputs = tokenizer(question, new_context, return_tensors="pt")
     new_answer, start, end = get_answer(model, tokenizer, inputs)
     if len(new_answer.strip()) <= 0:
@@ -74,7 +83,7 @@ def tokens_span(model, tokenizer, question, context, answer, answer_start, answe
         "answer" : answer,
         "new_context" : new_context,
         "new_answer": new_answer,
-        "span" : [start_span, end_span]
+        "span" : [start_span-sep_index-1, end_span-sep_index-1]
     } 
     return return_dict
     
@@ -124,20 +133,20 @@ if __name__ == '__main__':
         "gradient_way" : "simple",
         "model_name" : "bert-base-uncased",
         "adapter" : "AdapterHub/bert-base-uncased-pf-squad_v2",
-        "question" : [squad[0]['question'], squad[1]['question']],
-        "context" : [squad[0]['context'], squad[1]['context']],
+        "question" : squad[2]['question'],
+        "context" :  squad[2]['context'],
         #"question" : squad[0]['question'],
         #"context" : squad[0]['context'],
-        "include_answer" : False,
         "topk": 15,
-        "window" : 20
+        "window" : 20,
     }
 
     response = do_topk_tokens(args)
-    write_to_file(response, "topk_squad.json")
-    
+    print(response)
+
     response = do_tokens_span(args)
-    write_to_file(response, "tokens_span_squad.json")
+    print(response)
+    print(response['context'].split()[response['span'][0]:response['span'][1]])
 
 
 
