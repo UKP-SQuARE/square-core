@@ -299,9 +299,21 @@ export default Vue.component("attack-output",{
       } else if(method == 'topk'){
         this.waiting = true;
         this.question = topk['question'];
-        this.newAnswer = topk['answer'];
+        this.newAnswer = topk['new_answer'];
         this.showHotFlipOutput = true;
-        this.newContext = topk['remaining_context'];
+        var listIndex = topk['indexes'];
+        var listContextTokens = topk['context'].split(/\s+/);
+        var listKeptSpan = []
+        var contextHtml = '';
+        for(var i = 0; i < listContextTokens.length; i++){
+          if(listIndex.includes(i)){
+            // highlight the kept span
+            contextHtml += '<span class="bg-success text-white">'+listContextTokens[i]+' </span>';
+          } else{
+            contextHtml += '<span class="text-decoration-line-through text-secondary">'+listContextTokens[i]+' </span>';
+          }
+        }
+        this.newContext = contextHtml;
       }
       this.waiting = false;
       // this.waiting = true
