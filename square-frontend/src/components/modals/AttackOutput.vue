@@ -134,10 +134,10 @@
             </div> <!-- end question -->
             <div v-if="showHotFlipOutput" class="row mt-3">
               <div class="col-4 text-start">
-                  <h4>Flipped Context:</h4>
+                  <h4>New Context:</h4>
               </div>
               <div class="col-8 text-start">
-                  <span v-html="showFlipContext()"/>
+                  <span v-html="showNewContext()"/>
               </div>
             </div> <!-- end flippedContext -->
             <div v-if="showHotFlipOutput" class="row mt-3">
@@ -159,6 +159,12 @@
 <script>
 import Vue from 'vue'
 import hotflip from './hotflip.json'
+import inputred from './reduction.json'
+/* eslint-disable */
+import span from './span.json'
+/* eslint-disable */
+import topk from './topk.json'
+
 // import input_red from './input_reduction_squad.json'
 export default Vue.component("attack-output",{
   data () {
@@ -175,7 +181,7 @@ export default Vue.component("attack-output",{
       topk_selected: false,
 
       question: '',
-      flippedContext: "",
+      newContext: "",
       newAnswer: "",
       waiting: false,
       showHotFlipOutput: false
@@ -223,7 +229,7 @@ export default Vue.component("attack-output",{
           listContextTokens[index] = highLightedWord;
         }
         // join tokens back to string
-        this.flippedContext = listContextTokens.join(' ');
+        this.newContext = listContextTokens.join(' ');
         this.question = hotflip['question'];
         this.newAnswer = hotflip['new_answer'];
         this.showHotFlipOutput = true;
@@ -231,9 +237,10 @@ export default Vue.component("attack-output",{
       } else if(method == 'Input_Red'){
         // make the call to the api
         this.waiting = true;
-        this.question = hotflip['question'];
-        this.newAnswer = hotflip['new_answer'];
+        this.question = inputred['question'];
+        this.newAnswer = inputred['answer'];
         this.showHotFlipOutput = true;
+        this.newContext = inputred['remaining_context'];
       }
       this.waiting = false;
       // this.waiting = true
@@ -259,8 +266,8 @@ export default Vue.component("attack-output",{
       //   this.waiting = false
       // })
     },
-    showFlipContext(){
-      return this.flippedContext;
+    showNewContext(){
+      return this.newContext;
     },
     
   },
