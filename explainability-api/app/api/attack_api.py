@@ -52,7 +52,13 @@ async def get_hotflip(hotflip_input: HotFlip):
         message = "value of number of flips must be between 0 and 20"
         raise HTTPException(status_code=404, detail=message)
         return {"message" : message}
-    response = do_hotflip(args)
+    
+    try:
+        response = do_hotflip(args)
+    except Exception as ex:
+        message = ex
+        raise HTTPException(status_code=404, detail=message)
+        return {"message" : message}
     return  response
 
 @router.post("/input_reduction", name="input reduction")
@@ -90,8 +96,12 @@ async def get_reduction(input_reduction_input: InputReduction):
         message = "value of number of reductions must be between 0 and 20"
         raise HTTPException(status_code=404, detail=message)
         return {"message" : message}
-
-    response = do_input_reduction(args)
+    try:
+        response = do_input_reduction(args)
+    except Exception as ex:
+        message = ex
+        raise HTTPException(status_code=404, detail=message)
+        return {"message" : message}
     return  response
 
 @router.post("/topk_tokens", name="topk tokens")
@@ -130,8 +140,13 @@ async def get_topk_tokens(topk_tokens_input: TopkTokens):
         raise HTTPException(status_code=404, detail=message)
         return {"message" : message}
 
-
-    response = do_topk_tokens(args)
+    try:
+        response = do_topk_tokens(args)
+    except Exception as ex:
+        message = ex
+        raise HTTPException(status_code=404, detail=message)
+        return {"message" : message}
+    
     return  response
 
 @router.post("/tokens_span", name="tokens span")
@@ -168,7 +183,12 @@ async def get_tokens_span(tokens_span_input: TokensSpan):
         message = "value of window must be between 5 and 20"
         raise HTTPException(status_code=404, detail= message)
         return {"message" : message}
-
-    response = do_tokens_span(args)
+    try:
+        response = do_tokens_span(args)
+    except Exception as ex:
+        message = ex
+        raise HTTPException(status_code=404, detail=message)
+        return {"message" : message}
+    
     return  response
 
