@@ -44,7 +44,7 @@
               </div>
             </div>
 
-            <div v-if="hotflip_selected || inputred_selected || span_selected" class="row mt-3">
+            <div v-if="hotflip_selected || inputred_selected || span_selected || topk_selected" class="row mt-3">
               <div class="col-4 text-start">
                   <h4>Gradient Method:</h4>
               </div>
@@ -70,7 +70,7 @@
               </div>
             </div>
 
-            <div v-if="hotflip_selected || inputred_selected" class="row mt-3">
+            <div v-if="hotflip_selected" class="row mt-3">
                 <div class="col-4 text-start">
                     <h4># flips:</h4>
                 </div>
@@ -82,10 +82,22 @@
                     </div>
                 </div>
 
-                <div v-if="hotflip_selected" class="col-auto">
+                <div class="col-auto">
                     <div class="form-check form-switch">
                         <label class="form-check-label" for="includeAns">Include Answer</label>
                         <input class="form-check-input" type="checkbox" id="includeAns">
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="inputred_selected" class="row mt-3">
+                <div class="col-4 text-start">
+                    <h4># Reductions:</h4>
+                </div>
+                <div class="col-auto">
+                    <div class="form-check form-switch">
+                        <input type="range" min="0" max="20" v-model="numReductions" class="form-range" id="numReductions" oninput="this.nextElementSibling.value = this.value">
+                        <output ></output>
                     </div>
                 </div>
             </div>
@@ -98,6 +110,19 @@
                 <div class="col-auto">
                     <div class="form-check form-switch">
                         <input type="range" min="0" max="20" v-model="lenSpan" class="form-range" id="lenSpan" oninput="this.nextElementSibling.value = this.value">
+                        <output ></output>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="topk_selected" class="row mt-3">
+                <div class="col-4 text-start">
+                    <h4># top k:</h4>
+                </div>
+
+                <div class="col-auto">
+                    <div class="form-check form-switch">
+                        <input type="range" min="0" max="20" v-model="numTopK" class="form-range" id="numTopK" oninput="this.nextElementSibling.value = this.value">
                         <output ></output>
                     </div>
                 </div>
@@ -186,6 +211,8 @@ export default Vue.component("attack-output",{
       includeAns: false,
       numFlips: 0,
       lenSpan: 0,
+      numTopK: 0,
+      numReductions: 0,
 
       hotflip_selected: false,
       inputred_selected: false,
