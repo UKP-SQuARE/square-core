@@ -58,7 +58,7 @@
       <div class="col mt-3">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a data-bs-toggle="modal" data-bs-target="#modalattack" role="button" class="btn btn-primary shadow">
-            Attack Mode
+            Attack Methods
           </a>
           <AttackOutput id="modalattack"> test</AttackOutput>
         </div>

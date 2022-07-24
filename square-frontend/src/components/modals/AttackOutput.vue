@@ -9,7 +9,7 @@
           <div class="container text-center">
             <div class="row">
               <div class="col-12">
-                  <h1> Attack Mode </h1>
+                  <h1>Attack Methods</h1>
                   <hr/>
               </div>
             </div>
@@ -19,14 +19,21 @@
                   <h4>Method:</h4>
               </div>
               <div class="col-5">
-                  <button v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-warning">HotFlip</button>
+                  <button v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Flips words in the input to change the Skill's prediction.">
+                    HotFlip
+                  </button>
               </div>
               <div class="col-5">
-                  <button v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-warning">Input Reduction</button>
+                  <button v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Removes as many words from the input as possible without changing the Skill's prediction.">
+                    Input Reduction
+                  </button>
+                  
               </div>
             </div>
 
-            <div v-if="hotflip_selected" class="row mt-3">
+            <div v-if="hotflip_selected || inputred_selected" class="row mt-3">
               <div class="col-4 text-start">
                   <h4>Gradient Method:</h4>
               </div>
@@ -52,7 +59,7 @@
               </div>
             </div>
 
-            <div v-if="hotflip_selected" class="row mt-3">
+            <div v-if="hotflip_selected || inputred_selected" class="row mt-3">
                 <div class="col-4 text-start">
                     <h4># flips:</h4>
                 </div>
@@ -64,7 +71,7 @@
                     </div>
                 </div>
 
-                <div class="col-2">
+                <div v-if="hotflip_selected" class="col-2">
                     <div class="form-check form-switch">
                         <label class="form-check-label" for="includeAns">Include Answer</label>
                         <input class="form-check-input" type="checkbox" id="includeAns">
@@ -73,22 +80,54 @@
             </div>
 
             <div v-if="hotflip_selected" class="row mt-3">
-                <div class="col-12">
-                    <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-warning">Attack Skill!</button>
+              <div class="col-12">
+                  <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-primary">Attack Skill!</button>
+              </div>
+            </div>
+
+            <div v-if="inputred_selected" class="row mt-3">
+              <div class="col-12">
+                    <button v-on:click="attack('Input_Red')" type="button" class="btn btn-outline-warning">Attack Skill!</button>
                 </div>
             </div>
-            
 
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+            <!-- Show question, flippedContext, and new answer  -->
+            <div v-if="showHotFlipOutput" class="row mt-3">
+              <hr/>
+              <div class="col-4 text-start">
+                  <h4>Question:</h4>
+              </div>
+              <div class="col-8 text-start">
+                  <p>{{question}}</p>
+              </div>
+            </div> <!-- end question -->
+            <div v-if="showHotFlipOutput" class="row mt-3">
+              <div class="col-4 text-start">
+                  <h4>Flipped Context:</h4>
+              </div>
+              <div class="col-8 text-start">
+                  <span v-html="showFlipContext()"/>
+              </div>
+            </div> <!-- end flippedContext -->
+            <div v-if="showHotFlipOutput" class="row mt-3">
+              <div class="col-4 text-start">
+                  <h4>New Answer:</h4>
+              </div>
+              <div class="col-8 text-start">
+                  <p>{{newAnswer}}</p>
+              </div>
+            </div> <!-- end newAnswer -->
+            
+          </div> <!-- end container -->
+        </div> <!-- end modal-body -->
+      </div> <!-- end modal-content -->
+    </div>  <!-- end modal-dialog -->
+  </div> <!-- end modal -->
 </template>
 
 <script>
 import Vue from 'vue'
-// import hotflip from './hotflip_squad_v1.json'
+import hotflip from './hotflip.json'
 // import input_red from './input_reduction_squad.json'
 export default Vue.component("attack-output",{
   data () {
@@ -99,7 +138,13 @@ export default Vue.component("attack-output",{
       includeAns: false,
       numFlips: 0,
       hotflip_selected: false,
-      inputred_selected: false
+      inputred_selected: false,
+      question: '',
+      flippedContext: "",
+      newAnswer: "",
+      hotflipWaiting: false,
+      showHotFlipOutput: false
+
   }
   },
   props:['test'],  //args should be the test json file
@@ -124,8 +169,29 @@ export default Vue.component("attack-output",{
       }
     },
     attack(method) {
-      // Post the query with selected skills and given question, context
-      // method for setting explain method : 'Attention','Scaled Attention','Simple Grad', 'Smooth Grad', 'Integrated Grad'
+      if(method == 'HotFlip'){
+        // make the call to the api
+        this.hotflipWaiting = true;
+
+        // var listQuestionTokens = hotflip['question'].split(/\s+|\.|\!|\?|\;/);
+        /* eslint-disable */
+        var listContextTokens = hotflip['context'].split(/\s+|\.|\!|\?|\;/);
+        var listFlips = hotflip['flips'];
+        var listIndex = hotflip['indexes'];
+        // for each flip change token from the context
+        for(var i = 0; i < listFlips.length; i++){
+          var flip = listFlips[i];
+          var index = listIndex[i];
+          var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+listContextTokens[index]+'"';
+          var highLightedWord = '<mark class="bg-success text-white"'+tooltip+'>'+flip[1]+'</mark>'
+          listContextTokens[index] = highLightedWord;
+        }
+        // join tokens back to string
+        this.flippedContext = listContextTokens.join(' ');
+        this.question = hotflip['question'];
+        this.newAnswer = hotflip['new_answer'];
+        this.showHotFlipOutput = true;
+      }
       this.waiting = true
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
@@ -149,6 +215,9 @@ export default Vue.component("attack-output",{
       }).finally(() => {
         this.waiting = false
       })
+    },
+    showFlipContext(){
+      return this.flippedContext;
     },
     
   },
