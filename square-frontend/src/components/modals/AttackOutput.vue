@@ -26,8 +26,8 @@
               </div>
             </div>
 
-            <!-- <div class="row mt-3">
-              <div class="col-auto text-start">
+            <div v-if="hotflip_selected" class="row mt-3">
+              <div class="col-4 text-start">
                   <h4>Gradient Method:</h4>
               </div>
               <div class="col-auto">
@@ -35,44 +35,39 @@
                   <input class="form-check-input" type="radio" id="SimpleGrad" value="SimpleGrad" v-model="gradient_way"/>
                   <label class="form-check-label" for="SimpleGrad">Simple Gradients</label>
                 </div>
+                
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="SmoothGrad" value="SmoothGrad" v-model="gradient_way"/>
                   <label class="form-check-label" for="SmoothGrad">Simple Gradients</label>
                 </div>
+                  
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="IntegratedGrad" value="IntegratedGrad" v-model="gradient_way"/>
                   <label class="form-check-label" for="IntegratedGrad">IntegratedGrad</label>
                 </div>  
               </div>
-            </div> -->
+            </div>
 
             <div v-if="hotflip_selected" class="row mt-3">
-                <div class="col-auto text-start">
-                    <h4>Parameters:</h4>
+                <div class="col-4 text-start">
+                    <h4># flips:</h4>
                 </div>
-                <div class="col-auto">
-                    <div class="form-floating">
-                    <select class="form-select" id="gradientWay" v-model="gradient_way">
-                        <option value="SimpleGrad">Simple Gradients</option>
-                        <option value="SmoothGrad">Smooth Gradients</option>
-                        <option value="IntegratedGrad">Integrated Gradients</option>
-                    </select>
-                    <label for="gradientWay">Gradient Method..</label>
+
+                <div class="col-6">
+                    <div class="form-check form-switch">
+                        <input type="range" min="0" max="20" v-model="numFlips" class="form-range" id="numFlips" oninput="this.nextElementSibling.value = this.value">
+                        <output ></output>
                     </div>
                 </div>
 
-                <div class="col-auto">
+                <div class="col-2">
                     <div class="form-check form-switch">
                         <label class="form-check-label" for="includeAns">Include Answer</label>
                         <input class="form-check-input" type="checkbox" id="includeAns">
-                    </div>
-                </div>
-
-                <div class="col-auto">
-                    <div class="form-check form-switch">
-                        <label class="form-check-label" for="includeAns"># of flips:</label>
-                        <input type="range" min="0" :max="10" v-model="numFlips" class="form-range" id="numFlips" >
-                        <output ></output>
                     </div>
                 </div>
             </div>
