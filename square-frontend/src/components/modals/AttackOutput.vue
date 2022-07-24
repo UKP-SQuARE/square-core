@@ -32,7 +32,7 @@
               </div>
               <div class="col-auto">
                   <button v-on:click="methodSelected('span')" type="button" class="btn btn-outline-primary"
-                   data-bs-toggle="tooltip" data-bs-placement="top" title="">
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Selects a subspan of the context as new context.">
                     Span
                   </button>
               </div>
@@ -160,9 +160,7 @@
 import Vue from 'vue'
 import hotflip from './hotflip.json'
 import inputred from './reduction.json'
-/* eslint-disable */
 import span from './span.json'
-/* eslint-disable */
 import topk from './topk.json'
 
 // import input_red from './input_reduction_squad.json'
@@ -204,10 +202,24 @@ export default Vue.component("attack-output",{
       if(method == 'HotFlip'){
         this.hotflip_selected = true;
         this.inputred_selected = false;
+        this.span_selected = false;
+        this.topk_selected = false;
       }
-      else{
+      else if(method == 'Input_Red'){
         this.hotflip_selected = false;
         this.inputred_selected = true;
+        this.span_selected = false;
+        this.topk_selected = false;
+      } else if(method == 'span'){
+        this.hotflip_selected = false;
+        this.inputred_selected = false;
+        this.span_selected = true;
+        this.topk_selected = false;
+      } else if(method == 'topk'){
+        this.hotflip_selected = false;
+        this.inputred_selected = false;
+        this.span_selected = false;
+        this.topk_selected = true;
       }
     },
     attack(method) {
@@ -241,6 +253,42 @@ export default Vue.component("attack-output",{
         this.newAnswer = inputred['answer'];
         this.showHotFlipOutput = true;
         this.newContext = inputred['remaining_context'];
+      } else if(method == 'span'){
+        this.waiting = true;
+        this.question = span['question'];
+        var context = span['context'];
+        var keptSpan = span['span']; // [start, end]
+        // cross all the context except the kept span
+        var listContextTokens = context.split(/\s+|\.|\!|\?|\;/);
+        var listContextTokens_new = [];
+        var listKeptSpan = []
+        var listLeftContext = []
+        var listRightContext = []
+        for(var i = 0; i < listContextTokens.length; i++){
+          if(i < keptSpan[0]){
+            listLeftContext.push(listContextTokens[i]);
+          } else if(i > keptSpan[1]){
+            listRightContext.push(listContextTokens[i]);
+          } else{
+            listKeptSpan.push(listContextTokens[i]);
+          }
+        }
+        // Line-through the left context
+        var leftContextHtml= '<span class="text-decoration-line-through">'+listLeftContext.join(' ')+'</span>';
+        // Line-through the right context
+        var rightContextHtml= '<span class="text-decoration-line-through">'+listRightContext.join(' ')+'</span>';
+        // highlight the kept span
+        var keptSpanHtml = '<span class="bg-success text-white">'+listKeptSpan.join(' ')+'</span>';
+        // join tokens back to string
+        this.newContext = leftContextHtml+keptSpanHtml+rightContextHtml;
+        this.newAnswer = span['answer'];
+        this.showHotFlipOutput = true;
+      } else if(method == 'topk'){
+        this.waiting = true;
+        this.question = topk['question'];
+        this.newAnswer = topk['answer'];
+        this.showHotFlipOutput = true;
+        this.newContext = topk['remaining_context'];
       }
       this.waiting = false;
       // this.waiting = true
