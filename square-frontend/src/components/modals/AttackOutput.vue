@@ -15,21 +15,32 @@
             </div>
 
             <div class="row">
-              <div class="col-2 text-start">
+              <div class="col-4 text-start">
                   <h4>Method:</h4>
               </div>
-              <div class="col-5">
+              <div class="col-auto">
                   <button v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Flips words in the input to change the Skill's prediction.">
                     HotFlip
                   </button>
               </div>
-              <div class="col-5">
+              <div class="col-auto">
                   <button v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Removes as many words from the input as possible without changing the Skill's prediction.">
                     Input Reduction
                   </button>
-                  
+              </div>
+              <div class="col-auto">
+                  <button v-on:click="methodSelected('span')" type="button" class="btn btn-outline-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="">
+                    Span
+                  </button>
+              </div>
+              <div class="col-auto">
+                  <button v-on:click="methodSelected('topk')" type="button" class="btn btn-outline-primary"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="">
+                    Top K
+                  </button>
               </div>
             </div>
 
@@ -64,14 +75,14 @@
                     <h4># flips:</h4>
                 </div>
 
-                <div class="col-6">
+                <div class="col-auto">
                     <div class="form-check form-switch">
                         <input type="range" min="0" max="20" v-model="numFlips" class="form-range" id="numFlips" oninput="this.nextElementSibling.value = this.value">
                         <output ></output>
                     </div>
                 </div>
 
-                <div v-if="hotflip_selected" class="col-2">
+                <div v-if="hotflip_selected" class="col-auto">
                     <div class="form-check form-switch">
                         <label class="form-check-label" for="includeAns">Include Answer</label>
                         <input class="form-check-input" type="checkbox" id="includeAns">
@@ -79,17 +90,37 @@
                 </div>
             </div>
 
-            <div v-if="hotflip_selected" class="row mt-3">
+            <div v-if="hotflip_selected" class="row mt-3"> <!-- HotFlip -->
               <div class="col-12">
-                  <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-primary">Attack Skill!</button>
+                <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                    <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
+                </button>
               </div>
-            </div>
+            </div> <!-- HotFlip -->
 
-            <div v-if="inputred_selected" class="row mt-3">
+            <div v-if="inputred_selected" class="row mt-3"> <!-- InputReduction -->
               <div class="col-12">
-                    <button v-on:click="attack('Input_Red')" type="button" class="btn btn-outline-warning">Attack Skill!</button>
+                <button v-on:click="attack('Input_Red')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                    <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
+                </button>
                 </div>
-            </div>
+            </div> <!-- InputReduction -->
+
+            <div v-if="span_selected" class="row mt-3"> <!-- Span -->
+              <div class="col-12">
+                <button v-on:click="attack('span')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                    <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
+                </button>
+              </div>
+            </div> <!-- Span -->
+
+            <div v-if="topk_selected" class="row mt-3"> <!-- TopK -->
+              <div class="col-12">
+                <button v-on:click="attack('topk')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                    <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
+                </button>
+              </div>
+            </div> <!-- TopK -->
 
             <!-- Show question, flippedContext, and new answer  -->
             <div v-if="showHotFlipOutput" class="row mt-3">
@@ -137,13 +168,18 @@ export default Vue.component("attack-output",{
       gradient_way: 'SimpleGrad',
       includeAns: false,
       numFlips: 0,
+
       hotflip_selected: false,
       inputred_selected: false,
+      span_selected: false,
+      topk_selected: false,
+
       question: '',
       flippedContext: "",
       newAnswer: "",
-      hotflipWaiting: false,
+      waiting: false,
       showHotFlipOutput: false
+
 
   }
   },
@@ -169,9 +205,9 @@ export default Vue.component("attack-output",{
       }
     },
     attack(method) {
+       this.waiting = true;
       if(method == 'HotFlip'){
         // make the call to the api
-        this.hotflipWaiting = true;
 
         // var listQuestionTokens = hotflip['question'].split(/\s+|\.|\!|\?|\;/);
         /* eslint-disable */
@@ -191,17 +227,25 @@ export default Vue.component("attack-output",{
         this.question = hotflip['question'];
         this.newAnswer = hotflip['new_answer'];
         this.showHotFlipOutput = true;
+        
+      } else if(method == 'Input_Red'){
+        // make the call to the api
+        this.waiting = true;
+        this.question = hotflip['question'];
+        this.newAnswer = hotflip['new_answer'];
+        this.showHotFlipOutput = true;
       }
-      this.waiting = true
-      this.$store.dispatch('query', {
-        question: this.$store.state.currentQuestion,
-        inputContext: this.$store.state.currentContext,
-        options: {
-          selectedSkills: this.selectedSkills,
-          maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
-          attrib_method: method
-        }
-      }).then(() => {
+      this.waiting = false;
+      // this.waiting = true
+      // this.$store.dispatch('query', {
+      //   question: this.$store.state.currentQuestion,
+      //   inputContext: this.$store.state.currentContext,
+      //   options: {
+      //     selectedSkills: this.selectedSkills,
+      //     maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
+      //     attrib_method: method
+      //   }
+      // }).then(() => {
         // this.failure = false,
         // this.num_Maxshow =  request_json['explain_kwargs']['top_k']
         // this.num_show = request_json['explain_kwargs']['top_k']
@@ -209,12 +253,11 @@ export default Vue.component("attack-output",{
         // this.$store.state.currentQuestion = request_json['input'][0][0]
         // this.$store.state.currentContext = request_json['input'][0][1]
         // this.response = context_json //get the response from local json
-     
-      }).catch(() => {
-        this.failure = true
-      }).finally(() => {
-        this.waiting = false
-      })
+      // }).catch(() => {
+      //   this.failure = true
+      // }).finally(() => {
+      //   this.waiting = false
+      // })
     },
     showFlipContext(){
       return this.flippedContext;
