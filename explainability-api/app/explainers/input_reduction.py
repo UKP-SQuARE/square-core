@@ -8,79 +8,75 @@ try:
 except Exception as ex:
     from utils import * 
 
-def input_reduction(model, tokenizer, question, context, model_answer, sep_token,
+def input_reduction(model, tokenizer, question, context, answer, answer_start, answer_end, sep_token,
         gradient_way = 'simple', number_of_reductions = None):
-
+    
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
-    chosen_tokens = [0] * len(tokens)
-    sep_index = tokens.index(sep_token)
-    answer_input = tokenizer(model_answer, return_tensors="pt")
-    answer_tokens = tokenizer.convert_ids_to_tokens(answer_input.input_ids[0])
 
-    start = tokens.index(answer_tokens[1])
-    end = tokens.index(answer_tokens[len(answer_tokens)-2])
-    answer = tokens[start:end+1]
-    actual_answer = answer_tokens[1:len(answer_tokens)-1]
+    saliencies, start_index, end_index = interpret(model, gradient_way, inputs, answer_start, answer_end)
+    processed_tokens, processed_saliencies = process(tokens, saliencies, tokenizer)
+    sep_index = processed_tokens.index(sep_token)
+    processed_saliencies[0:sep_index+1] = [100] * len(processed_saliencies[0:sep_index+1])
+    context_tokens = processed_tokens[sep_index+1 : (len(processed_tokens) -1)]
+    new_context = " ".join(context_tokens)
+    
+    context_tokens = processed_tokens[sep_index+1 : (len(processed_tokens) -1)]
 
-    saliencies, start_index, end_index = interpret(model, gradient_way, inputs, start, end)
-    saliencies[0:sep_index+1] = [100] * len(saliencies[0:sep_index+1])
-            
+
+    tokenized_answer = process_answer(tokens[answer_start:answer_end+1], tokenizer)
+    if len(tokenized_answer) > 1:
+        tokenized_answer = " ".join(tokenized_answer)
+    elif len(tokenized_answer) == 1:
+        tokenized_answer = tokenized_answer[0]
+    else:
+        tokenized_answer = ""
+
     
     deleted_words = []
     steps = 0
-    while tokens[start_index:end_index+1] == answer:
-        min_index = get_min(saliencies)
-        while "##" in tokens[min_index] or "##" in tokens[min_index+1]:
-            saliencies[min_index] = 100
-            min_index = get_min(saliencies)
-        deleted_word = tokens[min_index]
-        deleted_words.append(deleted_word)
+    p_deleted = []
+    p_tokens = processed_tokens
+    while tokenized_answer == answer:
+        p_deleted = deleted_words
+        p_tokens = processed_tokens
 
-        del tokens[min_index]
-        temp_list = inputs['input_ids'][0].tolist()
-        del temp_list[min_index]
-        inputs['input_ids'] = torch.tensor([temp_list])
-
-        temp_list = inputs['token_type_ids'][0].tolist()
-        del temp_list[min_index]
-        inputs['token_type_ids'] = torch.tensor([temp_list])
-
-        temp_list = inputs['attention_mask'][0].tolist()
-        del temp_list[min_index]
-        inputs['attention_mask'] = torch.tensor([temp_list])
-
+        min_index = get_min(processed_saliencies)
+        deleted_word = processed_tokens[min_index]
+        processed_tokens = processed_tokens[0:min_index] + processed_tokens[min_index+1:len(processed_tokens)-1]
+    
+        new_input = ' '.join(processed_tokens[1:len(processed_tokens)])
+        inputs = tokenizer(new_input, return_tensors="pt")
         tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
-        start = tokens.index(answer_tokens[1])
-        end = tokens.index(answer_tokens[len(answer_tokens)-2])
 
-        saliencies, start_index, end_index = interpret(model, gradient_way, inputs, start, end)
-        saliencies[0:sep_index+1] = [100] * len(saliencies[0:sep_index+1])
-        steps = steps + 1   
-        if number_of_reductions != None and steps == number_of_reductions:
-            break
+        saliencies, start_index, end_index = interpret(model, gradient_way, inputs, start_index, answer_end)
+        processed_tokens, processed_saliencies = process(tokens, saliencies, tokenizer)
+        sep_index = processed_tokens.index(sep_token)
+        processed_saliencies[0:sep_index+1] = [100] * len(processed_saliencies[0:sep_index+1])
+        
         new_answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(tokens[start_index:end_index+1]), skip_special_tokens = True)
-        actual_answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(answer))
-        #print("Step : "+str(steps))
-        #print("New answer : ")
-        #if len(new_answer.strip()) > 0:
-        #    print(new_answer)
-        #else:
-        #    print("Undefined Answer")
-        #print("Actual Answer : ")
-        #print(actual_answer)    
-        #print("Deleted Word :")
-        #print(deleted_word)              
-    #print("Total Deleted Words : "+ str(len(deleted_words)))
-    #print("Deleted Words : ")
-    #print(deleted_words)
-    remaining = tokenizer.decode(tokenizer.convert_tokens_to_ids(tokens[sep_index:]), skip_special_tokens = True)
-    #print("Remaining Words of Context : "+remaining)
+        tokenized_answer = process_answer(tokens[start_index:end_index+1], tokenizer)
+        if len(tokenized_answer) > 1:
+            tokenized_answer = " ".join(tokenized_answer)
+        elif len(tokenized_answer) == 1:
+            tokenized_answer = tokenized_answer[0]
+        else:
+            tokenized_answer = ""
+        if len(new_answer.strip()) <= 0:
+            new_answer = "Undefined Answer"   
+        elif new_answer == '[CLS]':
+            new_answer = "Undefined Answer"  
+        else:
+            deleted_words.append(deleted_word)  
+        steps = steps + 1  
+        if number_of_reductions != None and steps == number_of_reductions:
+            break     
+    remaining = " ".join(p_tokens[sep_index+1:len(p_tokens)-1])
     return_dict = {
         "question": question.lower(),
-        "context" : context.lower(),
-        "answer" : model_answer,
-        "deleted_tokens" : deleted_words,
+        "context" : new_context,
+        "answer" : answer,
+        "deleted_tokens" : p_deleted,
         "total_deleted_words": len(deleted_words),
         "remaining_context" : remaining
     }
@@ -93,14 +89,14 @@ def do_input_reduction(args):
     if type(args["question"]) != list:
         inputs = tokenizer(args["question"], args["context"], return_tensors="pt")
         answer, start, end = get_answer(model, tokenizer, inputs)
-        response = input_reduction(model, tokenizer, args["question"], args["context"], answer, sep_token,
+        response = input_reduction(model, tokenizer, args["question"], args["context"], answer, start, end, sep_token,
                 gradient_way = args["gradient_way"], number_of_reductions = args["number_of_reductions"])
     else:
         response = []
         for i in range(len(args["question"])):
             inputs = tokenizer(args["question"][i], args["context"][i], return_tensors="pt")
             answer, start, end = get_answer(model, tokenizer, inputs)
-            response_ = input_reduction(model, tokenizer, args["question"][i], args["context"][i], answer, sep_token,
+            response_ = input_reduction(model, tokenizer, args["question"][i], args["context"][i], answer, start, end, sep_token,
                 gradient_way = args["gradient_way"], number_of_reductions = args["number_of_reductions"])
             response.append(response_)
     #response = json.dumps(response, indent = 4)
@@ -113,12 +109,12 @@ if __name__ == '__main__':
     args = {
         "model_name" : "bert-base-uncased",
         "adapter" : "AdapterHub/bert-base-uncased-pf-squad_v2",
-        "question" : squad[0]['question'],
-        "context" : squad[0]['context'],
+        "question" :  squad[1]['question'],
+        "context" : squad[1]['context'],
         #"question" : squad[0]['question'],
         #"context" : squad[0]['context'],
         "gradient_way" : "simple",
-        "number_of_reductions" : 20
+        "number_of_reductions" : 300
     }
     print(do_input_reduction(args))
 
