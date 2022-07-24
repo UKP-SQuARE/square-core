@@ -258,18 +258,17 @@ export default Vue.component("attack-output",{
         this.question = span['question'];
         var context = span['context'];
         var keptSpan = span['span']; // [start, end]
-        // cross all the context except the kept span
-        var listContextTokens = context.split(/\s+|\.|\!|\?|\;/);
-        var listContextTokens_new = [];
+        // split by white space
+        var listContextTokens = context.split(/\s+/);
         var listKeptSpan = []
         var listLeftContext = []
         var listRightContext = []
         for(var i = 0; i < listContextTokens.length; i++){
-          if(i < keptSpan[0]){
+          if (i < keptSpan[0]){ // left context
             listLeftContext.push(listContextTokens[i]);
-          } else if(i > keptSpan[1]){
+          } else if(i > keptSpan[1]){ // right context
             listRightContext.push(listContextTokens[i]);
-          } else{
+          } else{ // kept span
             listKeptSpan.push(listContextTokens[i]);
           }
         }
