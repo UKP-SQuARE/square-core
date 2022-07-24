@@ -1,6 +1,6 @@
 from transformers import BertTokenizer, BertForQuestionAnswering
 import torch
-from datasets import load_dataset
+#from datasets import load_dataset
 from torch.nn.functional import normalize
 import numpy as np
 import random
@@ -213,10 +213,12 @@ def saliency(model, question, context, answer_start, answer_end, gradient_way = 
     saliencies, _, _ = interpret(model, gradient_way, inputs, answer_start, answer_end)
     return saliencies
 
-def get_answer(model, tokenizer, inputs):
+def get_answer(model, tokenizer, inputs, sep_index = None):
     outputs = model(**inputs)
     start = torch.argmax(outputs.start_logits).item()
     end = torch.argmax(outputs.end_logits).item()
+    if sep_index != None and int(start) < int(sep_index):
+        start = sep_index
     answer_token_ids = inputs.input_ids[0][start:end+1]
     answer = tokenizer.convert_ids_to_tokens(answer_token_ids)
     answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(answer), skip_special_tokens = True)

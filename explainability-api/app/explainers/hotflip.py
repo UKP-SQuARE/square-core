@@ -1,5 +1,5 @@
 import torch
-from datasets import load_dataset
+#from datasets import load_dataset
 import numpy as np
 import random
 import json
@@ -57,7 +57,9 @@ def hotflip(model, tokenizer, question, context, answer, answer_start, answer_en
         processed_tokens, processed_saliencies = process(tokens, saliencies, tokenizer)
         tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
         processed_saliencies[0:sep_index+1] = [0] * len(processed_saliencies[0:sep_index+1])
-        new_answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(tokens[start_index:end_index+1]), skip_special_tokens = True)
+        #if int(start_index) < int(sep_index):
+        #    start_index = sep_index
+        new_answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(tokens[sep_index:end_index+1]), skip_special_tokens = True)
         tokenized_answer = process_answer(tokens[start_index:end_index+1], tokenizer)
         if len(tokenized_answer) > 1:
             tokenized_answer = " ".join(tokenized_answer)

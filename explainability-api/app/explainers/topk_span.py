@@ -1,5 +1,5 @@
 import torch
-from datasets import load_dataset
+#from datasets import load_dataset
 import numpy as np
 import random
 import json
@@ -35,7 +35,7 @@ def topk_tokens(model, tokenizer, question, context, answer, answer_start, answe
 
     new_context = " ".join(max_tokens)
     inputs = tokenizer(question, new_context, return_tensors="pt")
-    new_answer, start, end = get_answer(model, tokenizer, inputs)
+    new_answer, start, end = get_answer(model, tokenizer, inputs, sep_index = sep_index)
 
     if len(new_answer.strip()) <= 0:
         new_answer = "Undefined Answer"
@@ -73,7 +73,7 @@ def tokens_span(model, tokenizer, question, context, answer, answer_start, answe
     new_context = " ".join(tokens[start_span:end_span])
     #new_context = tokenizer.decode(inputs.input_ids[0][start_span:end_span], skip_special_tokens = True)
     inputs = tokenizer(question, new_context, return_tensors="pt")
-    new_answer, start, end = get_answer(model, tokenizer, inputs)
+    new_answer, start, end = get_answer(model, tokenizer, inputs, sep_index = sep_index)
     if len(new_answer.strip()) <= 0:
         new_answer = "Undefined Answer"
 

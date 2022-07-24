@@ -1,5 +1,5 @@
 import torch
-from datasets import load_dataset
+#from datasets import load_dataset
 import numpy as np
 import random
 import json
@@ -54,7 +54,7 @@ def input_reduction(model, tokenizer, question, context, answer, answer_start, a
         sep_index = processed_tokens.index(sep_token)
         processed_saliencies[0:sep_index+1] = [100] * len(processed_saliencies[0:sep_index+1])
         
-        new_answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(tokens[start_index:end_index+1]), skip_special_tokens = True)
+        new_answer = tokenizer.decode(tokenizer.convert_tokens_to_ids(tokens[sep_index:end_index+1]), skip_special_tokens = True)
         tokenized_answer = process_answer(tokens[start_index:end_index+1], tokenizer)
         if len(tokenized_answer) > 1:
             tokenized_answer = " ".join(tokenized_answer)
