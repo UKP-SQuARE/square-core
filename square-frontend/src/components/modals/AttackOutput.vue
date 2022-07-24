@@ -33,7 +33,7 @@
               <div class="col-auto">
                   <button v-on:click="methodSelected('span')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Selects a subspan of the context as new context.">
-                    Span
+                    Sub-Span
                   </button>
               </div>
               <div class="col-auto">
@@ -44,7 +44,7 @@
               </div>
             </div>
 
-            <div v-if="hotflip_selected || inputred_selected" class="row mt-3">
+            <div v-if="hotflip_selected || inputred_selected || span_selected" class="row mt-3">
               <div class="col-4 text-start">
                   <h4>Gradient Method:</h4>
               </div>
@@ -86,6 +86,19 @@
                     <div class="form-check form-switch">
                         <label class="form-check-label" for="includeAns">Include Answer</label>
                         <input class="form-check-input" type="checkbox" id="includeAns">
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="span_selected" class="row mt-3">
+                <div class="col-4 text-start">
+                    <h4>Length of sub-span:</h4>
+                </div>
+
+                <div class="col-auto">
+                    <div class="form-check form-switch">
+                        <input type="range" min="0" max="20" v-model="lenSpan" class="form-range" id="lenSpan" oninput="this.nextElementSibling.value = this.value">
+                        <output ></output>
                     </div>
                 </div>
             </div>
@@ -172,6 +185,7 @@ export default Vue.component("attack-output",{
       gradient_way: 'SimpleGrad',
       includeAns: false,
       numFlips: 0,
+      lenSpan: 0,
 
       hotflip_selected: false,
       inputred_selected: false,
