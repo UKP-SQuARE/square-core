@@ -130,7 +130,7 @@
 
             <div v-if="hotflip_selected" class="row mt-3"> <!-- HotFlip -->
               <div class="col-12">
-                <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
                     <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
                 </button>
               </div>
@@ -138,7 +138,7 @@
 
             <div v-if="inputred_selected" class="row mt-3"> <!-- InputReduction -->
               <div class="col-12">
-                <button v-on:click="attack('Input_Red')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                <button v-on:click="attack('Input_Red')" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
                     <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
                 </button>
                 </div>
@@ -146,7 +146,7 @@
 
             <div v-if="span_selected" class="row mt-3"> <!-- Span -->
               <div class="col-12">
-                <button v-on:click="attack('span')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                <button v-on:click="attack('span')" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
                     <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
                 </button>
               </div>
@@ -154,7 +154,7 @@
 
             <div v-if="topk_selected" class="row mt-3"> <!-- TopK -->
               <div class="col-12">
-                <button v-on:click="attack('topk')" type="button" class="btn btn-outline-primary" :disabled="waiting">
+                <button v-on:click="attack('topk')" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
                     <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
                 </button>
               </div>
