@@ -19,25 +19,25 @@
                   <h4>Method:</h4>
               </div>
               <div class="col-auto">
-                  <button v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-primary"
+                  <button id="hotflip_btn" v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Flips words in the input to change the Skill's prediction.">
                     HotFlip
                   </button>
               </div>
               <div class="col-auto">
-                  <button v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-primary"
+                  <button id="Input_Red_btn" v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Removes as many words from the input as possible without changing the Skill's prediction.">
                     Input Reduction
                   </button>
               </div>
               <div class="col-auto">
-                  <button v-on:click="methodSelected('span')" type="button" class="btn btn-outline-primary"
+                  <button id="span_btn" v-on:click="methodSelected('span')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Selects a subspan of the context as new context.">
                     Sub-Span
                   </button>
               </div>
               <div class="col-auto">
-                  <button v-on:click="methodSelected('topk')" type="button" class="btn btn-outline-primary"
+                  <button id="topk_btn" v-on:click="methodSelected('topk')" type="button" class="btn btn-outline-primary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="">
                     Top K
                   </button>
@@ -240,27 +240,40 @@ export default Vue.component("attack-output",{
   },
   methods:{
     methodSelected(method){
+      // remove active class from all buttons
+      var buttons = document.getElementsByClassName('btn-outline-primary')
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active')
+      }
       if(method == 'HotFlip'){
         this.hotflip_selected = true;
         this.inputred_selected = false;
         this.span_selected = false;
         this.topk_selected = false;
+        // set the class of the button to active
+        document.getElementById('hotflip_btn').classList.add('active');
       }
       else if(method == 'Input_Red'){
         this.hotflip_selected = false;
         this.inputred_selected = true;
         this.span_selected = false;
         this.topk_selected = false;
+        // set the class of the button to active
+        document.getElementById('Input_Red_btn').classList.add('active');
       } else if(method == 'span'){
         this.hotflip_selected = false;
         this.inputred_selected = false;
         this.span_selected = true;
         this.topk_selected = false;
+        // set the class of the button to active
+        document.getElementById('span_btn').classList.add('active');
       } else if(method == 'topk'){
         this.hotflip_selected = false;
         this.inputred_selected = false;
         this.span_selected = false;
         this.topk_selected = true;
+        // set the class of the button to active
+        document.getElementById('topk_btn').classList.add('active');
       }
     },
     attack(method) {
