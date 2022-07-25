@@ -19,25 +19,25 @@
                   <h4>Method:</h4>
               </div>
               <div class="col-auto">
-                  <button id="hotflip_btn" v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-primary"
+                  <button id="hotflip_btn" v-on:click="methodSelected('HotFlip')" type="button" class="btn btn-outline-secondary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Flips words in the input to change the Skill's prediction.">
                     HotFlip
                   </button>
               </div>
               <div class="col-auto">
-                  <button id="Input_Red_btn" v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-primary"
+                  <button id="Input_Red_btn" v-on:click="methodSelected('Input_Red')" type="button" class="btn btn-outline-secondary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Removes as many words from the input as possible without changing the Skill's prediction.">
                     Input Reduction
                   </button>
               </div>
               <div class="col-auto">
-                  <button id="span_btn" v-on:click="methodSelected('span')" type="button" class="btn btn-outline-primary"
+                  <button id="span_btn" v-on:click="methodSelected('span')" type="button" class="btn btn-outline-secondary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="Selects a subspan of the context as new context.">
                     Sub-Span
                   </button>
               </div>
               <div class="col-auto">
-                  <button id="topk_btn" v-on:click="methodSelected('topk')" type="button" class="btn btn-outline-primary"
+                  <button id="topk_btn" v-on:click="methodSelected('topk')" type="button" class="btn btn-outline-secondary"
                    data-bs-toggle="tooltip" data-bs-placement="top" title="">
                     Top K
                   </button>
@@ -241,7 +241,7 @@ export default Vue.component("attack-output",{
   methods:{
     methodSelected(method){
       // remove active class from all buttons
-      var buttons = document.getElementsByClassName('btn-outline-primary')
+      var buttons = document.getElementsByClassName('btn-outline-secondary')
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].classList.remove('active')
       }
