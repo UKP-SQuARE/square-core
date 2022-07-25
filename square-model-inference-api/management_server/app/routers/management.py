@@ -29,7 +29,7 @@ from app.db.database import MongoClass
 from docker_access import get_all_model_prefixes
 
 from tasks import tasks
-# from tasks.celery import app
+from tasks.celery import app as celery_app
 import json
 from bson import json_util
 
