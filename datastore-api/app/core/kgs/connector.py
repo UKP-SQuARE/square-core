@@ -194,10 +194,6 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
 
         # Sort edges by nodes they have been extracted from:
         results = {}
-        # logger.info("LOOOOOOOOOLL")
-        # for nid, response in zip(nids, response['responses']):
-        #     logger.info(nid)
-        #     logger.info(response)
         for nid, response in zip(nids, response['responses']):
             edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
             results[nid] = edges
