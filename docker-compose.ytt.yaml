@@ -269,6 +269,9 @@ services:
       CLIENT_ID: models
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
     links:
       - rabbit
       - redishost
