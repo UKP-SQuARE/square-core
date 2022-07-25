@@ -139,7 +139,11 @@ export default Vue.component("explain-output",{
   methods:{
     postReq(method) {
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
-      
+      // remove class active from all buttons
+      var btn_list = document.getElementsByClassName('btn-outline-primary');
+      for (var i = 0; i < btn_list.length; i++) {
+        btn_list[i].classList.remove('active');
+      }
       // switch the waiting_* variables to true to show the loading spinner
       switch(method){
         case 'attention':
@@ -197,6 +201,9 @@ export default Vue.component("explain-output",{
             break;
         }
         this.show_saliency_map = true;
+        // add class active to the button method+"_btn"
+        document.getElementById(method+"_btn").classList.add("active");
+
       })
     },
 
