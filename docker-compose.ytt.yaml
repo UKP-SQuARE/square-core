@@ -302,6 +302,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_USER: default
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
