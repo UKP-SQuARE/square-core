@@ -43,7 +43,7 @@
                 </button>
               </div>
               <div class="col-auto">
-                <button id="integrated_grads_bnt" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
+                <button id="integrated_grads_btn" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
                   <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
                 </button>
               </div>
@@ -210,7 +210,9 @@ export default Vue.component("explain-output",{
     highLight(sentence,attributions){ // add here skill param
       // tokenize sentence by whitespace, . , ! ? and ; using regex      
       //eslint-disable-next-line
-      var listWords = sentence.split(/\s+|\.|\!|\?|\;/);
+      var listWords = sentence.split(/\s+|\.|\!|\?|\;|\-|\(|\)/);
+      // log to console listWords
+      console.log(listWords);
       // var listWords = sentence.split(' ');
       var highlightedSentence = "";
       // iterate over attributions to normalize the scores to [0,1]
