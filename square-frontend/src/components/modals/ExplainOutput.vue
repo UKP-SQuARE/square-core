@@ -111,11 +111,9 @@ export default Vue.component("explain-output",{
   inject: ['currentResults'],
   data () {
       // num words in context
-      //eslint-disable-next-line
-      var numQuestionWords = this.$store.state.currentQuestion.split(/\s+|\.|\!|\?|\;/).length;
+      var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
-      //eslint-disable-next-line
-      var numContextWords = this.$store.state.currentContext.split(/\s+|\.|\!|\?|\;/).length;
+      var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
      return {
       num_Maxshow:  Math.min(numQuestionWords, numContextWords),
       num_show: undefined,
