@@ -66,7 +66,7 @@
                 <hr/>
               </div>
 
-              <div v-if="show_saliency_map">
+              <div v-if="show_saliency_map"> <!-- show question -->
                 <div class="row mt-3">
                   <div class="col-2 text-start">
                     <h4>Question:</h4>
@@ -77,7 +77,7 @@
                 </div>
               </div>
 
-              <div v-if="show_saliency_map">
+              <div v-if="show_saliency_map"> <!-- show context-->
                 <div class="row mt-3">
                   <div class="col-2 text-start">
                     <h4>Context:</h4>
@@ -87,6 +87,18 @@
                   </div>
                 </div>
               </div>
+
+              <div v-if="show_saliency_map"> <!-- show answer-->
+                <div class="row mt-3">
+                  <div class="col-2 text-start">
+                    <h4>Answer:</h4>
+                  </div>
+                  <div class="col-10">
+                    <span v-html="showAnswer(index)"/>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -260,6 +272,10 @@ export default Vue.component("explain-output",{
     highlightedContext(idx) {
       return this.highLight(this.$store.state.currentContext,
                             this.$store.state.currentResults[idx].predictions[0].attributions.context)
+    },
+
+    showAnswer(idx) {
+      return this.$store.state.currentResults[idx].predictions[0].prediction_output.output
     },
 
     changeShowNum(){
