@@ -43,7 +43,7 @@
                 </button>
               </div>
               <div class="col-auto">
-                <button id="integrated_grads_bnt" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
+                <button id="integrated_grads_btn" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
                   <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
                 </button>
               </div>
@@ -66,7 +66,7 @@
                 <hr/>
               </div>
 
-              <div v-if="show_saliency_map">
+              <div v-if="show_saliency_map"> <!-- show question map -->
                 <div class="row mt-3">
                   <div class="col-2 text-start">
                     <h4>Question:</h4>
@@ -75,9 +75,9 @@
                     <span v-html="highlightedQuestion(index)"/>
                   </div>
                 </div>
-              </div>
+              </div>  <!-- end show question map -->
 
-              <div v-if="show_saliency_map">
+              <div v-if="show_saliency_map"> <!-- show context map -->
                 <div class="row mt-3">
                   <div class="col-2 text-start">
                     <h4>Context:</h4>
@@ -86,14 +86,26 @@
                     <span v-html="highlightedContext(index)"/>
                   </div>
                 </div>
-              </div>
-            </div>
+              </div> <!-- end show answer map -->
 
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+              <div v-if="show_saliency_map"> <!-- show answer -->
+                <div class="row mt-3">
+                  <div class="col-2 text-start">
+                    <h4>Answer:</h4>
+                  </div>
+                  <div class="col-10">
+                    <span> {{ skillResult.predictions[0]['prediction_output']['output'] }}</span>
+                  </div>
+                </div>
+              </div> <!-- end show answer -->
+
+            </div> <!-- end for loop -->
+
+          </div> <!-- end container -->
+        </div> <!-- end modal body -->
+      </div> <!-- end modal content -->
+    </div> <!-- end modal dialog -->
+  </div> <!-- end modal -->
 </template>
 
 <script>
@@ -139,7 +151,11 @@ export default Vue.component("explain-output",{
   methods:{
     postReq(method) {
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
-      
+      // remove active class from all buttons
+      var btn_list = document.getElementsByClassName('btn-outline-primary');
+      for (var i = 0; i < btn_list.length; i++) {
+        btn_list[i].classList.remove('active');
+      }
       // switch the waiting_* variables to true to show the loading spinner
       switch(method){
         case 'attention':
@@ -197,6 +213,10 @@ export default Vue.component("explain-output",{
             break;
         }
         this.show_saliency_map = true;
+        // add active class to the button of the button with id = method
+        document.getElementById(method+"_btn").classList.add('active');
+
+
       })
     },
 
