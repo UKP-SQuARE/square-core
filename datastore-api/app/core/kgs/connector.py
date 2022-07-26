@@ -251,19 +251,19 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         response = await self.es.msearch(body=body)
 
         edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response['responses'][0]["hits"]["hits"]}
-
+        logger.info(type(edges))
         qid_list=[]
         aid_list=[]
         rest=[]
-        for edge in edges:
-            if edges[edge]['in_id']==qid:
-                qid_list.append(edges[edge]['out_id'])
-            elif edges[edge]['out_id']==qid:
-                qid_list.append(edges[edge]['in_id'])
-            elif edges[edge]['in_id']==aid:
-                aid_list.append(edges[edge]['out_id'])
-            elif edges[edge]['out_id']==aid:
-                aid_list.append(edges[edge]['in_id'])
+        for edge in edges.values():
+            if edge['in_id']==qid:
+                qid_list.append(edge['out_id'])
+            elif edge['out_id']==qid:
+                qid_list.append(edge['in_id'])
+            elif edge['in_id']==aid:
+                aid_list.append(edge['out_id'])
+            elif edge['out_id']==aid:
+                aid_list.append(edge['in_id'])
             else:
                 rest.append(edge)
         extra_nodes = []
@@ -314,16 +314,16 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         found_edges = [{} for _ in nids_pairs]
         for response in responses['responses']:
             edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
-            for edge_id in edges:
-                edge_in = edges[edge_id]['in_id']
-                edge_out = edges[edge_id]['out_id']
+            for edge in edges.values():
+                edge_in = edge['in_id']
+                edge_out = edge['out_id']
                 edge_in_out=[edge_in, edge_out]
                 if edge_in != edge_out:
                     for i,in_out_id in enumerate(nids_pairs):
                         node_in_id = list(in_out_id)[0]
                         node_out_id = list(in_out_id)[1]
                         if node_in_id in edge_in_out and node_out_id in edge_in_out:
-                            found_edges[i] = {edge_id:edges[edge_id]}           
+                            found_edges[i] = {edge['_id']:edge}           
         return found_edges
 
     async def get_object_by_id_msearch(self, kg_name, ids):
