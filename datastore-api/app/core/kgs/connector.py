@@ -209,11 +209,11 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         results_nids = [{} for _ in nids]
         for i,nid in enumerate(nids):
             extra_nodes =[]
-            for edge in edges[nid]:
-                if edges[nid][edge]["in_id"] == nid:
-                    extra_node = edges[nid][edge]["out_id"]
+            for edge in edges[nid].values():
+                if edge["in_id"] == nid:
+                    extra_node = edge["out_id"]
                 else:
-                    extra_node = edges[nid][edge]["in_id"]
+                    extra_node = edge["in_id"]
                 extra_nodes.append(extra_node)
             results_nids[i] =  {nid:set(extra_nodes)}
         return results_nids
