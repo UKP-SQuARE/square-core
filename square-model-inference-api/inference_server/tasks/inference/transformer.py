@@ -334,17 +334,17 @@ class Transformer(Model):
                                   return_tensors="pt",
                                   **request.preprocessing_kwargs)
         if request.explain_kwargs:
-            if self.model.config.model_type == "roberta":
-                self.decoded_text = [
-                    token.replace("Ġ", "")
-                    for token in self.decode(
-                        features["input_ids"],
-                        skip_special_tokens=False)
-                ]
-            else:
-                self.decoded_text = self.decode(
-                    features["input_ids"],
-                    skip_special_tokens=False)
+            # if self.model.config.model_type == "roberta":
+            #     self.decoded_text = [
+            #         token.replace("Ġ", "")
+            #         for token in self.decode(
+            #             features["input_ids"],
+            #             skip_special_tokens=False)
+            #     ]
+            # else:
+            self.decoded_text = self.decode(
+                features["input_ids"],
+                skip_special_tokens=False)
             self.words_mapping = features.word_ids()
 
             if request.explain_kwargs["method"] in ["attention", "scaled_attention"]:

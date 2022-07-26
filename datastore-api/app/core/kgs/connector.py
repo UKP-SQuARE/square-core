@@ -2,7 +2,6 @@ import json
 import logging
 from typing import Dict, Iterable, List, Optional, Tuple
 
-
 import elasticsearch.exceptions
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk, async_scan
@@ -193,10 +192,10 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
     
         response = await self.es.msearch(body=body)
 
+        # Sort edges by nodes they have been extracted from:
         results = {}
         for nid, response in zip(nids, response['responses']):
             edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
-
             results[nid] = edges
         return results
 
@@ -244,11 +243,16 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 }
             })
         responses = await self.es.msearch(body=body)
-        results = []
+        found_edges = []
         for response in responses['responses']:
             edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
-            results.append(edges)
-        return results
+            for edge_id in edges:
+                if edges[edge_id]['in_id'] != edges[edge_id]['out_id']:
+                    found_edges.append({edge_id:edges[edge_id]})            
+
+        return found_edges
+
+
 
     async def get_object_by_id_msearch(self, kg_name, ids):
         """Returns all nodes/edges for the given ids.
