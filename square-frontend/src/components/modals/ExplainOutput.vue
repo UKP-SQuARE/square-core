@@ -105,6 +105,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 })
 
 import Vue from 'vue'
+import {tokenize} from 'string-punctuation-tokenizer'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
@@ -210,7 +211,8 @@ export default Vue.component("explain-output",{
     highLight(sentence,attributions){ // add here skill param
       // tokenize sentence by whitespace, . , ! ? and ; using regex      
       //eslint-disable-next-line
-      var listWords = sentence.split(/\s+|\.|\!|\?|\;|\-|\(|\)/);
+      // var listWords = sentence.split(/\s+|\.|\!|\?|\;|\-|\(|\)/);
+      var listWords = tokenize({'text': sentence, 'includePunctuation': true});
       // log to console listWords
       console.log(listWords);
       // var listWords = sentence.split(' ');
