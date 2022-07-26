@@ -87,6 +87,7 @@ def start_new_model_container(identifier: str, uid: str, env):
     env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
     try:
+        logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
             MODEL_API_IMAGE,
             command=f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info",

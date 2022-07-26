@@ -272,6 +272,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      CONFIG_VOLUME: square-core_model_configs
     links:
       - rabbit
       - redishost
@@ -333,6 +334,7 @@ services:
       QUEUE: facebook-dpr-question_encoder-single-nq-base
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
+      CONFIG_VOLUME: square-core_model_configs
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
