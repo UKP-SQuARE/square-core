@@ -196,6 +196,7 @@
 
 <script>
 import Vue from 'vue'
+import {tokenize} from 'string-punctuation-tokenizer'
 import hotflip from './hotflip.json'
 import inputred from './reduction.json'
 import span from './span.json'
@@ -277,13 +278,12 @@ export default Vue.component("attack-output",{
       }
     },
     attack(method) {
-       this.waiting = true;
+      /* eslint-disable */
+      this.waiting = true;
       if(method == 'HotFlip'){
         // make the call to the api
 
-        // var listQuestionTokens = hotflip['question'].split(/\s+|\.|\!|\?|\;/);
-        /* eslint-disable */
-        var listContextTokens = hotflip['context'].split(/\s+|\.|\!|\?|\;/);
+        var listContextTokens = tokenize({'text':  hotflip['context'], 'includePunctuation': true});
         var listFlips = hotflip['flips'];
         var listIndex = hotflip['indexes'];
         // for each flip change token from the context
