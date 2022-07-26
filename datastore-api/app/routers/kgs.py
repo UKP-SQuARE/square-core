@@ -406,6 +406,30 @@ async def get_edges_by_nids(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")
 
 @router.get(
+    "/{kg_name}/edges/query_relationinfo",
+    summary="Get the relation info between given node_ids",
+    description="Get relation info between node_pairs for a given list of node_id_pairs from the knowledge.",
+    responses={
+        200: {
+            "description": "The nodes",
+        },
+        404: {"description": "The nodes could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_relationinfo(
+    kg_name: str = Path(..., description="The name of the knowledge graph"),
+    nids: List[set] = Body(..., description="List of node_id-pairs"),
+    conn=Depends(get_kg_storage_connector),
+): 
+    result = await conn.get_relation(kg_name, nids)
+    
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")    
+
+@router.get(
     "/{kg_name}/edges/query_by_name",
     summary="Get a edge from a knowledge graph",
     description="Get a edge from the knowledge graph by name",

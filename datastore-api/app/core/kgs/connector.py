@@ -251,7 +251,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         response = await self.es.msearch(body=body)
 
         edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response['responses'][0]["hits"]["hits"]}
-        logger.info(type(edges))
+
         qid_list=[]
         aid_list=[]
         rest=[]
@@ -325,6 +325,25 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                         if node_in_id in edge_in_out and node_out_id in edge_in_out:
                             found_edges[i] = {edge['_id']:edge}           
         return found_edges
+
+    async def get_relation(self, kg_name, nids_pairs: List[Tuple[str, str]]):
+        """Returns relation-info for a given node-pair.
+
+        Args:
+            kg_name (str):                          Name of the knowledge graph.
+            nids_pairs (List[Tuple[str, str]]):     Node-pair which is supposed to be retrieved.
+        """
+        edges = await self.get_edge_msearch(kg_name, nids_pairs)
+        results=[]
+        for edge in edges:
+            relation_list=[]
+            for edge_type in edge.values():
+                if edge_type !=None:
+                    relation_list.append({"relation-name":edge_type['name'], "weight":edge_type['weight']})
+                else:
+                    relation_list.append({"no edge"})
+            results.append(relation_list)
+        return results
 
     async def get_object_by_id_msearch(self, kg_name, ids):
         """Returns all nodes/edges for the given ids.
