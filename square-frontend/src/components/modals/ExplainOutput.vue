@@ -117,15 +117,14 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 })
 
 import Vue from 'vue'
-import {tokenize} from 'string-punctuation-tokenizer'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
   data () {
       // num words in context
-      var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
+      var numQuestionWords = this.tokenize(this.$store.state.currentQuestion).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
-      var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
+      var numContextWords = this.tokenize(this.$store.state.currentContext).length;
      return {
       num_Maxshow:  Math.min(numQuestionWords, numContextWords),
       num_show: undefined,
@@ -187,7 +186,6 @@ export default Vue.component("explain-output",{
           }
         }
       }).then(() => {
-        console.log("Query successed! "),
         this.failure = false,
         this.num_show = 3
       }).catch(() => {
@@ -218,13 +216,140 @@ export default Vue.component("explain-output",{
       })
     },
 
+    tokenize(sentence){
+      // tokenize a sentence by whitespace and punctuation
+      // input: "We've got a lot of data to work with, Let's do some analysis."
+      // output: ["We've", "got", "a", "lot", "of", "data", "to", "work", "with", ",", "Let's", "do", "some", "analysis", "."]
+      var sentence_list = sentence.split(/\s+/);
+      // for each word in sentence_list
+      var listWords = [];
+      for (var i = 0; i < sentence_list.length; i++) {
+        var word = sentence_list[i];
+        // if word has . , ! ? ; ( ) [ ]
+        // eslint-disable-next-line
+        if (word.match(/[.,!?;\-\_()\[\]]/)) {
+          console.log("word has punctuation: " + word);
+          if (word.includes(".")) {
+            let w2 = word.replace(".","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push(".");
+          }
+          if (word.includes("!")) {
+            let w2 = word.replace("!","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push("!");
+          } 
+          if (word.includes(",")) {
+            let w2 = word.replace(",","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push(",");
+          } 
+          if (word.includes("?")) {
+            let w2 = word.replace("?","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push("?");
+          } 
+          if (word.includes(";")) {
+            let w2 = word.replace(";","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push(";");
+          } 
+          if (word.includes("-")) {
+            let w2 = word.replace("-","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push("-");
+          }
+          if (word.includes("_")) {
+            let w2 = word.replace("_","")
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push("_");
+          }
+          if (word.includes("(")) {
+            if (word.includes(")")) {
+              let w2 = word.replace("(","").replace(")","");
+              listWords.push("(");
+              // if w2 is not empty, add w2 to listWords
+              if (w2 !== "") {
+                listWords.push(w2);
+              }
+              listWords.push(")");
+            } else {
+              let w2 = word.replace("(","");
+              // if w2 is not empty, add w2 to listWords
+              if (w2 !== "") {
+                listWords.push(w2);
+              }
+              listWords.push("(");
+            }
+          } 
+          if (word.includes(")") && !word.includes("(")) {
+            let w2 = word.replace(")","");
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push(")");
+          }
+          if (word.includes("[")) {
+            if (word.includes("]")) {
+              listWords.push("[");
+              let w2 = word.replace("[","").replace("]","");
+              // if w2 is not empty, add w2 to listWords
+              if (w2 !== "") {
+                listWords.push(w2);
+              }
+              listWords.push("]");
+            } else {
+              let w2 = word.replace("[","");
+              // if w2 is not empty, add w2 to listWords
+              if (w2 !== "") {
+                listWords.push(w2);
+              }
+              listWords.push("[");
+            }
+          } 
+          if (word.includes("]") && !word.includes("[")) {
+            let w2 = word.replace("]","");
+            // if w2 is not empty, add w2 to listWords
+            if (w2 !== "") {
+              listWords.push(w2);
+            }
+            listWords.push("]");
+          }
+        } else {
+          listWords.push(word);
+        }
+      }
+      console.log(listWords)
+      return listWords;
+    },
+
     highLight(sentence,attributions){ // add here skill param
-      // tokenize sentence by whitespace, . , ! ? and ; using regex      
-      //eslint-disable-next-line
-      // var listWords = sentence.split(/\s+|\.|\!|\?|\;|\-|\(|\)/);
-      var listWords = tokenize({'text': sentence, 'includePunctuation': true});
+      var listWords = this.tokenize(sentence);
+      // console.log(listWords);
+      // var listWords = tokenize({'text': sentence, 'includePunctuation': true});
       // log to console listWords
-      console.log(listWords);
       // var listWords = sentence.split(' ');
       var highlightedSentence = "";
       // iterate over attributions to normalize the scores to [0,1]
@@ -249,7 +374,6 @@ export default Vue.component("explain-output",{
         // tooltip the word with the level
         var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+level+'"';
         var highLightedWord = '<mark class="bg-warning p-2 text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
-        console.log(highLightedWord)
         listWords[wordIdx] = highLightedWord;
       }
       for (let i = 0; i<listWords.length;i++) {
@@ -283,6 +407,7 @@ export default Vue.component("explain-output",{
       this.num_show = slider.value;
     },
 
+    
   },
 })
 
