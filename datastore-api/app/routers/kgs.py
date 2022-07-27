@@ -304,6 +304,30 @@ async def get_node_by_name(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
 
 
+@router.get(
+    "/{kg_name}/nodes/query_nodes_inbetween",
+    summary="Get a list of nodes which are between a pair of nodes.",
+    description="Returns a list of nodes, which are inbetween a list of node-pairs..",
+    responses={
+        200: {
+            "description": "List of nodes",
+        },
+        404: {"description": "The edges could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_edges_by_id_as_nodes(
+    kg_name: str = Path(..., description="The name of the edge"),
+    nids_pair: List = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    #  Changee description!!
+    result = await conn.get_nodes_for_nodepairs(kg_name, nids_pair)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+
 @router.post(
     "/{kg_name}/subgraph/query_by_node_name",
     summary="summary",
@@ -359,31 +383,51 @@ async def subgraph_by_ids(
 
 @router.get(
     "/{kg_name}/edges/query_by_ids",
-    summary="Get edges between given node ids",
-    description="Get edges between nodes from the knowledge graph by node ids. Edges with the same in_node and out_node are ignored.",
+    summary="Get edges between given node_ids",
+    description="Get edges between node_pairs for a given list of node_id_pairs from the knowledge.",
     responses={
         200: {
-            "description": "The edges",
+            "description": "The nodes",
         },
-        404: {"description": "The edges could not be retrieved"},
+        404: {"description": "The nodes could not be retrieved"},
         500: {"model": HTTPError, "description": "Model API error"},
     },
 )
 async def get_edges_by_nids(
     kg_name: str = Path(..., description="The name of the knowledge graph"),
-    nids: set = Body(..., description="The name of the edge to retrieve"),
+    nids: List[set] = Body(..., description="List of node_id-pairs"),
     conn=Depends(get_kg_storage_connector),
-):
-    query_list = []
-    for nid in nids:
-        for n_id in nids:
-            query_list.append((nid, n_id))
-    result = await conn.get_edge_msearch(kg_name, query_list)
+): 
+    result = await conn.get_edge_msearch(kg_name, nids)
     
     if result is not None:
         return result
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")
+
+@router.get(
+    "/{kg_name}/edges/query_relationinfo",
+    summary="Get the relation info between given node_ids",
+    description="Get relation info between node_pairs for a given list of node_id_pairs from the knowledge.",
+    responses={
+        200: {
+            "description": "The nodes",
+        },
+        404: {"description": "The nodes could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_relationinfo(
+    kg_name: str = Path(..., description="The name of the knowledge graph"),
+    nids: List[set] = Body(..., description="List of node_id-pairs"),
+    conn=Depends(get_kg_storage_connector),
+): 
+    result = await conn.get_relation(kg_name, nids)
+    
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")    
 
 @router.get(
     "/{kg_name}/edges/query_by_name",
@@ -399,7 +443,7 @@ async def get_edges_by_nids(
 )
 async def get_edge_by_name(
     kg_name: str = Path(..., description="The name of the knowledge graph"),
-    docid: set = Body(..., description="The name of the edge to retrieve"),
+    docid: List = Body(..., description="The name of the edge to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
     result = await conn.edges_in_out_msearch(kg_name, docid)
@@ -422,7 +466,7 @@ async def get_edge_by_name(
 )
 async def get_edges_by_id_as_nodes(
     kg_name: str = Path(..., description="The name of the edge"),
-    docid: set = Body(..., description="The name of the edge to retrieve"),
+    docid: List = Body(..., description="The name of the edge to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
     result = await conn.extract_nodes(kg_name, docid)
