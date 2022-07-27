@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" @click.self="close">
     <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
       <div class="modal-content">
         <div class="modal-header">
@@ -49,7 +49,7 @@
               </div>
             </div>
 
-            <div v-if="num_show != undefined" class="slidecontainer">
+            <div v-if="show_saliency_map" class="slidecontainer">
               <div class="row mt-3">
                 <div class="col-6 text-start">
                   <h4>Showing the top {{num_show}} most important words</h4>
@@ -60,46 +60,49 @@
               </div>
             </div>
             
-            <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.currentResults" :key="index">
-              <div class="col-12">
-                <h4>{{ skillResult.skill.name }}</h4>
-                <hr/>
-              </div>
-
-              <div v-if="show_saliency_map"> <!-- show question -->
-                <div class="row mt-3">
-                  <div class="col-2 text-start">
-                    <h4>Question:</h4>
-                  </div>
-                  <div class="col-10">
-                    <span v-html="highlightedQuestion(index)"/>
-                  </div>
+            <div v-if="show_saliency_map">
+              <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.currentResults" :key="index">
+                <div class="col-12">
+                  <h4>{{ skillResult.skill.name }}</h4>
+                  <hr/>
                 </div>
-              </div>
 
-              <div v-if="show_saliency_map"> <!-- show context-->
-                <div class="row mt-3">
-                  <div class="col-2 text-start">
-                    <h4>Context:</h4>
+                <div v-if="show_saliency_map"> <!-- show question -->
+                  <div class="row mt-3">
+                    <div class="col-2 text-start">
+                      <h4>Question:</h4>
+                    </div>
+                    <div class="col-10">
+                      <span v-html="highlightedQuestion(index)"/>
+                    </div>
                   </div>
-                  <div class="col-10">
-                    <span v-html="highlightedContext(index)"/>
-                  </div>
-                </div>
-              </div>
+                </div> <!-- end show question -->
 
-              <div v-if="show_saliency_map"> <!-- show answer-->
-                <div class="row mt-3">
-                  <div class="col-2 text-start">
-                    <h4>Answer:</h4>
+                <div v-if="show_saliency_map"> <!-- show context-->
+                  <div class="row mt-3">
+                    <div class="col-2 text-start">
+                      <h4>Context:</h4>
+                    </div>
+                    <div class="col-10">
+                      <span v-html="highlightedContext(index)"/>
+                    </div>
                   </div>
-                  <div class="col-10">
-                    <span v-html="showAnswer(index)"/>
-                  </div>
-                </div>
-              </div>
+                </div> <!-- end show context -->
 
+                <div v-if="show_saliency_map"> <!-- show answer-->
+                  <div class="row mt-3">
+                    <div class="col-2 text-start">
+                      <h4>Answer:</h4>
+                    </div>
+                    <div class="col-10">
+                      <span v-html="showAnswer(index)"/>
+                    </div>
+                  </div>
+                </div> <!-- end show answer -->
+
+              </div> <!-- end for loop -->
             </div>
+            
 
           </div>
         </div>
@@ -121,12 +124,8 @@ import Vue from 'vue'
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
   data () {
-      // num words in context
-      var numQuestionWords = this.tokenize(this.$store.state.currentQuestion).length;
-      // num_Maxshow for explain method is the min(numWords, numContextWords)
-      var numContextWords = this.tokenize(this.$store.state.currentContext).length;
      return {
-      num_Maxshow:  Math.min(numQuestionWords, numContextWords),
+      num_Maxshow: undefined,
       num_show: undefined,
       waiting_attention: false,
       waiting_scaled_attention: false,
@@ -147,6 +146,11 @@ export default Vue.component("explain-output",{
   },
   methods:{
     postReq(method) {
+      // num words in context
+      var numQuestionWords = this.tokenize(this.$store.state.currentQuestion).length;
+      // num_Maxshow for explain method is the min(numWords, numContextWords)
+      var numContextWords = this.tokenize(this.$store.state.currentContext).length;
+      this.num_Maxshow =  Math.min(numQuestionWords, numContextWords);
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
       // remove class active from all buttons
       var btn_list = document.getElementsByClassName('btn-outline-primary');
@@ -405,6 +409,16 @@ export default Vue.component("explain-output",{
       var slider = document.getElementById("Range");
       this.num_show = slider.value;
     },
+
+    close(){
+      this.show_saliency_map = false;
+      this.num_Maxshow = undefined;
+      // remove activate class from all buttons
+      var btn_list = document.getElementsByClassName('btn-outline-primary');
+      for (var i = 0; i < btn_list.length; i++) {
+        btn_list[i].classList.remove('active');
+      }
+    }
 
     
   },
