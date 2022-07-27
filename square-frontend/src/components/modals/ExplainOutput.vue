@@ -60,7 +60,7 @@
               </div>
             </div>
             
-            <div class="row mt-3" v-for="(skillResult, index) in currentResults" :key="index">
+            <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.currentResults" :key="index">
               <div class="col-12">
                 <h4>{{ skillResult.skill.name }}</h4>
                 <hr/>
@@ -128,7 +128,6 @@ export default Vue.component("explain-output",{
      return {
       num_Maxshow:  Math.min(numQuestionWords, numContextWords),
       num_show: undefined,
-      currentResults: this.currentResults,
       waiting_attention: false,
       waiting_scaled_attention: false,
       waiting_simple_grads: false,
