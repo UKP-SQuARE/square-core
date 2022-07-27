@@ -26,7 +26,7 @@ export default Vue.component('categorical-results', {
   mixins: [mixin],
   computed: {
     output() {
-      return this.prediction.prediction_output.output === 'yes'
+      return this.prediction.prediction_output.output == 'Yes'
     }
   }
 })

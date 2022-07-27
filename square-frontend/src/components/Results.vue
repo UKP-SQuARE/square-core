@@ -6,6 +6,7 @@
         <table class="table table-borderless">
           <thead class="border-bottom border-dark">
           <tr>
+<!--            This for name of the skills   eg: SQuAD 1.1 BERT Adapter-->
             <th v-if="skillType.options.name !== 'categorical-results'" scope="col" />
             <th
                 v-for="(skillResult, index) in currentResults"
@@ -14,6 +15,8 @@
                 class="fs-2 fw-light text-center">{{ skillResult.skill.name }}</th>
           </tr>
           <tr>
+<!--            This is for type of model eg:Extractive QA, bert-base-uncased
+ -->
             <th v-if="skillType.options.name !== 'categorical-results'" scope="col" />
             <th
                 v-for="(skillResult, index) in currentResults"
@@ -42,8 +45,8 @@
         </table>
       </div>
     </div>
-    <div v-if="showContextToggle" class="row">
-      <div class="col mt-3">
+    <div class="row">
+      <div class="col mt-3" v-if="showContextToggle">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a
               v-on:click="showWithContext = !showWithContext"
@@ -54,6 +57,16 @@
           </a>
         </div>
       </div>
+
+      <div class="col mt-3">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a data-bs-toggle="modal" data-bs-target="#modalExplain" role="button" class="btn btn-primary shadow">
+            Explain this output
+          </a>
+          <ExplainOutput id="modalExplain"/>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -62,6 +75,7 @@
 import Vue from 'vue'
 import Categorical from '@/components/results/Categorical.vue'
 import SpanExtraction from '@/components/results/SpanExtraction.vue'
+import ExplainOutput from '../components/modals/ExplainOutput'
 
 export default Vue.component('skill-results', {
   data() {
@@ -69,9 +83,15 @@ export default Vue.component('skill-results', {
       showWithContext: false
     }
   },
+  provide() {
+    return {
+      currentResults: this.$store.state.currentResults
+    }
+  },
   components: {
     Categorical,
-    SpanExtraction
+    SpanExtraction,
+    ExplainOutput
   },
   computed: {
     currentResults() {
