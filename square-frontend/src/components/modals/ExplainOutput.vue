@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click.self="close" />
         </div>
         <div class="modal-body">
           <div class="container text-center">
