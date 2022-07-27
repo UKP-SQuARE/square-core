@@ -1,9 +1,9 @@
 <template>
-  <div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"  @click.self="close">
     <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"  @click.self="close"/>
         </div>
         <div class="modal-body">
           <div class="container text-center">
@@ -206,8 +206,6 @@ import topk from './topk.json'
 export default Vue.component("attack-output",{
   data () {
      return {
-      num_Maxshow : this.num_Maxshow ,
-      num_show : this.num_show ,
       gradient_way: 'SimpleGrad',
       includeAns: false,
       numFlips: 0,
@@ -382,6 +380,31 @@ export default Vue.component("attack-output",{
     showNewContext(){
       return this.newContext;
     },
+
+    close(){
+      // remove activate class from all buttons
+      var btn_list = document.getElementsByClassName('btn-outline-secondary');
+      for (var i = 0; i < btn_list.length; i++) {
+        btn_list[i].classList.remove('active');
+      }
+      // reset modal
+      this.includeAns = false;
+      this.numFlips = 0;
+      this.lenSpan = 0;
+      this.numTopK = 0;
+      this.numReductions = 0;
+      this.hotflip_selected = false;
+      this.inputred_selected = false;
+      this.span_selected = false;
+      this.topk_selected = false;
+      this.showHotFlipOutput = false;
+      this.gradient_way = 'SimpleGrad';
+      this.question = '';
+      this.newContext = "";
+      this.newAnswer = "";
+      this.waiting = false;
+      this.showHotFlipOutput = false;
+    }
     
   },
 })
