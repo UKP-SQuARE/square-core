@@ -19,7 +19,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     context = request.skill_args.get("context")
     choices = request.skill_args["choices"]
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
 
     if request.skill.get("skill_type") == "categorical":
         # answer choices for categorical skills are hard-coded and not required as

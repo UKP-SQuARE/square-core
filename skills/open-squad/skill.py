@@ -20,7 +20,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Data API output:\n{data}")
     context = [d["document"]["text"] for d in data]
     context_score = [d["score"] for d in data]
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
 
     # Call Model API
     prepared_input = [[request.query, c] for c in context]  # Change as needed

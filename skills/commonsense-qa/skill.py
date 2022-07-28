@@ -17,7 +17,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     choices = [request.skill_args["context"]] + request.skill_args["choices"]
     prepared_input = [[request.query, c] for c in choices]
     
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
     
     model_request = {
         "input": prepared_input,

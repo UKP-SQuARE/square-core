@@ -18,7 +18,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
-    explain_kwargs = request.skill_args.get("explain_kwargs", {})
+    explain_kwargs = request.explain_kwargs or {}
 
     data = await data_api(
         datastore_name=request.skill_args["datastore"],
