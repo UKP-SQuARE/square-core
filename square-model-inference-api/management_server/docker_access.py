@@ -95,7 +95,7 @@ def start_new_model_container(identifier: str, uid: str, env):
             environment=env,
             network=network.name,
             volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
-            mounts=[Mount(target="/model_configs", source=CONFIG_VOLUME,),
+            mounts=[Mount(target=env["CONFIG_PATH"], source=CONFIG_VOLUME,),
                     Mount(target="/onnx_models", source=ONNX_VOLUME,)],
         )
         logger.info(f"Worker container {container}")
