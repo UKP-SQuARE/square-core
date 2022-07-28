@@ -998,6 +998,8 @@ class Transformer(Model):
         assert len(filtered_tokens) == len(normed_imp)
         # outputs = {"attributions": result}
         context_start = filtered_tokens.index(self.tokenizer.sep_token)
+        question_tokens = filtered_tokens[:context_start]
+        context_tokens = filtered_tokens[context_start+1:]
         # account for cls token in result
         question = [(idx, v[0], v[1])
                     for idx, v in enumerate(result[1:])
@@ -1021,5 +1023,7 @@ class Transformer(Model):
                 reverse=True)[:top_k]]
 
         outputs = [{"question": outputs_question,
-                    "context": outputs_context}]
+                    "context": outputs_context,
+                    "question_tokens": question_tokens,
+                    "context_tokens": context_tokens}]
         return outputs
