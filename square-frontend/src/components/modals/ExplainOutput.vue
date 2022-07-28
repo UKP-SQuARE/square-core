@@ -18,36 +18,31 @@
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-2 text-start">
-                  <h4>Method:</h4>
-              </div>
-              <div class="col-auto">
-                <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
-                  <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
-                  <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
-                  <span v-show="waiting_simple_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Simple Gradients
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="smooth_grads_btn" v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_smooth_grads">
-                  <span v-show="waiting_smooth_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Smooth Gradients
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="integrated_grads_btn" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
-                  <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
-                </button>
-              </div>
+            <div class="container-fluid text-center">
+              <div class="row g-2 gy-2">
+                <div class="col-md-2 text-right">
+                    <h4>Method:</h4>
+                </div>
+                <div class="col btn-group flex-wrap" role="group" aria-label="Basic example">
+                  <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
+                    <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
+                  </button>
+                  <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
+                    <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
+                  </button>
+                  <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
+                    <span v-show="waiting_simple_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Simple Gradients
+                  </button>
+                  <button id="smooth_grads_btn" v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_smooth_grads">
+                    <span v-show="waiting_smooth_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Smooth Gradients
+                  </button>
+                  <button id="integrated_grads_btn" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
+                    <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
+                  </button>
+                </div>
+              </div> <!--  end method row -->
             </div>
+            
 
             <div v-if="show_saliency_map" class="slidecontainer">
               <div class="row mt-3">
