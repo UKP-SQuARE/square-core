@@ -1,8 +1,5 @@
 <template>
-  <div
-    id="container"
-    class="d-flex flex-column justify-content-center align-items-center"
-  >
+  <div class="d-flex flex-column justify-content-center align-items-center">
     <h1>Graph Viz</h1>
     <h4 v-if="loading">Loading</h4>
     <h4 v-if="error" class="text-danger">{{ error }}</h4>
@@ -17,7 +14,7 @@
 <script>
 import cydagre from "cytoscape-dagre";
 import cytoscape from "cytoscape";
-// import graph from './graph_example.json'
+import graph from './graph_example.json'
 
 // eslint-disable-next-line
 const nodes = [
@@ -202,8 +199,8 @@ export default {
             "target-arrow-color": "red",
           }),
           elements: {
-            nodes: nodes,
-            edges: edges,
+            nodes: [],
+            edges: [],
             // nodes: [
             //   { data: { id: 'ans', name: 'US' } },
             //   { data: { id: 'e', name: 'Obama' } },
@@ -233,23 +230,27 @@ export default {
           fit: true,
         },
       });
-      // /* eslint-disable */
-      // var cnt = 0;
-      // for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
-      //   cy.add({
-      //     data: node
-      //   });
-      //   cnt += 1;
-      //   if (cnt == 10) {
-      //     break;
-      //   }
-      // }
-      // /* eslint-disable */
-      // for (const [key, edge] of Object.entries(graph["edges"]["statement_0"])) {
-      //   cy.add({
-      //     data: edge
-      //   });
-      // }
+      /* eslint-disable */
+      var cnt = 0;
+      for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
+        this.cy.add({
+          data: node
+        });
+        cnt += 1;
+        if (cnt == 100) {
+          break;
+        }
+      }
+      /* eslint-disable */
+      for (const [key, edge] of Object.entries(graph["edges"]["statement_0"])) {
+        this.cy.add({
+          data: edge
+        });
+      }
+
+
+
+
       // this.cy.add({
       //   data: {
       //     id: "QA_node",
@@ -276,14 +277,14 @@ export default {
       //       });
       //     }          
       // }
-      // // var edges = graph["edges"]["statement_0"]
-      // for (const e of edges){
-      //     e['data']['opacity'] = e['data']['width']/100;
-      //     this.cy.add({
-      //       data: e['data']
-      //     });
-      //     // add edges from Z to all nodes
-      // }
+      // var edges = graph["edges"]["statement_0"]
+      for (const e of edges){
+          e['data']['opacity'] = e['data']['width']/100;
+          this.cy.add({
+            data: e['data']
+          });
+          // add edges from Z to all nodes
+      }
       this.cy.layout({ 
           name: 'circle'
         }).run();
@@ -312,11 +313,12 @@ export default {
 </script>
 <style lang="scss">
 #container {
-  height: 600px;
+  height: 1em;
   width: 960px;
 }
 #cy {
   height: 600px;
   width: 960px;
+  display: block;
 }
 </style>
