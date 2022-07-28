@@ -9,7 +9,6 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
-RUN pip download torch==1.8.1
 COPY requirements1.txt ./
 RUN pip install -r requirements1.txt
 
