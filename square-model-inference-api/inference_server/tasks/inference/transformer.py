@@ -298,6 +298,12 @@ class Transformer(Model):
         for hook in hooks:
             hook.remove()
 
+        # if multiple entries, only choose emb grad for the correct answer
+        if "labels" in kwargs.keys() and gradients[0].shape[0] > 1:
+            gradients = [
+                gradients[0][kwargs["labels"].item()].unsqueeze(0)
+            ]
+
         grad_dict = dict()
         for idx, grad in enumerate(gradients):
             key = "grad_input_" + str(idx + 1)
@@ -334,17 +340,15 @@ class Transformer(Model):
                                   return_tensors="pt",
                                   **request.preprocessing_kwargs)
         if request.explain_kwargs:
-            # if self.model.config.model_type == "roberta":
-            #     self.decoded_text = [
-            #         token.replace("Ġ", "")
-            #         for token in self.decode(
-            #             features["input_ids"],
-            #             skip_special_tokens=False)
-            #     ]
-            # else:
             self.decoded_text = self.decode(
                 features["input_ids"],
-                skip_special_tokens=False)
+                skip_special_tokens=False
+            )
+            # remove padding tokens in MCQ
+            self.num_pad_tokens = self.decoded_text.count(self.tokenizer.pad_token)
+            self.decoded_text = list(filter(
+                self.tokenizer.pad_token.__ne__, self.decoded_text)
+            )
             self.words_mapping = features.word_ids()
 
             if request.explain_kwargs["method"] in ["attention", "scaled_attention"]:
@@ -408,6 +412,9 @@ class Transformer(Model):
             finally:
                 for handle in handles:
                     handle.remove()
+
+            if "labels" in kwargs.keys() and embeddings_list[0].shape[0] > 1:
+                embeddings_list = [embeddings_list[0][kwargs["labels"].item()]]
             # Gradients come back in the reverse order that they
             # were sent into the network
             embeddings_list.reverse()
@@ -448,6 +455,8 @@ class Transformer(Model):
             for key in grads.keys():
                 grads[key] /= steps
 
+            if "labels" in kwargs.keys() and embeddings_list[0].shape[0] > 1:
+                embeddings_list = [embeddings_list[0][kwargs["labels"].item()]]
             # Gradients come back in the reverse order that they
             # were sent into the network
             embeddings_list.reverse()
@@ -627,7 +636,8 @@ class Transformer(Model):
             word_imp = self.process_outputs(
                 attributions=attributions,
                 top_k=request.explain_kwargs["top_k"],
-                mode=request.explain_kwargs["mode"]
+                mode=request.explain_kwargs["mode"],
+                task="sequence_classification"
             )
             task_outputs["attributions"] = word_imp
 
@@ -829,7 +839,8 @@ class Transformer(Model):
                 word_imp = self.process_outputs(
                     attributions=attributions,
                     top_k=request.explain_kwargs["top_k"],
-                    mode=request.explain_kwargs["mode"]
+                    mode=request.explain_kwargs["mode"],
+                    task="question_answering"
                 )
                 task_outputs["attributions"] = word_imp
 
@@ -841,6 +852,10 @@ class Transformer(Model):
     def predict(self,
                 request: PredictionRequest,
                 task: Task) -> PredictionOutput:
+        """
+        The selector prediction function that calls the
+        main prediction function according to the task
+        """
         if request.is_preprocessed:
             raise ValueError("is_preprocessed=True is not "
                              "supported for this model. "
@@ -865,6 +880,10 @@ class Transformer(Model):
             tokens: List[str],
             attributions: List
     ) -> Tuple[List[str], np.array]:
+        """
+        Byte-pair encoding for roberta-type models
+        Merges sub-words to actual words
+        """
 
         byte_encoder = bytes_to_unicode()
         byte_decoder = {v: k for k, v in byte_encoder.items()}
@@ -918,6 +937,11 @@ class Transformer(Model):
             attributions: List
     ) -> Tuple[List[str], np.array]:
 
+        """
+        Wordpiece encoding for bert-type models
+        Merges sub-words to actual words
+        """
+
         decoded_each_tok = tokens
         word_map = self.words_mapping
         chars_to_handle = ["s", "t", "ve", "re", "m", "n't"]
@@ -968,7 +992,8 @@ class Transformer(Model):
     def process_outputs(self,
                         attributions: List,
                         top_k: int,
-                        mode: str) -> List[Dict]:
+                        mode: str,
+                        task: str) -> List[Dict]:
         """
         post-process the word attributions to merge the sub-words tokens
         to words
@@ -990,12 +1015,15 @@ class Transformer(Model):
         elif self.model.config.model_type == "bert":
             filtered_tokens, importance = self._wordpiece_decode(dec_text, attributions)
             sep_tokens = 1
+            # remove attributions for pad tokens
+            importance = importance[:-self.num_pad_tokens or None]
 
         normed_imp = [np.round(float(i) / sum(importance), 3)
                       for i in importance]
         result = [(w, a) for w, a in zip(filtered_tokens, normed_imp)
                   if w != '']
-        assert len(filtered_tokens) == len(normed_imp)
+        assert len(filtered_tokens) == len(normed_imp), \
+            "filtered tokens do not equal attributions"
         # outputs = {"attributions": result}
         context_start = filtered_tokens.index(self.tokenizer.sep_token)
         # account for cls token in result
@@ -1008,18 +1036,38 @@ class Transformer(Model):
                    if idx > context_start - 1
                    and v[0] != self.tokenizer.sep_token]
 
+        if task == "sequence_classification":
+            # adapter models for MCQ on square
+            # use the [context, query] format
+            # a format that is opposite to other models
+            tmp = question
+            question = context
+            context = tmp
+            # remove answer choice in MCQ
+            # currently the answer choice can only be found via ?
+            # TODO: improve this later
+            question_mark_idx = [sym[0] for sym in question if "?" in sym]
+            question = [q for i, q in enumerate(question)
+                        if i <= question_mark_idx[0]] if question_mark_idx else question
+
         outputs, outputs_question, outputs_context = [], [], []
         if mode == "question" or mode == "all":
-            outputs_question = [(i, k.lower(), v) for i, k, v in sorted(
+            outputs_question = [i for i, k, v in sorted(
                 question,
                 key=lambda item: item[2],
                 reverse=True)[:top_k]]
         if mode == "context" or mode == "all":
-            outputs_context = [(i, k.lower(), v) for i, k, v in sorted(
+            outputs_context = [i for i, k, v in sorted(
                 context,
                 key=lambda item: item[2],
                 reverse=True)[:top_k]]
 
-        outputs = [{"question": outputs_question,
-                    "context": outputs_context}]
+        outputs = [
+            {
+                "topk_question_idx": outputs_question,
+                "topk_context_idx": outputs_context,
+                "question_tokens": question,
+                "context_tokens": context
+            }
+        ]
         return outputs
