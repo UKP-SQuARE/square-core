@@ -243,7 +243,7 @@ export default Vue.component("explain-output",{
         level = level.toString()
         // tooltip the word with the level
         var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+level+'"';
-        var highLightedWord = '<mark class="bg-warning p-2 text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
+        var highLightedWord = '<mark class="bg-warning text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
         listWords[token_idx] = highLightedWord;
       }
       for (let i = 0; i<listWords.length;i++) {
