@@ -16,99 +16,6 @@ import cydagre from "cytoscape-dagre";
 import cytoscape from "cytoscape";
 import graph from './graph_sample.json'
 
-// eslint-disable-next-line
-// const nodes = [
-//   {
-//     data: {
-//       id: "Z",
-//       name: "QA Node",
-//       description: "",
-//       q_node: true,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 1,
-//       name: "Mammal",
-//       description: "",
-//       q_node: false,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 2,
-//       name: "Reptile",
-//       description: "",
-//       q_node: false,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 3,
-//       name: "Horse",
-//       description: "",
-//       q_node: false,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 4,
-//       name: "Dog",
-//       description: "Join",
-//       q_node: false,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 5,
-//       name: "Goat",
-//       description: "Branch Out",
-//       q_node: false,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 6,
-//       name: "Hound",
-//       description: "",
-//       q_node: false,
-//       ans_node: false,
-//       width: 140,
-//     },
-//   },
-//   {
-//     data: {
-//       id: 'ans',
-//       name: "German Shephard",
-//       description: "",
-//       q_node: false,
-//       ans_node: true,
-//       width: 140,
-//     },
-//   },
-// ];
-// // eslint-disable-next-line
-// const edges = [
-//   { data: { source: "Z", target: 1, label: "Sub", width: 10 } },
-//   { data: { source: "Z", target: 2, label: "Sub", width: 20  } },
-//   { data: { source: 1, target: 3, label: "Sub", width: 30  } },
-//   { data: { source: 1, target: 4, label: "Sub", width: 40  } },
-//   { data: { source: 1, target: 5, label: "Sub", width: 50  } },
-//   { data: { source: 4, target: 6, label: "Sub", width: 60  } },
-//   { data: { source: 4, target: "ans", label: "Sub", width: 70  } },
-// ];
 
 export default {
   name: "DataFlow",
@@ -202,27 +109,6 @@ export default {
           elements: {
             nodes: [],
             edges: [],
-            // nodes: [
-            //   { data: { id: 'ans', name: 'US' } },
-            //   { data: { id: 'e', name: 'Obama' } },
-            //   { data: { id: 'k', name: 'Trump' } },
-            //   { data: { id: 'g', name: 'Biden' } },
-            //   { data: { id: 'Z', name: 'QA node', desc: "Q: Who is the US president? Context: The US president ...." } }
-            // ],
-            // edges: [
-            //   { data: { source: 'ans', target: 'e', name: 'president is', weight: 1.0 } },
-            //   { data: { source: 'ans', target: 'k', weight: 1.0 } },
-            //   { data: { source: 'ans', target: 'g', weight: 1.0 } },
-            //   { data: { source: 'e', target: 'ans', name: 'is president of', weight: 1.0} },
-            //   { data: { source: 'e', target: 'k', weight: 1.0 } },
-            //   { data: { source: 'k', target: 'ans', weight: 1.0 } },
-            //   { data: { source: 'k', target: 'e', weight: 1.0 } },
-            //   { data: { source: 'k', target: 'g', weight: 1.0 } },
-            //   { data: { source: 'g', target: 'ans', weight: 1.0 } },
-            //   { data: { source: 'Z', target: 'k', weight: 5.0 } },
-            //   { data: { source: 'Z', target: 'e', weight: 5.0 } },
-            //   { data: { source: 'Z', target: 'g', weight: 5.0 } },
-            // ]
           },
         layout: {
           name: "dagre",
@@ -245,65 +131,9 @@ export default {
         });
       }
 
-
-
-
-      // this.cy.add({
-      //   data: {
-      //     id: "QA_node",
-      //     name: "QA_node",
-      //     description: "",
-      //     q_node: false,
-      //     ans_node: false,
-      //     width: 500,
-      //   },
-      // });
-      // for (const n of nodes){
-      //     this.cy.add({
-      //       data: n['data']
-      //     });
-          // add edges from Z to question nodes
-          // if (n['data']['q_node']){
-          //   this.cy.add({
-          //     data: {
-          //       source: "QA_node",
-          //       target: n['data']['id'],
-          //       label: "Sub",
-          //       width: 10
-          //     }
-          //   });
-          // }          
-      // }
-      // var edges = graph["edges"]["statement_0"]
-      // for (const e of edges){
-      //     e['data']['opacity'] = e['data']['width']/100;
-      //     this.cy.add({
-      //       data: e['data']
-      //     });
-      //     // add edges from Z to all nodes
-      // }
       this.cy.layout({ 
           name: 'breadthfirst' //other options: circle, random, grid, breadthfirst
         }).run();
-
-      // var dijkstra = this.cy.elements().dijkstra('#QA_node', function(edge){
-      //   return edge.data('weight');
-      // });
-      // var bfs = dijkstra.pathTo(this.cy.$('#7') );
-      // // for each node in bfs
-      // for (var i = 0; i < bfs.length; i++) {
-      //   bfs[i].addClass("highlighted");
-      // }
-      // console.log(bfs);
-      // var x=0;
-      // var highlightNextEle = function(bfs){
-      //   bfs[x].addClass('highlighted');
-      //   if(x<bfs.length){
-      //     x++;
-      //     setTimeout(highlightNextEle, 500);
-      //   }
-      // };
-      // highlightNextEle(bfs);
       },
   },
 };
