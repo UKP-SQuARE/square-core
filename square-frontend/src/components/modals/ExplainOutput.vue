@@ -18,36 +18,31 @@
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-2 text-start">
-                  <h4>Method:</h4>
-              </div>
-              <div class="col-auto">
-                <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
-                  <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
-                  <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
-                  <span v-show="waiting_simple_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Simple Gradients
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="smooth_grads_btn" v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_smooth_grads">
-                  <span v-show="waiting_smooth_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Smooth Gradients
-                </button>
-              </div>
-              <div class="col-auto">
-                <button id="integrated_grads_btn" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
-                  <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
-                </button>
-              </div>
+            <div class="container-fluid text-center">
+              <div class="row g-2 gy-2">
+                <div class="col-md-2 text-right">
+                    <h4>Method:</h4>
+                </div>
+                <div class="col btn-group flex-wrap" role="group" aria-label="Basic example">
+                  <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
+                    <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
+                  </button>
+                  <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
+                    <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
+                  </button>
+                  <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
+                    <span v-show="waiting_simple_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Simple Gradients
+                  </button>
+                  <button id="smooth_grads_btn" v-on:click="postReq('smooth_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_smooth_grads">
+                    <span v-show="waiting_smooth_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Smooth Gradients
+                  </button>
+                  <button id="integrated_grads_btn" v-on:click="postReq('integrated_grads')"  type="button" class="btn btn-outline-primary" :disabled="waiting_integrated_grads">
+                    <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Integrated Gradients
+                  </button>
+                </div>
+              </div> <!--  end method row -->
             </div>
+            
 
             <div v-if="show_saliency_map" class="slidecontainer">
               <div class="row mt-3">
@@ -120,6 +115,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 })
 
 import Vue from 'vue'
+import {tokenize} from 'string-punctuation-tokenizer'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
@@ -147,10 +143,10 @@ export default Vue.component("explain-output",{
   methods:{
     postReq(method) {
       // num words in context
-      var numQuestionWords = this.tokenize(this.$store.state.currentQuestion).length;
+      var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
-      var numContextWords = this.tokenize(this.$store.state.currentContext).length;
-      this.num_Maxshow =  Math.min(numQuestionWords, numContextWords);
+      var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
+      this.num_Maxshow = Math.max(numQuestionWords, numContextWords);
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
       // remove class active from all buttons
       var btn_list = document.getElementsByClassName('btn-outline-primary');
@@ -215,158 +211,31 @@ export default Vue.component("explain-output",{
         this.show_saliency_map = true;
         // add class active to the button method+"_btn"
         document.getElementById(method+"_btn").classList.add("active");
-
+        // the tokenizer used by the API is a bit different from the one used in the fronted,
+        // so update num_Maxshow with the real number of words in the context
+        this.num_Maxshow = this.$store.state.currentResults[0].predictions[0].attributions.topk_context_idx.length;
       })
     },
 
-    tokenize(sentence){
-      // tokenize a sentence by whitespace and punctuation
-      // input: "We've got a lot of data to work with, Let's do some analysis."
-      // output: ["We've", "got", "a", "lot", "of", "data", "to", "work", "with", ",", "Let's", "do", "some", "analysis", "."]
-      var sentence_list = sentence.split(/\s+/);
-      // for each word in sentence_list
+    highLight(topk_idx,attributions){ // add here skill param
       var listWords = [];
-      for (var i = 0; i < sentence_list.length; i++) {
-        var word = sentence_list[i];
-        // if word has . , ! ? ; ( ) [ ]
-        // eslint-disable-next-line
-        if (word.match(/[.,!?;\-\_()\[\]]/)) {
-          console.log("word has punctuation: " + word);
-          if (word.includes(".")) {
-            let w2 = word.replace(".","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(".");
-          }
-          if (word.includes("!")) {
-            let w2 = word.replace("!","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("!");
-          } 
-          if (word.includes(",")) {
-            let w2 = word.replace(",","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(",");
-          } 
-          if (word.includes("?")) {
-            let w2 = word.replace("?","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("?");
-          } 
-          if (word.includes(";")) {
-            let w2 = word.replace(";","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(";");
-          } 
-          if (word.includes("-")) {
-            let w2 = word.replace("-","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("-");
-          }
-          if (word.includes("_")) {
-            let w2 = word.replace("_","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("_");
-          }
-          if (word.includes("(")) {
-            if (word.includes(")")) {
-              let w2 = word.replace("(","").replace(")","");
-              listWords.push("(");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push(")");
-            } else {
-              let w2 = word.replace("(","");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push("(");
-            }
-          } 
-          if (word.includes(")") && !word.includes("(")) {
-            let w2 = word.replace(")","");
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(")");
-          }
-          if (word.includes("[")) {
-            if (word.includes("]")) {
-              listWords.push("[");
-              let w2 = word.replace("[","").replace("]","");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push("]");
-            } else {
-              let w2 = word.replace("[","");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push("[");
-            }
-          } 
-          if (word.includes("]") && !word.includes("[")) {
-            let w2 = word.replace("]","");
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("]");
-          }
-        } else {
-          listWords.push(word);
-        }
+      for (var i = 0; i < attributions.length; i++) {
+        listWords.push(attributions[i][1]);
       }
-      console.log(listWords)
-      return listWords;
-    },
-
-    highLight(sentence,attributions){ // add here skill param
-      var listWords = this.tokenize(sentence);
-      // console.log(listWords);
-      // var listWords = tokenize({'text': sentence, 'includePunctuation': true});
-      // log to console listWords
-      // var listWords = sentence.split(' ');
+      
       var highlightedSentence = "";
       // iterate over attributions to normalize the scores to [0,1]
       var maxScore = Math.max.apply(Math, attributions.map(function(o){return o[2];}));
       var minScore = Math.min.apply(Math, attributions.map(function(o){return o[2];}));
       var scoreRange = maxScore - minScore;
       attributions.forEach(function(attribution){
-        attribution[2] = (attribution[2] - minScore)/scoreRange;
+        attribution[3] = (attribution[2] - minScore)/scoreRange;
       });
-
-      for (let i = 0; i<this.num_show;i++) {
-        var wordIdx = attributions[i][0]
-        var currentWord = attributions[i][1]
-        var level = attributions[i][2]
+      var max_show = Math.min(this.num_show, attributions.length);
+      for (let i = 0; i<max_show;i++) {
+        var token_idx = topk_idx[i]
+        var currentWord = attributions[token_idx][1]
+        var level = attributions[token_idx][3]
         level = level.toFixed(1) * 100;
         level = Math.round(level) ;
         if (level==0) {
@@ -374,10 +243,11 @@ export default Vue.component("explain-output",{
         }
         level = level/100;
         level = level.toString()
+        
         // tooltip the word with the level
-        var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+level+'"';
-        var highLightedWord = '<mark class="bg-warning p-2 text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
-        listWords[wordIdx] = highLightedWord;
+        var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+attributions[token_idx][2]+'"';
+        var highLightedWord = '<mark class="bg-warning text-dark" '+tooltip+' style="--bs-bg-opacity: '+level+'">'+currentWord+'</mark>'
+        listWords[token_idx] = highLightedWord;
       }
       for (let i = 0; i<listWords.length;i++) {
         highlightedSentence += listWords[i] + " ";
@@ -387,18 +257,15 @@ export default Vue.component("explain-output",{
     },
 
     highlightedQuestion(idx) {
-    // Input:
-    //   Question: strings,
-    //   attributions: a list of [word_idx,word,score]]
-    // Output: 
-    //   highlighted question
-      return this.highLight(this.$store.state.currentQuestion,
-                            this.$store.state.currentResults[idx].predictions[0].attributions.question) 
+      return this.highLight(this.$store.state.currentResults[idx].predictions[0].attributions.topk_question_idx,
+                            this.$store.state.currentResults[idx].predictions[0].attributions.question_tokens,
+                            );
     },
 
     highlightedContext(idx) {
-      return this.highLight(this.$store.state.currentContext,
-                            this.$store.state.currentResults[idx].predictions[0].attributions.context)
+      return this.highLight(this.$store.state.currentResults[idx].predictions[0].attributions.topk_context_idx,
+                            this.$store.state.currentResults[idx].predictions[0].attributions.context_tokens,
+                            );
     },
 
     showAnswer(idx) {
