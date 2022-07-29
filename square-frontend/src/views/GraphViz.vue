@@ -14,101 +14,101 @@
 <script>
 import cydagre from "cytoscape-dagre";
 import cytoscape from "cytoscape";
-import graph from './graph_example.json'
+import graph from './graph_sample.json'
 
 // eslint-disable-next-line
-const nodes = [
-  {
-    data: {
-      id: "Z",
-      name: "QA Node",
-      description: "",
-      q_node: true,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 1,
-      name: "Mammal",
-      description: "",
-      q_node: false,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 2,
-      name: "Reptile",
-      description: "",
-      q_node: false,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 3,
-      name: "Horse",
-      description: "",
-      q_node: false,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 4,
-      name: "Dog",
-      description: "Join",
-      q_node: false,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 5,
-      name: "Goat",
-      description: "Branch Out",
-      q_node: false,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 6,
-      name: "Hound",
-      description: "",
-      q_node: false,
-      ans_node: false,
-      width: 140,
-    },
-  },
-  {
-    data: {
-      id: 'ans',
-      name: "German Shephard",
-      description: "",
-      q_node: false,
-      ans_node: true,
-      width: 140,
-    },
-  },
-];
-// eslint-disable-next-line
-const edges = [
-  { data: { source: "Z", target: 1, label: "Sub", width: 10 } },
-  { data: { source: "Z", target: 2, label: "Sub", width: 20  } },
-  { data: { source: 1, target: 3, label: "Sub", width: 30  } },
-  { data: { source: 1, target: 4, label: "Sub", width: 40  } },
-  { data: { source: 1, target: 5, label: "Sub", width: 50  } },
-  { data: { source: 4, target: 6, label: "Sub", width: 60  } },
-  { data: { source: 4, target: "ans", label: "Sub", width: 70  } },
-];
+// const nodes = [
+//   {
+//     data: {
+//       id: "Z",
+//       name: "QA Node",
+//       description: "",
+//       q_node: true,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 1,
+//       name: "Mammal",
+//       description: "",
+//       q_node: false,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 2,
+//       name: "Reptile",
+//       description: "",
+//       q_node: false,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 3,
+//       name: "Horse",
+//       description: "",
+//       q_node: false,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 4,
+//       name: "Dog",
+//       description: "Join",
+//       q_node: false,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 5,
+//       name: "Goat",
+//       description: "Branch Out",
+//       q_node: false,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 6,
+//       name: "Hound",
+//       description: "",
+//       q_node: false,
+//       ans_node: false,
+//       width: 140,
+//     },
+//   },
+//   {
+//     data: {
+//       id: 'ans',
+//       name: "German Shephard",
+//       description: "",
+//       q_node: false,
+//       ans_node: true,
+//       width: 140,
+//     },
+//   },
+// ];
+// // eslint-disable-next-line
+// const edges = [
+//   { data: { source: "Z", target: 1, label: "Sub", width: 10 } },
+//   { data: { source: "Z", target: 2, label: "Sub", width: 20  } },
+//   { data: { source: 1, target: 3, label: "Sub", width: 30  } },
+//   { data: { source: 1, target: 4, label: "Sub", width: 40  } },
+//   { data: { source: 1, target: 5, label: "Sub", width: 50  } },
+//   { data: { source: 4, target: 6, label: "Sub", width: 60  } },
+//   { data: { source: 4, target: "ans", label: "Sub", width: 70  } },
+// ];
 
 export default {
   name: "DataFlow",
@@ -142,6 +142,7 @@ export default {
 
 
     },
+ 
     drawGraph() {
       cydagre(cytoscape);
       this.cy= cytoscape({
@@ -167,11 +168,11 @@ export default {
           })
           .selector("node[?q_node]").css({
             "background-color": "#B238DF",
-            "color": "white",
+            "color": "black",
           })
           .selector("node[?ans_node]").css({
             "background-color": "#14A07E",
-            "color": "white",
+            "color": "black",
           })
           .selector('.highlighted').css({
             'background-color': 'grey',
@@ -231,15 +232,11 @@ export default {
         },
       });
       /* eslint-disable */
-      var cnt = 0;
       for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
         this.cy.add({
           data: node
         });
-        cnt += 1;
-        if (cnt == 100) {
-          break;
-        }
+
       }
       /* eslint-disable */
       for (const [key, edge] of Object.entries(graph["edges"]["statement_0"])) {
@@ -265,28 +262,28 @@ export default {
       //     this.cy.add({
       //       data: n['data']
       //     });
-      //     // add edges from Z to question nodes
-      //     if (n['data']['q_node']){
-      //       this.cy.add({
-      //         data: {
-      //           source: "QA_node",
-      //           target: n['data']['id'],
-      //           label: "Sub",
-      //           width: 10
-      //         }
-      //       });
-      //     }          
+          // add edges from Z to question nodes
+          // if (n['data']['q_node']){
+          //   this.cy.add({
+          //     data: {
+          //       source: "QA_node",
+          //       target: n['data']['id'],
+          //       label: "Sub",
+          //       width: 10
+          //     }
+          //   });
+          // }          
       // }
       // var edges = graph["edges"]["statement_0"]
-      for (const e of edges){
-          e['data']['opacity'] = e['data']['width']/100;
-          this.cy.add({
-            data: e['data']
-          });
-          // add edges from Z to all nodes
-      }
+      // for (const e of edges){
+      //     e['data']['opacity'] = e['data']['width']/100;
+      //     this.cy.add({
+      //       data: e['data']
+      //     });
+      //     // add edges from Z to all nodes
+      // }
       this.cy.layout({ 
-          name: 'circle'
+          name: 'breadthfirst' //other options: circle, random, grid, breadthfirst
         }).run();
 
       // var dijkstra = this.cy.elements().dijkstra('#QA_node', function(edge){
@@ -318,7 +315,7 @@ export default {
 }
 #cy {
   height: 600px;
-  width: 960px;
+  width: 1600px;
   display: block;
 }
 </style>
