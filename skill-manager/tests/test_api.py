@@ -553,8 +553,10 @@ def test_query_skill_with_attributions(
     skill_id = response.json()["id"]
 
     attributions = {
-        "question": [[1, "hello", 0.2], [2, "world", 0.8]],
-        "context": [[1, "how", 0.2], [2, "are", 0.3], [2, "you", 0.5]],
+        "topk_question_idx": [0,1,2],
+        "topk_context_idx": [0, 1],
+        "question_tokens": [[0, "how", 0.2], [1, "are", 0.3], [2, "you", 0.5]],
+        "context_tokens": [[0, "hello", 0.2], [1, "world", 0.8]],
     }
 
     responses.add(
