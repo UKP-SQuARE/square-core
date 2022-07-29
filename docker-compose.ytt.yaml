@@ -193,6 +193,8 @@ services:
       - 8000
     env_file:
       - ./skill-manager/.env
+      - ./mongodb/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
