@@ -5,25 +5,20 @@ from datetime import timedelta
 from threading import Thread
 from typing import Dict, List
 
-from redis import Redis
 import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from skill_manager import mongo_client
+from skill_manager.core.session_cache import SessionCache
+from skill_manager.auth_utils import (get_payload_from_token,
+                                      get_skill_if_authorized, has_auth_header)
+from skill_manager.core import ModelManagementClient
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
+from skill_manager.routers import client_credentials
 from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
-
-from skill_manager.core import ModelManagementClient
-from skill_manager.settings.redis_settings import RedisSettings
-from skill_manager.routers import client_credentials
-from skill_manager.auth_utils import (
-    get_skill_if_authorized,
-    get_payload_from_token,
-    has_auth_header,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -31,31 +26,7 @@ router = APIRouter(prefix="/skill")
 
 auth = Auth()
 
-
-def redis_client():
-    redis_settings = RedisSettings()
-    redis = Redis(
-        host=redis_settings.host,
-        port=redis_settings.port,
-        password=redis_settings.password,
-        username=redis_settings.username,
-    )
-    return redis
-
-
-def skill_query_session():
-
-    return requests_cache.CachedSession(
-        cache_name="skill_query_cache",
-        backend=requests_cache.backends.redis.RedisCache(
-            namespace="skill_query_cache", connection=redis_client()
-        ),
-        cache_control=True,
-        expire_after=timedelta(minutes=os.getenv("CACHE_EXPIRE_MINS", 5)),
-        allowable_codes=[200],
-        allowable_methods=["GET", "POST"],
-        stale_if_error=False,
-    )
+session_cache = SessionCache()
 
 
 @router.get(
@@ -237,7 +208,7 @@ async def query_skill(
     query_request: QueryRequest,
     id: str,
     token: str = Depends(client_credentials),
-    sess=Depends(skill_query_session),
+    # sess=Depends(skill_query_session),
 ):
     """Sends a query to the respective skill and returns its prediction."""
     logger.info(
@@ -271,7 +242,7 @@ async def query_skill(
     if request.headers.get("Cache-Control"):
         headers["Cache-Control"] = request.headers.get("Cache-Control")
 
-    response = sess.post(
+    response = session_cache.session.post(
         f"{skill.url}/query",
         headers=headers,
         json=query_request.dict(),
