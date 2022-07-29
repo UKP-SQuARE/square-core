@@ -115,6 +115,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 })
 
 import Vue from 'vue'
+import {tokenize} from 'string-punctuation-tokenizer'
 
 export default Vue.component("explain-output",{
   inject: ['currentResults'],
@@ -142,9 +143,9 @@ export default Vue.component("explain-output",{
   methods:{
     postReq(method) {
       // num words in context
-      var numQuestionWords = this.tokenize(this.$store.state.currentQuestion).length;
+      var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
-      var numContextWords = this.tokenize(this.$store.state.currentContext).length;
+      var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
       this.num_Maxshow =  Math.min(numQuestionWords, numContextWords);
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
       // remove class active from all buttons
@@ -214,141 +215,12 @@ export default Vue.component("explain-output",{
       })
     },
 
-    tokenize(sentence){
-      // tokenize a sentence by whitespace and punctuation
-      // input: "We've got a lot of data to work with, Let's do some analysis."
-      // output: ["We've", "got", "a", "lot", "of", "data", "to", "work", "with", ",", "Let's", "do", "some", "analysis", "."]
-      var sentence_list = sentence.split(/\s+/);
-      // for each word in sentence_list
+    highLight(topk_idx,attributions){ // add here skill param
       var listWords = [];
-      for (var i = 0; i < sentence_list.length; i++) {
-        var word = sentence_list[i];
-        // if word has . , ! ? ; ( ) [ ]
-        // eslint-disable-next-line
-        if (word.match(/[.,!?;\-\_()\[\]]/)) {
-          console.log("word has punctuation: " + word);
-          if (word.includes(".")) {
-            let w2 = word.replace(".","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(".");
-          }
-          if (word.includes("!")) {
-            let w2 = word.replace("!","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("!");
-          } 
-          if (word.includes(",")) {
-            let w2 = word.replace(",","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(",");
-          } 
-          if (word.includes("?")) {
-            let w2 = word.replace("?","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("?");
-          } 
-          if (word.includes(";")) {
-            let w2 = word.replace(";","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(";");
-          } 
-          if (word.includes("-")) {
-            let w2 = word.replace("-","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("-");
-          }
-          if (word.includes("_")) {
-            let w2 = word.replace("_","")
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("_");
-          }
-          if (word.includes("(")) {
-            if (word.includes(")")) {
-              let w2 = word.replace("(","").replace(")","");
-              listWords.push("(");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push(")");
-            } else {
-              let w2 = word.replace("(","");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push("(");
-            }
-          } 
-          if (word.includes(")") && !word.includes("(")) {
-            let w2 = word.replace(")","");
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push(")");
-          }
-          if (word.includes("[")) {
-            if (word.includes("]")) {
-              listWords.push("[");
-              let w2 = word.replace("[","").replace("]","");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push("]");
-            } else {
-              let w2 = word.replace("[","");
-              // if w2 is not empty, add w2 to listWords
-              if (w2 !== "") {
-                listWords.push(w2);
-              }
-              listWords.push("[");
-            }
-          } 
-          if (word.includes("]") && !word.includes("[")) {
-            let w2 = word.replace("]","");
-            // if w2 is not empty, add w2 to listWords
-            if (w2 !== "") {
-              listWords.push(w2);
-            }
-            listWords.push("]");
-          }
-        } else {
-          listWords.push(word);
-        }
+      for (var i = 0; i < attributions.length; i++) {
+        listWords.push(attributions[i][1]);
       }
-      console.log(listWords)
-      return listWords;
-    },
-
-    highLight(sentence,attributions){ // add here skill param
-      var listWords = this.tokenize(sentence);
-      // console.log(listWords);
-      // var listWords = tokenize({'text': sentence, 'includePunctuation': true});
-      // log to console listWords
-      // var listWords = sentence.split(' ');
+      
       var highlightedSentence = "";
       // iterate over attributions to normalize the scores to [0,1]
       var maxScore = Math.max.apply(Math, attributions.map(function(o){return o[2];}));
@@ -359,8 +231,8 @@ export default Vue.component("explain-output",{
       });
 
       for (let i = 0; i<this.num_show;i++) {
-        var wordIdx = attributions[i][0]
-        var currentWord = attributions[i][1]
+        var token_idx = topk_idx[i]
+        var currentWord = attributions[token_idx][1]
         var level = attributions[i][2]
         level = level.toFixed(1) * 100;
         level = Math.round(level) ;
@@ -372,7 +244,7 @@ export default Vue.component("explain-output",{
         // tooltip the word with the level
         var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+level+'"';
         var highLightedWord = '<mark class="bg-warning p-2 text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
-        listWords[wordIdx] = highLightedWord;
+        listWords[token_idx] = highLightedWord;
       }
       for (let i = 0; i<listWords.length;i++) {
         highlightedSentence += listWords[i] + " ";
@@ -387,13 +259,13 @@ export default Vue.component("explain-output",{
     //   attributions: a list of [word_idx,word,score]]
     // Output: 
     //   highlighted question
-      return this.highLight(this.$store.state.currentQuestion,
-                            this.$store.state.currentResults[idx].predictions[0].attributions.question) 
+      return this.highLight(this.$store.state.currentResults[idx].predictions[0].attributions.topk_question_idx,
+                            this.$store.state.currentResults[idx].predictions[0].attributions.question_tokens) 
     },
 
     highlightedContext(idx) {
-      return this.highLight(this.$store.state.currentContext,
-                            this.$store.state.currentResults[idx].predictions[0].attributions.context)
+      return this.highLight(this.$store.state.currentResults[idx].predictions[0].attributions.topk_context_idx,
+                            this.$store.state.currentResults[idx].predictions[0].attributions.context_tokens )
     },
 
     showAnswer(idx) {
