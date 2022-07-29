@@ -146,7 +146,7 @@ export default Vue.component("explain-output",{
       var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
       var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
-      this.num_Maxshow =  Math.min(numQuestionWords, numContextWords);
+      this.num_Maxshow = Math.max(numQuestionWords, numContextWords);
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
       // remove class active from all buttons
       var btn_list = document.getElementsByClassName('btn-outline-primary');
@@ -211,7 +211,9 @@ export default Vue.component("explain-output",{
         this.show_saliency_map = true;
         // add class active to the button method+"_btn"
         document.getElementById(method+"_btn").classList.add("active");
-
+        // the tokenizer used by the API is a bit different from the one used in the fronted,
+        // so update num_Maxshow with the real number of words in the context
+        this.num_Maxshow = this.$store.state.currentResults[0].predictions[0].attributions.topk_context_idx.length;
       })
     },
 
@@ -227,13 +229,13 @@ export default Vue.component("explain-output",{
       var minScore = Math.min.apply(Math, attributions.map(function(o){return o[2];}));
       var scoreRange = maxScore - minScore;
       attributions.forEach(function(attribution){
-        attribution[2] = (attribution[2] - minScore)/scoreRange;
+        attribution[3] = (attribution[2] - minScore)/scoreRange;
       });
-
-      for (let i = 0; i<this.num_show;i++) {
+      var max_show = Math.min(this.num_show, attributions.length);
+      for (let i = 0; i<max_show;i++) {
         var token_idx = topk_idx[i]
         var currentWord = attributions[token_idx][1]
-        var level = attributions[i][2]
+        var level = attributions[token_idx][3]
         level = level.toFixed(1) * 100;
         level = Math.round(level) ;
         if (level==0) {
@@ -241,9 +243,10 @@ export default Vue.component("explain-output",{
         }
         level = level/100;
         level = level.toString()
+        
         // tooltip the word with the level
-        var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+level+'"';
-        var highLightedWord = '<mark class="bg-warning text-dark" '+tooltip+' style="--bs-bg-opacity: '+ level +'">'+currentWord+'</mark>'
+        var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+attributions[token_idx][2]+'"';
+        var highLightedWord = '<mark class="bg-warning text-dark" '+tooltip+' style="--bs-bg-opacity: '+level+'">'+currentWord+'</mark>'
         listWords[token_idx] = highLightedWord;
       }
       for (let i = 0; i<listWords.length;i++) {
@@ -254,18 +257,15 @@ export default Vue.component("explain-output",{
     },
 
     highlightedQuestion(idx) {
-    // Input:
-    //   Question: strings,
-    //   attributions: a list of [word_idx,word,score]]
-    // Output: 
-    //   highlighted question
       return this.highLight(this.$store.state.currentResults[idx].predictions[0].attributions.topk_question_idx,
-                            this.$store.state.currentResults[idx].predictions[0].attributions.question_tokens) 
+                            this.$store.state.currentResults[idx].predictions[0].attributions.question_tokens,
+                            );
     },
 
     highlightedContext(idx) {
       return this.highLight(this.$store.state.currentResults[idx].predictions[0].attributions.topk_context_idx,
-                            this.$store.state.currentResults[idx].predictions[0].attributions.context_tokens )
+                            this.$store.state.currentResults[idx].predictions[0].attributions.context_tokens,
+                            );
     },
 
     showAnswer(idx) {
