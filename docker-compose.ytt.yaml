@@ -204,6 +204,8 @@ services:
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       REDIS_USER: default
+      REDIS_HOST: redishost
+      REDIS_PORT: 6379
     depends_on:
       - mongodb
       - redishost
