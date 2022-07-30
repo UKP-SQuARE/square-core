@@ -1,11 +1,15 @@
 <template>
   <div class="d-flex flex-column justify-content-center align-items-center">
-    <h1>Graph Viz</h1>
+    <h1>A revolving door is convenient for two direction travel, but also serves as a security measure at what?</h1>
     <h4 v-if="loading">Loading</h4>
     <h4 v-if="error" class="text-danger">{{ error }}</h4>
-    <button id="path_btn" v-on:click="show_path()"  type="button" class="btn btn-outline-primary">
+    <!-- <button id="path_btn" v-on:click="show_path()"  type="button" class="btn btn-outline-primary">
       Show Question-Answer Path
-    </button>
+    </button> -->
+    <div class="col-6">
+      Num Nodes: <input type="range" min="1" max="50" value="10" class="form-range" id="Range" @change="slider_change()" oninput="this.nextElementSibling.value = this.value" >
+      <output/>
+    </div>
     <div id="cy" class="cy"></div>
   </div>
 </template>
@@ -48,23 +52,39 @@ export default {
       }
     },
     get_subgraph(num_nodes){
-      var top_k_nodes = [];
-      var cnt = 0;
-      // eslint-disable-next-line
-      for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
-        top_k_nodes.push(node);
-        cnt++;
-        if (cnt == num_nodes) {
-          break;
-        }
-      }
+      // var top_k_nodes = [];
+      // var cnt = 0;
+      // // eslint-disable-next-line
+      // for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
+      //   top_k_nodes.push(node);
+      //   cnt++;
+      //   if (cnt == num_nodes) {
+      //     break;
+      //   }
+      // }
+      
+      this.cy.nodes().addClass("hidden");
       // eslint-disable-next-line
       var subgraph = this.cy.filter(function(element, i){
-        return element.isNode() && (element.data('q_node') == true || element.data('ans_node') == true);
+        return element.isNode() && (element.data('q_node') == true || element.data('ans_node') == true || element.data('rank') < num_nodes);
       });
+      subgraph.removeClass("hidden");
       return subgraph;
 
       
+    },
+    plot_graph() {
+      this.cy.fit();
+      this.cy.layout({ 
+        name: 'breadthfirst', //other options: circle, random, grid, breadthfirst
+        spacingFactor: 1.,
+      }).run();
+    
+    },
+    slider_change(){
+      var num_nodes = document.getElementById("Range").value;
+      this.get_subgraph(num_nodes);
+      this.plot_graph();
     },
     drawGraph() {
       cydagre(cytoscape);
@@ -96,6 +116,7 @@ export default {
           .selector("node[?ans_node]").css({
             "background-color": "#14A07E",
             "color": "black",
+            "shape": "hexagon"
           })
           .selector('.highlighted').css({
             'background-color': 'grey',
@@ -137,7 +158,10 @@ export default {
         },
       });
       /* eslint-disable */
+      var cnt = 0
       for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
+        node['rank'] = cnt;
+        cnt += 1;
         this.cy.add({
           data: node
         });
@@ -149,21 +173,25 @@ export default {
           data: edge
         });
       }
-      // .addClass("hidden") to all nodes
-      this.cy.nodes().addClass("hidden");
-
-      // get the subgraph of the top k nodes
-      var subgraph = this.get_subgraph(3);
+      // get full graph
+      var subgraph = this.get_subgraph(50);
       // remove class hidden from the subgraph
-  
       subgraph.removeClass("hidden");
-      console.log(subgraph);
-      // plot the subgraph 
-      
+      this.plot_graph()
 
-      this.cy.layout({ 
-          name: 'breadthfirst' //other options: circle, random, grid, breadthfirst
-        }).run();
+      this.slider_change();
+
+
+      // // .addClass("hidden") to all nodes
+      // this.cy.nodes().addClass("hidden");
+      // // get the subgraph of the top k nodes
+      // var subgraph = this.get_subgraph(50);
+      // // remove class hidden from the subgraph
+      // subgraph.removeClass("hidden");
+      // // plot the subgraph 
+      // this.cy.layout({ 
+      //     name: 'breadthfirst' //other options: circle, random, grid, breadthfirst
+      //   }).run();
 
 
       },
