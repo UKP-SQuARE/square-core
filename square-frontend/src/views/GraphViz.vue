@@ -46,10 +46,26 @@ export default {
         // change edge color
         console.log(bfs[i]);
       }
-
-
     },
- 
+    get_subgraph(num_nodes){
+      var top_k_nodes = [];
+      var cnt = 0;
+      // eslint-disable-next-line
+      for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
+        top_k_nodes.push(node);
+        cnt++;
+        if (cnt == num_nodes) {
+          break;
+        }
+      }
+      // eslint-disable-next-line
+      var subgraph = this.cy.filter(function(element, i){
+        return element.isNode() && (element.data('q_node') == true || element.data('ans_node') == true);
+      });
+      return subgraph;
+
+      
+    },
     drawGraph() {
       cydagre(cytoscape);
       this.cy= cytoscape({
@@ -87,6 +103,9 @@ export default {
             'target-arrow-color': '#61bffc',
             'transition-property': 'background-color, line-color, target-arrow-color',
             'transition-duration': '0.5s'
+          })
+          .selector('.hidden').css({
+            'display': 'none'
           })
           .selector("edge").css({
             // http://js.cytoscape.org/#style/labels
@@ -130,10 +149,23 @@ export default {
           data: edge
         });
       }
+      // .addClass("hidden") to all nodes
+      this.cy.nodes().addClass("hidden");
+
+      // get the subgraph of the top k nodes
+      var subgraph = this.get_subgraph(3);
+      // remove class hidden from the subgraph
+  
+      subgraph.removeClass("hidden");
+      console.log(subgraph);
+      // plot the subgraph 
+      
 
       this.cy.layout({ 
           name: 'breadthfirst' //other options: circle, random, grid, breadthfirst
         }).run();
+
+
       },
   },
 };
