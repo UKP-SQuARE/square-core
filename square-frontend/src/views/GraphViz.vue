@@ -11,7 +11,28 @@
       <output/>
     </div>
     <div class="col-6">
-      Spacing Factor: <input type="range" min="0.5" max="2.0" value="1"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+      Spacing Factor: <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+    </div>
+
+    <div class="col-auto">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
+        <label class="form-check-label" for="circle">circle</label>
+      </div>
+      
+    </div>
+    <div class="col-auto">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
+        <label class="form-check-label" for="breadthfirst">breadthfirst</label>
+      </div>
+        
+    </div>
+    <div class="col-auto">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="grid" value="grid" v-model="layoutName" @change="plot_graph()"/>
+        <label class="form-check-label" for="grid">grid</label>
+      </div>  
     </div>
     <div id="cy" class="cy"></div>
   </div>
@@ -32,6 +53,7 @@ export default {
       error: null,
       $cy: null,
       spacingFactor: 1,
+      layoutName: "breadthfirst"
     };
   },
   mounted() {
@@ -69,7 +91,7 @@ export default {
     plot_graph() {
       this.cy.fit();
       this.cy.layout({ 
-        name: 'breadthfirst', //other options: circle, random, grid, breadthfirst
+        name: this.layoutName, //other options: circle, random, grid, breadthfirst
         spacingFactor: this.spacingFactor,
       }).run();
     
@@ -80,8 +102,6 @@ export default {
       this.plot_graph();
     },
     spacingSliderChange(){
-      var spacingFactor = document.getElementById("SpacingRange").value;
-      this.spacingFactor = spacingFactor;
       this.plot_graph();
     },
     drawGraph() {
