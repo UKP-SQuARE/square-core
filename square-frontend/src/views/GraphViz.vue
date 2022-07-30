@@ -10,6 +10,9 @@
       Num Nodes: <input type="range" min="1" max="50" value="10" class="form-range" id="Range" @change="slider_change()" oninput="this.nextElementSibling.value = this.value" >
       <output/>
     </div>
+    <div class="col-6">
+      Spacing Factor: <input type="range" min="0.5" max="2.0" value="1"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+    </div>
     <div id="cy" class="cy"></div>
   </div>
 </template>
@@ -28,6 +31,7 @@ export default {
       loading: false,
       error: null,
       $cy: null,
+      spacingFactor: 1,
     };
   },
   mounted() {
@@ -52,17 +56,6 @@ export default {
       }
     },
     get_subgraph(num_nodes){
-      // var top_k_nodes = [];
-      // var cnt = 0;
-      // // eslint-disable-next-line
-      // for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
-      //   top_k_nodes.push(node);
-      //   cnt++;
-      //   if (cnt == num_nodes) {
-      //     break;
-      //   }
-      // }
-      
       this.cy.nodes().addClass("hidden");
       // eslint-disable-next-line
       var subgraph = this.cy.filter(function(element, i){
@@ -77,13 +70,18 @@ export default {
       this.cy.fit();
       this.cy.layout({ 
         name: 'breadthfirst', //other options: circle, random, grid, breadthfirst
-        spacingFactor: 1.,
+        spacingFactor: this.spacingFactor,
       }).run();
     
     },
     slider_change(){
       var num_nodes = document.getElementById("Range").value;
       this.get_subgraph(num_nodes);
+      this.plot_graph();
+    },
+    spacingSliderChange(){
+      var spacingFactor = document.getElementById("SpacingRange").value;
+      this.spacingFactor = spacingFactor;
       this.plot_graph();
     },
     drawGraph() {
