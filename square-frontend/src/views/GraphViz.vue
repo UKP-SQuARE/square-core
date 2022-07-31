@@ -208,9 +208,7 @@ export default {
         });
       }
       // get full graph
-      var subgraph = this.get_subgraph(50);
-      // remove class hidden from the subgraph
-      subgraph.removeClass("hidden");
+      this.get_subgraph(50);
       this.plot_graph()
 
       this.slider_change();
