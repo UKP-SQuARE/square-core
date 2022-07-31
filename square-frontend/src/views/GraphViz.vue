@@ -1,39 +1,60 @@
 <template>
-  <div class="d-flex flex-column justify-content-center align-items-center">
-    <h1>A revolving door is convenient for two direction travel, but also serves as a security measure at what?</h1>
-    <h4 v-if="loading">Loading</h4>
-    <h4 v-if="error" class="text-danger">{{ error }}</h4>
-    <!-- <button id="path_btn" v-on:click="show_path()"  type="button" class="btn btn-outline-primary">
-      Show Question-Answer Path
-    </button> -->
-    <div class="col-6">
-      Num Nodes: {{numShowingNodes}} <input type="range" min="1" max="50" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
-    </div>
-    <div class="col-6">
-      Spacing Factor: {{spacingFactor}} <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+  <div class="">
+    <h1>Q: A revolving door is convenient for two direction travel, but also serves as a security measure at what?</h1>
+
+
+    <div class="row">
+      <div class="col-6">
+        <div class="row">
+          <div class="col-4">
+            Num Nodes: {{numShowingNodes}}
+          </div>
+          <div class="col-8">
+            <input type="range" min="1" max="50" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
+          </div> 
+        </div>
+
+        <div class="row">
+          <div class="col-4">
+            Spacing Factor: {{spacingFactor}}
+          </div>
+          <div class="col-8">
+          <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="col-auto">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
+            <label class="form-check-label" for="circle">circle</label>
+          </div>
+          
+        </div>
+        <div class="col-auto">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
+            <label class="form-check-label" for="breadthfirst">breadthfirst</label>
+          </div>
+            
+        </div>
+        <div class="col-auto">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="grid" value="grid" v-model="layoutName" @change="plot_graph()"/>
+            <label class="form-check-label" for="grid">grid</label>
+          </div>  
+        </div>
+      </div>
+
     </div>
 
-    <div class="col-auto">
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
-        <label class="form-check-label" for="circle">circle</label>
-      </div>
+    
+
+    <div class="d-flex flex-column justify-content-center">
+      <div id="cy" class="cy"></div>
+    </div>
       
-    </div>
-    <div class="col-auto">
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
-        <label class="form-check-label" for="breadthfirst">breadthfirst</label>
-      </div>
-        
-    </div>
-    <div class="col-auto">
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" id="grid" value="grid" v-model="layoutName" @change="plot_graph()"/>
-        <label class="form-check-label" for="grid">grid</label>
-      </div>  
-    </div>
-    <div id="cy" class="cy"></div>
   </div>
 </template>
 
@@ -251,7 +272,7 @@ export default {
 }
 #cy {
   height: 600px;
-  width: 1600px;
+  width: 100%;
   display: block;
 }
 </style>
