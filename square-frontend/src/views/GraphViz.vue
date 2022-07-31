@@ -11,7 +11,7 @@
       <output/>
     </div>
     <div class="col-6">
-      Spacing Factor: <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+      Spacing Factor: {{spacingFactor}} <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
     </div>
 
     <div class="col-auto">
