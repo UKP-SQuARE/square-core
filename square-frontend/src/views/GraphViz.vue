@@ -49,7 +49,7 @@
 
       <div class="col-auto">
         <!-- Button to restart layout -->
-        <button type="button" class="btn btn-outline-primary" @click="plot_graph()">Restart Layout</button>
+        <button type="button" class="btn btn-outline-primary" @click="restart_layout()">Restart Layout</button>
       </div>
 
     </div>
@@ -111,10 +111,7 @@ export default {
       });
       subgraph.removeClass("hidden");
       return subgraph;
-
-      
     },
-
     plot_graph() {
       // if (this.layoutName == "breadthfirst"), add roots = #ans_node
       this.cy.fit();
@@ -137,13 +134,18 @@ export default {
             }
           }
       }).run();
-    
     },
     slider_change(){
       this.get_subgraph(this.numShowingNodes);
       this.plot_graph();
     },
-
+    restart_layout(){
+      this.numShowingNodes = 10;
+      this.spacingFactor = 1;
+      this.layoutName = "breadthfirst";
+      this.get_subgraph(this.numShowingNodes);
+      this.plot_graph();
+    }, 
     drawGraph() {
       cydagre(cytoscape);
       this.cy= cytoscape({
