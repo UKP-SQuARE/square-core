@@ -88,11 +88,28 @@ export default {
 
       
     },
+
     plot_graph() {
+      // if (this.layoutName == "breadthfirst"), add roots = #ans_node
       this.cy.fit();
       this.cy.layout({ 
         name: this.layoutName, //other options: circle, random, grid, breadthfirst
         spacingFactor: this.spacingFactor,
+        depthSort: function(a, b){ 
+            if (a.data('ans_node')) {
+              return 1;
+            } else if (b.data('ans_node')) {
+              return -1;
+            } else {
+              if (a.data('q_node')) {
+                return -1;
+              } else if (b.data('q_node')) {
+                return 1;
+              } else {
+                return 0;
+              }
+            }
+          }
       }).run();
     
     },
@@ -198,6 +215,20 @@ export default {
       this.plot_graph()
 
       this.slider_change();
+
+  //     this.cy.on('mouseover', 'node', function(event) {
+  //     var node = event.cyTarget;
+  //     node.qtip({
+  //         content: 'hello',
+  //         show: {
+  //             event: event.type,
+  //             // ready: true
+  //         },
+  //         hide: {
+  //             event: 'mouseout unfocus'
+  //         }
+  //     }, event);
+  // });
 
 
       // // .addClass("hidden") to all nodes
