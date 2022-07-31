@@ -243,6 +243,15 @@ export default {
 
       this.slider_change();
 
+      this.cy.on('tap', 'node', function (evt) {
+        // hide node
+        evt.target.addClass("hidden");
+      });
+      this.cy.on('tap', 'edge', function (evt) {
+        // hide edge
+        evt.target.addClass("hidden");
+      });
+
   //     this.cy.on('mouseover', 'node', function(event) {
   //     var node = event.cyTarget;
   //     node.qtip({
