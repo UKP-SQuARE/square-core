@@ -7,8 +7,7 @@
       Show Question-Answer Path
     </button> -->
     <div class="col-6">
-      Num Nodes: <input type="range" min="1" max="50" value="10" class="form-range" id="Range" @change="slider_change()" oninput="this.nextElementSibling.value = this.value" >
-      <output/>
+      Num Nodes: {{numShowingNodes}} <input type="range" min="1" max="50" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
     </div>
     <div class="col-6">
       Spacing Factor: {{spacingFactor}} <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
@@ -52,6 +51,7 @@ export default {
       loading: false,
       error: null,
       $cy: null,
+      numShowingNodes: 10,
       spacingFactor: 1,
       layoutName: "breadthfirst"
     };
@@ -114,8 +114,7 @@ export default {
     
     },
     slider_change(){
-      var num_nodes = document.getElementById("Range").value;
-      this.get_subgraph(num_nodes);
+      this.get_subgraph(this.numShowingNodes);
       this.plot_graph();
     },
     spacingSliderChange(){
