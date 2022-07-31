@@ -4,7 +4,7 @@
 
 
     <div class="row">
-      <div class="col-6">
+      <div class="col-auto">
         <div class="row">
           <div class="col-4">
             Num Nodes: {{numShowingNodes}}
@@ -19,12 +19,12 @@
             Spacing Factor: {{spacingFactor}}
           </div>
           <div class="col-8">
-          <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="spacingSliderChange()"/>
+          <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="plot_graph()"/>
           </div>
         </div>
       </div>
 
-      <div class="col-6">
+      <div class="col-auto">
         <div class="col-auto">
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
@@ -45,6 +45,11 @@
             <label class="form-check-label" for="grid">grid</label>
           </div>  
         </div>
+      </div>
+
+      <div class="col-auto">
+        <!-- Button to restart layout -->
+        <button type="button" class="btn btn-outline-primary" @click="plot_graph()">Restart Layout</button>
       </div>
 
     </div>
@@ -138,9 +143,7 @@ export default {
       this.get_subgraph(this.numShowingNodes);
       this.plot_graph();
     },
-    spacingSliderChange(){
-      this.plot_graph();
-    },
+
     drawGraph() {
       cydagre(cytoscape);
       this.cy= cytoscape({
