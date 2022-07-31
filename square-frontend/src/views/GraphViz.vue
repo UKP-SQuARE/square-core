@@ -28,21 +28,21 @@
         <div class="col-auto">
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
-            <label class="form-check-label" for="circle">circle</label>
+            <label class="form-check-label" for="circle">Circle</label>
           </div>
           
         </div>
         <div class="col-auto">
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
-            <label class="form-check-label" for="breadthfirst">breadthfirst</label>
+            <label class="form-check-label" for="breadthfirst">Breath First</label>
           </div>
             
         </div>
         <div class="col-auto">
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" id="grid" value="grid" v-model="layoutName" @change="plot_graph()"/>
-            <label class="form-check-label" for="grid">grid</label>
+            <label class="form-check-label" for="grid">Grid</label>
           </div>  
         </div>
       </div>
@@ -156,15 +156,16 @@ export default {
           .stylesheet()
           .selector("node")
           .css({
-            shape: "roundrectangle",
-            height: 40,
-            width: "data(width)",
+            "shape": "roundrectangle",
+            "height": 40,
+            "width": "data(width)",
+            "opacity": "data(opacity)",
             "background-color": "white",
             "color": "black",
             "border-color": "gray",
             "border-width": 3,
             "border-radius": 4,
-            content: "data(name)",
+            "content": "data(name)",
             "text-wrap": "wrap",
             "text-valign": "center",
             "text-halign": "center",
@@ -198,9 +199,9 @@ export default {
             // https://js.cytoscape.org/demos/edge-types/
             "curve-style": "straight-triangle",
             "width": "data(width)",
+            "opacity": "data(opacity)",
             "line-color": "#48A7DB",
             "target-arrow-color": "#48A7DB",
-            "opacity": "data(opacity)",
           })
           .selector("edge:selected").css({
             "line-color": "red",
@@ -220,6 +221,7 @@ export default {
       /* eslint-disable */
       var cnt = 0
       for (const [key, node] of Object.entries(graph["nodes"]["statement_0"])) {
+        node['opacity'] = node['width']/100;
         node['rank'] = cnt;
         cnt += 1;
         this.cy.add({
@@ -229,6 +231,8 @@ export default {
       }
       /* eslint-disable */
       for (const [key, edge] of Object.entries(graph["edges"]["statement_0"])) {
+        edge['opacity'] = edge['weight'];
+        edge['width'] = edge['weight'] * 10;
         this.cy.add({
           data: edge
         });
