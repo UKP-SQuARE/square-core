@@ -1,11 +1,11 @@
 <template>
   <div class="">
     <h1>Q: A revolving door is convenient for two direction travel, but also serves as a security measure at what?</h1>
-    <h4>Choices = ["bank", "library", "department store", "mall", "new york"]</h4>
+    <h4>Choices: Bank, Library, Department store, Mall, New York</h4>
 
 
     <div class="row">
-      <div class="col-auto">
+      <div class="col-6">
         <div class="row">
           <div class="col-4">
             Num Nodes: {{numShowingNodes}}
