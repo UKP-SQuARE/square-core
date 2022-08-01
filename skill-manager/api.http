@@ -107,7 +107,7 @@ POST /api/skill-manager/skill/62c1ae1f536b1bb18ff91ced/query HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
-
+Cache-Control: no-cache
 {
   "query": "When was the UN founded?",
   "skill_args": {"context": "The UN officially came into existence 24 October 1945, upon ratification of the Charter by the five permanent members of the Security Council—France, the Republic of China, the Soviet Union, the UK and the US—and by a majority of the other 46 signatories."},
