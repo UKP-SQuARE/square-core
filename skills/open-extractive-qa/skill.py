@@ -30,13 +30,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
         logger.info(f"Data API output:\n{data}")
         context = [d["document"]["text"] for d in data]
         context_score = [d["score"] for d in data]
+
+        prepared_input = [[query, c] for c in context]
     else:
         # skip backgrond knowledge retrieval and use context provided
-        if not isinstance(context, Iterable):
-            context = [context]
-        context_score = [1 for _ in context]
-
-    prepared_input = [[query, c] for c in context]
+        prepared_input = [[query, context]]
+        context_score = 1
+    
     model_request = {
         "input": prepared_input,
         "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
