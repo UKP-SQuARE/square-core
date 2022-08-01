@@ -62,8 +62,8 @@
     </div>
       
     <div>
-      <p>Legend: Question nodes in pink, answer nodes in green.
-      </p>
+      <p>Legend: Question nodes in <font color="#B238DF">purple</font>, answer nodes in <font color="#14A07E">green</font>.</p>
+      
     </div>
   </div>
 </template>
