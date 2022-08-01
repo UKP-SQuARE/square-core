@@ -193,6 +193,8 @@ services:
       - 8000
     env_file:
       - ./skill-manager/.env
+      - ./mongodb/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
@@ -203,8 +205,12 @@ services:
       MONGO_PORT: 27017
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+      REDIS_USER: default
+      REDIS_HOST: redishost
+      REDIS_PORT: 6379
     depends_on:
       - mongodb
+      - redishost
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("skill-manager"))
