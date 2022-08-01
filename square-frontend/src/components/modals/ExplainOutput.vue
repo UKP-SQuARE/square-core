@@ -171,6 +171,12 @@ export default Vue.component("explain-output",{
           this.waiting_integrated_grads = true;
           break;
       }
+      // get best doc for each skill to send it to the explainability api
+      var list_docs = []
+      for (let i = 0; i < this.$store.state.currentResults.length; i++) {
+        list_docs.push(this.$store.state.currentResults[i].predictions[0].prediction_documents[0].document)
+      }
+      console.log(list_docs)
       this.show_saliency_map = false;
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
@@ -181,7 +187,8 @@ export default Vue.component("explain-output",{
           explain_kwargs: {
             method: method,
             top_k: this.num_Maxshow,
-            mode: 'all' // can be 'all', 'question', 'context'
+            mode: 'all', // can be 'all', 'question', 'context'
+            list_docs: list_docs
           }
         }
       }).then(() => {

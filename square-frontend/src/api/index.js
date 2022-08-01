@@ -75,7 +75,8 @@ export function postQuery(headers, question, context, options) {
     if (options.explain_kwargs) {
         data.explain_kwargs = {"method": options.explain_kwargs.method,
                                 "top_k": options.explain_kwargs.top_k,
-                                "mode": options.explain_kwargs.mode,}
+                                "mode": options.explain_kwargs.mode,
+                                "list_docs": options.explain_kwargs.list_docs,}
     }
     let results = options.selectedSkills.map(skillId => {
         return axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: headers })
