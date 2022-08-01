@@ -1,6 +1,7 @@
 <template>
   <div class="">
     <h1>Q: A revolving door is convenient for two direction travel, but also serves as a security measure at what?</h1>
+    <h4>Choices = ["bank", "library", "department store", "mall", "new york"]</h4>
 
 
     <div class="row">
@@ -60,6 +61,10 @@
       <div id="cy" class="cy"></div>
     </div>
       
+    <div>
+      <p>Legend: Question nodes in pink, answer nodes in green.
+      </p>
+    </div>
   </div>
 </template>
 
