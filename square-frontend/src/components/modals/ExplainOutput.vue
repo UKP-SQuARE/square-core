@@ -146,6 +146,11 @@ export default Vue.component("explain-output",{
       var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
       var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
+      if (!this.$store.state.currentResults[0].skill.skill_settings.requiresContext) { // for ODQA
+        let context = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document
+        numContextWords = tokenize({'text': context, 'includePunctuation': true}).length;
+
+      }
       this.num_Maxshow = Math.max(numQuestionWords, numContextWords);
       // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
       // remove class active from all buttons
@@ -171,17 +176,21 @@ export default Vue.component("explain-output",{
           this.waiting_integrated_grads = true;
           break;
       }
+      var context = this.$store.state.currentContext
+      if (!this.$store.state.currentResults[0].skill.skill_settings.requiresContext) { // for ODQA
+        context = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document
+      }
       this.show_saliency_map = false;
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
-        inputContext: this.$store.state.currentContext,
+        inputContext: context,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
           explain_kwargs: {
             method: method,
             top_k: this.num_Maxshow,
-            mode: 'all' // can be 'all', 'question', 'context'
+            mode: 'all', // can be 'all', 'question', 'context'
           }
         }
       }).then(() => {
