@@ -72,6 +72,7 @@
 <script>
 import cydagre from "cytoscape-dagre";
 import cytoscape from "cytoscape";
+import popper from 'cytoscape-popper';
 import graph from './graph_sample.json'
 
 
@@ -88,6 +89,7 @@ export default {
     };
   },
   mounted() {
+    cytoscape.use( popper );
     this.drawGraph();
   },
   methods: {
@@ -256,11 +258,32 @@ export default {
         // hide edge
         evt.target.addClass("hidden");
       });
+      // when hover on edge, show edge label
+      this.cy.elements().unbind("mouseover");
+      this.cy.elements().bind("mouseover", (event) => {
+        event.target.popperRefObj = event.target.popper({
+          content: () => {
+            let content = document.createElement("div");
 
-      this.cy.on('mouseover', 'edge', function (evt) {
-        // hide edge
-        evt.target.addClass("show_weight");
+            content.classList.add("popper-div");
+
+            content.innerHTML = event.target.width();
+
+            document.body.appendChild(content);
+            return content;
+          },
+        });
       });
+      this.cy.elements().unbind("mouseout");
+      this.cy.elements().bind("mouseout", (event) => {
+        if (event.target.popper) {
+          event.target.popperRefObj.state.elements.popper.remove();
+          event.target.popperRefObj.destroy();
+        }
+      });
+
+
+      
 
   //     this.cy.on('mouseover', 'node', function(event) {
   //     var node = event.cyTarget;
