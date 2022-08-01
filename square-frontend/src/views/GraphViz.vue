@@ -35,7 +35,7 @@
         <div class="col-auto">
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
-            <label class="form-check-label" for="breadthfirst">Breath First</label>
+            <label class="form-check-label" for="breadthfirst">Breadth First</label>
           </div>
             
         </div>
@@ -250,6 +250,11 @@ export default {
       this.cy.on('tap', 'edge', function (evt) {
         // hide edge
         evt.target.addClass("hidden");
+      });
+
+      this.cy.on('mouseover', 'edge', function (evt) {
+        // hide edge
+        evt.target.addClass("show_weight");
       });
 
   //     this.cy.on('mouseover', 'node', function(event) {
