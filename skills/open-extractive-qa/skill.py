@@ -1,5 +1,5 @@
 import logging
-import uuid
+from typing import Iterable
 
 from square_skill_api.models import QueryOutput, QueryRequest
 
@@ -20,14 +20,21 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     explain_kwargs = request.explain_kwargs or {}
 
-    data = await data_api(
-        datastore_name=request.skill_args["datastore"],
-        index_name=request.skill_args.get("index", ""),
-        query=query,
-    )
-    logger.info(f"Data API output:\n{data}")
-    context = [d["document"]["text"] for d in data]
-    context_score = [d["score"] for d in data]
+    context = request.skill_args.get("context")
+    if not context:
+        data = await data_api(
+            datastore_name=request.skill_args["datastore"],
+            index_name=request.skill_args.get("index", ""),
+            query=query,
+        )
+        logger.info(f"Data API output:\n{data}")
+        context = [d["document"]["text"] for d in data]
+        context_score = [d["score"] for d in data]
+    else:
+        # skip backgrond knowledge retrieval and use context provided
+        if not isinstance(context, Iterable):
+            context = [context]
+        context_score = [1 for _ in context]
 
     prepared_input = [[query, c] for c in context]
     model_request = {
