@@ -267,7 +267,7 @@ export default {
 
             content.classList.add("popper-div");
 
-            content.innerHTML = event.target.width();
+            content.innerHTML = event.target.width().toFixed(2);;
 
             document.body.appendChild(content);
             return content;
