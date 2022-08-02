@@ -7,6 +7,10 @@
         </div>
         <div class="modal-body">
           <div class="container text-center">
+            <div class="alert alert-warning" v-if="this.$store.state.loadingExplainability" role="alert">
+                  It's taking a bit longer than usual to generate your output... Please hang it there.
+            </div>
+
             <div class="row">
               <div class="col-12">
                   <h1>Saliency Map 
@@ -142,6 +146,7 @@ export default Vue.component("explain-output",{
   },
   methods:{
     postReq(method) {
+      console.log(this.$store.state.loadingExplainability)
       // num words in context
       var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
       // num_Maxshow for explain method is the min(numWords, numContextWords)
