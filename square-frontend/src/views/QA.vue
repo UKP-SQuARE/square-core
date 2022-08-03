@@ -33,6 +33,7 @@ export default Vue.component('square-home', {
   },
   computed: {
     isShowingResults() {
+
       return this.$store.state.currentResults.length > 0
     }
   }

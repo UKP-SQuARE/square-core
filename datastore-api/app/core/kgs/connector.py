@@ -2,7 +2,6 @@ import json
 import logging
 from typing import Dict, Iterable, List, Optional, Tuple
 
-
 import elasticsearch.exceptions
 from elasticsearch import AsyncElasticsearch
 from elasticsearch.helpers import async_bulk, async_scan
@@ -196,7 +195,6 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         results = {}
         for nid, response in zip(nids, response['responses']):
             edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
-
             results[nid] = edges
         return results
 
@@ -208,16 +206,85 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             nids (List[str]]):      List of nodes for which the in- and out-nodes should be retrieved.
         """
         edges = await self.edges_in_out_msearch(kg_name, nids)
-        results_nids = []
-        for nid in nids:
-            for edge in edges[nid]:
-                if edges[nid][edge]["in_id"] == nid:
-                    extra_node = edges[nid][edge]["out_id"]
+        results_nids = [{} for _ in nids]
+        for i,nid in enumerate(nids):
+            extra_nodes =[]
+            for edge in edges[nid].values():
+                if edge["in_id"] == nid:
+                    extra_node = edge["out_id"]
                 else:
-                    extra_node = edges[nid][edge]["in_id"]
-                results_nids.append(extra_node)
+                    extra_node = edge["in_id"]
+                extra_nodes.append(extra_node)
+            results_nids[i] =  {nid:set(extra_nodes)}
         return results_nids
+    
+    async def get_nodes_for_nodepair(self, kg_name, nid_pair:Tuple[str, str]):
+        """Returns all nodes in between for a given node_id-pair.
 
+        Args:
+            kg_name (str):                  Name of the knowledge graph.
+            nid_pair (List[str,str]):      Node_id-pair.
+        """
+        index = f'{kg_name}{self.datastore_suffix}'
+        body = []
+        qid = nid_pair[0]
+        aid = nid_pair[1]
+        body.append({'index': index})
+        body.append({
+            "query": {
+                "bool": {
+                    "filter": {
+                        "bool" : {
+                            "should" : [
+                                {"term" : { "in_id" : qid } },
+                                {"term" : { "in_id" : aid } },
+                                {"term" : { "out_id" : aid } },
+                                {"term" : { "out_id" : qid } },
+                            ]
+                        }
+                    }
+                }
+            },
+            "size": 10000
+        })
+    
+        response = await self.es.msearch(body=body)
+
+        edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response['responses'][0]["hits"]["hits"]}
+
+        qid_list=[]
+        aid_list=[]
+        rest=[]
+        for edge in edges.values():
+            if edge['in_id']==qid:
+                qid_list.append(edge['out_id'])
+            elif edge['out_id']==qid:
+                qid_list.append(edge['in_id'])
+            elif edge['in_id']==aid:
+                aid_list.append(edge['out_id'])
+            elif edge['out_id']==aid:
+                aid_list.append(edge['in_id'])
+            else:
+                rest.append(edge)
+        extra_nodes = []
+        for qids in qid_list:
+            if qids in aid_list:
+                extra_nodes.append(qids)
+
+        return set(extra_nodes)
+
+    async def get_nodes_for_nodepairs(self, kg_name, nid_pairs:Tuple[str, str]):
+        """Returns all nodes in between a list of given node_id-pairs.
+
+        Args:
+            kg_name (str):                  Name of the knowledge graph.
+            nid_pair (List[[str,str]]):     List of node_id-pairs.
+        """
+        results=[]
+        for in_id, out_id in nid_pairs:
+            results.append(await self.get_nodes_for_nodepair(kg_name, [in_id, out_id]))
+
+        return results
     async def get_edge_msearch(self, kg_name, nids_pairs: List[Tuple[str, str]]):
         """Returns all edges for a given node-pair.
 
@@ -244,10 +311,38 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 }
             })
         responses = await self.es.msearch(body=body)
-        results = []
+        found_edges = [{} for _ in nids_pairs]
         for response in responses['responses']:
             edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
-            results.append(edges)
+            for edge in edges.values():
+                edge_in = edge['in_id']
+                edge_out = edge['out_id']
+                edge_in_out=[edge_in, edge_out]
+                if edge_in != edge_out:
+                    for i,in_out_id in enumerate(nids_pairs):
+                        node_in_id = list(in_out_id)[0]
+                        node_out_id = list(in_out_id)[1]
+                        if node_in_id in edge_in_out and node_out_id in edge_in_out:
+                            found_edges[i] = {edge['_id']:edge}           
+        return found_edges
+
+    async def get_relation(self, kg_name, nids_pairs: List[Tuple[str, str]]):
+        """Returns relation-info for a given node-pair.
+
+        Args:
+            kg_name (str):                          Name of the knowledge graph.
+            nids_pairs (List[Tuple[str, str]]):     Node-pair which is supposed to be retrieved.
+        """
+        edges = await self.get_edge_msearch(kg_name, nids_pairs)
+        results=[]
+        for edge in edges:
+            relation_list=[]
+            for edge_type in edge.values():
+                if edge_type !=None:
+                    relation_list.append({"relation-name":edge_type['name'], "weight":edge_type['weight']})
+                else:
+                    relation_list.append({"no edge"})
+            results.append(relation_list)
         return results
 
     async def get_object_by_id_msearch(self, kg_name, ids):

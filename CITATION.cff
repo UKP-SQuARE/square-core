@@ -1,0 +1,122 @@
+cff-version: "1.2.0"
+date-released: 2022-03
+message: "If you use this software, please cite it as below."
+title: "UKP-SQuARE: An Online Platform for Question Answering Research"
+url: "https://https://square.ukp-lab.de/"
+authors: 
+  - family-names: Baumgärtner
+    given-names: Tim
+    affiliation: TU Darmstadt
+    email: baumgaertner@ukp.informatik.tu-darmstadt.de
+  - family-names: Wang
+    given-names: Kexin
+    affiliation: TU Darmstadt
+    email: kwang@ukp.informatik.tu-darmstadt.de
+  - family-names: Sachdeva
+    given-names: Rachneet
+    affiliation: TU Darmstadt
+    email: sachdeva@ukp.informatik.tu-darmstadt.de
+  - family-names: Geigle
+    given-names: Gregor
+    affiliation: TU Darmstadt
+    email: geigle@ukp.informatik.tu-darmstadt.de
+  - family-names: Eichler
+    given-names: Max
+    affiliation: TU Darmstadt
+    email: meichler@ukp.informatik.tu-darmstadt.de
+  - family-names: Poth
+    given-names: Clifton
+    affiliation: TU Darmstadt
+    email: poth@ukp.informatik.tu-darmstadt.de
+  - family-names: Sterz
+    given-names: Hannah
+    affiliation: TU Darmstadt
+    email: sterz@ukp.informatik.tu-darmstadt.de
+  - family-names: Puerto
+    given-names: Haritz
+    affiliation: TU Darmstadt
+    email: puerto@ukp.informatik.tu-darmstadt.de
+  - family-names: Ribeiro
+    given-names: Leonardo F. R.
+    affiliation: TU Darmstadt
+    email: ribeiro@aiphes.tu-darmstadt.de
+  - family-names: Pfeiffer
+    given-names: Jonas
+    affiliation: TU Darmstadt
+    email: pfeiffer@ukp.informatik.tu-darmstadt.de
+  - family-names: Reimers
+    given-names: Nils
+    affiliation: Hugging Face
+    email: reimers@ukp.informatik.tu-darmstadt.de
+  - family-names: Şahin
+    given-names: Gözde
+    affiliation: Koç University
+    email: gosahin@ku.edu.tr
+  - family-names: Gurevych
+    given-names: Iryna
+    affiliation: TU Darmstadt
+    email: gurevych@ukp.informatik.tu-darmstadt.de
+preferred-citation:
+  type: inproceedings
+  authors:
+    - family-names: Baumgärtner
+      given-names: Tim
+      affiliation: TU Darmstadt
+      email: baumgaertner@ukp.informatik.tu-darmstadt.de
+    - family-names: Wang
+      given-names: Kexin
+      affiliation: TU Darmstadt
+      email: kwang@ukp.informatik.tu-darmstadt.de
+    - family-names: Sachdeva
+      given-names: Rachneet
+      affiliation: TU Darmstadt
+      email: sachdeva@ukp.informatik.tu-darmstadt.de
+    - family-names: Geigle
+      given-names: Gregor
+      affiliation: TU Darmstadt
+      email: geigle@ukp.informatik.tu-darmstadt.de
+    - family-names: Eichler
+      given-names: Max
+      affiliation: TU Darmstadt
+      email: meichler@ukp.informatik.tu-darmstadt.de
+    - family-names: Poth
+      given-names: Clifton
+      affiliation: TU Darmstadt
+      email: poth@ukp.informatik.tu-darmstadt.de
+    - family-names: Sterz
+      given-names: Hannah
+      affiliation: TU Darmstadt
+      email: sterz@ukp.informatik.tu-darmstadt.de
+    - family-names: Puerto
+      given-names: Haritz
+      affiliation: TU Darmstadt
+      email: puerto@ukp.informatik.tu-darmstadt.de
+    - family-names: Ribeiro
+      given-names: Leonardo F. R.
+      affiliation: TU Darmstadt
+      email: ribeiro@aiphes.tu-darmstadt.de
+    - family-names: Pfeiffer
+      given-names: Jonas
+      affiliation: TU Darmstadt
+      email: pfeiffer@ukp.informatik.tu-darmstadt.de
+    - family-names: Reimers
+      given-names: Nils
+      affiliation: Hugging Face
+      email: reimers@ukp.informatik.tu-darmstadt.de
+    - family-names: Şahin
+      given-names: Gözde
+      affiliation: Koç University
+      email: gosahin@ku.edu.tr
+    - family-names: Gurevych
+      given-names: Iryna
+      affiliation: TU Darmstadt
+      email: gurevych@ukp.informatik.tu-darmstadt.de
+  booktitle: "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics: System Demonstrations"
+  month: 5
+  start: 9
+  end: 22
+  title: "UKP-SQuARE: An Online Platform for Question Answering Research"
+  year: 2022
+  publisher: "Association for Computational Linguistics"
+  url: "https://aclanthology.org/2022.acl-demo.2/"
+  address: "Dublin, Ireland"

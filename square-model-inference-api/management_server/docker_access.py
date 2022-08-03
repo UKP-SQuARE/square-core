@@ -87,6 +87,7 @@ def start_new_model_container(identifier: str, uid: str, env):
     env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
     try:
+        logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
             MODEL_API_IMAGE,
             command=f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info",
@@ -95,7 +96,7 @@ def start_new_model_container(identifier: str, uid: str, env):
             environment=env,
             network=network.name,
             volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
-            mounts=[Mount(target="/model_configs", source=CONFIG_VOLUME,),
+            mounts=[Mount(target=env["CONFIG_PATH"], source=CONFIG_VOLUME,),
                     Mount(target="/onnx_models", source=ONNX_VOLUME,)],
         )
         logger.info(f"Worker container {container}")

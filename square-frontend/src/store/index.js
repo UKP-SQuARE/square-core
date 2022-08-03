@@ -31,7 +31,8 @@ export default new Vuex.Store({
       explain: {
         selectedSkills: Array(3).fill('None')
       }
-    }
+    },
+    loadingExplainability: false
   },
   mutations: {
     setAnsweredQuestion(state, payload) {
@@ -53,6 +54,9 @@ export default new Vuex.Store({
     },
     setSkillOptions(state, payload) {
       state.skillOptions[payload.selectorTarget] = payload.skillOptions
+    },
+    setLoadingExplainability(state, payload) {
+      state.loadingExplainability = payload.value
     }
   },
   /**
@@ -61,6 +65,13 @@ export default new Vuex.Store({
   actions: {
     query(context, { question, inputContext, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
+      // if explain_kwargs in options
+      var timeoutExplainabilityLoading = null
+      if ( "explain_kwargs" in options ){
+        timeoutExplainabilityLoading = setTimeout(() => {
+          context.commit('setLoadingExplainability', {'value': true});
+        }, 8000);
+      }
       return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
@@ -69,6 +80,10 @@ export default new Vuex.Store({
               predictions: response.data.predictions
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
+            if ( "explain_kwargs" in options ){
+                clearTimeout(timeoutExplainabilityLoading);
+                context.commit('setLoadingExplainability', {'value': false});
+            }
           }))
     },
     signIn(context, { userInfo, token }) {

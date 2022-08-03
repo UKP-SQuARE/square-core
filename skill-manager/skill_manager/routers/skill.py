@@ -1,31 +1,32 @@
 import json
 import logging
+import os
+from datetime import timedelta
 from threading import Thread
 from typing import Dict, List
 
-import requests
+import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from skill_manager import mongo_client
+from skill_manager.core.session_cache import SessionCache
+from skill_manager.auth_utils import (get_payload_from_token,
+                                      get_skill_if_authorized, has_auth_header)
+from skill_manager.core import ModelManagementClient
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
+from skill_manager.routers import client_credentials
 from square_auth.auth import Auth
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
-
-from skill_manager.core import ModelManagementClient
-from skill_manager.routers import client_credentials
-from skill_manager.auth_utils import (
-    get_skill_if_authorized,
-    get_payload_from_token,
-    has_auth_header,
-)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/skill")
 
 auth = Auth()
+
+session_cache = SessionCache()
 
 
 @router.get(
@@ -207,6 +208,7 @@ async def query_skill(
     query_request: QueryRequest,
     id: str,
     token: str = Depends(client_credentials),
+    # sess=Depends(skill_query_session),
 ):
     """Sends a query to the respective skill and returns its prediction."""
     logger.info(
@@ -236,9 +238,13 @@ async def query_skill(
             query_request.skill_args["context"], *choices = choices
         query_request.skill_args["choices"] = choices
 
-    response = requests.post(
+    headers = {"Authorization": f"Bearer {token}"}
+    if request.headers.get("Cache-Control"):
+        headers["Cache-Control"] = request.headers.get("Cache-Control")
+
+    response = session_cache.session.post(
         f"{skill.url}/query",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=headers,
         json=query_request.dict(),
     )
     if response.status_code > 201:
