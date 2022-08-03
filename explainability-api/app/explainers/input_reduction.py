@@ -11,6 +11,11 @@ except Exception as ex:
 def input_reduction(model, tokenizer, question, context, answer, answer_start, answer_end, sep_token,
         gradient_way = 'simple', number_of_reductions = None):
     
+    """
+        return:
+            perform input reduction and returns a dictionary
+    """
+    
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
 
@@ -83,6 +88,11 @@ def input_reduction(model, tokenizer, question, context, answer, answer_start, a
     return return_dict
 
 def do_input_reduction(args):
+    """
+        return:
+            perform input reduction and returns a dictionary
+    """
+
     model, tokenizer, sep_token = get_model_tokenizer(args)
     if args["number_of_reductions"] == 0:
         args["number_of_reductions"] = None
@@ -111,8 +121,6 @@ if __name__ == '__main__':
         "adapter" : "AdapterHub/bert-base-uncased-pf-squad_v2",
         "question" :  squad[1]['question'],
         "context" : squad[1]['context'],
-        #"question" : squad[0]['question'],
-        #"context" : squad[0]['context'],
         "gradient_way" : "simple",
         "number_of_reductions" : 300
     }

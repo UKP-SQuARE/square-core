@@ -10,6 +10,10 @@ except Exception as ex:
     from utils import * 
 
 def topk_tokens(model, tokenizer, question, context, answer, answer_start, answer_end, sep_token, gradient_way = "simple", topk = 5):
+    """
+        return:
+            selects topk tokens from the context and returns a dictionary
+    """
 
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
@@ -26,10 +30,13 @@ def topk_tokens(model, tokenizer, question, context, answer, answer_start, answe
     max_tokens = []
     for i in range(len(saliencies)):
         max_index = np.argmax(saliencies)
-        val = max_index-sep_index-1
-        indexes.append(int(val))
-        max_tokens.append(tokens[max_index])
-        saliencies[max_index] = 0
+        if tokens[max_index] != "[SEP]":
+            val = max_index-sep_index-1
+            indexes.append(int(val))
+            max_tokens.append(tokens[max_index])
+            saliencies[max_index] = 0
+        else:
+            saliencies[max_index] = 0
         if len(max_tokens) >= topk:
             break
 
@@ -51,6 +58,10 @@ def topk_tokens(model, tokenizer, question, context, answer, answer_start, answe
     return return_dict
 
 def tokens_span(model, tokenizer, question, context, answer, answer_start, answer_end, sep_token, gradient_way = "simple", window = 5):
+    """
+        return:
+            selects span tokens from the context and returns a dictionary
+    """
 
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
@@ -89,6 +100,10 @@ def tokens_span(model, tokenizer, question, context, answer, answer_start, answe
     
 
 def do_topk_tokens(args):
+    """
+        return:
+            perform topk tokens and returns a dictionary
+    """
     model, tokenizer, sep_token = get_model_tokenizer(args)
     if type(args["question"]) != list:
         inputs = tokenizer(args["question"], args["context"], return_tensors="pt")
@@ -107,6 +122,11 @@ def do_topk_tokens(args):
     return response
 
 def do_tokens_span(args):
+    """
+        return:
+            perform span of tokens and returns a dictionary
+    """
+
     model, tokenizer, sep_token = get_model_tokenizer(args)
     if type(args["question"]) != list:
         inputs = tokenizer(args["question"], args["context"], return_tensors="pt")
@@ -135,14 +155,20 @@ if __name__ == '__main__':
         "adapter" : "AdapterHub/bert-base-uncased-pf-squad_v2",
         "question" : squad[2]['question'],
         "context" :  squad[2]['context'],
-        #"question" : squad[0]['question'],
-        #"context" : squad[0]['context'],
         "topk": 15,
-        "window" : 20,
     }
 
     response = do_topk_tokens(args)
     print(response)
+
+    args = {
+        "gradient_way" : "simple",
+        "model_name" : "bert-base-uncased",
+        "adapter" : "AdapterHub/bert-base-uncased-pf-squad_v2",
+        "question" : squad[2]['question'],
+        "context" :  squad[2]['context'],
+        "window": 15,
+    }
 
     response = do_tokens_span(args)
     print(response)

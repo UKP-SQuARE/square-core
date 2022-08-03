@@ -46,6 +46,7 @@ def simple_gradient(model, inputs, start, end):
     """Function to get the saliency, start index and end index of the predicted answer using simple gradient
 
     args:
+        model : model with adapter
         inputs : encoded input using hugginface tokenizer
         start : answer start token index in the input
         end : answer end token index in the input
@@ -68,6 +69,7 @@ def integrated_gradient(model, inputs, start, end):
     """Function to get the saliency, start index and end index of the predicted answer using integreted gradient
 
     args:
+        model : model with adapter
         inputs : encoded input using hugginface tokenizer
         start : answer start token index in the input
         end : answer end token index in the input
@@ -101,6 +103,7 @@ def smooth_gradient(model, inputs, start, end):
     """Function to get the saliency, start index and end index of the predicted answer using smooth gradient
 
     args:
+        model : model with adapter
         inputs : encoded input using hugginface tokenizer
         start : answer start token index in the input
         end : answer end token index in the input
@@ -135,6 +138,7 @@ def interpret(model, gradient_way, inputs, start, end):
     """Function to get the saliency, start index and end index of the predicted answer using specified gradient calculation technique
 
     args:
+        model : model with adapter
         gradient_way : gradient calculation technique (simple or integreted or smooth)
         inputs : encoded input using hugginface tokenizer
         start : answer start token index in the input
@@ -184,7 +188,17 @@ def dot_and_normalize(gradients, forward_embeddings):
     return l1_normalized_scores
     
 def get_max(saliencies, chosen_tokens):
-    #to get the index with maximum saliency score in context
+    """Function to get the index with highest saliency
+
+    args:
+        saliencies : saliencies of each token
+        choesn token : list of 0's and 1's if 0 choesn has not been chosen otherwise 1
+    
+    return:
+        saliencies : saliencies of each token
+        choesn token : list of 0's and 1's if 0 choesn has not been chosen otherwise 1
+        max_index : index of the token with the highest saliency
+    """
     max_index = np.argmax(saliencies)
     while chosen_tokens[max_index] == 1 or chosen_tokens[max_index] == 2:
         saliencies[max_index] = 0
@@ -193,12 +207,29 @@ def get_max(saliencies, chosen_tokens):
     return saliencies, chosen_tokens, max_index
 
 def get_min(saliencies):
+    """Function to get the index with lowest saliency
+
+    args:
+        saliencies : saliencies of each token
+    return:
+        min_index : index of the token with the lowest saliency
+    """
     #to get the index with maximum saliency score in context
     min_index = np.argmin(saliencies)
     return min_index
 
 def get_random_token(tokens, already_generated, tokenizer):
-    #generate a random token id between 10000 and 20000
+    """Function to generate a random token
+
+    args:
+        tokens : list of all the tokens
+        already_generated : list of already generated tokens
+        tokenizer : tokenizer
+    return:
+        number : id of the token in the vocabulary
+        token : token with the random id in the vocabulary
+        already_generated : list of already generated tokens
+    """
     number = random.randint(10000, 20000)
     token = tokenizer.convert_ids_to_tokens(number)[0]
     while token in tokens or number in already_generated or "#" in token or len(token) < 3:
@@ -208,12 +239,22 @@ def get_random_token(tokens, already_generated, tokenizer):
     return number, token, already_generated
 
 def saliency(model, question, context, answer_start, answer_end, gradient_way = 'simple'):
+    """
+        return:
+            saliencies : list saliency scores of all the tokens 
+    """
     inputs = tokenizer(question, context, return_tensors="pt")
     tokens = tokenizer.convert_ids_to_tokens(inputs.input_ids[0])
     saliencies, _, _ = interpret(model, gradient_way, inputs, answer_start, answer_end)
     return saliencies
 
 def get_answer(model, tokenizer, inputs, sep_index = None):
+    """
+        return:
+            answer : answer in plain text
+            start : start token index of the answer
+            end : end token index of the answer
+    """
     outputs = model(**inputs)
     start = torch.argmax(outputs.start_logits).item()
     end = torch.argmax(outputs.end_logits).item()
@@ -225,6 +266,12 @@ def get_answer(model, tokenizer, inputs, sep_index = None):
     return answer, torch.tensor([start]), torch.tensor([end])
 
 def get_model_tokenizer(args):
+    """
+        return:
+            model : model with the adapter
+            tokenizer : tokennizer
+            sep_token : seperator token based on the model
+    """
     if args["model_name"] == 'bert-base-uncased':
         model = BertAdapterModel.from_pretrained(args["model_name"])
     tokenizer = AutoTokenizer.from_pretrained(args["model_name"])
@@ -242,8 +289,12 @@ def write_to_file(json_dict, file_name):
     json.dump(json_dict, file_to_write, indent = 4)
     file_to_write.close()
 
-
 def process(tokens, saliencies, tokenizer):
+    """
+        return:
+            processed_tokens : list of tokens with full words
+            processed_saliencies : list of tokens based on processed_tokens
+    """
     temp_data = [0] * len(tokens)
     current = 1
     for i in range(1,len(tokens)-1):
@@ -274,6 +325,10 @@ def process(tokens, saliencies, tokenizer):
     return processed_tokens, processed_saliencies
 
 def process_answer(tokens, tokenizer):
+    """
+        return:
+            processed_tokens : list of tokens with full words
+    """
     temp_data = [0] * len(tokens)
     current = 1
     for i in range(1,len(tokens)-1):
@@ -300,6 +355,10 @@ def process_answer(tokens, tokenizer):
     return processed_tokens
 
 def find_answer_index(processed_tokens, answer_tokens, length):
+    """
+        return:
+            start and end of token indexes which are part of the answer
+    """
     for i in range(len(processed_tokens)-length):
         j = i + length
         if processed_tokens[i:j] == answer_tokens:

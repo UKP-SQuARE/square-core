@@ -11,6 +11,10 @@ except Exception as ex:
 
 def hotflip(model, tokenizer, question, context, answer, answer_start, answer_end, sep_token, 
             include_answer = False, gradient_way = 'simple', number_of_flips = None):
+    """
+        return:
+            perform hotflip and returns a dictionary
+    """
 
     already_generated = []
     inputs = tokenizer(question, context, return_tensors="pt")
@@ -47,9 +51,11 @@ def hotflip(model, tokenizer, question, context, answer, answer_start, answer_en
         proccessed_saliencies, chosen_tokens, max_index = get_max(processed_saliencies, chosen_tokens)
         random_token_id, random_token, already_generated = get_random_token(processed_tokens, already_generated, tokenizer)
         actual_word = processed_tokens[max_index]
-        flips.append((actual_word, random_token))
+        if actual_word != "[SEP]":
+            flips.append((actual_word, random_token))
         val = max_index-sep_index-1
-        flipped_indexes.append(int(val))
+        if actual_word != "[SEP]":
+            flipped_indexes.append(int(val))
         processed_tokens[max_index] = random_token
         new_input = ' '.join(processed_tokens[1:len(processed_tokens)])
         inputs = tokenizer(new_input, return_tensors="pt")
@@ -72,6 +78,8 @@ def hotflip(model, tokenizer, question, context, answer, answer_start, answer_en
         #print("New answer : ")
         if len(new_answer.strip()) <= 0:
            new_answer = "Undefined Answer"
+           if len(flips) == 0:
+               new_answer = answer
         #else:
         #    print("Undefined Answer")
         #print("Actual Answer : ")
@@ -94,6 +102,10 @@ def hotflip(model, tokenizer, question, context, answer, answer_start, answer_en
     
 
 def do_hotflip(args):
+    """
+        return:
+            perform hotflip and returns a dictionary
+    """
     model, tokenizer, sep_token = get_model_tokenizer(args)
     inputs = tokenizer(args["question"], args["context"], return_tensors="pt")
     answer, start, end = get_answer(model, tokenizer, inputs)
