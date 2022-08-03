@@ -115,13 +115,40 @@ class PredictionOutput(BaseModel):
 
 
 class PredictionOutputForSequenceClassification(PredictionOutput):
-    labels: List[int] = Field([], description="List of the predicted label ids for the input. "
-                                              "Not set for regression.")
-    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. "
-                                                     "Not set for regression.")
-    attributions: List[Dict] = Field(...,
-                                     description="scores for the input tokens which are "
-                                                 "important for the model prediction")
+    labels: List[int] = Field(
+        default=[],
+        description="List of the predicted label ids for the input. "
+                    "Not set for regression."
+    )
+    id2label: Dict[int, str] = Field(
+        default={},
+        description="Mapping from label id to the label name. "
+                    "Not set for regression."
+    )
+    attributions: Optional[List[Dict]] = Field(
+        default=[],
+        description="scores for the input tokens which are "
+                    "important for the model prediction"
+    )
+
+    def __init__(self, **data):
+        super().__init__(**data)
+
+
+class PredictionOutputForGraphSequenceClassification(PredictionOutput):
+    labels: List[int] = Field(
+        default=[],
+        description="List of the predicted label ids for the input. "
+                    "Not set for regression."
+    )
+    lm_subgraph: Optional[Dict[str, Dict]] = Field(
+        default={},
+        description="return the lm scored subgraph"
+    )
+    attn_subgraph: Optional[Dict[str, Dict]] = Field(
+        default={},
+        description="return the attention subgraph"
+    )
 
     def __init__(self, **data):
         super().__init__(**data)

@@ -148,7 +148,7 @@ services:
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
-      - onnx-models:/onnx_models
+#      - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
@@ -159,31 +159,31 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
-  dpr_worker:
-    build: ./inference_server
-    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
-    volumes:
-      - ./:/usr/src/app
-      - /var/run/docker.sock:/var/run/docker.sock
-      - model_configs:/model_configs
-    env_file:
-      - ./inference_server/.env.dpr
-      - inference_server/.env
-    environment:
-      - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - VERIFY_SSL=0
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-      - REALM=square
-      - CLIENT_ID=models
-      - QUEUE=facebook-dpr-question_encoder-single-nq-base
-      - CONFIG_PATH=/model_configs
-    links:
-      - rabbit
-      - redishost
-    depends_on:
-      - maintaining
-      - rabbit
-      - redishost
+#  dpr_worker:
+#    build: ./inference_server
+#    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
+#    volumes:
+#      - ./:/usr/src/app
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - model_configs:/model_configs
+#    env_file:
+#      - ./inference_server/.env.dpr
+#      - inference_server/.env
+#    environment:
+#      - DOCKER_HOST_URL=https://172.17.0.1:8443
+#      - VERIFY_SSL=0
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - REALM=square
+#      - CLIENT_ID=models
+#      - QUEUE=facebook-dpr-question_encoder-single-nq-base
+#      - CONFIG_PATH=/model_configs
+#    links:
+#      - rabbit
+#      - redishost
+#    depends_on:
+#      - maintaining
+#      - rabbit
+#      - redishost
 
   bert_worker:
     build: ./inference_server
@@ -202,6 +202,33 @@ services:
       - REALM=square
       - CLIENT_ID=models
       - QUEUE=bert-base-uncased
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+  qagnn_worker:
+    build: ./inference_server
+    command: celery -A tasks worker -Q qagnn --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+      - models:/models
+    env_file:
+      - ./inference_server/.env.qagnn
+      - inference_server/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=qagnn
       - CONFIG_PATH=/model_configs
     links:
       - rabbit
@@ -311,13 +338,16 @@ volumes:
 #    driver: local
 
   # onnx-model folder on the vm
-  onnx-models:
+#
+#      device: /home/rachneet/onnx_models
+
+  models:
     driver: local
     driver_opts:
       o: bind
       type: none
-#      device: /home/sterz/onnx_models
-      device: /home/rachneet/onnx_models
+      #      device: /home/sterz/onnx_models
+      device: /home/rachneet/projects/qagnn/graph_transformers/data
 
   model_configs:
     driver: local

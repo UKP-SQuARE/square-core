@@ -49,6 +49,12 @@ class PredictionRequest(BaseModel):
                     "SentenceTransformer: This is ignored.<br>"
                     "Transformer/ Adapter: See the forward method of the Huggingface models for possible parameters"
                     "For example, set ‘output_attentions=True’ to receive the attention results in the output."
+                    "For QaGNN the following options are also available:"
+                    "1. set `output_lm_subgraph` to get the scored LM subgraph"
+                    "2. set `output_attn_subgraph` to get the scored attention subgraph"
+                    "3. set `topk_lm_scores` to get the most relevant nodes"
+                    "4. set `topk_attn` to get the nodes with most attention"
+
     )
     # task: Task = Field(...)
     task_kwargs: dict = Field(
