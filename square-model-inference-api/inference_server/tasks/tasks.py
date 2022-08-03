@@ -10,6 +10,7 @@ from .inference.adaptertransformer import AdapterTransformer
 from .inference.onnx import Onnx
 from .inference.sentencetransformer import SentenceTransformer
 from .inference.transformer import Transformer
+from .inference.graph_transformers import GraphTransformers
 from .models.request import PredictionRequest
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ MODEL_MAPPING = {
     "transformer": Transformer,
     "sentence-transformer": SentenceTransformer,
     "onnx": Onnx,
+    "graph": GraphTransformers
 }
 
 
