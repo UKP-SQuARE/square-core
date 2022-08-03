@@ -14,6 +14,20 @@ router = APIRouter()
 
 @router.post("/hotflip", name="hotflip")
 async def get_hotflip(hotflip_input: HotFlip):
+    """
+        Input request format:
+        a dictionary of following attributes
+        {
+            "model_name" : name of the model,
+            "adapter" : name of the adapter,
+            "question" : input question,
+            "context" : input context,
+            "gradient_way" : gradient calculation format simple/integreted/smooth,
+            "include_answer" : true or flase in string format,
+            "number_of_flips" : number of flips to do 0 indicates do as much as flips necessary
+        }   
+
+    """
     args = {
         "model_name" : str(hotflip_input.model_name),
         "adapter" : str(hotflip_input.adapter),
@@ -63,6 +77,19 @@ async def get_hotflip(hotflip_input: HotFlip):
 
 @router.post("/input_reduction", name="input reduction")
 async def get_reduction(input_reduction_input: InputReduction):
+    """
+        Input request format:
+        a dictionary of following attributes
+        {
+            "model_name" : name of the model,
+            "adapter" : name of the adapter,
+            "question" : input question,
+            "context" : input context,
+            "gradient_way" : gradient calculation format simple/integreted/smooth,
+            "number_of_reductions" : number of reductions to do 0 indicates do as much as reduction necessary
+        }   
+
+    """
     args = {
         "model_name" : str(input_reduction_input.model_name),
         "adapter" : str(input_reduction_input.adapter),
@@ -106,6 +133,19 @@ async def get_reduction(input_reduction_input: InputReduction):
 
 @router.post("/topk_tokens", name="topk tokens")
 async def get_topk_tokens(topk_tokens_input: TopkTokens):
+    """
+        Input request format:
+        a dictionary of following attributes
+        {
+            "model_name" : name of the model,
+            "adapter" : name of the adapter,
+            "question" : input question,
+            "context" : input context,
+            "gradient_way" : gradient calculation format simple/integreted/smooth,
+            "topk" : number of tokens to be selected (between 5 and 20)
+        }   
+
+    """
     args = {
         "model_name" : str(topk_tokens_input.model_name),
         "adapter" : str(topk_tokens_input.adapter),
@@ -151,6 +191,20 @@ async def get_topk_tokens(topk_tokens_input: TopkTokens):
 
 @router.post("/tokens_span", name="tokens span")
 async def get_tokens_span(tokens_span_input: TokensSpan):
+    """
+        Input request format:
+        a dictionary of following attributes
+        {
+            "model_name" : name of the model,
+            "adapter" : name of the adapter,
+            "question" : input question,
+            "context" : input context,
+            "gradient_way" : gradient calculation format simple/integreted/smooth,
+            "window" : number of tokens in the span (between 5 and 20)
+        }   
+
+    """
+    
     args = {
         "model_name" : str(tokens_span_input.model_name),
         "adapter" : str(tokens_span_input.adapter),
