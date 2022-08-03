@@ -1,6 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from transformers import BertTokenizer
-from app.models.heartbeat import HeartbeatResult
 from app.models.hotflip import HotFlip
 from app.models.input_reduction import InputReduction
 from app.models.topk_tokens import TopkTokens
@@ -38,10 +36,7 @@ async def get_hotflip(hotflip_input: HotFlip):
         "number_of_flips" : int(hotflip_input.number_of_flips)
     }
 
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    tokenized_context = tokenizer(args["context"], return_tensors = "pt")
-    context_tokens = tokenizer.convert_ids_to_tokens(tokenized_context.input_ids[0])
-    length = len(context_tokens) - 2
+    length = len(args['context'].split())
     if args['model_name'] != "bert-base-uncased":
         message = "Until now only bert-base-uncased is supported"
         raise HTTPException(status_code=404, detail=message)
@@ -99,10 +94,7 @@ async def get_reduction(input_reduction_input: InputReduction):
         "number_of_reductions" : int(input_reduction_input.number_of_reductions)
     }
 
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    tokenized_context = tokenizer(args["context"], return_tensors = "pt")
-    context_tokens = tokenizer.convert_ids_to_tokens(tokenized_context.input_ids[0])
-    length = len(context_tokens) - 2
+    length = len(args['context'].split())
     if args['model_name'] != "bert-base-uncased":
         message = "Until now only bert-base-uncased is supported"
         raise HTTPException(status_code=404, detail=message)
@@ -155,10 +147,7 @@ async def get_topk_tokens(topk_tokens_input: TopkTokens):
         "topk" : int(topk_tokens_input.topk)
     }
 
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    tokenized_context = tokenizer(args["context"], return_tensors = "pt")
-    context_tokens = tokenizer.convert_ids_to_tokens(tokenized_context.input_ids[0])
-    length = len(context_tokens) - 2
+    length = len(args['context'].split())
     if args['model_name'] != "bert-base-uncased":
         message = "Until now only bert-base-uncased is supported"
         raise HTTPException(status_code=404, detail=message)
@@ -213,10 +202,7 @@ async def get_tokens_span(tokens_span_input: TokensSpan):
         "gradient_way" : str(tokens_span_input.gradient_way),
         "window" : int(tokens_span_input.window)
     }
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    tokenized_context = tokenizer(args["context"], return_tensors = "pt")
-    context_tokens = tokenizer.convert_ids_to_tokens(tokenized_context.input_ids[0])
-    length = len(context_tokens) - 2
+    length = len(args['context'].split())
     if args['model_name'] != "bert-base-uncased":
         message = "Until now only bert-base-uncased is supported"
         raise HTTPException(status_code=404, detail=message)
