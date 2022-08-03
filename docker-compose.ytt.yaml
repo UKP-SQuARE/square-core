@@ -344,7 +344,7 @@ services:
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
-      - onnx-models:/onnx_models
+      - onnx_models:/onnx_models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
