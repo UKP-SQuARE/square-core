@@ -450,6 +450,9 @@ services:
 
   qagnn_worker:
     image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    build:
+      context: ./square-model-inference-api/inference_server
+      target: build
     command: celery -A tasks worker -Q qagnn --loglevel=info
     volumes:
       - ./:/usr/src/app
