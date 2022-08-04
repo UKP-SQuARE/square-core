@@ -8,7 +8,7 @@
         <div class="modal-body">
           <div class="container text-center">
             <div class="alert alert-warning" v-if="this.$store.state.loadingExplainability" role="alert">
-                  It's taking a bit longer than usual to generate your output... Please hang it there.
+                  It's taking a bit longer than usual to generate your output... Please hang in there.
             </div>
 
             <div class="row">
