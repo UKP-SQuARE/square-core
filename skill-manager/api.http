@@ -1,0 +1,122 @@
+@hostname = square.ukp-lab.de
+
+### GET TOKEN
+# @name get_token
+# @prompt username
+# @prompt password
+POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+Host: {{hostname}}
+content-type: application/x-www-form-urlencoded
+
+client_id=square-api&grant_type=password&username={{username}}&password={{password}}
+
+### 
+# @name get_skill_manager_heartbeat
+GET /api/skill-manager/health/heartbeat HTTP/1.1
+Host: {{hostname}}
+
+### 
+# @name get_skill_heartbeat
+# @prompt skill_url
+GET /api/skill-manager/health/skill-heartbeat?skill_url={{skill_url}} HTTP/1.1
+Host: {{hostname}}
+content-type: application/x-www-form-urlencoded
+
+###
+# @name get_all_public_skills
+GET /api/skill-manager/skill HTTP/1.1
+Host: {{hostname}}
+
+###
+# @name get_all_user_skills
+@token =  {{get_token.response.body.access_token}}
+GET /api/skill-manager/skill HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
+# @name get_skill_by_id
+# @prompt id {skill_id}
+GET /api/skill-manager/skill/{{id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
+# @name update_skill_by_id
+# @prompt id {skill_id}
+PUT /api/skill-manager/skill/{{id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+    ""
+}
+
+###
+# @name delete_skill_by_id
+# @prompt id {skill_id}
+DELETE /api/skill-manager/skill/{{id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
+# @name create_skill
+POST /api/skill-manager/skill HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+    ""
+}
+
+###
+# @name publish_skill_by_id
+# @prompt id {skill_id}
+POST /api/skill-manager/skill/{{id}}/publish HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
+# @name unpublish_skill_by_id
+# @prompt id {skill_id}
+POST /api/skill-manager/skill/{{id}}/unpublish HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
+# @name query_skill_by_id
+# @prompt id {skill_id}
+POST /api/skill-manager/skill/{{id}}/query HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "query": "When was the UN founded?",
+  "skill_args": {},
+  "skill": {},
+  "user_id": "",
+  "explain_kwargs": {}
+}
+
+###
+# @name query_skill_squad_dpr
+POST /api/skill-manager/skill/62c1ae1f536b1bb18ff91ced/query HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+Cache-Control: no-cache
+{
+  "query": "When was the UN founded?",
+  "skill_args": {"context": "The UN officially came into existence 24 October 1945, upon ratification of the Charter by the five permanent members of the Security Council—France, the Republic of China, the Soviet Union, the UK and the US—and by a majority of the other 46 signatories."},
+  "skill": {},
+  "user_id": "",
+  "explain_kwargs": {}
+}
+
+###
+# @name get_skill_types
+GET /api/skill-manager/skill-types HTTP/1.1
+Host: {{hostname}}

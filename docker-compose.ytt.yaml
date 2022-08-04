@@ -193,6 +193,8 @@ services:
       - 8000
     env_file:
       - ./skill-manager/.env
+      - ./mongodb/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
@@ -203,8 +205,12 @@ services:
       MONGO_PORT: 27017
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+      REDIS_USER: default
+      REDIS_HOST: redishost
+      REDIS_PORT: 6379
     depends_on:
       - mongodb
+      - redishost
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("skill-manager"))
@@ -269,6 +275,10 @@ services:
       CLIENT_ID: models
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      CONFIG_VOLUME: square-core_model_configs
     links:
       - rabbit
       - redishost
@@ -302,6 +312,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_USER: default
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -329,10 +340,11 @@ services:
       QUEUE: facebook-dpr-question_encoder-single-nq-base
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
+      CONFIG_VOLUME: square-core_model_configs
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
-      - onnx-models:/onnx_models
+      - onnx_models:/onnx_models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
@@ -438,6 +450,9 @@ services:
 
   qagnn_worker:
     image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    build:
+      context: ./square-model-inference-api/inference_server
+      target: build
     command: celery -A tasks worker -Q qagnn --loglevel=info
     volumes:
       - ./:/usr/src/app
