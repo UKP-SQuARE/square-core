@@ -12,7 +12,9 @@ model_api = ModelAPI()
 async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
-    choices = request.skill_args["choices"]
+    # HACK: the UI currently does not support choices, therefore the first choice will 
+    # be processed insde the context.
+    choices = [request.skill_args["context"]] + request.skill_args["choices"]
     model_kwargs = request.skill_args.get("model_kwargs", {})
     model_kwargs["output_lm_subgraph"] = model_kwargs.get("output_lm_subgraph", True)
     model_kwargs["output_attn_subgraph"] = model_kwargs.get("output_attn_subgraph", True)
