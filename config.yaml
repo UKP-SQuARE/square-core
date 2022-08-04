@@ -18,6 +18,8 @@ skills:
     author: ukp
   - name: open-extractive-qa
     author: ukp
+  - name: qa-gnn
+    author: ukp
 
 web_concurrency: 2
 
