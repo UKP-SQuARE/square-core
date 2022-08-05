@@ -86,12 +86,13 @@ async def create_skill(
     username = token_payload["username"]
     skill.user_id = username
 
+    if skill.created_at is None:
+        skill.created_at = datetime.datetime.now()
+
     client = keycloak_api.create_client(
         realm=realm, username=username, skill_name=skill.name
     )
     skill.client_id = client["clientId"]
-    if not skill.created_at:
-        skill.created_at = datetime.datetime.now()
 
     skill_id = mongo_client.client.skill_manager.skills.insert_one(
         skill.mongo()
