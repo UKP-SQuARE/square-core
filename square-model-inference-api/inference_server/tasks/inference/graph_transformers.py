@@ -59,7 +59,6 @@ ENTITIES_PATH = "/tzw.ent.npy"
 
 LM_MODEL = "roberta-base"
 MAX_NODE_NUM = 200
-NUM_CHOICE = 5
 
 NUM_PROCESSES = os.getenv("NUM_PROCESSES", 16)
 
@@ -430,7 +429,6 @@ class GraphTransformers(Model):
     ):
         # this is actually n_questions x n_choices
         n_samples = len(adj_concept_pairs)
-        # print("adj:", adj_concept_pairs)
         edge_index, edge_type = [], []
         adj_lengths = torch.zeros((n_samples,), dtype=torch.long)
         concept_ids = torch.full(
@@ -564,6 +562,7 @@ class GraphTransformers(Model):
         featurize data and get the model prediction
         """
 
+        num_choices = len(request.input)
         statements, grounded, graphs = self._prepare_input(request.input)
         model_type = self.lm_model.config.model_type
 
@@ -585,7 +584,7 @@ class GraphTransformers(Model):
         *test_decoder_data, test_adj_data = self.load_sparse_adj_data_with_contextnode(
             graphs,
             max_node_num=request.model_kwargs.get("max_node_num", MAX_NODE_NUM),
-            num_choice=request.model_kwargs.get("num_choice", NUM_CHOICE),
+            num_choice=num_choices,
         )
 
         input_data = [*data_tensors, *test_decoder_data, *test_adj_data]
@@ -647,6 +646,7 @@ class GraphTransformers(Model):
                 attn,
                 concept_ids,
                 node_type_ids,
+                num_choices=num_choices,
                 topk_attn=topk_attn
             )
             task_outputs["attn_subgraph"] = attn_subgraph
@@ -716,6 +716,7 @@ class GraphTransformers(Model):
             attentions,
             concept_ids,
             node_type_ids,
+            num_choices,
             topk_attn=10
     ):
         """
@@ -730,8 +731,8 @@ class GraphTransformers(Model):
         # 1: ans node
         # 2: extra/other nodes
         # 3: qa context node
-        attn_h1 = attentions[:NUM_CHOICE]
-        attn_h2 = attentions[NUM_CHOICE:]
+        attn_h1 = attentions[:num_choices]
+        attn_h2 = attentions[num_choices:]
         # info['attn'] = (attn_h1 + attn_h2) / 2  # (5,200)
         info['attn'] = (attn_h1 + attn_h2)  # (5,200)
 
