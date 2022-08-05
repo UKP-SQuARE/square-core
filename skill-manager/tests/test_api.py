@@ -455,11 +455,12 @@ def test_query_skill(
         )
 
         response = response.json()
-        # HACK: remove attributions from repsonse since the object saved in mongo does
-        # not contain it because it is "unset" and we remove all unset values when
-        # creating the mongo object
+        # HACK: remove attributions/prediction_graph from repsonse since the object 
+        # saved in mongo does not contain it because it is "unset" and we remove all 
+        # unset values when creating the mongo object
         for p in response["predictions"]:
             p.pop("attributions")
+            p.pop("prediction_graph")
 
         TestCase().assertDictEqual(
             response, {"predictions": saved_prediction["predictions"]}
