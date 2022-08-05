@@ -59,6 +59,14 @@
                 <!-- Button to restart layout -->
                 <button type="button" class="btn btn-outline-primary" @click="restart_layout()">Restart Layout</button>
               </div>
+              <div class="col-auto">
+                <!-- Button to restart layout -->
+                <button type="button" class="btn btn-outline-primary" @click="lm_graph()">LM Graph</button>
+              </div>
+              <div class="col-auto">
+                <!-- Button to restart layout -->
+                <button type="button" class="btn btn-outline-primary" @click="attn_graph()">Attention Graph</button>
+              </div>
 
             </div> <!-- end row -->
           </div> <!-- end container text-center -->
@@ -90,6 +98,8 @@ export default {
       loading: false,
       error: null,
       $cy: null,
+      lm_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'],
+      attn_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'],
       numShowingNodes: 10,
       spacingFactor: 1,
       layoutName: "breadthfirst"
@@ -159,7 +169,58 @@ export default {
       this.layoutName = "breadthfirst";
       this.get_subgraph(this.numShowingNodes);
       this.plot_graph();
-    }, 
+    },
+    lm_graph(){
+      this.cy.elements().remove();
+      var cnt = 0
+      /* eslint-disable */
+      for (const [key, node] of Object.entries(this.lm_subgraph["nodes"])) {
+        node['opacity'] = node['width']/100;
+        node['rank'] = cnt;
+        cnt += 1;
+        this.cy.add({
+          data: node
+        });
+
+      }
+      /* eslint-disable */
+      for (const [key, edge] of Object.entries(this.lm_subgraph["edges"])) {
+        edge['opacity'] = edge['weight'];
+        edge['width'] = edge['weight'] * 10;
+        this.cy.add({
+          data: edge
+        });
+      }
+      this.get_subgraph(50);
+      this.plot_graph()
+      this.slider_change()
+    },
+    attn_graph(){
+      this.cy.elements().remove();
+      var cnt = 0
+      /* eslint-disable */
+      for (const [key, node] of Object.entries(this.attn_subgraph["nodes"])) {
+        node['opacity'] = node['width']/100;
+        node['rank'] = cnt;
+        cnt += 1;
+        this.cy.add({
+          data: node
+        });
+
+      }
+      /* eslint-disable */
+      for (const [key, edge] of Object.entries(this.attn_subgraph["edges"])) {
+        edge['opacity'] = edge['weight'];
+        edge['width'] = edge['weight'] * 10;
+        this.cy.add({
+          data: edge
+        });
+
+      this.get_subgraph(50);
+      this.plot_graph()
+      this.slider_change()
+      }
+    },
     drawGraph() {
       cydagre(cytoscape);
       this.cy= cytoscape({
@@ -232,27 +293,7 @@ export default {
           fit: true,
         },
       });
-      /* eslint-disable */
-      var lm_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'];
-      var attn_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'];
-      var cnt = 0
-      for (const [key, node] of Object.entries(lm_subgraph["nodes"])) {
-        node['opacity'] = node['width']/100;
-        node['rank'] = cnt;
-        cnt += 1;
-        this.cy.add({
-          data: node
-        });
-
-      }
-      /* eslint-disable */
-      for (const [key, edge] of Object.entries(lm_subgraph["edges"])) {
-        edge['opacity'] = edge['weight'];
-        edge['width'] = edge['weight'] * 10;
-        this.cy.add({
-          data: edge
-        });
-      }
+      this.lm_graph();
       // get full graph
       this.get_subgraph(50);
       this.plot_graph()
