@@ -32,7 +32,7 @@
                 </div>
               </div>
 
-              <div class="col-auto">
+              <div class="col-4">
                 <div class="col-auto">
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
@@ -55,18 +55,17 @@
                 </div>
               </div>
 
-              <div class="col-auto">
-                <!-- Button to restart layout -->
+
+              <div class="col-2">
+                <div class="d-grid gap-2">
+                  <button type="button" class="btn btn-outline-primary" @click="lm_graph()">LM Graph</button>
+                  <button type="button" class="btn btn-outline-primary" @click="attn_graph()">Attention Graph</button>
+                </div>
+              </div>
+              <!-- <div class="col-auto">
                 <button type="button" class="btn btn-outline-primary" @click="restart_layout()">Restart Layout</button>
-              </div>
-              <div class="col-auto">
-                <!-- Button to restart layout -->
-                <button type="button" class="btn btn-outline-primary" @click="lm_graph()">LM Graph</button>
-              </div>
-              <div class="col-auto">
-                <!-- Button to restart layout -->
-                <button type="button" class="btn btn-outline-primary" @click="attn_graph()">Attention Graph</button>
-              </div>
+              </div> -->
+              
 
             </div> <!-- end row -->
           </div> <!-- end container text-center -->
@@ -294,11 +293,11 @@ export default {
         },
       });
       this.lm_graph();
-      // get full graph
-      this.get_subgraph(50);
-      this.plot_graph()
+      // // get full graph
+      // this.get_subgraph(50);
+      // this.plot_graph()
 
-      this.slider_change();
+      // this.slider_change();
 
       this.cy.on('tap', 'node', function (evt) {
         // hide node
