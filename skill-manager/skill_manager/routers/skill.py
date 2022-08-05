@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -89,6 +90,8 @@ async def create_skill(
         realm=realm, username=username, skill_name=skill.name
     )
     skill.client_id = client["clientId"]
+    if not skill.created_at:
+        skill.created_at = datetime.datetime.now()
 
     skill_id = mongo_client.client.skill_manager.skills.insert_one(
         skill.mongo()
@@ -242,6 +245,7 @@ async def query_skill(
     if request.headers.get("Cache-Control"):
         headers["Cache-Control"] = request.headers.get("Cache-Control")
 
+    logger.debug(f"query json={query_request.dict()}")
     response = session_cache.session.post(
         f"{skill.url}/query",
         headers=headers,
@@ -252,7 +256,7 @@ async def query_skill(
         response.raise_for_status()
     predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
-        "predictions from skill: {predictions}".format(predictions=predictions)
+        "predictions from skill: {predictions}".format(predictions=str(predictions.json())[:100])
     )
 
     # save prediction to mongodb
@@ -268,13 +272,13 @@ async def query_skill(
     ).inserted_id
     logger.debug(
         "prediction saved {mongo_prediction}".format(
-            mongo_prediction=mongo_prediction.json(),
+            mongo_prediction=str(mongo_prediction.json())[:100],
         )
     )
 
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(
-            query_request=query_request.json(), predictions=predictions
+            query_request=query_request.json(), predictions=str(predictions)[:100]
         )
     )
     return predictions
