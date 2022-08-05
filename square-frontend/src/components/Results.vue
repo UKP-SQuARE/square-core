@@ -67,6 +67,15 @@
         </div>
       </div>
 
+      <div class="col mt-3">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a data-bs-toggle="modal" data-bs-target="#modalGraph" role="button" class="btn btn-primary shadow">
+            Show Graph
+          </a>
+          <GraphViz id="modalGraph"/>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -76,6 +85,7 @@ import Vue from 'vue'
 import Categorical from '@/components/results/Categorical.vue'
 import SpanExtraction from '@/components/results/SpanExtraction.vue'
 import ExplainOutput from '../components/modals/ExplainOutput'
+import GraphViz from '../components/modals/GraphViz'
 
 export default Vue.component('skill-results', {
   data() {
@@ -91,7 +101,8 @@ export default Vue.component('skill-results', {
   components: {
     Categorical,
     SpanExtraction,
-    ExplainOutput
+    ExplainOutput,
+    GraphViz
   },
   computed: {
     currentResults() {
