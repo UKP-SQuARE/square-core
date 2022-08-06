@@ -18,7 +18,7 @@
                     Num Nodes: {{numShowingNodes}}
                   </div>
                   <div class="col-8">
-                    <input type="range" min="1" max="50" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
+                    <input type="range" min="1" :max="maxNodes" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
                   </div> 
                 </div>
 
@@ -58,8 +58,8 @@
 
               <div class="col-2">
                 <div class="d-grid gap-2">
-                  <button type="button" class="btn btn-outline-primary" @click="lm_graph()">LM Graph</button>
-                  <button type="button" class="btn btn-outline-primary" @click="attn_graph()">Attention Graph</button>
+                  <button type="button" class="btn btn-outline-primary" @click="lm_graph()" >LM Graph</button>
+                  <button type="button" class="btn btn-outline-primary" @click="attn_graph()" >Attention Graph</button>
                 </div>
               </div>
               <!-- <div class="col-auto">
@@ -99,6 +99,7 @@ export default {
       $cy: null,
       lm_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'],
       attn_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'],
+      maxNodes: 50,
       numShowingNodes: 10,
       spacingFactor: 1,
       layoutName: "breadthfirst"
@@ -106,7 +107,7 @@ export default {
   },
   mounted() {
     cytoscape.use( popper );
-    this.drawGraph();
+    this.init_cytoscape();
   },
   methods: {
     show_path() {
@@ -136,10 +137,10 @@ export default {
       return subgraph;
     },
     plot_graph() {
-      // if (this.layoutName == "breadthfirst"), add roots = #ans_node
-      this.cy.fit();
       this.cy.layout({ 
         name: this.layoutName, //other options: circle, random, grid, breadthfirst
+        grid: true,
+        padding: 0,
         spacingFactor: this.spacingFactor,
         depthSort: function(a, b){ 
             if (a.data('ans_node')) {
@@ -157,6 +158,7 @@ export default {
             }
           }
       }).run();
+      this.cy.fit();
     },
     slider_change(){
       this.get_subgraph(this.numShowingNodes);
@@ -170,6 +172,7 @@ export default {
       this.plot_graph();
     },
     lm_graph(){
+      this.lm_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'];
       this.cy.elements().remove();
       var cnt = 0
       /* eslint-disable */
@@ -186,15 +189,19 @@ export default {
       for (const [key, edge] of Object.entries(this.lm_subgraph["edges"])) {
         edge['opacity'] = edge['weight'];
         edge['width'] = edge['weight'] * 10;
-        this.cy.add({
-          data: edge
-        });
+        if (!this.self_loop(edge)){
+          this.cy.add({
+            data: edge
+          });
+        }
       }
-      this.get_subgraph(50);
+      this.maxNodes = 50;
+      this.get_subgraph(this.maxNodes);
       this.plot_graph()
       this.slider_change()
     },
     attn_graph(){
+      this.attn_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'];
       this.cy.elements().remove();
       var cnt = 0
       /* eslint-disable */
@@ -211,16 +218,22 @@ export default {
       for (const [key, edge] of Object.entries(this.attn_subgraph["edges"])) {
         edge['opacity'] = edge['weight'];
         edge['width'] = edge['weight'] * 10;
-        this.cy.add({
-          data: edge
-        });
-
-      this.get_subgraph(50);
-      this.plot_graph()
-      this.slider_change()
+        if (!this.self_loop(edge)){
+          this.cy.add({
+            data: edge
+          });
+        }
+      this.maxNodes = Math.min(this.maxNodes, this.cy.nodes().length);
+      this.numShowingNodes = this.maxNodes
+      this.get_subgraph(this.numShowingNodes);
+      this.plot_graph();
+      this.slider_change();
       }
     },
-    drawGraph() {
+    self_loop(edge){
+      return edge['source'] == edge['target'];
+    },
+    init_cytoscape() {
       cydagre(cytoscape);
       this.cy= cytoscape({
         container: document.getElementById("cy"),
@@ -231,9 +244,9 @@ export default {
           .selector("node")
           .css({
             "shape": "roundrectangle",
-            "height": 40,
-            "width": "data(width)",
-            "opacity": "data(opacity)",
+            // "height": 40,
+            // "width": "data(width)",
+            // "opacity": "data(opacity)",
             "background-color": "white",
             "color": "black",
             "border-color": "gray",
@@ -285,19 +298,7 @@ export default {
             nodes: [],
             edges: [],
           },
-        layout: {
-          name: "dagre",
-          spacingFactor: 1.5,
-          rankDir: "LR",
-          fit: true,
-        },
       });
-      this.lm_graph();
-      // // get full graph
-      // this.get_subgraph(50);
-      // this.plot_graph()
-
-      // this.slider_change();
 
       this.cy.on('tap', 'node', function (evt) {
         // hide node
@@ -331,7 +332,10 @@ export default {
         }
       });
 
-      },
+    },
+    close(){
+      this.cy.elements().remove();
+    },
   },
 };
 </script>
