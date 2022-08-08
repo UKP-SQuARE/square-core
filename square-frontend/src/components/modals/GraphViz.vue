@@ -179,6 +179,8 @@ export default {
       for (const [key, node] of Object.entries(this.lm_subgraph["nodes"])) {
         node['opacity'] = node['width']/100;
         node['rank'] = cnt;
+        // replace "_" with " " in the node name  to make it readable
+        node['name'] = node['name'].replace(/_/g, " ");
         cnt += 1;
         this.cy.add({
           data: node
@@ -188,8 +190,14 @@ export default {
       /* eslint-disable */
       for (const [key, edge] of Object.entries(this.lm_subgraph["edges"])) {
         edge['opacity'] = edge['weight'];
-        edge['width'] = edge['weight'] * 10;
-        if (!this.self_loop(edge)){
+        // edge['width'] = edge['weight'] * 10;
+        // replace "_" with " " in the edge label  to make it readable
+        edge['label'] = edge['label'].replace(/_/g, " ");
+        // if inverse edge is not in the graph, add it
+        let inv_edges = this.cy.filter(function(element, i){
+          return element.isEdge() && element.data('source') == edge['target'] && element.data('target') == edge['source'] && element.data('label') == edge['label'];
+        });
+        if (!this.self_loop(edge) && inv_edges.length == 0) {
           this.cy.add({
             data: edge
           });
@@ -208,6 +216,8 @@ export default {
       for (const [key, node] of Object.entries(this.attn_subgraph["nodes"])) {
         node['opacity'] = node['width']/100;
         node['rank'] = cnt;
+        // replace "_" with " " in the node name  to make it readable
+        node['name'] = node['name'].replace(/_/g, " ");
         cnt += 1;
         this.cy.add({
           data: node
@@ -218,7 +228,13 @@ export default {
       for (const [key, edge] of Object.entries(this.attn_subgraph["edges"])) {
         edge['opacity'] = edge['weight'];
         edge['width'] = edge['weight'] * 10;
-        if (!this.self_loop(edge)){
+        // replace "_" with " " in the edge label  to make it readable
+        edge['label'] = edge['label'].replace(/_/g, " ");
+        // if inverse edge is not in the graph, add it
+        let inv_edges = this.cy.filter(function(element, i){
+          return element.isEdge() && element.data('source') == edge['target'] && element.data('target') == edge['source'] && element.data('label') == edge['label'];
+        });
+        if (!this.self_loop(edge) && inv_edges.length == 0) {
           this.cy.add({
             data: edge
           });
@@ -244,7 +260,7 @@ export default {
           .selector("node")
           .css({
             "shape": "roundrectangle",
-            // "height": 40,
+            "text-wrap": "wrap",
             // "width": "data(width)",
             // "opacity": "data(opacity)",
             "background-color": "white",
@@ -280,11 +296,12 @@ export default {
             // http://js.cytoscape.org/#style/labels
             label: "data(label)", // maps to data.label
             "text-outline-color": "white",
-            "text-outline-width": 3,
+            // "text-outline-width": "10px",
+            // "font-size": "50px",
             "text-valign": "top",
             "text-halign": "left",
             // https://js.cytoscape.org/demos/edge-types/
-            "curve-style": "straight-triangle",
+            "curve-style": "bezier", //"straight-triangle",
             // "width": "data(width)",
             // "opacity": "data(opacity)",
             "line-color": "#48A7DB",
