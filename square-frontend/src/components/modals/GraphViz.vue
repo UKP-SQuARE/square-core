@@ -14,19 +14,19 @@
             <div class="row">
               <div class="col-6">
                 <div class="row">
-                  <div class="col-4">
-                    Num Nodes: {{numShowingNodes}}
+                  <div class="col-5 text-start">
+                    Num. Regular Nodes: {{numShowingNodes}}
                   </div>
-                  <div class="col-8">
+                  <div class="col-7">
                     <input type="range" min="1" :max="maxNodes" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
                   </div> 
                 </div>
 
                 <div class="row">
-                  <div class="col-4">
+                  <div class="col-5 text-start">
                     Spacing Factor: {{spacingFactor}}
                   </div>
-                  <div class="col-8">
+                  <div class="col-7">
                   <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="plot_graph()"/>
                   </div>
                 </div>
@@ -74,7 +74,8 @@
             <div id="cy" class="cy"></div>
           </div>
           <div>
-            <p>Legend: Question nodes in <font color="#B238DF">purple</font>, answer nodes in <font color="#14A07E">green</font>.</p>
+            <p>Legend: Question nodes in <font color="#B238DF">purple</font>, answer nodes in <font color="#14A07E">green</font>.
+            Clicking a node or edge will hide it.</p>
           </div>
 
         </div>  <!-- end modal-body -->
@@ -174,7 +175,7 @@ export default {
     lm_graph(){
       this.lm_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'];
       this.cy.elements().remove();
-      var cnt = 0
+      var cnt = 0;
       /* eslint-disable */
       for (const [key, node] of Object.entries(this.lm_subgraph["nodes"])) {
         node['opacity'] = node['width']/100;
