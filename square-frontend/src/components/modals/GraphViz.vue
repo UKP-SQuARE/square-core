@@ -229,7 +229,7 @@ export default {
       /* eslint-disable */
       for (const [key, node] of Object.entries(this.attn_subgraph["nodes"])) {
         node['lbl_width'] = node['name'].length * 10;
-        node['opacity'] = node['width']/100;
+        // node['opacity'] = node['width']/100;
         node['rank'] = cnt;
         // replace "_" with " " in the node name  to make it readable
         node['name'] = node['name'].replace(/_/g, " ");
@@ -241,8 +241,8 @@ export default {
       }
       /* eslint-disable */
       for (const [key, edge] of Object.entries(this.attn_subgraph["edges"])) {
-        edge['opacity'] = edge['weight'];
-        edge['width'] = edge['weight'] * 10;
+        // edge['opacity'] = edge['weight'];
+        // edge['width'] = edge['weight'] * 10;
         // replace "_" with " " in the edge label  to make it readable
         edge['label'] = edge['label'].replace(/_/g, " ");
         // if inverse edge is not in the graph, add it
