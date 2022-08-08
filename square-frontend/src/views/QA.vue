@@ -1,6 +1,9 @@
 <!-- The Home Page. Questions are asked and the results are displayed here. -->
 <template>
   <div>
+    <div class="alert alert-warning" role="alert" v-if="this.$store.state.skillOptions['qa']['selectedSkills'].includes('62eb8f7765872e7b65ea5c8b')">
+      QAGNN is instrinsically slower than the other skills. In average, it takes 20s to run. Please, be patient.
+    </div>
     <Query />
     <Results v-if="isShowingResults" />
     <div v-else class="row">
