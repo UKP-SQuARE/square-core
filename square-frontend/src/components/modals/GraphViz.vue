@@ -41,8 +41,8 @@
                   </div>
                   <div class="col-10">
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" id="random" value="random" v-model="layoutName" @change="plot_graph()"/>
-                      <label class="form-check-label" for="random">Random</label>
+                      <input class="form-check-input" type="radio" id="dagre" value="dagre" v-model="layoutName" @change="plot_graph()"/>
+                      <label class="form-check-label" for="dagre">dagre</label>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
@@ -111,6 +111,7 @@ export default {
   },
   mounted() {
     cytoscape.use( popper );
+    cytoscape.use( cydagre );
     this.init_cytoscape();
   },
   methods: {
@@ -145,22 +146,23 @@ export default {
         name: this.layoutName, //other options: circle, random, grid, breadthfirst
         circle: true,
         padding: 0,
+        root: '[q_node = true]',
         spacingFactor: this.spacingFactor,
-        depthSort: function(a, b){ 
-            if (a.data('ans_node')) {
-              return 1;
-            } else if (b.data('ans_node')) {
-              return -1;
-            } else {
-              if (a.data('q_node')) {
-                return -1;
-              } else if (b.data('q_node')) {
-                return 1;
-              } else {
-                return 0;
-              }
-            }
-          }
+        // depthSort: function(a, b){ 
+        //     if (a.data('ans_node')) {
+        //       return 1;
+        //     } else if (b.data('ans_node')) {
+        //       return -1;
+        //     } else {
+        //       if (a.data('q_node')) {
+        //         return -1;
+        //       } else if (b.data('q_node')) {
+        //         return 1;
+        //       } else {
+        //         return 0;
+        //       }
+        //     }
+        //   }
       }).run();
       this.cy.fit();
     },
@@ -277,7 +279,7 @@ export default {
             "shape": "roundrectangle",
             "text-wrap": "wrap",
             "width": "data(lbl_width)",
-            "opacity": "data(opacity)",
+            // "opacity": "data(opacity)",
             "background-color": "white",
             "color": "black",
             "border-color": "gray",
