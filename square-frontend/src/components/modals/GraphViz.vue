@@ -41,8 +41,8 @@
                   </div>
                   <div class="col-10">
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
-                      <label class="form-check-label" for="circle">Circle</label>
+                      <input class="form-check-input" type="radio" id="random" value="random" v-model="layoutName" @change="plot_graph()"/>
+                      <label class="form-check-label" for="random">Random</label>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
@@ -61,6 +61,7 @@
                 <div class="d-grid gap-2">
                   <button type="button" class="btn btn-outline-primary" @click="lm_graph()" >LM Graph</button>
                   <button type="button" class="btn btn-outline-primary" @click="attn_graph()" >Attention Graph</button>
+                  <button type="button" class="btn btn-outline-primary" @click="showEdgeLabels()" id="showHideEdgeLabels">Show edge labels</button>
                 </div>
               </div>
               <!-- <div class="col-auto">
@@ -102,9 +103,10 @@ export default {
       lm_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'],
       attn_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'],
       maxNodes: 50,
-      numShowingNodes: 10,
+      numShowingNodes: 5,
       spacingFactor: 1,
-      layoutName: "breadthfirst"
+      layoutName: "breadthfirst",
+      showEdgeLabelsFlag: false,
     };
   },
   mounted() {
@@ -141,7 +143,7 @@ export default {
     plot_graph() {
       this.cy.layout({ 
         name: this.layoutName, //other options: circle, random, grid, breadthfirst
-        grid: true,
+        circle: true,
         padding: 0,
         spacingFactor: this.spacingFactor,
         depthSort: function(a, b){ 
@@ -162,6 +164,15 @@ export default {
       }).run();
       this.cy.fit();
     },
+    showEdgeLabels(){
+      this.cy.edges().toggleClass("showlabel");
+      this.showEdgeLabelsFlag = !this.showEdgeLabelsFlag;
+      if (this.showEdgeLabelsFlag) {
+        document.getElementById("showHideEdgeLabels").innerHTML = "Hide edge labels";
+      } else {
+        document.getElementById("showHideEdgeLabels").innerHTML = "Show edge labels";
+      }
+    },
     slider_change(){
       this.get_subgraph(this.numShowingNodes);
       this.plot_graph();
@@ -179,7 +190,8 @@ export default {
       var cnt = 0;
       /* eslint-disable */
       for (const [key, node] of Object.entries(this.lm_subgraph["nodes"])) {
-        node['opacity'] = node['width']/100;
+        node['lbl_width'] = node['name'].length * 10; //
+        // node['opacity'] = node['width']/100;
         node['rank'] = cnt;
         // replace "_" with " " in the node name  to make it readable
         node['name'] = node['name'].replace(/_/g, " ");
@@ -207,8 +219,8 @@ export default {
       }
       this.maxNodes = 50;
       this.get_subgraph(this.maxNodes);
-      this.plot_graph()
-      this.slider_change()
+      this.slider_change();
+      this.plot_graph();
     },
     attn_graph(){
       this.attn_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'];
@@ -216,6 +228,7 @@ export default {
       var cnt = 0
       /* eslint-disable */
       for (const [key, node] of Object.entries(this.attn_subgraph["nodes"])) {
+        node['lbl_width'] = node['name'].length * 10;
         node['opacity'] = node['width']/100;
         node['rank'] = cnt;
         // replace "_" with " " in the node name  to make it readable
@@ -244,8 +257,8 @@ export default {
       this.maxNodes = Math.min(this.maxNodes, this.cy.nodes().length);
       this.numShowingNodes = this.maxNodes
       this.get_subgraph(this.numShowingNodes);
-      this.plot_graph();
       this.slider_change();
+      this.plot_graph();
       }
     },
     self_loop(edge){
@@ -263,8 +276,8 @@ export default {
           .css({
             "shape": "roundrectangle",
             "text-wrap": "wrap",
-            // "width": "data(width)",
-            // "opacity": "data(opacity)",
+            "width": "data(lbl_width)",
+            "opacity": "data(opacity)",
             "background-color": "white",
             "color": "black",
             "border-color": "gray",
@@ -296,7 +309,7 @@ export default {
           })
           .selector("edge").css({
             // http://js.cytoscape.org/#style/labels
-            label: "data(label)", // maps to data.label
+            // label: "data(label)", // maps to data.label
             "text-outline-color": "white",
             // "text-outline-width": "10px",
             // "font-size": "50px",
@@ -309,9 +322,8 @@ export default {
             "line-color": "#48A7DB",
             "target-arrow-color": "#48A7DB",
           })
-          .selector("edge:selected").css({
-            "line-color": "red",
-            "target-arrow-color": "red",
+          .selector("edge.showlabel").css({
+            "label": "data(label)", // maps to data.label
           }),
           elements: {
             nodes: [],
