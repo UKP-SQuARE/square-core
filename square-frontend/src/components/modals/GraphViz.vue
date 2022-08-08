@@ -32,6 +32,14 @@
                   <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="plot_graph()"/>
                   </div>
                 </div>
+                <div class="row">
+                  <div class="col-12 text-start">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="showHideEdgeLabels" v-model="showEdgeLabelsFlag" @change="showEdgeLabels()">
+                      <label class="form-check-label" for="showHideEdgeLabels" id="lbl_showHideEdgeLabels">Show edge labels</label>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="col-4">
@@ -61,7 +69,6 @@
                 <div class="d-grid gap-2">
                   <button type="button" class="btn btn-outline-primary" @click="lm_graph()" >LM Graph</button>
                   <button type="button" class="btn btn-outline-primary" @click="attn_graph()" >Attention Graph</button>
-                  <button type="button" class="btn btn-outline-primary" @click="showEdgeLabels()" id="showHideEdgeLabels">Show edge labels</button>
                 </div>
               </div>
               <!-- <div class="col-auto">
@@ -77,7 +84,7 @@
           </div>
           <div>
             <p>Legend: Question nodes in <font color="#B238DF">purple</font>, answer nodes in <font color="#14A07E">green</font>.
-            Clicking a node or edge will hide it.</p>
+            Clicking on a node or edge will hide it.</p>
           </div>
 
         </div>  <!-- end modal-body -->
@@ -168,12 +175,6 @@ export default {
     },
     showEdgeLabels(){
       this.cy.edges().toggleClass("showlabel");
-      this.showEdgeLabelsFlag = !this.showEdgeLabelsFlag;
-      if (this.showEdgeLabelsFlag) {
-        document.getElementById("showHideEdgeLabels").innerHTML = "Hide edge labels";
-      } else {
-        document.getElementById("showHideEdgeLabels").innerHTML = "Show edge labels";
-      }
     },
     slider_change(){
       this.get_subgraph(this.numShowingNodes);
@@ -187,6 +188,7 @@ export default {
       this.plot_graph();
     },
     lm_graph(){
+      this.showEdgeLabelsFlag = false;
       this.lm_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'];
       this.cy.elements().remove();
       var cnt = 0;
@@ -225,6 +227,7 @@ export default {
       this.plot_graph();
     },
     attn_graph(){
+      this.showEdgeLabelsFlag = false;
       this.attn_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'];
       this.cy.elements().remove();
       var cnt = 0
