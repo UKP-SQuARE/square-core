@@ -7,9 +7,11 @@
         </div>
         <div class="modal-body">
           
-          <div class="container text-center">
-            <h1>Q: {{this.$store.state.currentQuestion}} </h1>
-            <h4>Choices: {{this.$store.state.currentContext}}</h4>
+          <div class="container">
+            <div class="text-center">
+              <h1>Q: {{this.$store.state.currentQuestion}} </h1>
+              <h4>Choices: {{this.$store.state.currentContext}}</h4>
+            </div>
             
             <div class="row">
               <div class="col-6">
@@ -33,27 +35,26 @@
               </div>
 
               <div class="col-4">
-                <div class="col-auto">
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
-                    <label class="form-check-label" for="circle">Circle</label>
+                <div class="row">
+                  <div class="col-2">
+                    <br>Layout:
                   </div>
-                  
-                </div>
-                <div class="col-auto">
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
-                    <label class="form-check-label" for="breadthfirst">Breadth First</label>
+                  <div class="col-10">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" id="circle" value="circle" v-model="layoutName" @change="plot_graph()"/>
+                      <label class="form-check-label" for="circle">Circle</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
+                      <label class="form-check-label" for="breadthfirst">Breadth First</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" id="grid" value="grid" v-model="layoutName" @change="plot_graph()"/>
+                      <label class="form-check-label" for="grid">Grid</label>
+                    </div>  
                   </div>
-                    
-                </div>
-                <div class="col-auto">
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="grid" value="grid" v-model="layoutName" @change="plot_graph()"/>
-                    <label class="form-check-label" for="grid">Grid</label>
-                  </div>  
-                </div>
-              </div>
+                </div> <!-- end row -->
+              </div> <!-- end col -->
 
 
               <div class="col-2">
