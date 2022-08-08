@@ -14,40 +14,12 @@
             </div>
             
             <div class="row">
-              <div class="col-6">
+              <div class="col-auto">
                 <div class="row">
-                  <div class="col-5 text-start">
-                    Num. Regular Nodes: {{numShowingNodes}}
-                  </div>
-                  <div class="col-7">
-                    <input type="range" min="1" :max="maxNodes" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
-                  </div> 
-                </div>
-
-                <div class="row">
-                  <div class="col-5 text-start">
-                    Spacing Factor: {{spacingFactor}}
-                  </div>
-                  <div class="col-7">
-                  <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="plot_graph()"/>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-12 text-start">
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" role="switch" id="showHideEdgeLabels" v-model="showEdgeLabelsFlag" @change="showEdgeLabels()">
-                      <label class="form-check-label" for="showHideEdgeLabels" id="lbl_showHideEdgeLabels">Show edge labels</label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-4">
-                <div class="row">
-                  <div class="col-2">
+                  <div class="col-auto">
                     <br>Layout:
                   </div>
-                  <div class="col-10">
+                  <div class="col-auto">
                     <div class="form-check">
                       <input class="form-check-input" type="radio" id="dagre" value="dagre" v-model="layoutName" @change="plot_graph()"/>
                       <label class="form-check-label" for="dagre">dagre</label>
@@ -64,6 +36,33 @@
                 </div> <!-- end row -->
               </div> <!-- end col -->
 
+              <div class="col-6">
+                <div class="row">
+                  <div class="col-5 text-start">
+                    Num. Regular Nodes: {{numShowingNodes}}
+                  </div>
+                  <div class="col-7">
+                    <input type="range" min="1" :max="maxNodes" v-model="numShowingNodes" class="form-range" id="Range" @change="slider_change()"/>
+                  </div> 
+                </div> <!-- end row -->
+
+                <div class="row">
+                  <div class="col-5 text-start">
+                    Spacing Factor: {{spacingFactor}}
+                  </div>
+                  <div class="col-7">
+                  <input type="range" min="0.5" max="2.5" v-model="spacingFactor"  step="0.1" class="form-range" id="SpacingRange" @change="plot_graph()"/>
+                  </div>
+                </div> <!-- end row -->
+                <div class="row">
+                  <div class="col-12 text-start">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="showHideEdgeLabels" v-model="showEdgeLabelsFlag" @change="showEdgeLabels()">
+                      <label class="form-check-label" for="showHideEdgeLabels" id="lbl_showHideEdgeLabels">Show edge labels</label>
+                    </div>
+                  </div>
+                </div> <!-- end row -->
+              </div> <!-- end col -->
 
               <div class="col-2">
                 <div class="d-grid gap-2">
