@@ -69,6 +69,7 @@
                 <div class="d-grid gap-2">
                   <button type="button" class="btn btn-outline-primary" @click="lm_graph()" >LM Graph</button>
                   <button type="button" class="btn btn-outline-primary" @click="attn_graph()" >Attention Graph</button>
+                  <button type="button" class="btn btn-outline-primary" @click="resetZoom()" >Reset Zoom</button>
                 </div>
               </div>
               <!-- <div class="col-auto">
@@ -171,6 +172,9 @@ export default {
         //     }
         //   }
       }).run();
+      this.cy.fit();
+    },
+    resetZoom() {
       this.cy.fit();
     },
     showEdgeLabels(){
