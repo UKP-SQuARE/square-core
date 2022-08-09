@@ -98,6 +98,7 @@
 import cydagre from "cytoscape-dagre";
 import cytoscape from "cytoscape";
 import popper from 'cytoscape-popper';
+import tippy from 'tippy.js';
 
 
 export default {
@@ -115,6 +116,7 @@ export default {
       spacingFactor: 1,
       layoutName: "breadthfirst",
       showEdgeLabelsFlag: false,
+      id2tip: {},
     };
   },
   mounted() {
@@ -252,7 +254,48 @@ export default {
           }
         });
       }
-    
+      this.createNodeWeightTooltips();
+    },
+    createNodeWeightTooltips(){
+      // for each node create a tooltip with the node weight
+      for (var i = 0; i < this.cy.nodes().length; i++) {
+        var node = this.cy.nodes()[i];
+        this.id2tip[node.id()] = this.makePopperWithTippy(node);
+      }
+      // on tapdragover event on a node, show the tooltip
+      this.cy.on('tapdragover', 'node', function(evt){
+        var node = evt.target;
+        this.id2tip[node.id()].show();
+      }.bind(this));
+      // on tapdragout event on a node, hide the tooltip
+      this.cy.on('tapdragout', 'node', function(evt){
+        var node = evt.target;
+        this.id2tip[node.id()].hide();
+      }.bind(this));
+    },
+    makePopperWithTippy(node) {
+      let ref = node.popperRef(); // used only for positioning
+
+      // A dummy element must be passed as tippy only accepts dom element(s) as the target
+      // https://atomiks.github.io/tippyjs/v6/constructor/#target-types
+      let dummyDomEle = document.createElement("div");
+
+      let tip = tippy(dummyDomEle, {
+        // tippy props:
+        getReferenceClientRect: ref.getBoundingClientRect, // https://atomiks.github.io/tippyjs/v6/all-props/#getreferenceclientrect
+        trigger: "manual", // mandatory, we cause the tippy to show programmatically.
+
+        // your own custom props
+        // content prop can be used when the target is a single element https://atomiks.github.io/tippyjs/v6/constructor/#prop
+        content: () => {
+          let content = document.createElement("div");
+
+          content.innerHTML = node.width();
+
+          return content;
+        }
+      })
+      return tip;
     },
     plot_graph() {
       this.cy.layout({ 
@@ -377,29 +420,7 @@ export default {
         // hide edge
         evt.target.addClass("hidden");
       });
-      // when hover on edge, show edge label
-      this.cy.elements().unbind("mouseover");
-      this.cy.elements().bind("mouseover", (event) => {
-        event.target.popperRefObj = event.target.popper({
-          content: () => {
-            let content = document.createElement("div");
-
-            content.classList.add("popper-div");
-
-            content.innerHTML = event.target.width().toFixed(2);;
-
-            document.body.appendChild(content);
-            return content;
-          },
-        });
-      });
-      this.cy.elements().unbind("mouseout");
-      this.cy.elements().bind("mouseout", (event) => {
-        if (event.target.popper) {
-          event.target.popperRefObj.state.elements.popper.remove();
-          event.target.popperRefObj.destroy();
-        }
-      });
+      
 
     },
     close(){

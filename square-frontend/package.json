@@ -20,6 +20,7 @@
     "masonry-layout": "^4.2.2",
     "package.json": "^2.0.1",
     "string-punctuation-tokenizer": "^2.2.0",
+    "tippy.js": "^6.3.7",
     "vue": "^2.6.14",
     "vue-router": "^3.5.3",
     "vuex": "^3.6.2"
