@@ -14,7 +14,7 @@
             </div>
             
             <div class="row">
-              <div class="col-auto">
+              <div class="col-3">
                 <div class="row">
                   <div class="col-auto">
                     <br>Layout:
@@ -36,7 +36,7 @@
                 </div> <!-- end row -->
               </div> <!-- end col -->
 
-              <div class="col-6">
+              <div class="col-7">
                 <div class="row">
                   <div class="col-5 text-start">
                     Num. Regular Nodes: {{numShowingNodes}}
