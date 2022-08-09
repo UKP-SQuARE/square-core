@@ -14,7 +14,7 @@
             </div>
             
             <div class="row">
-              <div class="col-auto">
+              <div class="col-3">
                 <div class="row">
                   <div class="col-auto">
                     <br>Layout:
@@ -36,7 +36,7 @@
                 </div> <!-- end row -->
               </div> <!-- end col -->
 
-              <div class="col-6">
+              <div class="col-7">
                 <div class="row">
                   <div class="col-5 text-start">
                     Num. Regular Nodes: {{numShowingNodes}}
@@ -111,6 +111,7 @@ export default {
       attn_subgraph: this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'],
       maxNodes: 50,
       numShowingNodes: 5,
+      selectedGraph: undefined,
       spacingFactor: 1,
       layoutName: "breadthfirst",
       showEdgeLabelsFlag: false,
@@ -139,37 +140,132 @@ export default {
         console.log(bfs[i]);
       }
     },
-    get_subgraph(num_nodes){
-      this.cy.nodes().addClass("hidden");
-      // eslint-disable-next-line
-      var subgraph = this.cy.filter(function(element, i){
-        return element.isNode() && (element.data('q_node') == true || element.data('ans_node') == true || element.data('rank') < num_nodes);
+    createSubgraph(graph, numNodes){
+      this.cy.elements().remove();
+      var cntRegularNodes = 0;
+      var listRegularNodes = [];
+      var listAnswerNodes = [];
+      var listQuestionNodes = [];
+      var listNodesIds = [];
+      var listQNodeIds = [];
+      
+      /* eslint-disable */
+      for (const [key, node] of Object.entries(graph["nodes"])) {
+        // if node is not a question node, then add it to the subgraph
+        if (node["q_node"]) {
+          listQuestionNodes.push(node);
+          listNodesIds.push(node['id']);
+          listQNodeIds.push(node['id']);
+        } else if (node['ans_node']){
+          listAnswerNodes.push(node);
+          listNodesIds.push(node['id']);
+        } else if (cntRegularNodes < numNodes){ // add the first numNodes "regular nodes" to the subgraph
+          listRegularNodes.push(node);
+          listNodesIds.push(node['id']);
+          cntRegularNodes++;
+        }
+      }
+      this.maxNodes = Object.keys(graph['nodes']).length - listQNodeIds.length - listAnswerNodes.length;
+      this.numShowingNodes = Math.min(this.maxNodes, numNodes);
+      var listEdges = [];
+      /* eslint-disable */
+      for (const [key, edge] of Object.entries(graph["edges"])) {
+        // if edge in listNodes, then add it to the subgraph
+        if (listNodesIds.includes(edge["source"]) && listNodesIds.includes(edge["target"])) {
+          listEdges.push(edge);
+        }
+      }
+
+      // add nodes to the subgraph
+      // create QA node
+      this.cy.add({
+        data: {
+          id: "QA",
+          q_node: true,
+          ans_node: false,
+          rank: 0,
+          name: "QA",
+          lbl_width: "QA".length*20,
+        }
       });
-      subgraph.removeClass("hidden");
-      return subgraph;
+      var rank = 1;
+      // add question nodes to the subgraph
+      for (var i = 0; i < listQuestionNodes.length; i++) {
+        // add node to subgraph
+        var node = listQuestionNodes[i];
+        node['lbl_width'] = node['name'].length * 10; //
+        node['rank'] = rank;
+        // replace "_" with " " in the node name  to make it readable
+        node['name'] = node['name'].replace(/_/g, " ");
+        this.cy.add({
+          data: node
+        });
+        rank++;
+      }
+
+      // add regular nodes to the subgraph
+      for (var i = 0; i < listRegularNodes.length; i++) {
+        // add node to subgraph
+        var node = listRegularNodes[i];
+        node['lbl_width'] = node['name'].length * 10; //
+        node['rank'] = rank;
+        // replace "_" with " " in the node name  to make it readable
+        node['name'] = node['name'].replace(/_/g, " ");
+        this.cy.add({
+          data: node
+        });
+        rank++;
+      }
+
+      // add answer nodes to the subgraph
+      for (var i = 0; i < listAnswerNodes.length; i++) {
+        // add node to subgraph
+        var node = listAnswerNodes[i];
+        node['lbl_width'] = node['name'].length * 10; //
+        node['rank'] = rank;
+        // replace "_" with " " in the node name  to make it readable
+        node['name'] = node['name'].replace(/_/g, " ");
+        this.cy.add({
+          data: node
+        });
+        rank++;
+      }
+      
+      // for each edge in listEdges
+      for (var i = 0; i < listEdges.length; i++) {
+        // add edge to subgraph
+        var edge = listEdges[i];
+        if (!this.self_loop(edge)) {
+          this.cy.add({
+            data: edge
+          });
+        }
+      }
+      // for each node in listQNodeIds
+      for (var i = 0; i < listQNodeIds.length; i++) {
+        this.cy.add({
+          data: {
+            source: "QA",
+            target: listQNodeIds[i],
+            weight: 1,
+            label: ""
+          }
+        });
+      }
+    
     },
     plot_graph() {
       this.cy.layout({ 
         name: this.layoutName, //other options: circle, random, grid, breadthfirst
-        circle: true,
-        padding: 0,
-        root: '[q_node = true]',
+        // circle: true,
+        // maximal: true, // this doesn't work in some cases...
+        directed: true,
+        root: "[id = 'QA']",
         spacingFactor: this.spacingFactor,
-        // depthSort: function(a, b){ 
-        //     if (a.data('ans_node')) {
-        //       return 1;
-        //     } else if (b.data('ans_node')) {
-        //       return -1;
-        //     } else {
-        //       if (a.data('q_node')) {
-        //         return -1;
-        //       } else if (b.data('q_node')) {
-        //         return 1;
-        //       } else {
-        //         return 0;
-        //       }
-        //     }
-        //   }
+        depthSort: function(a, b) {
+          return a.data('rank') - b.data('rank');
+        }
+        
       }).run();
       this.cy.fit();
     },
@@ -180,94 +276,28 @@ export default {
       this.cy.edges().toggleClass("showlabel");
     },
     slider_change(){
-      this.get_subgraph(this.numShowingNodes);
+      this.createSubgraph(this.selectedGraph, this.numShowingNodes);
       this.plot_graph();
     },
     restart_layout(){
       this.numShowingNodes = 10;
       this.spacingFactor = 1;
       this.layoutName = "breadthfirst";
-      this.get_subgraph(this.numShowingNodes);
+      // this.get_subgraph(this.numShowingNodes);
+      this.createSubgraph(this.numShowingNodes);
       this.plot_graph();
     },
     lm_graph(){
       this.showEdgeLabelsFlag = false;
-      this.lm_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['lm_subgraph'];
-      this.cy.elements().remove();
-      var cnt = 0;
-      /* eslint-disable */
-      for (const [key, node] of Object.entries(this.lm_subgraph["nodes"])) {
-        node['lbl_width'] = node['name'].length * 10; //
-        // node['opacity'] = node['width']/100;
-        node['rank'] = cnt;
-        // replace "_" with " " in the node name  to make it readable
-        node['name'] = node['name'].replace(/_/g, " ");
-        cnt += 1;
-        this.cy.add({
-          data: node
-        });
-
-      }
-      /* eslint-disable */
-      for (const [key, edge] of Object.entries(this.lm_subgraph["edges"])) {
-        edge['opacity'] = edge['weight'];
-        // edge['width'] = edge['weight'] * 10;
-        // replace "_" with " " in the edge label  to make it readable
-        edge['label'] = edge['label'].replace(/_/g, " ");
-        // if inverse edge is not in the graph, add it
-        let inv_edges = this.cy.filter(function(element, i){
-          return element.isEdge() && element.data('source') == edge['target'] && element.data('target') == edge['source'] && element.data('label') == edge['label'];
-        });
-        if (!this.self_loop(edge) && inv_edges.length == 0) {
-          this.cy.add({
-            data: edge
-          });
-        }
-      }
-      this.maxNodes = 50;
-      this.get_subgraph(this.maxNodes);
-      this.slider_change();
+      this.selectedGraph = this.lm_subgraph;
+      this.createSubgraph(this.selectedGraph, this.numShowingNodes);
       this.plot_graph();
     },
     attn_graph(){
       this.showEdgeLabelsFlag = false;
-      this.attn_subgraph = this.$store.state.currentResults[0].predictions[0].prediction_graph['attn_subgraph'];
-      this.cy.elements().remove();
-      var cnt = 0
-      /* eslint-disable */
-      for (const [key, node] of Object.entries(this.attn_subgraph["nodes"])) {
-        node['lbl_width'] = node['name'].length * 10;
-        // node['opacity'] = node['width']/100;
-        node['rank'] = cnt;
-        // replace "_" with " " in the node name  to make it readable
-        node['name'] = node['name'].replace(/_/g, " ");
-        cnt += 1;
-        this.cy.add({
-          data: node
-        });
-
-      }
-      /* eslint-disable */
-      for (const [key, edge] of Object.entries(this.attn_subgraph["edges"])) {
-        // edge['opacity'] = edge['weight'];
-        // edge['width'] = edge['weight'] * 10;
-        // replace "_" with " " in the edge label  to make it readable
-        edge['label'] = edge['label'].replace(/_/g, " ");
-        // if inverse edge is not in the graph, add it
-        let inv_edges = this.cy.filter(function(element, i){
-          return element.isEdge() && element.data('source') == edge['target'] && element.data('target') == edge['source'] && element.data('label') == edge['label'];
-        });
-        if (!this.self_loop(edge) && inv_edges.length == 0) {
-          this.cy.add({
-            data: edge
-          });
-        }
-      this.maxNodes = Math.min(this.maxNodes, this.cy.nodes().length);
-      this.numShowingNodes = this.maxNodes
-      this.get_subgraph(this.numShowingNodes);
-      this.slider_change();
+      this.selectedGraph = this.attn_subgraph;
+      this.createSubgraph(this.selectedGraph, this.numShowingNodes);
       this.plot_graph();
-      }
     },
     self_loop(edge){
       return edge['source'] == edge['target'];
