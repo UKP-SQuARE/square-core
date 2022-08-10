@@ -765,7 +765,7 @@ class GraphTransformers(Model):
                     node["q_node"] = True
                 elif node_type_id == 1:
                     node["ans_node"] = True
-                node["width"] = float(attn)
+                node["weight"] = float(attn)
                 node_attributes[node["id"]] = node
             return node_attributes
 
