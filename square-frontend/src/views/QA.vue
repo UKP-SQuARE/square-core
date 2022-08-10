@@ -2,7 +2,7 @@
 <template>
   <div>
     <div class="alert alert-warning" role="alert" v-if="this.$store.state.skillOptions['qa']['selectedSkills'].includes('62eb8f7765872e7b65ea5c8b')">
-      QAGNN is intrinsically slower than the other skills. On average, it takes 20s to run. Please, be patient.
+      QAGNN is intrinsically slower than the other skills. On average, it takes 20s to run. Please be patient.
     </div>
     <Query />
     <Results v-if="isShowingResults" />
