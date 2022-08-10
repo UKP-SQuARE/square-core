@@ -67,7 +67,7 @@
         </div>
       </div>
 
-      <div class="col mt-3">
+      <div class="col mt-3" v-if="this.$store.state.currentSkills.includes('62eb8f7765872e7b65ea5c8b')">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a data-bs-toggle="modal" data-bs-target="#modalGraph" role="button" class="btn btn-primary shadow">
             Show Graph
