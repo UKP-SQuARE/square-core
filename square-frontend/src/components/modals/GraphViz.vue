@@ -199,6 +199,7 @@ export default {
           ans_node: false,
           rank: 0,
           name: "QA",
+          weight: 1.0,
           lbl_width: "QA".length*20,
         }
       });
@@ -301,9 +302,7 @@ export default {
         // content prop can be used when the target is a single element https://atomiks.github.io/tippyjs/v6/constructor/#prop
         content: () => {
           let content = document.createElement("div");
-
-          content.innerHTML = node.width();
-
+          content.innerHTML = node.data('weight').toFixed(2);
           return content;
         }
       })
