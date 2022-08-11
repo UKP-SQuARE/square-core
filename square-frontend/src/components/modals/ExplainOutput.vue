@@ -154,29 +154,28 @@ export default Vue.component("explain-output",{
   },
   methods:{
     postReq(method) {
+      // reset UI
       this.failure = false;
-      // num words in context
-      var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
-      // num_Maxshow for explain method is the min(numWords, numContextWords)
-      var numContextWords = tokenize({'text': this.$store.state.currentContext, 'includePunctuation': true}).length;
-      if (!this.$store.state.currentResults[0].skill.skill_settings.requiresContext) { // for ODQA
-        let context = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document
-        numContextWords = tokenize({'text': context, 'includePunctuation': true}).length;
-      }
-      this.num_Maxshow = Math.max(numQuestionWords, numContextWords);
-      // method for setting explain method : 'attention', 'scaled_attention', 'simple_grads', 'smooth_grads', 'integrated_grads'      
       // remove class active from all buttons
       var btn_list = document.getElementsByClassName('btn-outline-primary');
       for (var i = 0; i < btn_list.length; i++) {
         btn_list[i].classList.remove('active');
       }
-      // switch the waiting_* variables to true to show the loading spinner
-      this.runSpinner(method);
-      var context = this.$store.state.currentContext
-      if (!this.$store.state.currentResults[0].skill.skill_settings.requiresContext) { // for ODQA
+
+      // real method starts here
+      // get the context and the top_k words to show
+      var context = this.$store.state.currentContext      
+      var skill = this.$store.state.currentResults[0].skill
+      if (skill.skill_type == 'span-extraction' && !skill.skill_settings.requiresContext) { // for ODQA
         context = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document
       }
+      var numContextWords = tokenize({'text': context, 'includePunctuation': true}).length;
+      var numQuestionWords = tokenize({'text': this.$store.state.currentQuestion, 'includePunctuation': true}).length;
+      this.num_Maxshow = Math.max(numQuestionWords, numContextWords);
+
       this.show_saliency_map = false;
+      this.runSpinner(method);
+      // api call
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
         inputContext: context,
