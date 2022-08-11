@@ -20,6 +20,17 @@
 
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
+                  <img :src="`${publicPath}coliseum.jpg`" class="card-img-top" alt="ScaDS.AI logo">
+                  <div class="card-body">
+                    <h5 class="card-title">Sapienza's BabelNet Workshop</h5>
+                    <p class="card-text">Prof. Iryna Gurevych presents SQuARE at the  <a href="http://mousse-project.org/events/event-a5f3r5.html" target="_blank">BabelNet's 10<sup>th</sup> Anniversary Workshop</a></p>
+                    <p class="card-text"><small class="text-muted">Jul. 2022</small></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
                   <img :src="`${publicPath}acl2022.png`" class="card-img-top" alt="acl logo">
                   <div class="card-body">
                     <h5 class="card-title">ACL 2022</h5>
