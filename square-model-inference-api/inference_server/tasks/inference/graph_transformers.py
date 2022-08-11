@@ -683,6 +683,12 @@ class GraphTransformers(Model):
         """
 
         def _get_node_info(lm_scores: dict, grounded: dict) -> dict:
+
+            def softmax(score: float, score_map: dict):
+                values = np.array(list(score_map.values()))
+                sum = np.exp(values).sum()
+
+                return np.exp(score) / sum
             node_attributes = {}
             for node_id, score in lm_scores.items():
                 node = dict()
@@ -694,7 +700,7 @@ class GraphTransformers(Model):
                     node["q_node"] = True
                 elif node["name"] in grounded["ac"]:
                     node["ans_node"] = True
-                node["width"] = float(score)
+                node["weight"] = float(softmax(float(score),lm_scores))
                 node_attributes[node_id] = node
             return node_attributes
 
@@ -758,7 +764,7 @@ class GraphTransformers(Model):
                     node["q_node"] = True
                 elif node_type_id == 1:
                     node["ans_node"] = True
-                node["width"] = float(attn)
+                node["weight"] = float(attn)
                 node_attributes[node["id"]] = node
             return node_attributes
 
