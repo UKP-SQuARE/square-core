@@ -82,11 +82,12 @@ export default new Vuex.Store({
               predictions: response.data.predictions
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
+          })).finally(() => {
             if ( "explain_kwargs" in options ){
-                clearTimeout(timeoutExplainabilityLoading);
-                context.commit('setLoadingExplainability', {'value': false});
-            }
-          }))
+              clearTimeout(timeoutExplainabilityLoading);
+              context.commit('setLoadingExplainability', {'value': false});
+          }
+          })
     },
     signIn(context, { userInfo, token }) {
       context.commit('setAuthentication', { userInfo: userInfo, token: token })
