@@ -81,6 +81,14 @@ class PredictionRequest(BaseModel):
                     "- 'top_k': number of word attributions to return:<br>"
                     "- 'mode: One of 'question', 'context', 'all'. Returns respective attributions. "
     )
+    attack_kwargs: dict = Field(
+        default={},
+        description="Optional dictionary containing additional parameters for attacking models<br>"
+                    "- 'method': explanation method such as 'hotflip', 'input_reduction' <br>"
+                    " 'saliency_method': simple_grads, integrated_grads, smooth_grads, attention or scaled_attention :<br>"
+                    "- 'max_flips': number of words to flip in hotflip <br>"
+                    "- 'include_answer: Whether to remove answer from context while attacking model. "
+    )
     adapter_name: Optional[str] = Field(
         default="",
         description="Only necessary for Adapter. "
