@@ -171,23 +171,7 @@ export default Vue.component("explain-output",{
         btn_list[i].classList.remove('active');
       }
       // switch the waiting_* variables to true to show the loading spinner
-      switch(method){
-        case 'attention':
-          this.waiting_attention = true;
-          break;
-        case 'scaled_attention':
-          this.waiting_scaled_attention = true;
-          break;
-        case 'simple_grads':
-          this.waiting_simple_grads = true;
-          break;
-        case 'smooth_grads':
-          this.waiting_smooth_grads = true;
-          break;
-        case 'integrated_grads':
-          this.waiting_integrated_grads = true;
-          break;
-      }
+      this.runSpinner(method);
       var context = this.$store.state.currentContext
       if (!this.$store.state.currentResults[0].skill.skill_settings.requiresContext) { // for ODQA
         context = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document
@@ -211,7 +195,7 @@ export default Vue.component("explain-output",{
         this.show_saliency_map = true;
         // add class active to the button method+"_btn"
         document.getElementById(method+"_btn").classList.add("active");
-        // the tokenizer used by the API is a bit different from the one used in the fronted,
+        // the tokenizer used by the API is a bit different from the one used in the frontend,
         // so update num_Maxshow with the real number of words in the context
         this.num_Maxshow = this.$store.state.currentResults[0].predictions[0].attributions.topk_context_idx.length;
       }).catch(() => {
@@ -222,22 +206,28 @@ export default Vue.component("explain-output",{
       })
     },
     stopSpinner(method){
+      this.changeSpinnerStatus(method, false);
+    },
+    runSpinner(method){
+      this.changeSpinnerStatus(method, true);
+    },
+    changeSpinnerStatus(method, value){
       switch(method){
-          case 'attention':
-            this.waiting_attention = false;
-            break;
-          case 'scaled_attention':
-            this.waiting_scaled_attention = false;
-            break;
-          case 'simple_grads':
-            this.waiting_simple_grads = false;
-            break;
-          case 'smooth_grads':
-            this.waiting_smooth_grads = false;
-            break;
-          case 'integrated_grads':
-            this.waiting_integrated_grads = false;
-            break;
+        case 'attention':
+          this.waiting_attention = value;
+          break;
+        case 'scaled_attention':
+          this.waiting_scaled_attention = value;
+          break;
+        case 'simple_grads':
+          this.waiting_simple_grads = value;
+          break;
+        case 'smooth_grads':
+          this.waiting_smooth_grads = value;
+          break;
+        case 'integrated_grads':
+          this.waiting_integrated_grads = value;
+          break;
         }
     },
     highLight(topk_idx,attributions){ // add here skill param
