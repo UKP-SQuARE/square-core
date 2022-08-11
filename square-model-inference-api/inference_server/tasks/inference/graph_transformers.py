@@ -705,7 +705,6 @@ class GraphTransformers(Model):
                 :topk_scores
             ]
         )
-
         subgraph["nodes"] = _get_node_info(ranked_lm_scores, grounded)
         subgraph["edges"] = self._get_edge_info(list(ranked_lm_scores.keys()))
         # subgraph = json.dumps(subgraph, indent=4)

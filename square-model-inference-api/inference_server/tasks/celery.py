@@ -12,14 +12,13 @@ rabbitmq_password = os.getenv("RABBITMQ_DEFAULT_PASS", "secret")
 redis_user = os.getenv("REDIS_USER", "ukp")
 redis_password = os.getenv("REDIS_PASSWORD", "secret")
 
-# logger.info(f"redis://{redis_user}:{redis_password}@redishost:6379")
-# logger.info(f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//")
 app = Celery(
     "tasks",
     backend=f"redis://{redis_user}:{redis_password}@redishost:6379",
     broker=f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//",
     include=["tasks.tasks"],
 )
+
 # app.conf.task_routes = {
 #     'tasks.add': {'queue': 'dpr'},
 #     'tasks.predict': {'queue': 'dpr'}
