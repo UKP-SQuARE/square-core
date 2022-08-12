@@ -20,14 +20,16 @@ async def predict(request: QueryRequest) -> QueryOutput:
     model_kwargs["output_attn_subgraph"] = model_kwargs.get("output_attn_subgraph", True)
 
     explain_kwargs = request.explain_kwargs or {}
+    adversarial_kwargs = request.adversarial_kwargs or {}
 
     prepared_input = [[query, choice] for choice in choices]
 
     # Call Model API
     model_request = {
         "input": prepared_input,
+        "model_kwargs": model_kwargs,
         "explain_kwargs": explain_kwargs,
-        "model_kwargs": model_kwargs
+        "adversarial_kwargs": adversarial_kwargs,
     }
     logger.debug("Request for model api:{}".format(model_request))
 
