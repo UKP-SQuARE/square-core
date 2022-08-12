@@ -957,7 +957,7 @@ class Transformer(Model):
                 "model_kwargs": {"output_attentions": True},
                 "task_kwargs": {},
                 "explain_kwargs": {
-                    "method": "attention",
+                    "method": request.attack_kwargs.get("saliency_method", "attention"),
                     "top_k": top_k,
                     "mode": "all",
                 },
@@ -1089,36 +1089,8 @@ class Transformer(Model):
         Merges sub-words to actual words
         """
 
-        decoded_each_tok = tokens
-        chars_to_handle = ["s", "t", "ve", "re", "m", "n't"]
-
-        context_start = tokens.index(self.tokenizer.sep_token)
-        for idx, token in enumerate(decoded_each_tok[:-1]):
-            if (
-                token not in self.tokenizer.all_special_tokens
-                and token == "'"
-                and decoded_each_tok[idx + 1] in chars_to_handle
-                and idx < context_start
-            ):
-                word_map[idx] = word_map[idx - 1]
-                word_map[idx + 1] = word_map[idx - 1]
-                word_map[idx + 2 : context_start] = [
-                    w - 2 for w in word_map[idx + 2 : context_start] if w
-                ]
-                continue
-            if (
-                token not in self.tokenizer.all_special_tokens
-                and token == "'"
-                and decoded_each_tok[idx + 1] in chars_to_handle
-                and idx > context_start
-            ):
-                word_map[idx] = word_map[idx - 1]
-                word_map[idx + 1] = word_map[idx - 1]
-                word_map[idx + 2 : -1] = [w - 2 for w in word_map[idx + 2 : -1] if w]
-                continue
-
-        filtered_tokens = [decoded_each_tok[0]]
-        for idx, (word_idx, word) in enumerate(zip(word_map, decoded_each_tok[1:])):
+        filtered_tokens = [tokens[0]]
+        for idx, (word_idx, word) in enumerate(zip(word_map, tokens[1:])):
             if word_idx == word_map[idx + 1] and not word == self.tokenizer.sep_token:
                 filtered_tokens[-1] = f'{filtered_tokens[-1]}{word.replace("##", "")}'
             else:
