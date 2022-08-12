@@ -47,6 +47,7 @@ def skill_prediction_factory():
         return {
             "predictions": [
                 {
+                    "question": "What is the answer to the ultimate question of life, the universe, and everything?",
                     "prediction_score": 1,
                     "prediction_output": {"output": "answer", "output_score": "1"},
                     "prediction_documents": [
