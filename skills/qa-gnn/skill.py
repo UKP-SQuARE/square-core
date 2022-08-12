@@ -39,5 +39,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info("Model API output: {}".format(model_api_output))
 
     return QueryOutput.from_sequence_classification_with_graph(
-        answers=choices, model_api_output=model_api_output
+        questions=query, answers=choices, model_api_output=model_api_output
     )

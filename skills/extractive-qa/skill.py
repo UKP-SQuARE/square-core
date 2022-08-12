@@ -36,5 +36,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_question_answering(
-        model_api_output=model_api_output, context=context
+        questions=query, model_api_output=model_api_output, context=context
     )
