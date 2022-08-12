@@ -19,12 +19,12 @@ async def predict(request: QueryRequest) -> QueryOutput:
     prepared_input = [[query, c] for c in choices]
 
     explain_kwargs = request.explain_kwargs or {}
-    adversarial_kwargs = request.adversarial_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     model_request = {
         "input": prepared_input,
         "explain_kwargs": explain_kwargs,
-        "adversarial_kwargs": adversarial_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]

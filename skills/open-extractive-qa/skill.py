@@ -19,7 +19,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     explain_kwargs = request.explain_kwargs or {}
-    adversarial_kwargs = request.adversarial_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     context = request.skill_args.get("context")
     if not context:
@@ -42,7 +42,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": prepared_input,
         "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
         "explain_kwargs": explain_kwargs,
-        "adversarial_kwargs": adversarial_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
