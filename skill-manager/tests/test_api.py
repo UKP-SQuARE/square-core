@@ -93,15 +93,9 @@ def assert_skills_equal_from_response(skill, response):
     skill = skill.dict()
     added_skill = response.json()
     for k in added_skill:
-        if k in ["id", "client_id", "client_secret"]:
+        if k in ["id", "client_id", "client_secret", "created_at"]:
             # these attributes were created when inserting into mongo/keycloak
             continue
-        if k in ["created_at"]:
-            added_skill[k] = datetime.fromisoformat(added_skill[k])
-            # mongodb does not store timezone and nanoseconds
-            skill[k] = skill[k].replace(
-                tzinfo=None, microsecond=skill[k].microsecond // 1000 * 1000
-            )
 
         assert (
             added_skill[k] == skill[k]
@@ -461,11 +455,12 @@ def test_query_skill(
         )
 
         response = response.json()
-        # HACK: remove attributions from repsonse since the object saved in mongo does
-        # not contain it because it is "unset" and we remove all unset values when
-        # creating the mongo object
+        # HACK: remove attributions/prediction_graph from repsonse since the object 
+        # saved in mongo does not contain it because it is "unset" and we remove all 
+        # unset values when creating the mongo object
         for p in response["predictions"]:
             p.pop("attributions")
+            p.pop("prediction_graph")
 
         TestCase().assertDictEqual(
             response, {"predictions": saved_prediction["predictions"]}
