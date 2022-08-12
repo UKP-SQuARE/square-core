@@ -54,9 +54,7 @@ class Skill(MongoModel):
     skill_type: SkillType
     skill_settings: SkillSettings
     user_id: str = Field(..., description="Username of the skill author.")
-    created_at: datetime = Field(
-        default_factory=datetime.now, description="Timestamp of skill creation."
-    )
+    created_at: Optional[datetime] = Field(None, description="Timestamp of skill creation.")
     skill_input_examples: Optional[List[SkillInputExample]]
     description: Optional[str] = Field(
         None,

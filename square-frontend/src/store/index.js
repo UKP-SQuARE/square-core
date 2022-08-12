@@ -21,6 +21,7 @@ export default new Vuex.Store({
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
+    currentSkills: [],
     availableSkills: [],
     mySkills: [],
     skillOptions: {
@@ -39,6 +40,7 @@ export default new Vuex.Store({
       state.currentQuestion = payload.question
       state.currentContext = payload.context
       state.currentResults = payload.results
+      state.currentSkills = payload.skills
     },
     setSkills(state, payload) {
       state.availableSkills = payload.skills
@@ -79,12 +81,13 @@ export default new Vuex.Store({
               skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
               predictions: response.data.predictions
             }))
-            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
+            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
+          })).finally(() => {
             if ( "explain_kwargs" in options ){
-                clearTimeout(timeoutExplainabilityLoading);
-                context.commit('setLoadingExplainability', {'value': false});
-            }
-          }))
+              clearTimeout(timeoutExplainabilityLoading);
+              context.commit('setLoadingExplainability', {'value': false});
+          }
+          })
     },
     signIn(context, { userInfo, token }) {
       context.commit('setAuthentication', { userInfo: userInfo, token: token })
