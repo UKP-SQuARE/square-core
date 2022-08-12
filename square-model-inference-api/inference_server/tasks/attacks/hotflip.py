@@ -21,8 +21,8 @@ class Hotflip:
            Tuple of flipped inputs and the largest indices
         """
         attributions = model_outputs["attributions"][0]
-        context_attributions = attributions["context_tokens"]
-        question_attributions = attributions["question_tokens"]
+        context_attributions = attributions["context_tokens"][0]
+        question_attributions = attributions["question_tokens"][0]
 
         if not self.include_answer:
             proc_context = [
@@ -38,7 +38,6 @@ class Hotflip:
                 : self.top_k
             ]
         ]
-
         # randomly choose max_tokens; save memory
         max_tokens = 5000
         vocab = random.sample(list(self.tokenizer.get_vocab().keys()), max_tokens)
