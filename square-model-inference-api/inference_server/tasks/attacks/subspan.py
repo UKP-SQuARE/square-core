@@ -32,11 +32,15 @@ class SubSpan:
         context_tokens = np.array([word[1] for word in context_attributions])
         context_attr = np.array([word[2] for word in context_attributions])
 
+        # take full context if top_k is greater than the context length
+        if self.top_k > len(context_tokens):
+            self.top_k = len(context_tokens)
+
         window = self.top_k
         # select the window with the highest scores
         high = 0
         start_span, end_span = 0, 0
-        for i in range(len(context_attr) - window):
+        for i in range(len(context_attr) - window + 1):
             step = i + window
             temp = sum(context_attr[i:step])
             if temp > high:
@@ -52,4 +56,5 @@ class SubSpan:
                 [context_text] + reduced_context,
             )
         ]
+        logger.info(prepared_inputs)
         return prepared_inputs, span_indices
