@@ -37,7 +37,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         # skip backgrond knowledge retrieval and use context provided
         prepared_input = [[query, context]]
         context_score = 1
-    
+
     model_request = {
         "input": prepared_input,
         "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
@@ -54,5 +54,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_question_answering(
-        questions=query, model_api_output=model_api_output, context=context, context_score=context_score
+        questions=query,
+        model_api_output=model_api_output,
+        context=context,
+        context_score=context_score,
     )

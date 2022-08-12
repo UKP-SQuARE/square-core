@@ -61,5 +61,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
         ]
 
     return QueryOutput.from_sequence_classification(
-        questions=query, answers=choices, model_api_output=model_api_output, context=context
+        questions=query,
+        answers=choices,
+        model_api_output=model_api_output,
+        context=context,
     )
