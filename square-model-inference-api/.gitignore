@@ -136,3 +136,7 @@ venv/
 
 # dry run test files
 test.py
+
+# api envs
+inference_server/*.json
+inference_server/tasks/inference/transformer_legacy.py

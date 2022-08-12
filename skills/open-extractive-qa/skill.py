@@ -19,6 +19,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     explain_kwargs = request.explain_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     context = request.skill_args.get("context")
     if not context:
@@ -36,11 +37,12 @@ async def predict(request: QueryRequest) -> QueryOutput:
         # skip backgrond knowledge retrieval and use context provided
         prepared_input = [[query, context]]
         context_score = 1
-    
+
     model_request = {
         "input": prepared_input,
         "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
         "explain_kwargs": explain_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
@@ -52,5 +54,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_question_answering(
-        model_api_output=model_api_output, context=context, context_score=context_score
+        questions=query,
+        model_api_output=model_api_output,
+        context=context,
+        context_score=context_score,
     )

@@ -14,6 +14,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     context = request.skill_args["context"]
     explain_kwargs = request.explain_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     prepared_input = [context, query]
 
@@ -23,6 +24,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq",
         "explain_kwargs": explain_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     model_api_output = await model_api(
         model_name="bert-base-uncased",
@@ -32,5 +34,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_sequence_classification(
-        answers=["No", "Yes"], model_api_output=model_api_output, context=context
+        questions=query,
+        answers=["No", "Yes"],
+        model_api_output=model_api_output,
+        context=context,
     )
