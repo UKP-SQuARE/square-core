@@ -16,6 +16,7 @@ const News = () => import('../views/News')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
 
+
 Vue.use(VueRouter)
 
 const routes = [

@@ -19,12 +19,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     context = request.skill_args["context"]
     explain_kwargs = request.explain_kwargs or {}
-
+    attack_kwargs = request.attack_kwargs or {}
     prepared_input = [[query, context]]
     model_request = {
         "input": prepared_input,
-        "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
+        "task_kwargs": {"topk": request.skill_args.get("topk", 5), "show_null_answers": request.skill_args.get("show_null_answers", True)},
         "explain_kwargs": explain_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
@@ -37,5 +38,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_question_answering(
-        model_api_output=model_api_output, context=context
+        questions=query, model_api_output=model_api_output, context=context
     )

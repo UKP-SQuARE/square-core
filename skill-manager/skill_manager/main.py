@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
-from skill_manager import mongo_client
+from skill_manager import mongo_client, redis_client
 from skill_manager.routers.api import router
 
 logger = logging.getLogger(__name__)
@@ -56,8 +56,10 @@ app.openapi_schema = add_prefix_to_openapi()
 @app.on_event("startup")
 def on_startup():
     mongo_client.connect()
+    redis_client.connect()
 
 
 @app.on_event("shutdown")
 def on_shutdown():
     mongo_client.close()
+    redis_client.close()

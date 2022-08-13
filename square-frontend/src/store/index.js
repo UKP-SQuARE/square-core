@@ -21,6 +21,7 @@ export default new Vuex.Store({
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
+    currentSkills: [],
     availableSkills: [],
     mySkills: [],
     skillOptions: {
@@ -31,13 +32,15 @@ export default new Vuex.Store({
       explain: {
         selectedSkills: Array(3).fill('None')
       }
-    }
+    },
+    loadingExplainability: false
   },
   mutations: {
     setAnsweredQuestion(state, payload) {
       state.currentQuestion = payload.question
       state.currentContext = payload.context
       state.currentResults = payload.results
+      state.currentSkills = payload.skills
     },
     setSkills(state, payload) {
       state.availableSkills = payload.skills
@@ -53,6 +56,9 @@ export default new Vuex.Store({
     },
     setSkillOptions(state, payload) {
       state.skillOptions[payload.selectorTarget] = payload.skillOptions
+    },
+    setLoadingExplainability(state, payload) {
+      state.loadingExplainability = payload.value
     }
   },
   /**
@@ -61,6 +67,13 @@ export default new Vuex.Store({
   actions: {
     query(context, { question, inputContext, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
+      // if explain_kwargs in options
+      var timeoutExplainabilityLoading = null
+      if ( "explain_kwargs" in options ){
+        timeoutExplainabilityLoading = setTimeout(() => {
+          context.commit('setLoadingExplainability', {'value': true});
+        }, 8000);
+      }
       return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
@@ -68,8 +81,13 @@ export default new Vuex.Store({
               skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
               predictions: response.data.predictions
             }))
-            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext })
-          }))
+            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
+          })).finally(() => {
+            if ( "explain_kwargs" in options ){
+              clearTimeout(timeoutExplainabilityLoading);
+              context.commit('setLoadingExplainability', {'value': false});
+          }
+          })
     },
     signIn(context, { userInfo, token }) {
       context.commit('setAuthentication', { userInfo: userInfo, token: token })

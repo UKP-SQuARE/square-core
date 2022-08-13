@@ -49,6 +49,12 @@ class PredictionRequest(BaseModel):
                     "SentenceTransformer: This is ignored.<br>"
                     "Transformer/ Adapter: See the forward method of the Huggingface models for possible parameters"
                     "For example, set ‘output_attentions=True’ to receive the attention results in the output."
+                    "For QaGNN the following options are also available:"
+                    "1. set `output_lm_subgraph` to get the scored LM subgraph"
+                    "2. set `output_attn_subgraph` to get the scored attention subgraph"
+                    "3. set `topk_lm_scores` to get the most relevant nodes"
+                    "4. set `topk_attn` to get the nodes with most attention"
+
     )
     # task: Task = Field(...)
     task_kwargs: dict = Field(
@@ -80,6 +86,15 @@ class PredictionRequest(BaseModel):
                     "smooth_grads, attention or scaled_attention':<br>"
                     "- 'top_k': number of word attributions to return:<br>"
                     "- 'mode: One of 'question', 'context', 'all'. Returns respective attributions. "
+    )
+    attack_kwargs: dict = Field(
+        default={},
+        description="Optional dictionary containing additional parameters for attacking models<br>"
+                    "- 'method': explanation method such as 'hotflip', 'input_reduction' <br>"
+                    " 'saliency_method': simple_grads, integrated_grads, smooth_grads, attention or scaled_attention :<br>"
+                    "- 'max_flips': number of words to flip in hotflip <br>"
+                    "- 'include_answer: Whether to remove answer from context while attacking model. "
+                    "- 'max_reductions': number of words to remove in input reduction <br>"
     )
     adapter_name: Optional[str] = Field(
         default="",

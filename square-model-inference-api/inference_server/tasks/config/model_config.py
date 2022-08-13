@@ -27,6 +27,9 @@ class ModelConfig(Mapping):
     model_path: str = None
     decoder_path: str = None
 
+    # data paths to store additional data
+    data_path: str = None
+
     preloaded_adapters: bool = True
     # Disable CUDA even if available
     disable_gpu: bool = False
@@ -71,6 +74,7 @@ class ModelConfig(Mapping):
             disable_gpu=self.disable_gpu,
             return_plaintext_arrays=self.return_plaintext_arrays,
             model_path=self.model_path,
+            data_path=self.data_path,
             decoder_path=self.decoder_path,
             preloaded_adapters=self.preloaded_adapters,
             transformers_cache=self.transformers_cache,
@@ -82,6 +86,7 @@ class ModelConfig(Mapping):
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
         self.model_path = config["model_path"]
+        self.data_path = config["data_path"]
         self.decoder_path = config["decoder_path"]
         self.preloaded_adapters = config["preloaded_adapters"]
         self.disable_gpu = config["disable_gpu"]
@@ -98,6 +103,7 @@ class ModelConfig(Mapping):
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
             model_path=config("MODEL_PATH", default=None),
+            data_path=config("DATA_PATH", default=None),
             decoder_path=config("DECODER_PATH", default=None),
             preloaded_adapters=config("PRELOADED_ADAPTERS", cast=bool, default=True),
             disable_gpu=config("DISABLE_GPU", cast=bool, default=False),
@@ -135,7 +141,7 @@ model_config = ModelConfig.load()
 
 # for testing the inference models
 def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_size, model_class="base",
-                    cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path=""):
+                    cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path="", data_path=""):
     global model_config
     model_config.model_name = model_name
     model_config.model_class = model_class
@@ -145,6 +151,7 @@ def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_s
     model_config.max_input_size = max_input_size
     model_config.transformers_cache = cache
     model_config.preloaded_adapters = preloaded_adapters
+    model_config.data_path = data_path
     model_config.model_path = onnx_path
     model_config.decoder_path = decoder_path
 

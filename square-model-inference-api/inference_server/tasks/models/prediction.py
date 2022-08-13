@@ -115,13 +115,40 @@ class PredictionOutput(BaseModel):
 
 
 class PredictionOutputForSequenceClassification(PredictionOutput):
-    labels: List[int] = Field([], description="List of the predicted label ids for the input. "
-                                              "Not set for regression.")
-    id2label: Dict[int, str] = Field({}, description="Mapping from label id to the label name. "
-                                                     "Not set for regression.")
-    attributions: List[Dict] = Field(...,
-                                     description="scores for the input tokens which are "
-                                                 "important for the model prediction")
+    labels: List[int] = Field(
+        default=[],
+        description="List of the predicted label ids for the input. "
+                    "Not set for regression."
+    )
+    id2label: Dict[int, str] = Field(
+        default={},
+        description="Mapping from label id to the label name. "
+                    "Not set for regression."
+    )
+    attributions: Optional[List[Dict]] = Field(
+        default=[],
+        description="scores for the input tokens which are "
+                    "important for the model prediction"
+    )
+
+    def __init__(self, **data):
+        super().__init__(**data)
+
+
+class PredictionOutputForGraphSequenceClassification(PredictionOutput):
+    labels: List[int] = Field(
+        default=[],
+        description="List of the predicted label ids for the input. "
+                    "Not set for regression."
+    )
+    lm_subgraph: Optional[Dict[str, Dict]] = Field(
+        default={},
+        description="return the lm scored subgraph"
+    )
+    attn_subgraph: Optional[Dict[str, Dict]] = Field(
+        default={},
+        description="return the attention subgraph"
+    )
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -175,6 +202,16 @@ class QAAnswer(BaseModel):
     answer: str
 
 
+class TokenAttributions(BaseModel):
+    """
+    A span answer for question_answering with a score, the start and end character index and the extracted span answer.
+    """
+    topk_question_idx: List
+    topk_context_idx: List
+    question_tokens: List[List[Tuple[int, str, float]]]
+    context_tokens: List[List[Tuple[int, str, float]]]
+
+
 class PredictionOutputForQuestionAnswering(PredictionOutput):
     answers: List[List[QAAnswer]] = Field(...,
                                           description="List of lists of answers. Length of outer list is the number "
@@ -185,7 +222,14 @@ class PredictionOutputForQuestionAnswering(PredictionOutput):
                                                       "(the extracted span). The inner list is sorted by score. If no "
                                                       "answer span was extracted, the empty span is returned "
                                                       "(start and end both 0)")
-    attributions: List[Dict] = Field(...,
+    questions: Optional[List] = Field([],
+                                     description="The new questions after modification")
+    contexts: Optional[List] = Field([],
+                                     description="The new contexts after modification")
+    attributions: Optional[List[TokenAttributions]] = Field([],
+                                     description="scores for the input tokens which are important for the"
+                                                 "model prediction")
+    adversarial: Optional[Dict] = Field({},
                                      description="scores for the input tokens which are important for the"
                                                  "model prediction")
 

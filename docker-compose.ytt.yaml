@@ -193,6 +193,8 @@ services:
       - 8000
     env_file:
       - ./skill-manager/.env
+      - ./mongodb/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
@@ -203,8 +205,12 @@ services:
       MONGO_PORT: 27017
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+      REDIS_USER: default
+      REDIS_HOST: redishost
+      REDIS_PORT: 6379
     depends_on:
       - mongodb
+      - redishost
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("skill-manager"))
@@ -269,6 +275,10 @@ services:
       CLIENT_ID: models
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      CONFIG_VOLUME: square-core_model_configs
     links:
       - rabbit
       - redishost
@@ -302,6 +312,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_USER: default
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -329,10 +340,11 @@ services:
       QUEUE: facebook-dpr-question_encoder-single-nq-base
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
+      CONFIG_VOLUME: square-core_model_configs
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
-      - onnx-models:/onnx_models
+      - onnx_models:/onnx_models
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
@@ -359,7 +371,7 @@ services:
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CLIENT_ID: models
       CONFIG_PATH: /model_configs
@@ -390,7 +402,7 @@ services:
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CLIENT_ID: models
       CONFIG_PATH: /model_configs
@@ -421,11 +433,46 @@ services:
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CLIENT_ID: models
       CONFIG_PATH: /model_configs
       QUEUE: roberta-base
+      REDIS_USER: default
+      RABBITMQ_DEFAULT_USER: ukp
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+  qagnn_worker:
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    build:
+      context: ./square-model-inference-api/inference_server
+      target: build
+    command: celery -A tasks worker -Q qagnn --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+      - model_storage:/model_storage
+    env_file:
+      - ./square-model-inference-api/inference_server/.env.qagnn
+      - ./square-model-inference-api/inference_server/.env
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      ONNX_VOLUME: onnx_models
+      REALM: #@ data.values.realm
+      CLIENT_ID: models
+      CONFIG_PATH: /model_configs
+      QUEUE: qagnn
       REDIS_USER: default
       RABBITMQ_DEFAULT_USER: ukp
     links:
@@ -528,10 +575,7 @@ volumes:
     driver: local
   model_configs:
     driver: local
-
-  onnx-models:
+  model_storage:
     driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: /home/sterz/onnx_models
+  onnx_models:
+    driver: local

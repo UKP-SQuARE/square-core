@@ -9,9 +9,9 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
-RUN pip download torch==1.8.1
 COPY requirements1.txt ./
 RUN pip install -r requirements1.txt
+RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 
 COPY uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
