@@ -3,43 +3,59 @@ from copy import deepcopy
 import numpy as np
 import logging
 
+from tasks.attacks.attack import Attacker
+
 
 logger = logging.getLogger(__name__)
 
 
-class InputReduction:
-    def __init__(
-        self, top_k,
-    ):
-        self.top_k = top_k
+class InputReduction(Attacker):
+    """
+    Reduce the input to the top k words with the highest importance
+    """
+    def __init__(self, request, task, model_outputs):
+        """
+        Initialize the input reduction attack
 
-    def reduce_instance(self, model_outputs) -> Tuple[List[List], List]:
+        Args:
+            request (dict): the request to the model
+            task (Task): the task to attack
+            model_outputs (dict): the model outputs
+
+        """
+        super().__init__(request, task, model_outputs)
+        self.top_k = self.request.attack_kwargs.get("max_reductions", 10)
+
+    def attack_instance(self) -> Tuple[List[List], List]:
         """
         post-process the word attributions to merge the sub-words tokens
         to words
-        Args:
-            model_outputs: word importance scores
+
         Returns:
             Tuple of reduced inputs and the smallest indices
         """
-        attributions = model_outputs["attributions"][0]
-        context_attributions = attributions["context_tokens"][0]
-        question_attributions = attributions["question_tokens"][0]
 
-        context_text = " ".join([word[1] for word in context_attributions])
-        question_text = " ".join([word[1] for word in question_attributions])
+        (
+            question_attributions,
+            context_attributions,
+            question_text,
+            context_text,
+            question_tokens,
+            question_scores,
+            _,
+            _,
+        ) = self._get_tokens_and_attributions()
 
-        question_tokens = np.array([word[1] for word in question_attributions])
-        question_attr = np.array([word[2] for word in question_attributions])
-        smallest_indices = np.argsort(question_attr)[: self.top_k].tolist()
+        smallest_indices = np.argsort(question_scores)[: self.top_k].tolist()
 
+        beam = self.top_k
         reduced_instances_and_smallest: List[Tuple] = []
         while len(question_tokens) != 1:
             instance = deepcopy(question_tokens)
 
             # find smallest
-            smallest = np.argmin(question_attr)
-            question_attr = np.delete(question_attr, smallest)
+            smallest = np.argmin(question_scores)
+            question_scores = np.delete(question_scores, smallest)
             question_tokens = np.delete(question_tokens, smallest)
 
             # remove smallest
@@ -50,18 +66,29 @@ class InputReduction:
             reduced_instances_and_smallest.append(
                 (" ".join(list(reduced_instance)), smallest)
             )
-            # decrement top k
-            self.top_k -= 1
-            if self.top_k == 0:
+            # decrement top k counter
+            beam -= 1
+            if beam == 0:
                 break
 
         reduced_questions = [entry[0] for entry in reduced_instances_and_smallest]
-        prepared_inputs = [
-            [q, c]
-            for q, c in zip(
-                [question_text] + reduced_questions,
-                [context_text] * (len(reduced_questions) + 1),
-            )
-        ]
 
-        return prepared_inputs, smallest_indices
+        prepared_inputs = self.prepare_data(
+            question_text=[question_text] + reduced_questions,
+            context_text=[context_text] * (len(reduced_questions) + 1),
+        )
+
+        batch_request = self.base_prediction_request
+        batch_request["input"] = prepared_inputs
+        # method defaults to attention in input reduction
+        saliency_method = self.request.attack_kwargs.get("saliency_method", "attention")
+        if saliency_method in ["attention", "scaled_attention"]:
+            batch_request["model_kwargs"] = {"output_attentions": True}
+        batch_request["explain_kwargs"] = {
+            "method": saliency_method,
+            "top_k": len(question_text),  # set to a max value to get all words
+            "mode": "all",
+        }
+        batch_request["questions"] = [question_text] + reduced_questions
+
+        return batch_request, smallest_indices
