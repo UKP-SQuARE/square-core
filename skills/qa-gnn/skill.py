@@ -22,7 +22,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     )
 
     explain_kwargs = request.explain_kwargs or {}
-    adversarial_kwargs = request.adversarial_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     prepared_input = [[query, choice] for choice in choices]
 
@@ -31,7 +31,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": prepared_input,
         "model_kwargs": model_kwargs,
         "explain_kwargs": explain_kwargs,
-        "adversarial_kwargs": adversarial_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     logger.debug("Request for model api:{}".format(model_request))
 

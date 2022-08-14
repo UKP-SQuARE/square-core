@@ -14,7 +14,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     context = request.skill_args["context"]
     explain_kwargs = request.explain_kwargs or {}
-    adversarial_kwargs = request.adversarial_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     prepared_input = [context, query]
 
@@ -24,7 +24,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "model_kwargs": {},
         "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq",
         "explain_kwargs": explain_kwargs,
-        "adversarial_kwargs": adversarial_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     model_api_output = await model_api(
         model_name="bert-base-uncased",

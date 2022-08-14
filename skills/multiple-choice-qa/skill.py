@@ -20,7 +20,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     context = request.skill_args.get("context")
     choices = request.skill_args["choices"]
     explain_kwargs = request.explain_kwargs or {}
-    adversarial_kwargs = request.adversarial_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     if request.skill.get("skill_type") == "categorical":
         # answer choices for categorical skills are hard-coded and not required as
@@ -36,7 +36,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     model_request = {
         "input": prepared_input,
         "explain_kwargs": explain_kwargs,
-        "adversarial_kwargs": adversarial_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
