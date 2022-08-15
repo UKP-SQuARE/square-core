@@ -22,7 +22,7 @@
                   <div class="col-auto">
                     <div class="form-check">
                       <input class="form-check-input" type="radio" id="dagre" value="dagre" v-model="layoutName" @change="plot_graph()"/>
-                      <label class="form-check-label" for="dagre">dagre</label>
+                      <label class="form-check-label" for="dagre">Dagre</label>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" id="breadthfirst" value="breadthfirst" v-model="layoutName" @change="plot_graph()"/>
@@ -382,11 +382,11 @@ export default {
           })
           .selector("node[?q_node]").css({
             "background-color": "#B238DF",
-            "color": "black",
+            "color": "white",
           })
           .selector("node[?ans_node]").css({
             "background-color": "#14A07E",
-            "color": "black",
+            "color": "white",
             "shape": "hexagon"
           })
           .selector('.highlighted').css({
