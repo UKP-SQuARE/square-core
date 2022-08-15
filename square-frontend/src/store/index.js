@@ -79,14 +79,15 @@ export default new Vuex.Store({
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
               skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
-              predictions: response.data.predictions
+              predictions: response.data.predictions,
+              adversarial: response.data.adversarial
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
           })).finally(() => {
             if ( "explain_kwargs" in options ){
               clearTimeout(timeoutExplainabilityLoading);
               context.commit('setLoadingExplainability', {'value': false});
-          }
+            }
           })
     },
     signIn(context, { userInfo, token }) {
