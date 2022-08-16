@@ -20,30 +20,38 @@
                   <h1>Attack Methods</h1>
                   <hr/>
               </div>
-            </div>
+            </div> <!-- row -->
+
             <div class="row">
               <div class="col-4 text-start">
                   <h4>Method:</h4>
               </div>
-              <div class="col-8 text-start">
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hotflipRadio" value="hotflip" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="hotflipRadio">Hot Flip</label>
                 </div>
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_reductionRadio" value="input_reduction" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="input_reductionRadio">Input Reduction</label>
                 </div>
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="sub_spanRadio" value="sub_span" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="sub_spanRadio">Sub-span</label>
                 </div>
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="topk_tokensRadioo" value="topk_tokens" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="topk_tokensRadioo">Top K</label>
                 </div>
               </div>
-            </div>
+
+            </div> <!-- row -->
             
             <div v-if="method == 'hotflip' || method == 'sub_span' || method == 'topk_tokens'" class="row mt-3">
               <div class="col-4 text-start">
@@ -54,15 +62,15 @@
                   <input class="form-check-input" type="radio" id="SimpleGrad" value="simple_grads" v-model="saliencyMethod"/>
                   <label class="form-check-label" for="SimpleGrad">Simple Gradients</label>
                 </div>
-                
               </div>
+
               <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="SmoothGrad" value="smooth_grads" v-model="saliencyMethod"/>
                   <label class="form-check-label" for="SmoothGrad">Smooth Gradients</label>
                 </div>
-                  
               </div>
+
               <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="IntegratedGrad" value="integrated_grads" v-model="saliencyMethod"/>
@@ -76,19 +84,19 @@
                   <label class="form-check-label" for="attention">Attention</label>
                 </div>  
               </div>
-            </div>
+
+            </div> <!-- row -->
 
             <div v-if="method == 'hotflip'" class="row mt-3">
                 <div class="col-4 text-start">
                     <h4># Flips = {{numFlips}}</h4>
                 </div>
-
-                <div class="col-auto">
-                    <div class="form-check form-switch">
-                        <input type="range" min="1" max="10" v-model="numFlips" class="form-range" id="numFlips" @click="showAttack()">
-                    </div>
-                </div>
-
+                <div class="col-8 text-start">
+                  <div class="form-check-inline">
+                    <input type="range" min="1" max="10" v-model="numFlips" class="form-range" id="numFlips" @click="showAttack()"/>
+                  </div>
+                </div>  
+                
             </div>
 
             <div v-if="method == 'input_reduction'" class="row mt-3">
@@ -96,7 +104,7 @@
                   <h4># Reductions = {{numReductions}}</h4>
                 </div>
                 <div class="col-auto">
-                  <div class="form-check form-switch">
+                  <div class="form-check-inline">
                     <input type="range" min="1" :max="maxReductions" v-model="numReductions" class="form-range" id="numReductions" @click="showAttack()">
                   </div>
                 </div>
@@ -108,7 +116,7 @@
                 </div>
 
                 <div class="col-auto">
-                    <div class="form-check form-switch">
+                    <div class="form-check-inline">
                         <input type="range" min="2" :max="maxLenSpan" v-model="lenSpan" v-on:click="attack()" class="form-range" id="lenSpan">
                     </div>
                 </div>
@@ -120,7 +128,7 @@
                 </div>
 
                 <div class="col-auto">
-                    <div class="form-check form-switch">
+                    <div class="form-check-inline">
                         <input type="range" min="1" :max="maxTopK" v-model="numTopK" v-on:click="attack()" class="form-range" id="numTopK">
                     </div>
                 </div>
@@ -271,7 +279,7 @@ export default Vue.component("attack-output",{
       // if method is input_reduction, add max_reductions
       if(this.method == 'input_reduction'){
         // tokenize currentQuestion
-        attack_kwargs['max_reductions'] = this.maxReductions;
+        attack_kwargs['max_reductions'] = parseInt(this.maxReductions);
       }
       // if method is sub_span, add max_tokens
       if(this.method == 'sub_span'){
