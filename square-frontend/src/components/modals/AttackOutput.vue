@@ -52,9 +52,9 @@
               </div>
             </div>
 
-            <div v-if="hotflip_selected || inputred_selected || span_selected || topk_selected" class="row mt-3">
+            <div v-if="hotflip_selected || span_selected || topk_selected" class="row mt-3">
               <div class="col-4 text-start">
-                  <h4>Gradient Method:</h4>
+                  <h4>Attribution Method:</h4>
               </div>
               <div class="col-auto">
                 <div class="form-check form-check-inline">
@@ -235,11 +235,11 @@ export default Vue.component("attack-output",{
         this.setAllButtonsUnselected();
         this.inputred_selected = true;
         document.getElementById('input_reduction_btn').classList.add('active');
+        this.saliencyMethod = 'attention';
       } else if(method == 'sub_span'){
         this.setAllButtonsUnselected();
         this.span_selected = true;
         document.getElementById('sub_span_btn').classList.add('active');
-        this.saliencyMethod = 'attention';
       } else if(method == 'topk_tokens'){
         this.setAllButtonsUnselected();
         this.topk_selected = true;
