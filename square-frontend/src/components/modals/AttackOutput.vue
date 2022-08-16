@@ -159,18 +159,18 @@
                   <span v-html="newContext"/>
               </div>
             </div> <!-- end flippedContext -->
-            <div v-if="showAttackOutput" class="row mt-3 align-items-end">
+            <div v-if="showAttackOutput" class="row mt-3 align-items-center">
                 <div class="col-4 text-start">
                   <h4>New Answer:</h4>
                 </div>
-                <div class="col-3 text-start">
-                    <p>{{newAnswer}}</p>
+                <div class="col-3 text-start vertical-center">
+                    {{newAnswer}}
                 </div>
-                <div class="col-2 text-start">
+                <div class="col-2 text-start ">
                     <h4>Old Answer:</h4>
                 </div>
                 <div class="col-3 text-start">
-                    <p>{{this.$store.state.currentResults[0].predictions[0]['prediction_output']['output']}}</p>
+                    {{this.$store.state.currentResults[0].predictions[0]['prediction_output']['output']}}
                 </div>
 
             </div> <!-- end newAnswer -->
