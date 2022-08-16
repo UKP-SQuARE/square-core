@@ -63,7 +63,7 @@
           <a data-bs-toggle="modal" data-bs-target="#modalattack" role="button" class="btn btn-primary shadow">
             Attack Methods
           </a>
-          <AttackOutput id="modalattack"> test</AttackOutput>
+          <AttackOutput id="modalattack"/>
         </div>
       </div> 
 
