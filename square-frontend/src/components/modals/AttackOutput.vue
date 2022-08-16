@@ -76,6 +76,13 @@
                   <label class="form-check-label" for="IntegratedGrad">IntegratedGrad</label>
                 </div>  
               </div>
+
+              <div class="col-auto">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="attention" value="attention" v-model="saliencyMethod"/>
+                  <label class="form-check-label" for="attention">Attention</label>
+                </div>  
+              </div>
             </div>
 
             <div v-if="hotflip_selected" class="row mt-3">
@@ -99,13 +106,12 @@
 
             <div v-if="inputred_selected" class="row mt-3">
                 <div class="col-4 text-start">
-                    <h4># Reductions: {{numReductions}}</h4>
+                  <h4># Reductions: {{numReductions}}</h4>
                 </div>
                 <div class="col-auto">
-                    <div class="form-check form-switch">
-                        <input type="range" min="1" max="5" v-model="numReductions" class="form-range" id="numReductions">
-                        <output ></output>
-                    </div>
+                  <div class="form-check form-switch">
+                    <input type="range" min="1" :max="maxReductions" v-model="numReductions" class="form-range" id="numReductions" @click="showAttack()">
+                  </div>
                 </div>
             </div>
 
@@ -148,7 +154,7 @@
                   <h4>Question:</h4>
               </div>
               <div class="col-8 text-start">
-                  <p>{{newQuestion}}</p>
+                  <span v-html="newQuestion"/>
               </div>
             </div> <!-- end question -->
             <div v-if="showAttackOutput" class="row mt-3">
@@ -188,6 +194,7 @@ export default Vue.component("attack-output",{
       lenSpan: 3,
       numTopK: 1,
       numReductions: 1,
+      maxReductions: 1,
 
       hotflip_selected: false,
       inputred_selected: false,
@@ -227,11 +234,12 @@ export default Vue.component("attack-output",{
       } else if(method == 'input_reduction'){
         this.setAllButtonsUnselected();
         this.inputred_selected = true;
-        document.getElementById('input_reduction').classList.add('active');
+        document.getElementById('input_reduction_btn').classList.add('active');
       } else if(method == 'sub_span'){
         this.setAllButtonsUnselected();
         this.span_selected = true;
         document.getElementById('sub_span_btn').classList.add('active');
+        this.saliencyMethod = 'attention';
       } else if(method == 'topk_tokens'){
         this.setAllButtonsUnselected();
         this.topk_selected = true;
@@ -275,7 +283,9 @@ export default Vue.component("attack-output",{
       }
       // if method is input_reduction, add max_reductions
       if(this.method == 'input_reduction'){
-        attack_kwargs['max_reductions'] = 2;
+        // tokenize currentQuestion
+        this.maxReductions = this.$store.state.currentQuestion.split(' ').length;
+        attack_kwargs['max_reductions'] = this.maxReductions;
       }
       // if method is sub_span, add max_tokens
       if(this.method == 'sub_span'){
@@ -327,13 +337,30 @@ export default Vue.component("attack-output",{
       this.newQuestion = this.$store.state.currentResults[0].predictions[this.numFlips].question;
     },
     prepareInputReductionAttack(){
-
+      var indices = this.$store.state.currentResults[0].adversarial.indices;
+      var oldQuestion = this.$store.state.currentResults[0].predictions[0].question;
+      // tokenize the question by white space
+      var tokenizedOldQuestion = oldQuestion.split(/\s+/);
+      // flip context token with indices
+      for (var redIdx=0; redIdx<this.numReductions; redIdx++){
+        var oldToken = tokenizedOldQuestion[indices[redIdx]];
+        
+        var highLightedToken = '<s><mark class="bg-danger text-white">'+oldToken+'</mark></s>'
+        tokenizedOldQuestion[indices[redIdx]] = highLightedToken
+      }
+      this.newContext = this.$store.state.currentResults[0].predictions[this.numReductions].prediction_documents[0].document;
+      this.newAnswer = this.$store.state.currentResults[0].predictions[this.numReductions].prediction_output['output'];
+      this.newQuestion = tokenizedOldQuestion.join(' ');
     },
     prepareSubSpanAttack(){
-
+      this.newContext = 'TODO';
+      this.newAnswer = 'TODO';
+      this.newQuestion = 'TODO';
     },
     prepareTopKAttack(){
-
+      this.newContext = 'TODO';
+      this.newAnswer = 'TODO';
+      this.newQuestion = 'TODO';
     },
 
     close(){
