@@ -122,7 +122,7 @@
 
                 <div class="col-auto">
                     <div class="form-check form-switch">
-                        <input type="range" min="3" max="20" v-model="lenSpan" class="form-range" id="lenSpan">
+                        <input type="range" min="3" max="20" v-model="lenSpan" v-on:click="attack()" class="form-range" id="lenSpan">
                     </div>
                 </div>
             </div>
@@ -141,7 +141,7 @@
 
             <div v-if="showAttackBtn" class="row mt-3"> <!-- HotFlip -->
               <div class="col-12">
-                <button v-on:click="attack('HotFlip')" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
+                <button v-on:click="attack()" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
                     <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
                 </button>
               </div>
@@ -289,7 +289,7 @@ export default Vue.component("attack-output",{
       }
       // if method is sub_span, add max_tokens
       if(this.method == 'sub_span'){
-        attack_kwargs['max_tokens'] = this.lenSpan;
+        attack_kwargs['max_tokens'] = parseInt(this.lenSpan);
       }
       // if method is topk_tokens, add max_tokens
       if(this.method == 'topk_tokens'){
@@ -353,9 +353,21 @@ export default Vue.component("attack-output",{
       this.newQuestion = tokenizedOldQuestion.join(' ');
     },
     prepareSubSpanAttack(){
-      this.newContext = 'TODO';
-      this.newAnswer = 'TODO';
-      this.newQuestion = 'TODO';
+      var indices = this.$store.state.currentResults[0].adversarial.indices;
+      var oldContext = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document;
+      // tokenize the question by white space
+      var tokenizedOldContext = oldContext.split(/\s+/);
+      // for each elem in tokenizedOldContext, if it is not in indices, add <s>
+      for (var i=0; i<tokenizedOldContext.length; i++){
+        if (!indices.includes(i)){
+          tokenizedOldContext[i] = '<s>'+tokenizedOldContext[i]+'</s>';
+        } else {
+          tokenizedOldContext[i] = '<mark class="bg-success text-white">'+tokenizedOldContext[i]+'</mark>';
+        }
+      }
+      this.newContext = tokenizedOldContext.join(' ');
+      this.newAnswer = this.$store.state.currentResults[0].predictions[1].prediction_output['output'];
+      this.newQuestion = this.$store.state.currentResults[0].predictions[1].question;
     },
     prepareTopKAttack(){
       this.newContext = 'TODO';
