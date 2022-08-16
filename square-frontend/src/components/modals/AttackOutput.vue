@@ -122,7 +122,7 @@
 
                 <div class="col-auto">
                     <div class="form-check form-switch">
-                        <input type="range" min="3" max="20" v-model="lenSpan" v-on:click="attack()" class="form-range" id="lenSpan">
+                        <input type="range" min="2" :max="maxLenSpan" v-model="lenSpan" v-on:click="attack()" class="form-range" id="lenSpan">
                     </div>
                 </div>
             </div>
@@ -192,6 +192,7 @@ export default Vue.component("attack-output",{
       includeAns: false,
       numFlips: 1,
       lenSpan: 3,
+      maxLenSpan: this.$store.state.currentContext.split(/\s+/).length,
       numTopK: 1,
       numReductions: 1,
       maxReductions: 1,
@@ -357,6 +358,7 @@ export default Vue.component("attack-output",{
       var oldContext = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document;
       // tokenize the question by white space
       var tokenizedOldContext = oldContext.split(/\s+/);
+      this.maxLenSpan = tokenizedOldContext.length;
       // for each elem in tokenizedOldContext, if it is not in indices, add <s>
       for (var i=0; i<tokenizedOldContext.length; i++){
         if (!indices.includes(i)){
