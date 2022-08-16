@@ -3,42 +3,51 @@ from copy import deepcopy
 import numpy as np
 import logging
 
+from tasks.attacks.attack import Attacker
+
 logger = logging.getLogger(__name__)
 
 
-class TopkTokens:
-    def __init__(
-        self, top_k,
-    ):
-        self.top_k = top_k
+class TopkTokens(Attacker):
+    def __init__(self, task, request, model_outputs):
+        """
+        Initialize the input reduction attack
 
-    def choose_topk(self, model_outputs) -> Tuple[List[List], List]:
+        Args:
+            request (dict): the request to the model
+            task (Task): the task to attack
+            model_outputs (dict): the model outputs
+        """
+        super().__init__(request, task, model_outputs)
+        self.top_k = self.request.attack_kwargs.get("max_tokens", 10)
+
+    def attack_instance(self) -> Tuple[List[List], List]:
         """
         selects topk tokens from the context
-        Args:
-            model_outputs: word importance scores
+
         Returns:
             Tuple of reduced inputs and the largest indices
         """
 
-        attributions = model_outputs["attributions"][0]
-        context_attributions = attributions["context_tokens"][0]
-        question_attributions = attributions["question_tokens"][0]
-
-        context_text = " ".join([word[1] for word in context_attributions])
-        question_text = " ".join([word[1] for word in question_attributions])
-
-        context_tokens = np.array([word[1] for word in context_attributions])
-        context_attr = np.array([word[2] for word in context_attributions])
-        topk_indices = np.argsort(context_attr)[::-1][: self.top_k].tolist()
+        (
+            question_attributions,
+            context_attributions,
+            question_text,
+            context_text,
+            _,
+            _,
+            context_tokens,
+            context_scores,
+        ) = self._get_tokens_and_attributions()
+        topk_indices = np.argsort(context_scores)[::-1][: self.top_k].tolist()
 
         reduced_instances_and_smallest: List = []
         while len(context_tokens) != 1:
             instance = deepcopy(context_tokens)
 
             # remove smallest
-            smallest = np.argmin(context_attr)
-            context_attr = np.delete(context_attr, smallest)
+            smallest = np.argmin(context_scores)
+            context_scores = np.delete(context_scores, smallest)
             context_tokens = np.delete(context_tokens, smallest)
 
             # remove smallest
@@ -56,4 +65,11 @@ class TopkTokens:
                 [context_text] + reduced_contexts,
             )
         ]
-        return prepared_inputs, topk_indices
+
+        batch_request = self.base_prediction_request
+        batch_request["input"] = prepared_inputs
+        saliency_method = self.request.attack_kwargs.get("saliency_method", "attention")
+        if saliency_method in ["attention", "scaled_attention"]:
+            batch_request["model_kwargs"] = {"output_attentions": True}
+        batch_request["contexts"] = [context_text] + reduced_contexts
+        return batch_request, topk_indices

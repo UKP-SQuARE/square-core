@@ -17,37 +17,36 @@ Content-Type: application/json
 
 {
   "input": [
-    ["Who stars in The Matrix?",
-     "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis, starring Keanu Reeves, Laurence."]
+  ["Who stars in The Matrix?",
+     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
   ],
   "is_preprocessed": false,
   "preprocessing_kwargs": {},
   "model_kwargs": {},
   "task_kwargs": {},
-  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
+  "attack_kwargs":{"method":"hotflip", "saliency_method": "attention", "max_flips":5},
   "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
 }
 
-
 ###
 
-# @name roberta_qa
-POST {{domain_dev}}/api/main/roberta-base/question-answering
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "input": [
-    ["Who stars in The Matrix?",
-     "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis."]
-  ],
-  "is_preprocessed": false,
-  "preprocessing_kwargs": {},
-  "model_kwargs": {},
-  "task_kwargs": {},
-  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
-  "adapter_name": "AdapterHub/roberta-base-pf-squad"
-}
+## @name roberta_qa
+#POST {{domain_dev}}/api/main/roberta-base/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#   "input": [
+#    ["Who is the Loreds?",
+#      "Architecturally, the school has a Catholic character. Atop the Main Building's gold dome is a golden statue of the Virgin Mary. Immediately in front of the Main Building and facing it, is a copper statue of Christ with arms upraised with the legend 'Venite Ad Me Omnes'."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
+#  "adapter_name": "AdapterHub/roberta-base-pf-squad"
+#}
 
 
 ###
@@ -60,13 +59,13 @@ Content-Type: application/json
 #{
 #  "input": [
 #    ["Who stars in The Matrix?",
-#     "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis, starring Keanu Reeves, Laurence."]
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
 #  ],
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
 #  "task_kwargs": {},
-#  "explain_kwargs": {"method": "smooth_grads", "top_k":5, "mode":"all"},
+#  "explain_kwargs": {"method": "integrated_grads", "top_k":5, "mode":"all"},
 #  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
 #}
 
@@ -86,7 +85,7 @@ Content-Type: application/json
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
 #  "task_kwargs": {},
-#  "explain_kwargs": {"method": "simple_grads", "top_k":5, "mode":"all"},
+#  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
 #  "adapter_name": "AdapterHub/roberta-base-pf-squad_v2"
 #}
 
@@ -101,7 +100,7 @@ Content-Type: application/json
 #{
 #  "input": [
 #    [
-#        "Good Samaritan laws offer legal protection to people who give reasonable assistance to those who are, or who they believe to be, injured, ill, in peril, or otherwise incapacitated. The protection is intended to reduce bystanders' hesitation to assist, for fear of being sued or prosecuted for unintentional injury or wrongful death. An example of such a law in common-law areas of Canada: a good Samaritan doctrine is a legal principle that prevents a rescuer who has voluntarily helped a victim in distress from being successfully sued for wrongdoing. Its purpose is to keep people from being reluctant to help a stranger in need for fear of legal repercussions should they make some mistake in treatment. By contrast, a duty to rescue law requires people to offer assistance and holds those who fail to do so liable.",
+#        "Good Samaritan laws offer legal protection to people who give reasonable assistance ",
 #        "do good samaritan laws protect those who help at an accident?"
 #     ]
 #  ],
@@ -109,8 +108,30 @@ Content-Type: application/json
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
 #  "task_kwargs": {},
-#  "explain_kwargs": {"method": "simple_grads", "top_k":5, "mode":"all"},
+#  "attack_kwargs":{"method":"sub_span", "saliency_method": "attention", "max_tokens":5},
 #  "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
+#}
+
+
+###
+
+## @name bert_mcq
+#POST {{domain_dev}}/api/main/bert-base-uncased/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    ["Kendall worked the weekend at the steakhouse and made bank on tips.", "How would you describe Kendall? Save the money"],
+#    ["Kendall worked the weekend at the steakhouse and made bank on tips.", "How would you describe Kendall? get hired at the steakhouse"],
+#    ["Kendall worked the weekend at the steakhouse and made bank on tips.", "How would you describe Kendall? Quit her job"]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
+#  "adapter_name": "AdapterHub/bert-base-uncased-pf-social_i_qa"
 #}
 
 
@@ -132,6 +153,6 @@ Content-Type: application/json
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
 #  "task_kwargs": {},
-#  "explain_kwargs": {"method": "simple_grads", "top_k":5, "mode":"all"},
+#  "attack_kwargs":{"method":"sub_span", "saliency_method": "simple_grads", "max_tokens":15},
 #  "adapter_name": "AdapterHub/roberta-base-pf-boolq"
 #}
