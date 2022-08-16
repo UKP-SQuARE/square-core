@@ -142,7 +142,7 @@
             </div> <!-- HotFlip -->
 
             <!-- Show question, flippedContext, and new answer  -->
-            <div v-if="showAttackOutput" class="row mt-3">
+            <div v-if="showAttackOutput" class="d-flex row mt-3">
               <hr/>
               <div class="col-4 text-start">
                   <h4>Question:</h4>
@@ -163,8 +163,14 @@
               <div class="col-4 text-start">
                   <h4>New Answer:</h4>
               </div>
-              <div class="col-8 text-start">
+              <div class="col-3 text-start">
                   <p>{{newAnswer}}</p>
+              </div>
+              <div class="col-2 text-start">
+                  <h4>Old Answer:</h4>
+              </div>
+              <div class="col-3 text-start">
+                  <p>{{this.$store.state.currentResults[0].predictions[0]['prediction_output']['output']}}</p>
               </div>
             </div> <!-- end newAnswer -->
             
@@ -204,8 +210,7 @@ export default Vue.component("attack-output",{
       showAttackBtn: false,
       showAttackOutput: false,
       failure: false,
-
-  }
+    }
   },
   computed:{
     selectedSkills() {
