@@ -218,28 +218,9 @@ export default Vue.component("attack-output",{
   methods:{
     methodSelected(){
       this.showAttackBtn = true;
-      // remove active class from all buttons
-      var buttons = document.getElementsByClassName('btn-outline-secondary')
-      for (var i = 0; i < buttons.length; i++) {
-        buttons[i].classList.remove('active')
-      }
-      if(this.method == 'hotflip'){
-        this.setAllButtonsUnselected();
-        this.hotflip_selected = true;
-        document.getElementById('hotflip_btn').classList.add('active');
-      } else if(this.method == 'input_reduction'){
-        this.setAllButtonsUnselected();
-        this.inputred_selected = true;
-        document.getElementById('input_reduction_btn').classList.add('active');
+      this.hideOutput();
+      if(this.method == 'input_reduction'){
         this.saliencyMethod = 'attention';
-      } else if(this.method == 'sub_span'){
-        this.setAllButtonsUnselected();
-        this.span_selected = true;
-        document.getElementById('sub_span_btn').classList.add('active');
-      } else if(this.method == 'topk_tokens'){
-        this.setAllButtonsUnselected();
-        this.topk_selected = true;
-        document.getElementById('topk_tokens_btn').classList.add('active');
       }
     },
     setAllButtonsUnselected(){
@@ -247,6 +228,10 @@ export default Vue.component("attack-output",{
       this.inputred_selected = false;
       this.span_selected = false;
       this.topk_selected = false;
+    },
+    hideOutput(){
+      this.showAttackOutput = false;
+      this.newAnswer = "";
     },
     attack() {
       /* eslint-disable */
