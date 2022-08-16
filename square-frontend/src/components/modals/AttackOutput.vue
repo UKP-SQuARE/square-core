@@ -21,38 +21,31 @@
                   <hr/>
               </div>
             </div>
-
             <div class="row">
               <div class="col-4 text-start">
                   <h4>Method:</h4>
               </div>
-              <div class="col-auto">
-                  <button id="hotflip_btn" v-on:click="methodSelected('hotflip')" type="button" class="btn btn-outline-secondary"
-                   data-bs-toggle="tooltip" data-bs-placement="top" title="Flips words in the input to change the Skill's prediction.">
-                    HotFlip
-                  </button>
-              </div>
-              <div class="col-auto">
-                  <button id="input_reduction_btn" v-on:click="methodSelected('input_reduction')" type="button" class="btn btn-outline-secondary"
-                   data-bs-toggle="tooltip" data-bs-placement="top" title="Removes as many words from the input as possible without changing the Skill's prediction.">
-                    Input Reduction
-                  </button>
-              </div>
-              <div class="col-auto">
-                  <button id="sub_span_btn" v-on:click="methodSelected('sub_span')" type="button" class="btn btn-outline-secondary"
-                   data-bs-toggle="tooltip" data-bs-placement="top" title="Selects a subspan of the context as new context.">
-                    Sub-Span
-                  </button>
-              </div>
-              <div class="col-auto">
-                  <button id="topk_tokens_btn" v-on:click="methodSelected('topk_tokens')" type="button" class="btn btn-outline-secondary"
-                   data-bs-toggle="tooltip" data-bs-placement="top" title="">
-                    Top K
-                  </button>
+              <div class="col-8 text-start">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hotflipRadio" value="hotflip" v-model="method" v-on:click="methodSelected()">
+                  <label class="form-check-label" for="hotflipRadio">Hot Flip</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_reductionRadio" value="input_reduction" v-model="method" v-on:click="methodSelected()">
+                  <label class="form-check-label" for="input_reductionRadio">Input Reduction</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="sub_spanRadio" value="sub_span" v-model="method" v-on:click="methodSelected()">
+                  <label class="form-check-label" for="sub_spanRadio">Sub-span</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="topk_tokensRadioo" value="topk_tokens" v-model="method" v-on:click="methodSelected()">
+                  <label class="form-check-label" for="topk_tokensRadioo">Top K</label>
+                </div>
               </div>
             </div>
-
-            <div v-if="hotflip_selected || span_selected || topk_selected" class="row mt-3">
+            
+            <div v-if="method == 'hotflip' || method == 'sub_span' || method == 'topk_tokens'" class="row mt-3">
               <div class="col-4 text-start">
                   <h4>Attribution Method:</h4>
               </div>
@@ -85,9 +78,9 @@
               </div>
             </div>
 
-            <div v-if="hotflip_selected" class="row mt-3">
+            <div v-if="method == 'hotflip'" class="row mt-3">
                 <div class="col-4 text-start">
-                    <h4># flips: {{numFlips}}</h4>
+                    <h4># Flips = {{numFlips}}</h4>
                 </div>
 
                 <div class="col-auto">
@@ -98,9 +91,9 @@
 
             </div>
 
-            <div v-if="inputred_selected" class="row mt-3">
+            <div v-if="method == 'input_reduction'" class="row mt-3">
                 <div class="col-4 text-start">
-                  <h4># Reductions: {{numReductions}}</h4>
+                  <h4># Reductions = {{numReductions}}</h4>
                 </div>
                 <div class="col-auto">
                   <div class="form-check form-switch">
@@ -109,9 +102,9 @@
                 </div>
             </div>
 
-            <div v-if="span_selected" class="row mt-3">
+            <div v-if="method == 'sub_span'" class="row mt-3">
                 <div class="col-4 text-start">
-                    <h4>Length of sub-span: {{lenSpan}}</h4>
+                    <h4>Length of sub-span = {{lenSpan}}</h4>
                 </div>
 
                 <div class="col-auto">
@@ -121,9 +114,9 @@
                 </div>
             </div>
 
-            <div v-if="topk_selected" class="row mt-3">
+            <div v-if="method == 'topk_tokens'" class="row mt-3">
                 <div class="col-4 text-start">
-                    <h4># top k: {{numTopK}}</h4>
+                    <h4>Top k = {{numTopK}}</h4>
                 </div>
 
                 <div class="col-auto">
@@ -133,7 +126,7 @@
                 </div>
             </div>
 
-            <div v-if="showAttackBtn" class="row mt-3"> <!-- HotFlip -->
+            <div v-if="method !== undefined" class="row mt-3">
               <div class="col-12">
                 <button v-on:click="attack()" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
                     <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
@@ -196,12 +189,7 @@ export default Vue.component("attack-output",{
       numTopK: 1,
       maxTopK: this.$store.state.currentContext.split(/\s+/).length,
       numReductions: 1,
-      maxReductions: 1,
-
-      hotflip_selected: false,
-      inputred_selected: false,
-      span_selected: false,
-      topk_selected: false,
+      maxReductions: this.$store.state.currentQuestion.split(' ').length,
 
       newQuestion: "",
       newContext: "",
@@ -220,28 +208,27 @@ export default Vue.component("attack-output",{
     },
   },
   methods:{
-    methodSelected(method){
-      this.method = method;
+    methodSelected(){
       this.showAttackBtn = true;
       // remove active class from all buttons
       var buttons = document.getElementsByClassName('btn-outline-secondary')
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].classList.remove('active')
       }
-      if(method == 'hotflip'){
+      if(this.method == 'hotflip'){
         this.setAllButtonsUnselected();
         this.hotflip_selected = true;
         document.getElementById('hotflip_btn').classList.add('active');
-      } else if(method == 'input_reduction'){
+      } else if(this.method == 'input_reduction'){
         this.setAllButtonsUnselected();
         this.inputred_selected = true;
         document.getElementById('input_reduction_btn').classList.add('active');
         this.saliencyMethod = 'attention';
-      } else if(method == 'sub_span'){
+      } else if(this.method == 'sub_span'){
         this.setAllButtonsUnselected();
         this.span_selected = true;
         document.getElementById('sub_span_btn').classList.add('active');
-      } else if(method == 'topk_tokens'){
+      } else if(this.method == 'topk_tokens'){
         this.setAllButtonsUnselected();
         this.topk_selected = true;
         document.getElementById('topk_tokens_btn').classList.add('active');
@@ -266,7 +253,6 @@ export default Vue.component("attack-output",{
         }
       }).then(() => {
         this.failure = false
-        console.log('success');
         this.showAttackOutput = true;
         this.showAttack();
       }).catch(() => {
@@ -285,7 +271,6 @@ export default Vue.component("attack-output",{
       // if method is input_reduction, add max_reductions
       if(this.method == 'input_reduction'){
         // tokenize currentQuestion
-        this.maxReductions = this.$store.state.currentQuestion.split(' ').length;
         attack_kwargs['max_reductions'] = this.maxReductions;
       }
       // if method is sub_span, add max_tokens
@@ -299,7 +284,6 @@ export default Vue.component("attack-output",{
       return attack_kwargs;
     },
     showAttack(){
-      console.log('show attack');
       if (this.method == 'hotflip'){
         this.prepareHotFlipAttack();
       } else if (this.method == 'input_reduction'){
