@@ -96,12 +96,6 @@
                     </div>
                 </div>
 
-                <div class="col-auto">
-                    <div class="form-check form-switch">
-                        <label class="form-check-label" for="includeAns">Include Answer</label>
-                        <input class="form-check-input" type="checkbox" id="includeAns">
-                    </div>
-                </div>
             </div>
 
             <div v-if="inputred_selected" class="row mt-3">
@@ -189,7 +183,6 @@ export default Vue.component("attack-output",{
      return {
       method: undefined,
       saliencyMethod: 'simple_grads',
-      includeAns: false,
       numFlips: 1,
       lenSpan: 3,
       maxLenSpan: this.$store.state.currentContext.split(/\s+/).length,
@@ -256,7 +249,7 @@ export default Vue.component("attack-output",{
     attack() {
       /* eslint-disable */
       this.waiting = true;
-      this.$store.dispatch('query', {
+      this.$store.dispatch('attack', {
         question: this.$store.state.currentQuestion,
         inputContext: this.$store.state.currentContext,
         options: {
@@ -311,11 +304,11 @@ export default Vue.component("attack-output",{
       }
     },
     prepareHotFlipAttack(){
-      var indices = this.$store.state.currentResults[0].adversarial.indices;
-      var context = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document;
+      var indices = this.$store.state.attackResults[0].adversarial.indices;
+      var context = this.$store.state.attackResults[0].predictions[0].prediction_documents[0].document;
       var listContexts = []
-      for (var i = 1; i < this.$store.state.currentResults[0].predictions.length; i++) {
-        var prediction = this.$store.state.currentResults[0].predictions[i];
+      for (var i = 1; i < this.$store.state.attackResults[0].predictions.length; i++) {
+        var prediction = this.$store.state.attackResults[0].predictions[i];
         listContexts.push(prediction.prediction_documents[0].document);
       }
       // tokenize the context by white space
@@ -334,12 +327,12 @@ export default Vue.component("attack-output",{
         tokenizedContext[indices[flipIdx]] = highLightedToken
       }
       this.newContext = tokenizedContext.join(' ');
-      this.newAnswer = this.$store.state.currentResults[0].predictions[this.numFlips].prediction_output['output'];
-      this.newQuestion = this.$store.state.currentResults[0].predictions[this.numFlips].question;
+      this.newAnswer = this.$store.state.attackResults[0].predictions[this.numFlips].prediction_output['output'];
+      this.newQuestion = this.$store.state.attackResults[0].predictions[this.numFlips].question;
     },
     prepareInputReductionAttack(){
-      var indices = this.$store.state.currentResults[0].adversarial.indices;
-      var oldQuestion = this.$store.state.currentResults[0].predictions[0].question;
+      var indices = this.$store.state.attackResults[0].adversarial.indices;
+      var oldQuestion = this.$store.state.attackResults[0].predictions[0].question;
       // tokenize the question by white space
       var tokenizedOldQuestion = oldQuestion.split(/\s+/);
       // flip context token with indices
@@ -349,13 +342,13 @@ export default Vue.component("attack-output",{
         var highLightedToken = '<s><mark class="bg-danger text-white">'+oldToken+'</mark></s>'
         tokenizedOldQuestion[indices[redIdx]] = highLightedToken
       }
-      this.newContext = this.$store.state.currentResults[0].predictions[this.numReductions].prediction_documents[0].document;
-      this.newAnswer = this.$store.state.currentResults[0].predictions[this.numReductions].prediction_output['output'];
+      this.newContext = this.$store.state.attackResults[0].predictions[this.numReductions].prediction_documents[0].document;
+      this.newAnswer = this.$store.state.attackResults[0].predictions[this.numReductions].prediction_output['output'];
       this.newQuestion = tokenizedOldQuestion.join(' ');
     },
     prepareSubSpanAttack(){
-      var indices = this.$store.state.currentResults[0].adversarial.indices;
-      var oldContext = this.$store.state.currentResults[0].predictions[0].prediction_documents[0].document;
+      var indices = this.$store.state.attackResults[0].adversarial.indices;
+      var oldContext = this.$store.state.attackResults[0].predictions[0].prediction_documents[0].document;
       // tokenize the question by white space
       var tokenizedOldContext = oldContext.split(/\s+/);
       this.maxLenSpan = tokenizedOldContext.length;
@@ -368,8 +361,8 @@ export default Vue.component("attack-output",{
         }
       }
       this.newContext = tokenizedOldContext.join(' ');
-      this.newAnswer = this.$store.state.currentResults[0].predictions[1].prediction_output['output'];
-      this.newQuestion = this.$store.state.currentResults[0].predictions[1].question;
+      this.newAnswer = this.$store.state.attackResults[0].predictions[1].prediction_output['output'];
+      this.newQuestion = this.$store.state.attackResults[0].predictions[1].question;
     },
     prepareTopKAttack(){
       this.newContext = 'TODO';
@@ -384,7 +377,6 @@ export default Vue.component("attack-output",{
         btn_list[i].classList.remove('active');
       }
       // reset modal
-      this.includeAns = false;
       this.numFlips = 1;
       this.lenSpan = 3;
       this.numTopK = 1;
