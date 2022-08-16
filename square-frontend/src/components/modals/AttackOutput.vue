@@ -128,7 +128,7 @@
 
                 <div class="col-auto">
                     <div class="form-check form-switch">
-                        <input type="range" min="1" max="10" v-model="numTopK" class="form-range" id="numTopK">
+                        <input type="range" min="1" :max="maxTopK" v-model="numTopK" v-on:click="attack()" class="form-range" id="numTopK">
                     </div>
                 </div>
             </div>
@@ -187,6 +187,7 @@ export default Vue.component("attack-output",{
       lenSpan: 3,
       maxLenSpan: this.$store.state.currentContext.split(/\s+/).length,
       numTopK: 1,
+      maxTopK: this.$store.state.currentContext.split(/\s+/).length,
       numReductions: 1,
       maxReductions: 1,
 
@@ -287,7 +288,7 @@ export default Vue.component("attack-output",{
       }
       // if method is topk_tokens, add max_tokens
       if(this.method == 'topk_tokens'){
-        attack_kwargs['max_tokens'] = this.numTopK;
+        attack_kwargs['max_tokens'] = parseInt(this.numTopK);
       }
       return attack_kwargs;
     },
@@ -322,8 +323,6 @@ export default Vue.component("attack-output",{
         
         var tooltip = 'data-bs-toggle="tooltip" data-bs-placement="top" title="'+oldToken+'"';
         var highLightedToken = '<mark class="bg-success text-white"'+tooltip+'>'+newToken+'</mark>'
-        console.log("Old token:"+tokenizedContext[indices[flipIdx]]); 
-        console.log("New token:"+newToken);
         tokenizedContext[indices[flipIdx]] = highLightedToken
       }
       this.newContext = tokenizedContext.join(' ');
@@ -365,9 +364,22 @@ export default Vue.component("attack-output",{
       this.newQuestion = this.$store.state.attackResults[0].predictions[1].question;
     },
     prepareTopKAttack(){
-      this.newContext = 'TODO';
-      this.newAnswer = 'TODO';
-      this.newQuestion = 'TODO';
+      var indices = this.$store.state.attackResults[0].adversarial.indices;
+      var oldContext = this.$store.state.attackResults[0].predictions[0].prediction_documents[0].document;
+      // tokenize the question by white space
+      var tokenizedOldContext = oldContext.split(/\s+/);
+      this.maxTopK = tokenizedOldContext.length;
+      // for each elem in tokenizedOldContext, if it is not in indices, add <s>
+      for (var i=0; i<tokenizedOldContext.length; i++){
+        if (!indices.includes(i)){
+          tokenizedOldContext[i] = '<s>'+tokenizedOldContext[i]+'</s>';
+        } else {
+          tokenizedOldContext[i] = '<mark class="bg-success text-white">'+tokenizedOldContext[i]+'</mark>';
+        }
+      }
+      this.newContext = tokenizedOldContext.join(' ');
+      this.newAnswer = this.$store.state.attackResults[0].predictions[1].prediction_output['output'];
+      this.newQuestion = this.$store.state.attackResults[0].predictions[1].question;
     },
 
     close(){
