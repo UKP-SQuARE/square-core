@@ -1,35 +1,26 @@
 import logging
-from collections import defaultdict
+import math
 import string
-from typing import Union, Tuple, List, Dict, Any
+from collections import defaultdict
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
-import math
 import torch
-from torch.nn import Module, ModuleList
+from tasks.attacks import hotflip, input_reduction, subspan, topk_tokens
 from tasks.config.model_config import model_config
 from tasks.inference.model import Model
-
-from tasks.attacks import hotflip, input_reduction, topk_tokens, subspan
-
-from tasks.models.prediction import (
-    PredictionOutput,
-    PredictionOutputForSequenceClassification,
-    PredictionOutputForTokenClassification,
-    PredictionOutputForQuestionAnswering,
-    PredictionOutputForGeneration,
-    PredictionOutputForEmbedding,
-)
-from tasks.models.request import Task, PredictionRequest
-from transformers import (
-    AutoConfig,
-    AutoTokenizer,
-    AutoModel,
-    AutoModelForSequenceClassification,
-    AutoModelForTokenClassification,
-    AutoModelForQuestionAnswering,
-    AutoModelForCausalLM,
-)
+from tasks.models.prediction import (PredictionOutput,
+                                     PredictionOutputForEmbedding,
+                                     PredictionOutputForGeneration,
+                                     PredictionOutputForQuestionAnswering,
+                                     PredictionOutputForSequenceClassification,
+                                     PredictionOutputForTokenClassification)
+from tasks.models.request import PredictionRequest, Task
+from torch.nn import Module, ModuleList
+from transformers import (AutoConfig, AutoModel, AutoModelForCausalLM,
+                          AutoModelForQuestionAnswering,
+                          AutoModelForSequenceClassification,
+                          AutoModelForTokenClassification, AutoTokenizer)
 from transformers.models.gpt2.tokenization_gpt2 import bytes_to_unicode
 
 logger = logging.getLogger(__name__)
@@ -59,6 +50,7 @@ class Transformer(Model):
              disable_gpu: do not move model to GPU even if CUDA is available
              kwargs: Not used
         """
+        self.task = None
         if model_config.model_class == "from_config":
             config = AutoConfig.from_pretrained(model_config.model_name)
             model_arch = config.architectures[0]
@@ -132,11 +124,9 @@ class Transformer(Model):
     def _ensure_tensor_on_device(self, **inputs):
         """
         Ensure PyTorch tensors are on the specified device.
-
         Args:
             inputs (keyword arguments that should be :obj:`torch.Tensor`):
                 The tensors to place on :obj:`self.device`.
-
         Return:
             :obj:`Dict[str, torch.Tensor]`: The same as :obj:`inputs` but on the proper device.
         """
@@ -306,7 +296,6 @@ class Transformer(Model):
         # restore the original requires_grad values of the parameters
         for param_name, param in self.model.named_parameters():
             param.requires_grad = original_param_name_to_requires_grad_dict[param_name]
-        # print(grad_dict)
         return grad_dict
 
     def _predict(
@@ -314,12 +303,10 @@ class Transformer(Model):
     ) -> Union[dict, Tuple[dict, dict]]:
         """
         Inference on the input.
-
         Args:
          request: the request with the input and optional kwargs
          output_features: return the features of the input.
             Necessary if, e.g., attention mask is needed for post-processing.
-
         Returns:
              The model outputs and optionally the input features
         """
@@ -639,6 +626,12 @@ class Transformer(Model):
         label2id = self.model.config.label2id
         id2label = {v: k for k, v in label2id.items()}
         task_outputs = {"id2label": id2label, "attributions": []}
+
+        # set ans start and end index as None since we do not have them
+        # for this task
+        self.original_ans_start = None
+        self.original_ans_end = None
+
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
         if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get(
@@ -650,22 +643,30 @@ class Transformer(Model):
             task_outputs["labels"] = labels.tolist()
 
         # word attributions
-        if request.explain_kwargs:
+        if request.explain_kwargs or request.attack_kwargs:
             grad_kwargs = {"labels": labels.to(self.model.device)}
             attributions = self._interpret(
                 request=request,
                 prediction=predictions,
-                method=request.explain_kwargs["method"],
+                method=request.explain_kwargs["method"]
+                if request.explain_kwargs
+                else request.attack_kwargs["saliency_method"],
                 **grad_kwargs,
             )
             predictions.pop("attentions", None)
             word_imp = self.process_outputs(
                 attributions=attributions,
-                top_k=request.explain_kwargs["top_k"],
-                mode=request.explain_kwargs["mode"],
+                top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
+                mode=request.explain_kwargs["mode"]
+                if request.explain_kwargs
+                else "all",
                 task="sequence_classification",
             )
             task_outputs["attributions"] = word_imp
+
+        if request.attack_kwargs:
+            new_predictions = self._model_attacks(request, task_outputs)
+            return new_predictions
 
         return PredictionOutputForSequenceClassification(
             model_outputs=predictions, **task_outputs
@@ -724,10 +725,8 @@ class Transformer(Model):
         """
         Span-based question answering for a given question and context.
         We expect the input to use the (question, context) format for the text pairs.
-
         Args:
           request: the prediction request
-
         """
         # Making heavy use of https://huggingface.co/transformers/
         # _modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
@@ -742,13 +741,11 @@ class Transformer(Model):
             Take the output of any :obj:`ModelForQuestionAnswering` and
                 will generate probabilities for each span to be the
                 actual answer.
-
             In addition, it filters out some unwanted/impossible cases
             like answer len being greater than max_answer_len or
             answer end position being before the starting position.
             The method supports output the k-best answer through
             the topk argument.
-
             Args:
                 start_ (:obj:`np.ndarray`): Individual start
                     probabilities for each token.
@@ -869,12 +866,6 @@ class Transformer(Model):
 
             # word attributions
             if request.explain_kwargs or request.attack_kwargs:
-                # attributions = []
-                # if request.explain_kwargs["method"] == "attention":
-                #     attn = predictions["attentions"][-1]
-                #     weights = attn[:, :, 0, :].mean(1)
-                #     attributions = weights.cpu().detach().numpy()[0]
-                # else:
                 start_idx = torch.argmax(predictions["start_logits"])
                 end_idx = torch.argmax(predictions["end_logits"])
                 answer_start = torch.tensor([start_idx])
@@ -920,79 +911,76 @@ class Transformer(Model):
             model_outputs=predictions, **task_outputs
         )
 
-    def _model_attacks(self, request, task_outputs):
+    def _model_attacks(
+        self, request: PredictionRequest, task_outputs
+    ) -> PredictionOutput:
+        """
+        Perform attacks on the model output.
+        """
+
         if request.attack_kwargs["method"] == "hotflip":
+
+            if self.original_ans_start and self.original_ans_end:
+                ans_start = self.original_ans_start
+                ans_end = self.original_ans_end
+                include_answer = (request.attack_kwargs.get("include_answer", False),)
+            else:
+                ans_start = 0
+                ans_end = 0
+                include_answer = False
+
             attack = hotflip.Hotflip(
+                task=self.task,
+                model_outputs=task_outputs,
                 tokenizer=self.tokenizer,
-                top_k=request.attack_kwargs.get("max_flips", 10),
-                include_answer=request.attack_kwargs.get("include_answer", False),
-            )
-            inputs, indices = attack.flip_tokens(
-                task_outputs,
-                ans_start=self.original_ans_start,
-                ans_end=self.original_ans_end,
+                request=request,
+                include_answer=include_answer,
             )
 
-            prediction_request = {
-                "input": inputs,
-                "is_preprocessed": False,
-                "preprocessing_kwargs": {},
-                "model_kwargs": {},
-                "task_kwargs": {},
-            }
-            predictions = self._question_answering(
-                PredictionRequest(**prediction_request)
+            batch_request, indices = attack.attack_instance(
+                ans_start=ans_start, ans_end=ans_end
             )
-            predictions.contexts = [inp[1] for inp in inputs]
+            contexts = batch_request.pop("contexts")
+            predictions = self.predict(
+                PredictionRequest(**batch_request), task=self.task
+            )
+            predictions.contexts = contexts
             predictions.adversarial["indices"] = indices
 
         elif request.attack_kwargs["method"] == "input_reduction":
-            top_k = request.attack_kwargs.get("max_reductions", 10)
-            attack = input_reduction.InputReduction(top_k=top_k,)
-            inputs, indices = attack.reduce_instance(task_outputs)
-            prediction_request = {
-                "input": inputs,
-                "is_preprocessed": False,
-                "preprocessing_kwargs": {},
-                "model_kwargs": {"output_attentions": True},
-                "task_kwargs": {},
-                "explain_kwargs": {
-                    "method": request.attack_kwargs.get("saliency_method", "attention"),
-                    "top_k": top_k,
-                    "mode": "all",
-                },
-            }
-            predictions = self._question_answering(
-                PredictionRequest(**prediction_request)
+            attack = input_reduction.InputReduction(
+                task=self.task, request=request, model_outputs=task_outputs
+            )
+            batch_request, indices = attack.attack_instance()
+            questions = batch_request.pop("questions")
+            predictions = self.predict(
+                PredictionRequest(**batch_request), task=self.task
             )
             predictions.model_outputs.pop("attentions", None)
-            predictions.questions = [inp[0] for inp in inputs]
+            predictions.questions = questions
             predictions.adversarial["indices"] = indices
 
         elif request.attack_kwargs["method"] is "topk_tokens" or "sub_span":
-            top_k = request.attack_kwargs.get("max_tokens", 10)
-
+            inputs, indices = [], []
+            batch_request = {}
             if request.attack_kwargs["method"] == "topk_tokens":
-                attack = topk_tokens.TopkTokens(top_k=top_k,)
-                inputs, indices = attack.choose_topk(task_outputs)
+                attack = topk_tokens.TopkTokens(
+                    task=self.task, model_outputs=task_outputs, request=request
+                )
+                batch_request, indices = attack.attack_instance()
             elif request.attack_kwargs["method"] == "sub_span":
-                attack = subspan.SubSpan(top_k=top_k,)
-                inputs, indices = attack.select_span(task_outputs)
-
-            prediction_request = {
-                "input": inputs,
-                "is_preprocessed": False,
-                "preprocessing_kwargs": {},
-                "model_kwargs": {"output_attentions": True},
-                "task_kwargs": {},
-            }
-            predictions = self._question_answering(
-                PredictionRequest(**prediction_request)
+                attack = subspan.SubSpan(
+                    task=self.task, model_outputs=task_outputs, request=request
+                )
+                batch_request, indices = attack.attack_instance()
+            contexts = batch_request.pop("contexts")
+            predictions = self.predict(
+                PredictionRequest(**batch_request), task=self.task
             )
             predictions.model_outputs.pop("attentions", None)
-            predictions.contexts = [inp[1] for inp in inputs]
+            predictions.contexts = contexts
             predictions.adversarial["indices"] = indices
-
+        # logger.info(predictions)
         return predictions
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
@@ -1011,7 +999,7 @@ class Transformer(Model):
                 f"Input is too large. Max input size is "
                 f"{model_config.max_input_size}"
             )
-
+        self.task = task
         if task == Task.sequence_classification:
             return self._sequence_classification(request)
         elif task == Task.token_classification:
@@ -1222,4 +1210,5 @@ class Transformer(Model):
                 "context_tokens": context_tokens,
             }
         ]
+
         return outputs

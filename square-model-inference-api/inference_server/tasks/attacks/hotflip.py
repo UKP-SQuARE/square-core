@@ -1,28 +1,54 @@
 from typing import List, Dict, Tuple
 import random
 
+from tasks.attacks.attack import Attacker
 
-class Hotflip:
-    def __init__(self, tokenizer, top_k=10, include_answer=False):
 
+class Hotflip(Attacker):
+    """
+    Flips the tokens in the input text and returns the flipped text
+    """
+
+    def __init__(self, task, request, model_outputs, tokenizer, include_answer=False):
+        """
+        Initialize the Hotflip attack
+        Args:
+            task: task object
+            request: request object
+            model_outputs: model outputs
+        """
+        super().__init__(request, task, model_outputs)
         self.tokenizer = tokenizer
-        self.top_k = top_k
         self.include_answer = include_answer
+        self.top_k = self.request.attack_kwargs.get("max_flips", 10)
 
-    def flip_tokens(self, model_outputs, ans_start, ans_end) -> Tuple[List[List], List]:
+    def attack_instance(
+        self, ans_start, ans_end
+    ) -> Tuple[List[List], List]:  # ignore the signature
         """
         post-process the word attributions to merge the sub-words tokens
         to words
         Args:
-            model_outputs: word importance scores
-            ans_start:
-            ans_end:
+            ans_start: start index of the answer
+            ans_end: end index of the answer
         Returns:
            Tuple of flipped inputs and the largest indices
         """
-        attributions = model_outputs["attributions"][0]
-        context_attributions = attributions["context_tokens"][0]
-        question_attributions = attributions["question_tokens"][0]
+
+        (
+            question_attributions,
+            context_attributions,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+        ) = self._get_tokens_and_attributions()
+
+        # check flip value
+        if self.top_k > len(question_attributions):
+            self.top_k = len(question_attributions)
 
         if not self.include_answer:
             proc_context = [
@@ -72,7 +98,11 @@ class Hotflip:
             [q, c] for q, c in zip(questions, old_context + new_contexts)
         ]
 
-        return prepared_inputs, imp_tokens_idx
+        batch_request = self.base_prediction_request
+        batch_request["input"] = prepared_inputs
+        batch_request["contexts"] = old_context + new_contexts
+
+        return batch_request, imp_tokens_idx
 
     def _get_random_tokens(self, tokens, vocab, invalid_replacement_indices):
         """

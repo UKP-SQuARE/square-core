@@ -113,6 +113,14 @@ class PredictionOutput(BaseModel):
         self.model_outputs = _encode_numpy(self.model_outputs)
         self.model_output_is_encoded = not model_config.return_plaintext_arrays
 
+class TokenAttributions(BaseModel):
+    """
+    A span answer for question_answering with a score, the start and end character index and the extracted span answer.
+    """
+    topk_question_idx: List
+    topk_context_idx: List
+    question_tokens: List[List[Tuple[int, str, float]]]
+    context_tokens: List[List[Tuple[int, str, float]]]
 
 class PredictionOutputForSequenceClassification(PredictionOutput):
     labels: List[int] = Field(
@@ -125,11 +133,20 @@ class PredictionOutputForSequenceClassification(PredictionOutput):
         description="Mapping from label id to the label name. "
                     "Not set for regression."
     )
-    attributions: Optional[List[Dict]] = Field(
+    attributions: Optional[List[TokenAttributions]] = Field(
         default=[],
-        description="scores for the input tokens which are "
-                    "important for the model prediction"
-    )
+        description="scores for the input tokens which are important for the"
+                    "model prediction")
+    questions: Optional[List] = Field(
+        default=[],
+        description="The new questions after modification")
+    contexts: Optional[List] = Field(
+        default=[],
+        description="The new contexts after modification")
+    adversarial: Optional[Dict] = Field(
+        default={},
+        description="scores for the input tokens which are important for the"
+                    "model prediction")
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -200,16 +217,6 @@ class QAAnswer(BaseModel):
     start: int
     end: int
     answer: str
-
-
-class TokenAttributions(BaseModel):
-    """
-    A span answer for question_answering with a score, the start and end character index and the extracted span answer.
-    """
-    topk_question_idx: List
-    topk_context_idx: List
-    question_tokens: List[List[Tuple[int, str, float]]]
-    context_tokens: List[List[Tuple[int, str, float]]]
 
 
 class PredictionOutputForQuestionAnswering(PredictionOutput):

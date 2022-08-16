@@ -2,7 +2,7 @@ import logging
 
 from tasks.config.model_config import model_config
 from tasks.models.prediction import PredictionOutput
-from tasks.models.request import Task, PredictionRequest
+from tasks.models.request import PredictionRequest, Task
 from transformers.adapters import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
@@ -16,18 +16,23 @@ class AdapterTransformer(Transformer):
     The class for all adapter-based models using the adapter-transformers package
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self,  **kwargs):
         """
 
-        Initialize the Adapter with its underlying Transformer and pre-load all available adapters from adapterhub.ml
+        Initialize the Adapter with its underlying Transformer 
+        and pre-load all available adapters from adapterhub.ml
 
         Args:
              model_name: the Huggingface model name
              disable_gpu: do not move model to GPU even if CUDA is available
-             transformers_cache: Should be same as TRANSFORMERS_CACHE env variable. This folder will be used to store the adapters
+             transformers_cache: Should be same as TRANSFORMERS_CACHE 
+                env variable. This folder will be used to store the adapters
              kwargs: Not used
         """
-        self._load_model(AutoAdapterModel, model_config.model_name, model_config.disable_gpu)
+        self.task = None
+        self._load_model(
+            AutoAdapterModel, model_config.model_name, model_config.disable_gpu
+        )
         if model_config.preloaded_adapters:
             self._load_adapter(model_config.model_name, model_config.transformers_cache)
         self.model_name = model_config.model_name
@@ -39,34 +44,53 @@ class AdapterTransformer(Transformer):
 
         Args:
              model_name: the Huggingface model name
-             transformers_cache: Should be same as TRANSFORMERS_CACHE env variable. This folder will be used to store the adapters
+             transformers_cache: Should be same as TRANSFORMERS_CACHE env variable.
+                This folder will be used to store the adapters
 
         """
 
         logger.info("Loading all available adapters")
         adapter_infos = []
         for source in ["ah", "hf"]:
-            adapter_infos = [info for info in list_adapters(source=source) if info.model_name == model_name]
+            adapter_infos = [
+                info
+                for info in list_adapters(source=source)
+                if info.model_name == model_name
+            ]
             if source == "ah":
-                adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in
-                               adapter_infos)
+                adapters = set(
+                    f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}"
+                    for adapter_info in adapter_infos
+                )
             elif source == "hf":
-                adapters = set(f"{adapter_info.adapter_id}" for adapter_info in adapter_infos if
-                               adapter_info.adapter_id.startswith("AdapterHub"))
+                adapters = set(
+                    f"{adapter_info.adapter_id}"
+                    for adapter_info in adapter_infos
+                    if adapter_info.adapter_id.startswith("AdapterHub")
+                )
             for adapter in adapters:
                 logger.debug(f"Loading adapter {adapter}")
                 try:
-                    self.model.load_adapter(adapter, load_as=adapter, with_head=True, cache_dir=transformers_cache,
-                                            source=source)
+                    self.model.load_adapter(
+                        adapter,
+                        load_as=adapter,
+                        with_head=True,
+                        cache_dir=transformers_cache,
+                        source=source,
+                    )
                 except RuntimeError as e:
                     if "Error(s) in loading state_dict" in e.args[0]:
                         logger.debug(
-                            f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
+                            f"Could not load {adapter} due to missing label_ids in "
+                            f"config resulting in exception:\n{e.args[0]}"
+                        )
                     else:
                         raise e
                 except AttributeError as e:
                     if "Given head type " in e.args[0]:
-                        logger.debug(f"Could not load {adapter} due to unknown head type:\n{e.args[0]}")
+                        logger.debug(
+                            f"Could not load {adapter} due to unknown head type:\n{e.args[0]}"
+                        )
                     else:
                         raise e
         # Move all freshly loaded adapter weights to the same device as the model
@@ -80,7 +104,8 @@ class AdapterTransformer(Transformer):
     #         logger.debug(f"Adapter {adapter_name} is already loaded. Not loading again")
 
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
-        # We only have to change the label2id mapping from config.label2id (what super() uses) to the mapping
+        # We only have to change the label2id mapping from config.label2id 
+        # (what super() uses) to the mapping
         # of the chosen head
         prediction = super()._token_classification(request)
 
@@ -91,17 +116,23 @@ class AdapterTransformer(Transformer):
         return prediction
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
-        # We only have to change the label2id mapping from config.label2id (what super() uses) to the mapping
+        # We only have to change the label2id mapping from 
+        # config.label2id (what super() uses) to the mapping
         # of the chosen head
         logger.info(f"sequence classification request:\n{request.json()}")
-        self.model.config.prediction_heads[request.adapter_name]["num_choices"] = len(request.input)
+        self.model.config.prediction_heads[request.adapter_name]["num_choices"] = len(
+            request.input
+        )
+        logger.info(
+            f"num_choices: {self.model.config.prediction_heads[request.adapter_name]['num_choices']}"
+        )
         prediction = super()._sequence_classification(request)
 
         label2id = self.model.config.prediction_heads[request.adapter_name]["label2id"]
         id2label = {v: k for k, v in label2id.items()}
         prediction.id2label = id2label
 
-        logger.info(f"sequence classification prediction:\n{prediction}")
+        logger.info(f"sequence classification prediction:\n{prediction.labels}")
         return prediction
 
     def _prepare_adapter(self, adapter_name):
@@ -109,13 +140,17 @@ class AdapterTransformer(Transformer):
             self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
 
         if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
-            raise ValueError(f"Unknown or missing adapter {adapter_name}. "
-                             f"Please provider a fully specified adapter name from adapterhub.ml")
+            raise ValueError(
+                f"Unknown or missing adapter {adapter_name}. "
+                f"Please provider a fully specified adapter name from adapterhub.ml"
+            )
         self.model.set_active_adapters(adapter_name)
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         # ensure that the loaded had is a lm head
-        if self.model.active_head is None or not isinstance(self.model.active_head, CausalLMHead):
+        if self.model.active_head is None or not isinstance(
+            self.model.active_head, CausalLMHead
+        ):
             # if there is no head or a head that is not a lm head add a lm head
             # depending on the model class different heads might be available
             # e.g. GPT2 -> causal lm head, BART -> seq2seq lm head
@@ -127,18 +162,23 @@ class AdapterTransformer(Transformer):
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
-            raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+            raise ValueError(
+                "is_preprocessed=True is not supported for this model. Please use text as input."
+            )
         if len(request.input) > model_config.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
+            raise ValueError(
+                f"Input is too large. Max input size is {model_config.max_input_size}"
+            )
         self._prepare_adapter(request.adapter_name)
 
-        if task == Task.sequence_classification:
+        self.task = task
+        if self.task == Task.sequence_classification:
             return self._sequence_classification(request)
-        elif task == Task.token_classification:
+        elif self.task == Task.token_classification:
             return self._token_classification(request)
-        elif task == Task.question_answering:
+        elif self.task == Task.question_answering:
             return self._question_answering(request)
-        elif task == Task.embedding:
+        elif self.task == Task.embedding:
             return self._embedding(request)
-        elif task == Task.generation:
+        elif self.task == Task.generation:
             return self._generation(request)
