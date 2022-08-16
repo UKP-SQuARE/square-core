@@ -60,6 +60,15 @@
 
       <div class="col mt-3" v-if="explainAvailable">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a data-bs-toggle="modal" data-bs-target="#modalattack" role="button" class="btn btn-primary shadow">
+            Attack Methods
+          </a>
+          <AttackOutput id="modalattack"> test</AttackOutput>
+        </div>
+      </div> 
+
+      <div class="col mt-3">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a data-bs-toggle="modal" data-bs-target="#modalExplain" role="button" class="btn btn-primary shadow">
             Explain this output
           </a>
@@ -84,6 +93,7 @@
 import Vue from 'vue'
 import Categorical from '@/components/results/Categorical.vue'
 import SpanExtraction from '@/components/results/SpanExtraction.vue'
+import AttackOutput from '../components/modals/AttackOutput.vue'
 import ExplainOutput from '../components/modals/ExplainOutput'
 import GraphViz from '../components/modals/GraphViz'
 
@@ -101,6 +111,7 @@ export default Vue.component('skill-results', {
   components: {
     Categorical,
     SpanExtraction,
+    AttackOutput,
     ExplainOutput,
     GraphViz
   },
