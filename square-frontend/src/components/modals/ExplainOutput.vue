@@ -38,7 +38,7 @@
                   <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
                     <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
                   </button>
-                  <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
+                  <button v-if="scaledAttentionAvailable" id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
                     <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
                   </button>
                   <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
@@ -150,6 +150,13 @@ export default Vue.component("explain-output",{
     selectedSkills() {
       // remove None from skills list when send query
       return this.$store.state.skillOptions['qa'].selectedSkills.filter(skill => skill !== 'None')
+    },
+    scaledAttentionAvailable() {
+      if (this.$store.state.currentResults[0].skill.skill_type === 'multiple-choice') {
+        return false
+      } else {
+        return true
+      }
     },
   },
   methods:{
