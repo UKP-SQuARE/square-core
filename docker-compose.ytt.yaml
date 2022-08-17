@@ -309,8 +309,6 @@ services:
     env_file:
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/inference_server/.env.dpr
-      - ./square-model-inference-api/inference_server/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
