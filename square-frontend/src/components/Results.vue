@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      <div class="col mt-3">
+      <div class="col mt-3" v-if="showAttacks">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a data-bs-toggle="modal" data-bs-target="#modalattack" role="button" class="btn btn-primary shadow">
             Attack Methods
@@ -67,7 +67,7 @@
         </div>
       </div> 
 
-      <div class="col mt-3">
+      <div class="col mt-3" v-if="showExplainability">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a data-bs-toggle="modal" data-bs-target="#modalExplain" role="button" class="btn btn-primary shadow">
             Explain this output
@@ -135,7 +135,15 @@ export default Vue.component('skill-results', {
       }
     },
     showContextToggle() {
-      return this.$store.state.currentResults[0].skill.skill_type === 'span-extraction'
+      return this.$store.state.currentResults[0].skill.skill_type === 'span-extraction';
+    },
+    showExplainability() {
+      return (this.$store.state.currentResults[0].skill.skill_type === 'abstractive' || 
+              this.$store.state.currentResults[0].skill.skill_type === 'span-extraction' ||
+              this.$store.state.currentResults[0].skill.skill_type === 'multiple-choice');
+    },
+    showAttacks() {
+      return this.$store.state.currentResults[0].skill.skill_type === 'span-extraction';
     }
   }
 })
