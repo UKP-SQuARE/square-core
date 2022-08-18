@@ -167,14 +167,20 @@
                     </div>
                   </div>
 
-                  <div class="row mt-3">
-                    <div class="col-2 text-start">
-                      <h4>Answer:</h4>
-                    </div>
-                    <div class="col-10">
-                      <span v-html="listNewAnswer[index]"/>
-                    </div>
-                  </div>
+                  <div class="row mt-3 align-items-center">
+                      <div class="col-4 text-start">
+                        <h4>New Answer:</h4>
+                      </div>
+                      <div class="col-3 text-start vertical-center">
+                          <span v-html="listNewAnswer[index]"/>
+                      </div>
+                      <div class="col-2 text-start ">
+                          <h4>Old Answer:</h4>
+                      </div>
+                      <div class="col-3 text-start">
+                          {{$store.state.currentResults[index].predictions[0]['prediction_output']['output']}}
+                      </div>
+                  </div> <!-- end newAnswer -->
 
               </div> <!-- end for loop -->
             </div> <!-- end show saliency map -->
