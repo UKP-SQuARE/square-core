@@ -55,7 +55,7 @@
             
             <div v-if="method == 'hotflip' || method == 'sub_span' || method == 'topk_tokens'" class="row mt-3">
               <div class="col-4 text-start">
-                  <h4>Attribution Method:</h4>
+                  <h4>Saliency Method:</h4>
               </div>
               <div class="col-auto">
                 <div class="form-check form-check-inline">
