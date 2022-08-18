@@ -2,11 +2,12 @@ import logging
 
 from square_skill_api.models import QueryOutput, QueryRequest
 
-from square_skill_helpers import ModelAPI
+from square_skill_helpers import ModelAPI, DataAPI
 
 logger = logging.getLogger(__name__)
 
 model_api = ModelAPI()
+data_api = DataAPI()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -17,15 +18,34 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
-    context = request.skill_args.get("context", "")
     explain_kwargs = request.explain_kwargs or {}
-    attack_kwargs = request.attack_kwargs or {}
 
-    if context:
-        query_context_seperator = request.skill_args.get("query_context_seperator", " ")
-        prepared_input = [query + query_context_seperator + context]
-    else:
-        prepared_input = [query]
+    data = await data_api(
+        datastore_name=request.skill_args["datastore"],
+        index_name=request.skill_args.get("index", ""),
+        query=query,
+    )
+    logger.info(f"Data API output:\n{data}")
+    context = [d["document"]["text"] for d in data]
+    context_score = [d["score"] for d in data]
+
+    # prepared_input = [[query, c] for c in context]
+    # model_request = {
+    #     "input": prepared_input,
+    #     "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
+    #     "explain_kwargs": explain_kwargs,
+    # }
+    # if request.skill_args.get("adapter"):
+    #     model_request["adapter_name"] = request.skill_args["adapter"]
+    # model_api_output = await model_api(
+    #     model_name=request.skill_args["base_model"],
+    #     pipeline="question-answering",
+    #     model_request=model_request,
+    # )
+
+    query_context_seperator = request.skill_args.get("query_context_seperator", " ")
+    prepared_input = [[query + query_context_seperator + c] for c in context]
+
     model_request = {
         "input": prepared_input,
         "model_kwargs": {
@@ -33,7 +53,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
             **request.skill_args.get("model_kwargs", {}),
         },
         "explain_kwargs": explain_kwargs,
-        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
@@ -46,5 +65,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_generation(
-        questions=query, model_api_output=model_api_output, context=context
+        model_api_output=model_api_output, context=context
     )

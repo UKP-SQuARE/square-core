@@ -14,14 +14,17 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     # commonsense-qa does not take a context, but the skill-manager put the first
     # answer choice into the context field, therefore adding it back to choices
+    query = request.query
     choices = [request.skill_args["context"]] + request.skill_args["choices"]
-    prepared_input = [[request.query, c] for c in choices]
+    prepared_input = [[query, c] for c in choices]
 
     explain_kwargs = request.explain_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     model_request = {
         "input": prepared_input,
         "explain_kwargs": explain_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
@@ -33,5 +36,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_sequence_classification(
-        answers=choices, model_api_output=model_api_output
+        question=query, answers=choices, model_api_output=model_api_output
     )
