@@ -275,6 +275,7 @@ export default Vue.component("attack-output",{
       if(this.method == 'input_reduction'){
         // tokenize currentQuestion
         attack_kwargs['max_reductions'] = parseInt(this.maxReductions);
+        attack_kwargs['saliency_method'] = 'attention';
       }
       // if method is sub_span, add max_tokens
       if(this.method == 'sub_span'){
