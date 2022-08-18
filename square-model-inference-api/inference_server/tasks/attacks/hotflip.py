@@ -47,8 +47,8 @@ class Hotflip(Attacker):
         ) = self._get_tokens_and_attributions()
 
         # check flip value
-        if self.top_k > len(question_attributions):
-            self.top_k = len(question_attributions)
+        if self.top_k > len(context_attributions):
+            self.top_k = len(context_attributions)
 
         if not self.include_answer:
             proc_context = [
