@@ -107,7 +107,7 @@
                 </div> <!-- end show answer -->
 
               </div> <!-- end for loop -->
-            </div>
+            </div> <!-- end show saliency map -->
             
 
           </div>
