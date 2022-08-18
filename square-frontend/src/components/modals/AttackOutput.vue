@@ -20,49 +20,57 @@
                   <h1>Attack Methods</h1>
                   <hr/>
               </div>
-            </div>
+            </div> <!-- row -->
+
             <div class="row">
               <div class="col-4 text-start">
                   <h4>Method:</h4>
               </div>
-              <div class="col-8 text-start">
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hotflipRadio" value="hotflip" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="hotflipRadio">Hot Flip</label>
                 </div>
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_reductionRadio" value="input_reduction" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="input_reductionRadio">Input Reduction</label>
                 </div>
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="sub_spanRadio" value="sub_span" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="sub_spanRadio">Sub-span</label>
                 </div>
+              </div>
+              <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="topk_tokensRadioo" value="topk_tokens" v-model="method" v-on:click="methodSelected()">
                   <label class="form-check-label" for="topk_tokensRadioo">Top K</label>
                 </div>
               </div>
-            </div>
+
+            </div> <!-- row -->
             
             <div v-if="method == 'hotflip' || method == 'sub_span' || method == 'topk_tokens'" class="row mt-3">
               <div class="col-4 text-start">
-                  <h4>Attribution Method:</h4>
+                  <h4>Saliency Method:</h4>
               </div>
               <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="SimpleGrad" value="simple_grads" v-model="saliencyMethod"/>
                   <label class="form-check-label" for="SimpleGrad">Simple Gradients</label>
                 </div>
-                
               </div>
+
               <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="SmoothGrad" value="smooth_grads" v-model="saliencyMethod"/>
                   <label class="form-check-label" for="SmoothGrad">Smooth Gradients</label>
                 </div>
-                  
               </div>
+
               <div class="col-auto">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="IntegratedGrad" value="integrated_grads" v-model="saliencyMethod"/>
@@ -76,19 +84,19 @@
                   <label class="form-check-label" for="attention">Attention</label>
                 </div>  
               </div>
-            </div>
+
+            </div> <!-- row -->
 
             <div v-if="method == 'hotflip'" class="row mt-3">
                 <div class="col-4 text-start">
                     <h4># Flips = {{numFlips}}</h4>
                 </div>
-
-                <div class="col-auto">
-                    <div class="form-check form-switch">
-                        <input type="range" min="1" max="10" v-model="numFlips" class="form-range" id="numFlips" @click="showAttack()">
-                    </div>
-                </div>
-
+                <div class="col-8 text-start">
+                  <div class="form-check-inline">
+                    <input type="range" min="1" max="10" v-model="numFlips" class="form-range" id="numFlips" @click="showAttack()"/>
+                  </div>
+                </div>  
+                
             </div>
 
             <div v-if="method == 'input_reduction'" class="row mt-3">
@@ -96,7 +104,7 @@
                   <h4># Reductions = {{numReductions}}</h4>
                 </div>
                 <div class="col-auto">
-                  <div class="form-check form-switch">
+                  <div class="form-check-inline">
                     <input type="range" min="1" :max="maxReductions" v-model="numReductions" class="form-range" id="numReductions" @click="showAttack()">
                   </div>
                 </div>
@@ -108,7 +116,7 @@
                 </div>
 
                 <div class="col-auto">
-                    <div class="form-check form-switch">
+                    <div class="form-check-inline">
                         <input type="range" min="2" :max="maxLenSpan" v-model="lenSpan" v-on:click="attack()" class="form-range" id="lenSpan">
                     </div>
                 </div>
@@ -120,7 +128,7 @@
                 </div>
 
                 <div class="col-auto">
-                    <div class="form-check form-switch">
+                    <div class="form-check-inline">
                         <input type="range" min="1" :max="maxTopK" v-model="numTopK" v-on:click="attack()" class="form-range" id="numTopK">
                     </div>
                 </div>
@@ -134,39 +142,49 @@
               </div>
             </div> <!-- HotFlip -->
 
-            <!-- Show question, flippedContext, and new answer  -->
-            <div v-if="showAttackOutput" class="d-flex row mt-3">
-              <hr/>
-              <div class="col-4 text-start">
-                  <h4>Question:</h4>
-              </div>
-              <div class="col-8 text-start">
-                  <span v-html="newQuestion"/>
-              </div>
-            </div> <!-- end question -->
-            <div v-if="showAttackOutput" class="row mt-3">
-              <div class="col-4 text-start">
-                  <h4>New Context:</h4>
-              </div>
-              <div class="col-8 text-start">
-                  <span v-html="newContext"/>
-              </div>
-            </div> <!-- end flippedContext -->
-            <div v-if="showAttackOutput" class="row mt-3 align-items-center">
-                <div class="col-4 text-start">
-                  <h4>New Answer:</h4>
-                </div>
-                <div class="col-3 text-start vertical-center">
-                    {{newAnswer}}
-                </div>
-                <div class="col-2 text-start ">
-                    <h4>Old Answer:</h4>
-                </div>
-                <div class="col-3 text-start">
-                    {{this.$store.state.currentResults[0].predictions[0]['prediction_output']['output']}}
+            <div v-if="showAttackOutput">
+              <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.attackResults" :key="index">
+                <div class="col-12">
+                  <h4>{{ skillResult.skill.name }}</h4>
+                  <hr/>
                 </div>
 
-            </div> <!-- end newAnswer -->
+                  <div class="row mt-3">
+                    <div class="col-2 text-start">
+                      <h4>Question:</h4>
+                    </div>
+                    <div class="col-10">
+                      <span v-html="listNewQuestion[index]"/>
+                    </div>
+                  </div>
+
+                  <div class="row mt-3">
+                    <div class="col-2 text-start">
+                      <h4>Context:</h4>
+                    </div>
+                    <div class="col-10">
+                      <span v-html="listNewContext[index]"/>
+                    </div>
+                  </div>
+
+                  <div class="row mt-3 align-items-center">
+                      <div class="col-4 text-start">
+                        <h4>New Answer:</h4>
+                      </div>
+                      <div class="col-3 text-start vertical-center">
+                          <span v-html="listNewAnswer[index]"/>
+                      </div>
+                      <div class="col-2 text-start ">
+                          <h4>Old Answer:</h4>
+                      </div>
+                      <div class="col-3 text-start">
+                          {{$store.state.currentResults[index].predictions[0]['prediction_output']['output']}}
+                      </div>
+                  </div> <!-- end newAnswer -->
+
+              </div> <!-- end for loop -->
+            </div> <!-- end show saliency map -->
+            
             
           </div> <!-- end container -->
         </div> <!-- end modal-body -->
@@ -191,9 +209,9 @@ export default Vue.component("attack-output",{
       numReductions: 1,
       maxReductions: this.$store.state.currentQuestion.split(' ').length,
 
-      newQuestion: "",
-      newContext: "",
-      newAnswer: "",
+      listNewQuestion: [],
+      listNewContext: [],
+      listNewAnswer: [],
       waiting: false,
       showHotFlipOutput: false,
       showAttackBtn: false,
@@ -210,28 +228,9 @@ export default Vue.component("attack-output",{
   methods:{
     methodSelected(){
       this.showAttackBtn = true;
-      // remove active class from all buttons
-      var buttons = document.getElementsByClassName('btn-outline-secondary')
-      for (var i = 0; i < buttons.length; i++) {
-        buttons[i].classList.remove('active')
-      }
-      if(this.method == 'hotflip'){
-        this.setAllButtonsUnselected();
-        this.hotflip_selected = true;
-        document.getElementById('hotflip_btn').classList.add('active');
-      } else if(this.method == 'input_reduction'){
-        this.setAllButtonsUnselected();
-        this.inputred_selected = true;
-        document.getElementById('input_reduction_btn').classList.add('active');
+      this.hideOutput();
+      if(this.method == 'input_reduction'){
         this.saliencyMethod = 'attention';
-      } else if(this.method == 'sub_span'){
-        this.setAllButtonsUnselected();
-        this.span_selected = true;
-        document.getElementById('sub_span_btn').classList.add('active');
-      } else if(this.method == 'topk_tokens'){
-        this.setAllButtonsUnselected();
-        this.topk_selected = true;
-        document.getElementById('topk_tokens_btn').classList.add('active');
       }
     },
     setAllButtonsUnselected(){
@@ -239,6 +238,10 @@ export default Vue.component("attack-output",{
       this.inputred_selected = false;
       this.span_selected = false;
       this.topk_selected = false;
+    },
+    hideOutput(){
+      this.showAttackOutput = false;
+      this.newAnswer = "";
     },
     attack() {
       /* eslint-disable */
@@ -271,7 +274,8 @@ export default Vue.component("attack-output",{
       // if method is input_reduction, add max_reductions
       if(this.method == 'input_reduction'){
         // tokenize currentQuestion
-        attack_kwargs['max_reductions'] = this.maxReductions;
+        attack_kwargs['max_reductions'] = parseInt(this.maxReductions);
+        attack_kwargs['saliency_method'] = 'attention';
       }
       // if method is sub_span, add max_tokens
       if(this.method == 'sub_span'){
@@ -284,22 +288,38 @@ export default Vue.component("attack-output",{
       return attack_kwargs;
     },
     showAttack(){
+      var listQAPairs = [];
       if (this.method == 'hotflip'){
-        this.prepareHotFlipAttack();
+        for (var i=0; i<this.$store.state.attackResults.length; i++){
+          var qaPair = this.processHotFlipAttack(this.$store.state.attackResults[i]);
+          listQAPairs.push(qaPair);
+        }
       } else if (this.method == 'input_reduction'){
-        this.prepareInputReductionAttack();
+        for (var i=0; i<this.$store.state.attackResults.length; i++){
+          var qaPair = this.processInputReductionAttack(this.$store.state.attackResults[i]);
+          listQAPairs.push(qaPair);
+        }
       } else if (this.method == 'sub_span'){
-        this.prepareSubSpanAttack();
+        for (var i=0; i<this.$store.state.attackResults.length; i++){
+          var qaPair = this.processSubSpanAttack(this.$store.state.attackResults[i]);
+          listQAPairs.push(qaPair);
+        }
       } else if (this.method == 'topk_tokens'){
-        this.prepareTopKAttack();
+        for (var i=0; i<this.$store.state.attackResults.length; i++){
+          var qaPair = this.processTopKAttack(this.$store.state.attackResults[i]);
+          listQAPairs.push(qaPair);
+        }
       }
+      this.listNewQuestion = listQAPairs.map(qaPair => qaPair.newQuestion);
+      this.listNewContext = listQAPairs.map(qaPair => qaPair.newContext);
+      this.listNewAnswer = listQAPairs.map(qaPair => qaPair.newAnswer);
     },
-    prepareHotFlipAttack(){
-      var indices = this.$store.state.attackResults[0].adversarial.indices;
-      var context = this.$store.state.attackResults[0].predictions[0].prediction_documents[0].document;
+    processHotFlipAttack(attackResult){
+      var indices = attackResult.adversarial.indices;
+      var context = attackResult.predictions[0].prediction_documents[0].document;
       var listContexts = []
-      for (var i = 1; i < this.$store.state.attackResults[0].predictions.length; i++) {
-        var prediction = this.$store.state.attackResults[0].predictions[i];
+      for (var i = 1; i < attackResult.predictions.length; i++) {
+        var prediction = attackResult.predictions[i];
         listContexts.push(prediction.prediction_documents[0].document);
       }
       // tokenize the context by white space
@@ -315,13 +335,14 @@ export default Vue.component("attack-output",{
         var highLightedToken = '<mark class="bg-success text-white"'+tooltip+'>'+newToken+'</mark>'
         tokenizedContext[indices[flipIdx]] = highLightedToken
       }
-      this.newContext = tokenizedContext.join(' ');
-      this.newAnswer = this.$store.state.attackResults[0].predictions[this.numFlips].prediction_output['output'];
-      this.newQuestion = this.$store.state.attackResults[0].predictions[this.numFlips].question;
+      var newContext = tokenizedContext.join(' ');
+      var newAnswer = attackResult.predictions[this.numFlips].prediction_output['output'];
+      var newQuestion = attackResult.predictions[this.numFlips].question;
+      return {newQuestion, newContext, newAnswer};
     },
-    prepareInputReductionAttack(){
-      var indices = this.$store.state.attackResults[0].adversarial.indices;
-      var oldQuestion = this.$store.state.attackResults[0].predictions[0].question;
+    processInputReductionAttack(attackResult){
+      var indices = attackResult.adversarial.indices;
+      var oldQuestion = attackResult.predictions[0].question;
       // tokenize the question by white space
       var tokenizedOldQuestion = oldQuestion.split(/\s+/);
       // flip context token with indices
@@ -331,13 +352,14 @@ export default Vue.component("attack-output",{
         var highLightedToken = '<s><mark class="bg-danger text-white">'+oldToken+'</mark></s>'
         tokenizedOldQuestion[indices[redIdx]] = highLightedToken
       }
-      this.newContext = this.$store.state.attackResults[0].predictions[this.numReductions].prediction_documents[0].document;
-      this.newAnswer = this.$store.state.attackResults[0].predictions[this.numReductions].prediction_output['output'];
-      this.newQuestion = tokenizedOldQuestion.join(' ');
+      var newContext = attackResult.predictions[this.numReductions].prediction_documents[0].document;
+      var newAnswer = attackResult.predictions[this.numReductions].prediction_output['output'];
+      var newQuestion = tokenizedOldQuestion.join(' ');
+      return {newQuestion, newContext, newAnswer};
     },
-    prepareSubSpanAttack(){
-      var indices = this.$store.state.attackResults[0].adversarial.indices;
-      var oldContext = this.$store.state.attackResults[0].predictions[0].prediction_documents[0].document;
+    processSubSpanAttack(attackResult){
+      var indices = attackResult.adversarial.indices;
+      var oldContext = attackResult.predictions[0].prediction_documents[0].document;
       // tokenize the question by white space
       var tokenizedOldContext = oldContext.split(/\s+/);
       this.maxLenSpan = tokenizedOldContext.length;
@@ -349,13 +371,14 @@ export default Vue.component("attack-output",{
           tokenizedOldContext[i] = '<mark class="bg-success text-white">'+tokenizedOldContext[i]+'</mark>';
         }
       }
-      this.newContext = tokenizedOldContext.join(' ');
-      this.newAnswer = this.$store.state.attackResults[0].predictions[1].prediction_output['output'];
-      this.newQuestion = this.$store.state.attackResults[0].predictions[1].question;
+      var newContext = tokenizedOldContext.join(' ');
+      var newAnswer = attackResult.predictions[1].prediction_output['output'];
+      var newQuestion = attackResult.predictions[1].question;
+      return {newQuestion, newContext, newAnswer};
     },
-    prepareTopKAttack(){
-      var indices = this.$store.state.attackResults[0].adversarial.indices;
-      var oldContext = this.$store.state.attackResults[0].predictions[0].prediction_documents[0].document;
+    processTopKAttack(attackResult){
+      var indices = attackResult.adversarial.indices;
+      var oldContext = attackResult.predictions[0].prediction_documents[0].document;
       // tokenize the question by white space
       var tokenizedOldContext = oldContext.split(/\s+/);
       this.maxTopK = tokenizedOldContext.length;
@@ -367,9 +390,10 @@ export default Vue.component("attack-output",{
           tokenizedOldContext[i] = '<mark class="bg-success text-white">'+tokenizedOldContext[i]+'</mark>';
         }
       }
-      this.newContext = tokenizedOldContext.join(' ');
-      this.newAnswer = this.$store.state.attackResults[0].predictions[1].prediction_output['output'];
-      this.newQuestion = this.$store.state.attackResults[0].predictions[1].question;
+      var newContext = tokenizedOldContext.join(' ');
+      var newAnswer = attackResult.predictions[this.numTopK].prediction_output['output'];
+      var newQuestion = attackResult.predictions[this.numTopK].question;
+      return {newQuestion, newContext, newAnswer};
     },
 
     close(){
