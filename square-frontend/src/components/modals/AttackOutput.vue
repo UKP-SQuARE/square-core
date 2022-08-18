@@ -93,7 +93,7 @@
                 </div>
                 <div class="col-8 text-start">
                   <div class="form-check-inline">
-                    <input type="range" min="1" max="10" v-model="numFlips" class="form-range" id="numFlips" @click="showAttack()"/>
+                    <input type="range" min="1" :max="maxFlips" v-model="numFlips" class="form-range" id="numFlips" @click="showAttack()"/>
                   </div>
                 </div>  
                 
@@ -202,6 +202,7 @@ export default Vue.component("attack-output",{
       method: undefined,
       saliencyMethod: 'simple_grads',
       numFlips: 1,
+      maxFlips: 8, //this.$store.state.currentContext.split(/\s+/).length,
       lenSpan: 3,
       maxLenSpan: this.$store.state.currentContext.split(/\s+/).length,
       numTopK: 1,
@@ -269,7 +270,7 @@ export default Vue.component("attack-output",{
       var attack_kwargs = {method: this.method, saliency_method: this.saliencyMethod,}
       // if method is hotflip, add max_flips
       if(this.method == 'hotflip'){
-        attack_kwargs['max_flips'] = 10;
+        attack_kwargs['max_flips'] = parseInt(this.maxFlips);
       }
       // if method is input_reduction, add max_reductions
       if(this.method == 'input_reduction'){
@@ -324,6 +325,7 @@ export default Vue.component("attack-output",{
       }
       // tokenize the context by white space
       var tokenizedContext = context.split(/\s+/);
+      // this.maxFlips = tokenizedContext.length;
       // flip context token with indices
       for (var flipIdx=0; flipIdx<this.numFlips; flipIdx++){
         var newContext = listContexts[flipIdx];
@@ -345,6 +347,7 @@ export default Vue.component("attack-output",{
       var oldQuestion = attackResult.predictions[0].question;
       // tokenize the question by white space
       var tokenizedOldQuestion = oldQuestion.split(/\s+/);
+      this.maxReductions = tokenizedOldQuestion.length;
       // flip context token with indices
       for (var redIdx=0; redIdx<this.numReductions; redIdx++){
         var oldToken = tokenizedOldQuestion[indices[redIdx]];
