@@ -26,31 +26,21 @@
               <div class="col-4 text-start">
                   <h4>Method:</h4>
               </div>
-              <div class="col-auto">
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hotflipRadio" value="hotflip" v-model="method" v-on:click="methodSelected()">
-                  <label class="form-check-label" for="hotflipRadio">Hot Flip</label>
-                </div>
+              <div class="col btn-group flex-wrap" role="group" aria-label="Basic example">
+                <button id="hotflip_btn" v-on:click="attack('hotflip')" type="button" class="btn btn-outline-primary" :disabled="waiting_hotflip">
+                  <span v-show="waiting_hotflip" class="spinner-border spinner-border-sm" role="status"/>&nbsp;HotFlip
+                </button>
+                <button id="input_reduction_btn" v-on:click="attack('input_reduction')" type="button" class="btn btn-outline-primary" :disabled="waiting_input_reduction">
+                  <span v-show="waiting_input_reduction" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Input Reduction
+                </button>
+                <button id="sub_span_btn" v-on:click="attack('sub_span')" type="button" class="btn btn-outline-primary" :disabled="waiting_sub_span">
+                  <span v-show="waiting_sub_span" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Sub-Span
+                </button>
+                <button id="topk_tokens_btn" v-on:click="attack('topk_tokens')" type="button" class="btn btn-outline-primary" :disabled="waiting_topk_tokens">
+                  <span v-show="waiting_topk_tokens" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Top K
+                </button>
               </div>
-              <div class="col-auto">
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_reductionRadio" value="input_reduction" v-model="method" v-on:click="methodSelected()">
-                  <label class="form-check-label" for="input_reductionRadio">Input Reduction</label>
-                </div>
-              </div>
-              <div class="col-auto">
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="sub_spanRadio" value="sub_span" v-model="method" v-on:click="methodSelected()">
-                  <label class="form-check-label" for="sub_spanRadio">Sub-span</label>
-                </div>
-              </div>
-              <div class="col-auto">
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="topk_tokensRadioo" value="topk_tokens" v-model="method" v-on:click="methodSelected()">
-                  <label class="form-check-label" for="topk_tokensRadioo">Top K</label>
-                </div>
-              </div>
-
+              
             </div> <!-- row -->
             
             <div v-if="method == 'hotflip' || method == 'sub_span' || method == 'topk_tokens'" class="row mt-3">
@@ -59,28 +49,28 @@
               </div>
               <div class="col-auto">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" id="SimpleGrad" value="simple_grads" v-model="saliencyMethod"/>
+                  <input class="form-check-input" type="radio" id="SimpleGrad" value="simple_grads" v-model="saliencyMethod" v-on:click="attack('')"/>
                   <label class="form-check-label" for="SimpleGrad">Simple Gradients</label>
                 </div>
               </div>
 
               <div class="col-auto">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" id="SmoothGrad" value="smooth_grads" v-model="saliencyMethod"/>
+                  <input class="form-check-input" type="radio" id="SmoothGrad" value="smooth_grads" v-model="saliencyMethod" v-on:click="attack('')"/>
                   <label class="form-check-label" for="SmoothGrad">Smooth Gradients</label>
                 </div>
               </div>
 
               <div class="col-auto">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" id="IntegratedGrad" value="integrated_grads" v-model="saliencyMethod"/>
+                  <input class="form-check-input" type="radio" id="IntegratedGrad" value="integrated_grads" v-model="saliencyMethod" v-on:click="attack('')"/>
                   <label class="form-check-label" for="IntegratedGrad">IntegratedGrad</label>
                 </div>  
               </div>
 
               <div class="col-auto">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" id="attention" value="attention" v-model="saliencyMethod"/>
+                  <input class="form-check-input" type="radio" id="attention" value="attention" v-model="saliencyMethod" v-on:click="attack('')"/>
                   <label class="form-check-label" for="attention">Attention</label>
                 </div>  
               </div>
@@ -117,7 +107,7 @@
 
                 <div class="col-auto">
                     <div class="form-check-inline">
-                        <input type="range" min="2" :max="maxLenSpan" v-model="lenSpan" v-on:click="attack()" class="form-range" id="lenSpan">
+                        <input type="range" min="2" :max="maxLenSpan" v-model="lenSpan" v-on:click="attack('')" class="form-range" id="lenSpan">
                     </div>
                 </div>
             </div>
@@ -129,18 +119,10 @@
 
                 <div class="col-auto">
                     <div class="form-check-inline">
-                        <input type="range" min="1" :max="maxTopK" v-model="numTopK" v-on:click="attack()" class="form-range" id="numTopK">
+                        <input type="range" min="1" :max="maxTopK" v-model="numTopK" v-on:click="attack('')" class="form-range" id="numTopK">
                     </div>
                 </div>
             </div>
-
-            <div v-if="method !== undefined" class="row mt-3">
-              <div class="col-12">
-                <button v-on:click="attack()" type="button" class="btn btn-outline-primary shadow" :disabled="waiting">
-                    <span v-show="waiting" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attack Skill!
-                </button>
-              </div>
-            </div> <!-- HotFlip -->
 
             <div v-if="showAttackOutput">
               <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.attackResults" :key="index">
@@ -199,6 +181,7 @@ import Vue from 'vue'
 export default Vue.component("attack-output",{
   data () {
      return {
+      // form data
       method: undefined,
       saliencyMethod: 'simple_grads',
       numFlips: 1,
@@ -209,11 +192,16 @@ export default Vue.component("attack-output",{
       maxTopK: this.$store.state.currentContext.split(/\s+/).length,
       numReductions: 1,
       maxReductions: this.$store.state.currentQuestion.split(' ').length,
-
+      // output data
       listNewQuestion: [],
       listNewContext: [],
       listNewAnswer: [],
-      waiting: false,
+      // waiting flags
+      waiting_hotflip: false,
+      waiting_input_reduction: false,
+      waiting_sub_span: false,
+      waiting_topk_tokens: false,
+      // other flags
       showHotFlipOutput: false,
       showAttackBtn: false,
       showAttackOutput: false,
@@ -234,19 +222,31 @@ export default Vue.component("attack-output",{
         this.saliencyMethod = 'attention';
       }
     },
-    setAllButtonsUnselected(){
-      this.hotflip_selected = false;
-      this.inputred_selected = false;
-      this.span_selected = false;
-      this.topk_selected = false;
+    setCallingBtnActive(method){
+      if (method !== ''){
+        document.getElementById(method+"_btn").classList.add("active");
+      }      
+    },
+    setAllBtnInactive(){
+      document.getElementById("hotflip_btn").classList.remove("active");
+      document.getElementById("input_reduction_btn").classList.remove("active");
+      document.getElementById("sub_span_btn").classList.remove("active");
+      document.getElementById("topk_tokens_btn").classList.remove("active");
     },
     hideOutput(){
       this.showAttackOutput = false;
       this.newAnswer = "";
     },
-    attack() {
+    attack(method) {
+      if (method !== ''){
+        this.method = method;
+      }
+      // restarting interface
+      this.setAllBtnInactive();
+      this.showAttackOutput = false;
+      // starting procedure
+      this.runSpinners();
       /* eslint-disable */
-      this.waiting = true;
       this.$store.dispatch('attack', {
         question: this.$store.state.currentQuestion,
         inputContext: this.$store.state.currentContext,
@@ -259,11 +259,11 @@ export default Vue.component("attack-output",{
         this.failure = false
         this.showAttackOutput = true;
         this.showAttack();
+        this.setCallingBtnActive(this.method);
       }).catch(() => {
         this.failure = true
       }).finally(() => {
-        // switch the waiting_* variables to false to stop loading spinner
-        this.waiting = false;
+        this.stopSpinners();
       })
     },
     prepareAttackKwargs(){
@@ -398,25 +398,42 @@ export default Vue.component("attack-output",{
       var newQuestion = attackResult.predictions[this.numTopK].question;
       return {newQuestion, newContext, newAnswer};
     },
-
+    runSpinners(){
+      this.setSpinners(true);
+    },
+    stopSpinners(){
+      this.setSpinners(false);
+    },
+    setSpinners(value){
+      switch(this.method){
+        case 'hotflip':
+          this.waiting_hotflip = value;
+          break;
+        case 'input_reduction':
+          this.waiting_input_reduction = value;
+          break;
+        case 'sub_span':
+          this.waiting_sub_span = value;
+          break;
+        case 'topk_tokens':
+          this.waiting_topk_tokens = value;
+          break;
+      }
+    },   
     close(){
       // remove activate class from all buttons
-      var btn_list = document.getElementsByClassName('btn-outline-secondary');
-      for (var i = 0; i < btn_list.length; i++) {
-        btn_list[i].classList.remove('active');
-      }
+      this.setAllBtnInactive();
       // reset modal
       this.numFlips = 1;
       this.lenSpan = 3;
       this.numTopK = 1;
       this.numReductions = 1;
-      this.setAllButtonsUnselected();
       this.showAttackOutput = false;
       this.saliencyMethod = 'simple_grads';
       this.question = "";
       this.newContext = "";
       this.newAnswer = "";
-      this.waiting = false;
+      this.stopSpinners();
     }
     
   },

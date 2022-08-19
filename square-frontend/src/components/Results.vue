@@ -138,9 +138,10 @@ export default Vue.component('skill-results', {
       return this.$store.state.currentResults[0].skill.skill_type === 'span-extraction';
     },
     showExplainability() {
-      return (this.$store.state.currentResults[0].skill.skill_type === 'abstractive' || 
+      return ((this.$store.state.currentResults[0].skill.skill_type === 'abstractive' || 
               this.$store.state.currentResults[0].skill.skill_type === 'span-extraction' ||
-              this.$store.state.currentResults[0].skill.skill_type === 'multiple-choice');
+              this.$store.state.currentResults[0].skill.skill_type === 'multiple-choice') && 
+              !this.$store.state.currentSkills.includes('62eb8f7765872e7b65ea5c8b'));
     },
     showAttacks() {
       return this.$store.state.currentResults[0].skill.skill_type === 'span-extraction';
