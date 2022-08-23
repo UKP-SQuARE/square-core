@@ -15,10 +15,10 @@
         <img alt="Repo" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
     </a>
     <a href="https://arxiv.org/abs/2203.13693">
-        <img alt="SQuARE v1" src="https://img.shields.io/badge/arXiv-SQUAREv1%202203.13693-b31b1b.svg">
+        <img alt="SQuARE v1" src="https://img.shields.io/badge/arXiv-SQuAREv1%202203.13693-b31b1b.svg">
     </a>
     <a href="https://arxiv.org/abs/2208.09316">
-        <img alt="SQuARE v2" src="https://img.shields.io/badge/arXiv-SQUAREv2%202208.09316-b31b1b.svg">
+        <img alt="SQuARE v2" src="https://img.shields.io/badge/arXiv-SQuAREv2%202208.09316-b31b1b.svg">
     </a>
 </p>
 
