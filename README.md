@@ -161,7 +161,7 @@ Don't hesitate to send us an e-mail or report an issue, if something is broken (
 ```bibtex
 @article{Sachdeva2022UKPSQuARE,
   title={{UKP}-{SQ}u{ARE} v2 Explainability and Adversarial Attacks for Trustworthy QA},
-  author={Rachneet Sachdeva and Haritz Puerto Tim Baumgartner and Sewin Tariverdian and Hao Zhang and Kexin Wang and Hossain Shaikh Saadi and Leonardo F. R. Ribeiro and Iryna Gurevych},
+  author={Rachneet Sachdeva and Haritz Puerto and Tim Baumgartner and Sewin Tariverdian and Hao Zhang and Kexin Wang and Hossain Shaikh Saadi and Leonardo F. R. Ribeiro and Iryna Gurevych},
   journal={arXiv preprint arXiv:2203.13693},
   year={2022}
 }
