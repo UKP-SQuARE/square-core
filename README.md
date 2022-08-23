@@ -158,6 +158,7 @@ Don't hesitate to send us an e-mail or report an issue, if something is broken (
 
 ```
 
+[SQuARE v2](https://arxiv.org/abs/2208.09316)
 ```bibtex
 @article{Sachdeva2022UKPSQuARE,
   title={{UKP}-{SQ}u{ARE} v2 Explainability and Adversarial Attacks for Trustworthy QA},
