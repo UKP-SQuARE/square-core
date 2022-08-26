@@ -20,6 +20,7 @@ environ["MAX_INPUT_SIZE"] = "100"
 
 # Downloaded models:
 TRANSFORMER_MODEL = "bert-base-uncased"
+TRANSFORMER_MODEL_ROBERTA= "roberta-base"
 SENTENCE_MODEL = "paraphrase-albert-small-v2"
 ONNX_MODEL = "bert-base-uncased"
 
@@ -31,6 +32,9 @@ if __name__ == "__main__":
 
     # Pre-download Huggingface model for tests
     _ = AutoTokenizer.from_pretrained(TRANSFORMER_MODEL)
+    model = AutoAdapterModel.from_pretrained(TRANSFORMER_MODEL).to(device)
+
+    _ = AutoTokenizer.from_pretrained(TRANSFORMER_MODEL_ROBERTA)
     model = AutoAdapterModel.from_pretrained(TRANSFORMER_MODEL).to(device)
 
     # Pre-download adapters
