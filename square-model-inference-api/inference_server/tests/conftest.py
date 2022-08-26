@@ -3,8 +3,10 @@ import pytest
 from pre_test_setup_for_docker_caching import (
     TRANSFORMERS_TESTING_CACHE,
     TRANSFORMER_MODEL,
+    TRANSFORMER_MODEL_ROBERTA,
     SENTENCE_MODEL,
-    ONNX_MODEL
+    ONNX_MODEL,
+
 )
 import torch
 import os
@@ -104,6 +106,19 @@ def test_transformer_explainability():
     torch.manual_seed(987654321)
     set_test_config(
         model_name=TRANSFORMER_MODEL,
+        model_class="question_answering",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+        model_type="transformers",
+    )
+    return Transformer()
+
+@pytest.fixture(scope="class")
+def test_transformer_explainability_roberta():
+    torch.manual_seed(987654321)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL_ROBERTA,
         model_class="question_answering",
         disable_gpu=True,
         batch_size=1,
