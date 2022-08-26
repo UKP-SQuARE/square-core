@@ -145,6 +145,8 @@ class TestTransformerQuestionAnswering:
     async def test_question_answering(self, prediction_request, test_transformer_question_answering, input):
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 1}
+        # prediction_request.explain_kwargs =  {"method": "simple_grads", "top_k":5, "mode":"all"}
+        # print(prediction_request.explain_kwargs)
 
         prediction = test_transformer_question_answering.predict(prediction_request, Task.question_answering)
         answers = [input[i][1][prediction.answers[i][0].start:prediction.answers[i][0].end] for i in range(len(input))]
@@ -164,6 +166,31 @@ class TestTransformerQuestionAnswering:
         assert len(prediction.answers) == len(input)
         assert prediction.answers[0][0].score >= prediction.answers[0][1].score
         assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
+
+@pytest.mark.usefixtures("test_transformer_explainability")
+class TestTransformerQuestionAnswering:
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "input", [([["Who stars in The Matrix?",
+    "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis, starring Keanu Reeves, Laurence."]])])
+    async def test_question_answering(self, prediction_request, test_transformer_question_answering, input):
+        prediction_request.input = input
+        prediction_request.explain_kwargs =  {"method": "simple_grads", "top_k":5, "mode":"all"}
+        prediction_request.adapter_name= "AdapterHub/bert-base-uncased-pf-squad_v2"
+        prediction_request.is_preprocessed=False
+        prediction = test_transformer_question_answering.predict(prediction_request, Task.question_answering)
+        #answers = [input[i][1][prediction.answers[i][0].start:prediction.answers[i][0].end] for i in range(len(input))]
+        topk_context_idx = prediction.attributions[0].topk_context_idx
+        topk_question_idx = prediction.attributions[0].topk_question_idx
+        assert len(topk_context_idx[0]) == 5
+        assert len(topk_question_idx[0]) == 5
+
+        assert len(prediction.attributions[0].question_tokens[0][0]) == 3
+
+        assert len(prediction.attributions[0].context_tokens[0][0]) == 3
+
+
 
 
 @pytest.mark.usefixtures("test_transformer_generation")
