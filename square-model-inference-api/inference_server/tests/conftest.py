@@ -57,6 +57,20 @@ def test_transformer_sequence_classification():
     )
     return Transformer()
 
+@pytest.fixture(scope="class")
+def test_transformer_sequence_classification_roberta():
+    torch.manual_seed(987654321)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL_ROBERTA,
+        model_class="sequence_classification",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+        model_type="transformer",
+
+    )
+    return Transformer()
+
 
 @pytest.fixture(scope="class")
 def test_transformer_embedding():
