@@ -40,6 +40,61 @@ class TestTransformerSequenceClassification:
         assert "logits" in prediction.model_outputs
 
 
+
+@pytest.mark.usefixtures("test_transformer_sequence_classification")
+class TestTransformerSequenceClassification:
+    test_input = ["this is a test with a longer sentence"]
+    @pytest.mark.asyncio
+
+    @pytest.mark.parametrize(
+            "input,methods", [
+                (test_input ,"simple_grads"),
+                (test_input, "attention"),
+                (test_input, "integrated_grads"),
+                (test_input, "smooth_grads"),
+                (test_input, "scaled_attention"),
+
+            ])
+    async def test_sequence_classification(self, prediction_request, test_transformer_sequence_classification, input,methods):
+        prediction_request.input = input
+
+        prediction_request.explain_kwargs =  {"method": methods, "top_k":5, "mode":"context"}
+        prediction_request.adapter_name= "AdapterHub/bert-base-uncased-pf-squad_v2"
+
+        prediction_request.is_preprocessed=False
+        prediction = test_transformer_sequence_classification.predict(prediction_request, Task.sequence_classification)
+
+        assert len(prediction.attributions[0].context_tokens[0][0]) == 3
+        assert len(prediction.attributions[0].topk_context_idx[0]) <= 5
+
+
+@pytest.mark.usefixtures("test_transformer_sequence_classification_roberta")
+class TestTransformerSequenceClassificationRoberta:
+    test_input = ["this is a test with a longer sentence"]
+    @pytest.mark.asyncio
+
+    @pytest.mark.parametrize(
+            "input,methods", [
+                (test_input ,"simple_grads"),
+                (test_input, "attention"),
+                (test_input, "integrated_grads"),
+                (test_input, "smooth_grads"),
+                (test_input, "scaled_attention"),
+
+            ])
+    async def test_sequence_classification(self, prediction_request, test_transformer_sequence_classification_roberta, input,methods):
+        prediction_request.input = input
+
+        prediction_request.explain_kwargs =  {"method": methods, "top_k":5, "mode":"context"}
+        prediction_request.adapter_name= "AdapterHub/bert-base-uncased-pf-squad_v2"
+
+        prediction_request.is_preprocessed=False
+        prediction = test_transformer_sequence_classification_roberta.predict(prediction_request, Task.sequence_classification)
+
+        assert len(prediction.attributions[0].context_tokens[0][0]) == 3
+        assert len(prediction.attributions[0].topk_context_idx[0]) <= 5
+
+
 @pytest.mark.usefixtures("test_transformer_token_classification")
 class TestTransformerTokenClassification:
 
