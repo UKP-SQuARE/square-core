@@ -1,5 +1,10 @@
 import json
 import logging
+import re
+import time
+from turtle import pos
+import numpy as np
+from scipy.sparse import coo_matrix
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import elasticsearch.exceptions
@@ -151,7 +156,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 },
                 "size": 10000
             })
-    
+
         response = await self.es.msearch(body=body)
 
         results = {}
@@ -172,30 +177,43 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         index = f'{kg_name}{self.datastore_suffix}'
 
         body = []
-        for nid in nids:
-            body.append({'index': index})
-            body.append({
-                "query": {
-                    "bool": {
-                        "filter": {
-                            "bool" : {
-                                "should" : [
-                                    {"term" : { "in_id" : nid } },
-                                    {"term" : { "out_id" : nid } },
-                                ]
-                            }
+
+        body.append({'index': index})
+        body.append({
+            "query": {
+                "bool": {
+                    "filter": {
+                        "bool" : {
+                            "should" : [
+                                {"terms" : { "in_id" : nids } },
+                                {"terms" : { "out_id" : nids } },
+                            ]
                         }
                     }
-                },
-                "size": 10000
-            })
-    
-        response = await self.es.msearch(body=body)
+                }
+            },
+            "size": 10000
+        })
+
+        responses = await self.es.msearch(body=body)
 
         results = {}
-        for nid, response in zip(nids, response['responses']):
-            edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response["hits"]["hits"]}
-            results[nid] = edges
+
+        edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in responses["responses"][0]["hits"]["hits"]}
+        for edge in edges.values():
+            if edge['in_id'] in nids:
+                try:
+                    results[edge['in_id']]
+                except:
+                    results[edge['in_id']] = list()
+                results[edge['in_id']].extend([edge])
+            else:
+                try:
+                    results[edge['out_id']]
+                except:
+                    results[edge['out_id']] = list()
+                results[edge['out_id']].extend([edge])
+        
         return results
 
     async def extract_nodes(self,kg_name, nids):
@@ -217,13 +235,13 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 extra_nodes.append(extra_node)
             results_nids[i] =  {nid:set(extra_nodes)}
         return results_nids
-    
+ 
     async def get_nodes_for_nodepair(self, kg_name, nid_pair:Tuple[str, str]):
         """Returns all nodes in between for a given node_id-pair.
 
         Args:
             kg_name (str):                  Name of the knowledge graph.
-            nid_pair (List[str,str]):      Node_id-pair.
+            nid_pair (List[str,str]):       Node_id-pair.
         """
         index = f'{kg_name}{self.datastore_suffix}'
         body = []
@@ -247,7 +265,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             },
             "size": 10000
         })
-    
+
         response = await self.es.msearch(body=body)
 
         edges = {hit['_id']: dict(hit['_source'], **{'_id': hit['_id']}) for hit in response['responses'][0]["hits"]["hits"]}
@@ -285,6 +303,8 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             results.append(await self.get_nodes_for_nodepair(kg_name, [in_id, out_id]))
 
         return results
+
+
     async def get_edge_msearch(self, kg_name, nids_pairs: List[Tuple[str, str]]):
         """Returns all edges for a given node-pair.
 
@@ -294,22 +314,31 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         """
         index = f'{kg_name}{self.datastore_suffix}'
         body = []
+        all_pairs=[]
         for in_id, out_id in nids_pairs:
-            body.append({'index': index})
-            body.append({
-                "query": {
-                    "bool": {
-                        "filter": {
-                            "bool" : {
-                                "must" : [
-                                    {"term" : { "in_id" : in_id } },
-                                    {"term" : { "out_id" : out_id } },
-                                ]
-                            }
+            all_pairs.append(in_id+"_"+out_id)
+
+        body.append({'index': index})
+        body.append({
+            "query": {
+                "bool": {
+                    "filter": {
+                        "bool" : {
+                            "must" : [
+                                {"terms" : { "in_out_id" :all_pairs} },
+                            ]
                         }
                     }
                 }
-            })
+            }
+        })
+
+        nodes = set()
+        for in_id, out_id in nids_pairs: 
+            nodes.add(in_id)
+            nodes.add(out_id)
+
+        nodes=list(set(nodes))
         responses = await self.es.msearch(body=body)
         found_edges = [{} for _ in nids_pairs]
         for response in responses['responses']:
@@ -323,7 +352,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                         node_in_id = list(in_out_id)[0]
                         node_out_id = list(in_out_id)[1]
                         if node_in_id in edge_in_out and node_out_id in edge_in_out:
-                            found_edges[i] = {edge['_id']:edge}           
+                            found_edges[i] = {edge['_id']:edge}        
         return found_edges
 
     async def get_relation(self, kg_name, nids_pairs: List[Tuple[str, str]]):
@@ -362,7 +391,113 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                 logger.info("Not FOUND")
         return objs
 
-    async def extract_subgraph(self, kg_name, nids: List[str], hops=2):
+    # async def adjacent_matrix_eachcall(self, kg_name, node_ids):
+    #     id2relation = ['antonym','atlocation','capableof','causes','createdby','isa','desires','hassubevent','partof','hascontext','hasproperty','madeof','notcapableof','notdesires','receivesaction','relatedto','usedfor']
+    #     relation2id = {r: i for i, r in enumerate(id2relation)}
+    #     # logger.info(relation2id)
+    #     cids = np.array(node_ids, dtype=np.int32)
+    #     n_rel = len(id2relation)
+    #     # print("n_rel", n_rel)
+    #     n_node = cids.shape[0]
+    #     adj = np.zeros((n_rel, n_node, n_node), dtype=np.uint8)
+    #     # ids = []
+    #     cids_stringified = []
+    #     for i in cids:
+    #         if 'n' in str(i):
+    #             cids_stringified.append(i)
+    #         else:
+    #             cids_stringified.append("n"+str(i))
+        
+    #     logger.info(cids_stringified)
+    #     for s in range(n_node):
+    #         for t in range(n_node):
+    #             s_c, t_c = cids_stringified[s], cids_stringified[t]
+    #             # use API to get whether there is edge (?)
+    #             # edge_info = data_api.get_edges_by_ids([s_c, t_c])
+    #             temp_edges = await self.get_edge_msearch(kg_name, [[s_c, t_c]])
+    #             if temp_edges:
+    #                 # ids.append([(s_c, t_c)])
+    #                 # v = cpnet[s_c][t_c].values()
+    #                 logger.info("Output info for Edges")
+    #                 logger.info(temp_edges)
+                    
+    #                 for e_attr in temp_edges:
+    #                     logger.info(e_attr)
+    #                     if len(e_attr) <=0 :
+    #                         logger.info("EMPTYYYYY")
+    #                     else:
+    #                         for e_attr_i in e_attr.values():
+    #                             logger.info("I HAVE INFO, EDGE NOT EMPTY")
+    #                             rel_id = relation2id[e_attr_i['name']]
+    #                             logger.info(rel_id)
+    #                             adj[rel_id][s][t] = 1
+    #     # cids += 1  # note!!! index 0 is reserved for padding
+    #     adj = coo_matrix(adj.reshape(-1, n_node))
+    #     logger.info("SHOW END RESULTS")
+    #     logger.info(type(adj.toarray()))
+    #     for a in adj.toarray():
+    #         logger.info(a.shape)
+    #     # adj_serialized = coo_matrix.tolil(adj.copy())
+    #     # logger.info(adj_serialized)
+    #     return adj.toarray().tolist()#, cids
+
+    async def extract_extra_nodes(self, kg_name, node_ids):
+        cross_combined_ids = []
+        for s in node_ids:
+            for t in node_ids:
+                cross_combined_ids.append([s, t])
+
+        all_edges = await self.get_edge_msearch(kg_name, cross_combined_ids)
+
+        return all_edges
+
+    async def adjacent_matrix_allinone(self, kg_name, node_ids):
+        start=time.time()
+        id2relation = ['antonym','atlocation','capableof','causes','createdby','isa','desires','hassubevent','partof','hascontext','hasproperty','madeof','notcapableof','notdesires','receivesaction','relatedto','usedfor']
+        relation2id = {r: i for i, r in enumerate(id2relation)}
+        cids = np.array(node_ids, dtype=np.int32)
+        n_rel = len(id2relation)
+        n_node = cids.shape[0]
+        adj = np.zeros((n_rel, n_node, n_node), dtype=np.uint8)
+        cids_stringified = []
+
+        for i in cids:
+            if 'n' in str(i):
+                cids_stringified.append(i)
+            else:
+                cids_stringified.append("n"+str(i))
+        preprocess=round(time.time()-start,4)
+        cross_combined_ids = []
+        for s in range(n_node):
+            for t in range(n_node):
+                cross_combined_ids.append([cids_stringified[s], cids_stringified[t]])
+
+        all_edges = await self.get_edge_msearch(kg_name, cross_combined_ids)
+        await_part=round(time.time()-start-preprocess,4)
+        for s in range(n_node):
+            for t in range(n_node):
+                pair_id = s*(len(node_ids)) + t
+                if all_edges[pair_id]:
+                    # logger.info(len(all_edges))                    
+                    for e_attr in all_edges[pair_id].values():
+                        # logger.info(e_attr)
+                        if len(e_attr) <=0 :
+                            continue
+                            # EMPTY
+                        else:
+                            # EDGE FOUND, NOT EMPTY
+                            rel_id = relation2id[e_attr['name']]
+                            adj[rel_id][s][t] = 1
+        # cids += 1  # note!!! index 0 is reserved for padding
+        post_process=round(time.time()-start-preprocess-await_part, 4)
+        adj = coo_matrix(adj.reshape(-1, n_node))
+        logger.info("SHOW END RESULTS")
+        logger.info(type(adj.toarray()))
+        for a in adj.toarray():
+            logger.info(a.shape)
+        return adj.toarray().tolist(), preprocess, await_part, post_process#, cids
+
+    async def extract_subgraph(self, kg_name, nids, hops=2):
         """Returns a subgraph as a Set of nodes and edges.
 
         Args:
@@ -372,7 +507,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         """
         assert hops >= 1
         # nids = sorted(list(set(nids)))
-        nids = set(nids)
+        #nids = set(nids)
 
         nid2edges = await self.edges_from_msearch(kg_name, nids)
         paths = []
@@ -426,30 +561,33 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         """
         index = f'{kg_name}{self.datastore_suffix}'
         body = []
-        for name in names:
-            body.append({'index': index})
-            body.append({
-                "query": {
-                    "bool": {
-                        "filter": {
-                            "bool" : {
-                                "must" : [
-                                    {"term" : { "name" : name } },
-                                    {"term" : { "type" : "node" } },
-                                ]
-                            }
+        
+        body.append({'index': index})
+        body.append({
+            "query": {
+                "bool": {
+                    "filter": {
+                        "bool" : {
+                            "must" : [
+                                {"terms" : { "name" : list(names) } },
+                                # {"term" : { "type" : "node" } },
+                            ]
                         }
                     }
-                },
-                "size": 10000
-            })  # 'must' for AND clause
+                }
+            },
+            "size": 10000
+        })  # 'must' for AND clause
         responses = await self.es.msearch(body=body)
         logger.info(responses)
         results = []        
         for response in responses['responses']:
             nids = [hit['_id'] for hit in response["hits"]["hits"]]
             results.append(nids)
-        return results
+        flat_list = [item for result in results for item in result]
+        flat_list.reverse()
+
+        return flat_list
 
     async def extract_subgraph_by_names(self, kg_name, nodes, hops=2):
         """Returns a subgraph as a Set of nodes and edges.

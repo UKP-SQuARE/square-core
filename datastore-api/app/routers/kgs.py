@@ -1,5 +1,6 @@
 import json
 import logging
+from scipy.sparse import coo_matrix
 from typing import Iterable, List, Dict, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, File, UploadFile
@@ -19,6 +20,8 @@ from ..routers.documents import upload_document_file
 
 router = APIRouter(tags=["Knowledge Graphs"])
 binding_item_type = 'datastore'
+
+logger = logging.getLogger(__name__)
 
 @router.get(
     "",
@@ -277,8 +280,6 @@ async def post_kg_nodes(
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
-
-
 ###    QUERIES    ###
 @router.post(
     "/{kg_name}/nodes/query_by_name",
@@ -381,6 +382,32 @@ async def subgraph_by_ids(
     else:
         raise HTTPException(status_code=404)
 
+
+# @router.get(
+#     "/{kg_name}/edges/query_by_ids_parallel",
+#     summary="Get edges between given node_ids",
+#     description="Get edges between node_pairs for a given list of node_id_pairs from the knowledge.",
+#     responses={
+#         200: {
+#             "description": "The nodes",
+#         },
+#         404: {"description": "The nodes could not be retrieved"},
+#         500: {"model": HTTPError, "description": "Model API error"},
+#     },
+# )
+# async def get_edges_by_nids(
+#     kg_name: str = Path(..., description="The name of the knowledge graph"),
+#     nids: List[set] = Body(..., description="List of node_id-pairs"),
+#     conn=Depends(get_kg_storage_connector),
+# ): 
+#     result = await conn.get_edge_msearch_parallel(kg_name, nids)
+    
+#     if result is not None:
+#         return result
+#     else:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")
+
+
 @router.get(
     "/{kg_name}/edges/query_by_ids",
     summary="Get edges between given node_ids",
@@ -474,6 +501,86 @@ async def get_edges_by_id_as_nodes(
         return result
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+
+
+
+######         TESTING PURPOSES     ################
+@router.get(
+    "/{kg_name}/edges/extra_nodes",
+    summary="Get list of nodes which go in or out of given node for given knowledge graph",
+    description="Returns a list of nodes, which either go in or out of the given node.",
+    responses={
+        200: {
+            "description": "List of nodes",
+        },
+        404: {"description": "The edges could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_edges_by_id_as_nodes(
+    kg_name: str = Path(..., description="The name of the edge"),
+    docid: List = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.extract_extra_nodes(kg_name, docid)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+
+####################################
+
+
+
+
+@router.get(
+    "/{kg_name}/matrix/query_by_nids",
+    summary="Get the adjacent matrix for a given list of nodes for a knowledge graph",
+    description="Returns the adjacent matrix for a list of nodes.",
+    responses={
+        200: {
+            "description": "The adjacent matrix as a list of lists",
+        },
+        #   Change Descriptions
+        404: {"description": "The edges could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_adj_matrix(
+    kg_name: str = Path(..., description="The name of the edge"),
+    nids: List = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.adjacent_matrix_eachcall(kg_name, nids)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+
+@router.get(
+    "/{kg_name}/matrix/query_by_nids_allinone",
+    summary="Get the adjacent matrix for a given list of nodes for a knowledge graph",
+    description="Returns the adjacent matrix for a list of nodes.",
+    responses={
+        200: {
+            "description": "The adjacent matrix as a list of lists",
+        },
+        #   Change Descriptions
+        404: {"description": "The edges could not be retrieved"},
+        500: {"model": HTTPError, "description": "Model API error"},
+    },
+)
+async def get_adj_matrix_allinone(
+    kg_name: str = Path(..., description="The name of the edge"),
+    nids: List = Body(..., description="The name of the edge to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.adjacent_matrix_allinone(kg_name, nids)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find edge.")
+
 
 @router.get(
     "/{kg_name}/{object_id}",
