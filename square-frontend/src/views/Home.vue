@@ -63,7 +63,7 @@
               </svg>
             </div>
             <h2 class="display-5">Explainability</h2>
-            <p class="lead fs-3">Compare skills through pre-defined <span class="text-success">behavioural tests</span> via CheckList</p>
+            <p class="lead fs-3">Compare skills through saliency maps and pre-defined <span class="text-success">behavioural tests</span> via CheckList</p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
               <router-link class="btn btn-outline-success btn-lg px-4" to="/explain">Get started</router-link>
               <a href="/docs/home/components/explainability" target="_blank" class="btn btn-outline-success btn-lg px-4">Learn more</a>
