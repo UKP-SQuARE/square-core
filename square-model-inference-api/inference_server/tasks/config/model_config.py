@@ -12,7 +12,7 @@ API_PREFIX = "/api"
 OPENAPI_URL = "/api/openapi.json"
 
 CONFIG_PATH = os.getenv("CONFIG_PATH")
-IDENTIFIER = os.getenv("QUEUE")
+IDENTIFIER = "Saadi"
 
 
 @dataclass

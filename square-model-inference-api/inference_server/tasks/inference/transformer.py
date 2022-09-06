@@ -287,7 +287,10 @@ class Transformer(Model):
         # if multiple entries, only choose emb grad for the correct answer
         if "labels" in kwargs.keys() and gradients[0].shape[0] > 1:
             gradients = [gradients[0][kwargs["labels"].item()].unsqueeze(0)]
-
+        # new added section start
+        # to store the gradients of all tokens  
+        self.gradients = gradients
+        # new added section end
         grad_dict = dict()
         for idx, grad in enumerate(gradients):
             key = "grad_input_" + str(idx + 1)
@@ -296,6 +299,7 @@ class Transformer(Model):
         # restore the original requires_grad values of the parameters
         for param_name, param in self.model.named_parameters():
             param.requires_grad = original_param_name_to_requires_grad_dict[param_name]
+        
         return grad_dict
 
     def _predict(
@@ -622,6 +626,7 @@ class Transformer(Model):
         )
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
+        request.preprocessing_kwargs["truncation"] = "only_second"
         predictions = self._predict(request)
         label2id = self.model.config.label2id
         id2label = {v: k for k, v in label2id.items()}
@@ -654,6 +659,15 @@ class Transformer(Model):
                 **grad_kwargs,
             )
             predictions.pop("attentions", None)
+
+            # new added section start
+            # to extract the name of the attack method
+            attack_method = None
+            if request.attack_kwargs:
+                for k, v in request.attack_kwargs.items():
+                    if k == "method":
+                        attack_method = v
+            # new added section end
             word_imp = self.process_outputs(
                 attributions=attributions,
                 top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
@@ -661,7 +675,10 @@ class Transformer(Model):
                 if request.explain_kwargs
                 else "all",
                 task="sequence_classification",
+                # new added parameter in process_output method
+                attack_method = attack_method
             )
+            #print(word_imp)
             task_outputs["attributions"] = word_imp
 
         if request.attack_kwargs:
@@ -793,7 +810,7 @@ class Transformer(Model):
 
         request.preprocessing_kwargs["truncation"] = "only_second"
         predictions, features = self._predict(request, output_features=True)
-
+    
         task_outputs = {
             "answers": [],
             "attributions": [],
@@ -883,7 +900,14 @@ class Transformer(Model):
                     else request.attack_kwargs["saliency_method"],
                     **grad_kwargs,
                 )
-
+                # new added section start 
+                # to extract the name of the attack method
+                attack_method = None
+                if request.attack_kwargs:
+                    for k, v in request.attack_kwargs.items():
+                        if k == "method":
+                            attack_method = v
+                # new added section end
                 word_imp = self.process_outputs(
                     attributions=attributions,
                     top_k=request.explain_kwargs["top_k"]
@@ -893,7 +917,10 @@ class Transformer(Model):
                     if request.explain_kwargs
                     else "all",
                     task="question_answering",
+                    # new added paramter in process_ourput method
+                    attack_method = attack_method
                 )
+                #print(word_imp)
                 task_outputs["attributions"] = word_imp
 
             if (
@@ -928,13 +955,18 @@ class Transformer(Model):
                 ans_start = 0
                 ans_end = 0
                 include_answer = False
-
+            
             attack = hotflip.Hotflip(
                 task=self.task,
                 model_outputs=task_outputs,
                 tokenizer=self.tokenizer,
                 request=request,
                 include_answer=include_answer,
+                # new added four parameters in Hotflip class 
+                grads = self.gradients,
+                embeddings = self.get_model_embeddings(),
+                model_type = self.model.config.model_type,
+                word_mappings = self.word_mappings
             )
 
             batch_request, indices = attack.attack_instance(
@@ -1094,7 +1126,7 @@ class Transformer(Model):
         return filtered_tokens, np.array(attribution_score)
 
     def process_outputs(
-        self, attributions: List[List], top_k: int, mode: str, task: str
+        self, attributions: List[List], top_k: int, mode: str, task: str, attack_method = None
     ) -> List[Dict]:
         """
         post-process the word attributions to merge the sub-words tokens
@@ -1120,13 +1152,19 @@ class Transformer(Model):
             importance: np.array = np.array([])
             sep_tokens: int = 0
             if self.model.config.model_type in ["roberta", "bart"]:
-                filtered_tokens, importance = self._bpe_decode(dec_texts[idx], score)
+                if attack_method != "hotflip":
+                    filtered_tokens, importance = self._bpe_decode(dec_texts[idx], score)
+                else:
+                    filtered_tokens, importance = dec_texts[idx], score
                 sep_tokens = 2
             elif self.model.config.model_type == "bert":
-                filtered_tokens, importance = self._wordpiece_decode(
-                    dec_texts[idx], score, word_map=self.word_mappings[idx]
-                )
-                importance = importance[: -self.num_pad_tokens[idx] or None]
+                if attack_method != "hotflip":
+                    filtered_tokens, importance = self._wordpiece_decode(
+                        dec_texts[idx], score, word_map=self.word_mappings[idx]
+                    )
+                    importance = importance[: -self.num_pad_tokens[idx] or None]
+                else:
+                    filtered_tokens, importance = dec_texts[idx], score
                 sep_tokens = 1
 
             result = [(w, a) for w, a in zip(filtered_tokens, importance) if w != ""]
@@ -1210,5 +1248,4 @@ class Transformer(Model):
                 "context_tokens": context_tokens,
             }
         ]
-
         return outputs
