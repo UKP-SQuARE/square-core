@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+rom collections.abc import Mapping
 from dataclasses import dataclass, asdict
 import json
 import os
@@ -12,7 +12,7 @@ API_PREFIX = "/api"
 OPENAPI_URL = "/api/openapi.json"
 
 CONFIG_PATH = os.getenv("CONFIG_PATH")
-IDENTIFIER = "Saadi"
+IDENTIFIER = os.getenv("QUEUE")
 
 
 @dataclass
