@@ -196,8 +196,8 @@ class Hotflip(Attacker):
 
         # get the replcement tokens for the chosen tokens   
         replacement_tokens = self._first_order_taylor(imp_tokens_idx[0:n], proc_context, invalid_replacement_indices, context_start)
-        print("\nReplacement Tokens :")
-        print(replacement_tokens)
+        #print("\nReplacement Tokens :")
+        #print(replacement_tokens)
 
         # get contexts with flipped tokens and use them as input
         new_contexts = []
