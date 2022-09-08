@@ -79,16 +79,20 @@ class Hotflip(Attacker):
         # below we try to get the word mapping of the question and context tokens 
         context_length = len(context_attributions)
         context_start = None
+
+
+        # we need to exactly know from where the context start to differentiate between 
+        # question and context for extractive question answering model's the context 
+        # comes after question whereas for sequence classifier models the question 
+        # comes after context and we also need the word map for questions
         if self.task == "question_answering":
             context_start = len(question_attributions) + sep_length + 1
-        else:
-            context_start = 1
-
-        if self.task == "question_answering":
             question_word_map = self.word_mappings[0][1:context_start]
         else:
             question_word_map = self.word_mappings[0][context_length+sep_length+1:]
-    
+            context_start = 1
+
+        # to get the word map of the context
         context_word_map = self.word_mappings[0][context_start:context_start+context_length+1]
 
         # first newly added section end here
@@ -195,7 +199,11 @@ class Hotflip(Attacker):
                 invalid_replacement_indices.append(v)
 
         # get the replcement tokens for the chosen tokens   
-        replacement_tokens = self._first_order_taylor(imp_tokens_idx[0:n], proc_context, invalid_replacement_indices, context_start)
+        if self.grads == None:
+            replacement_tokens = self._get_random_tokens(proc_context, vocab, invalid_replacement_indices)
+        else:
+            replacement_tokens = self._first_order_taylor(imp_tokens_idx[0:n], proc_context, invalid_replacement_indices, context_start)
+    
         #print("\nReplacement Tokens :")
         #print(replacement_tokens)
 
@@ -238,16 +246,20 @@ class Hotflip(Attacker):
         already_generated = []
         tokens = [word[1] for word in tokens]
         replacement_tokens = []
+        # new added section start
+        words = list(vocab.keys())
+        # new added section end
         for _ in range(self.top_k):
-            new_token = random.choice(vocab)
+            # we only considers the words from vocab
+            new_token = random.choice(words)
             while (
                 new_token in tokens
                 or new_token in already_generated
-                or new_token in invalid_replacement_indices
+                or vocab[new_token] in invalid_replacement_indices
                 or "#" in new_token
                 or len(new_token) < 3
             ):
-                new_token = random.choice(vocab)
+                new_token = random.choice(words)
             already_generated.append(new_token)
             replacement_tokens.append(new_token.replace("Ġ", ""))
         return replacement_tokens

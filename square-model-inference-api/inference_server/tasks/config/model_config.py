@@ -1,4 +1,4 @@
-rom collections.abc import Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, asdict
 import json
 import os

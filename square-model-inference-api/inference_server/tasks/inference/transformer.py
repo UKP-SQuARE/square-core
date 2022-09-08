@@ -51,6 +51,9 @@ class Transformer(Model):
              kwargs: Not used
         """
         self.task = None
+        # new added section start
+        self.gradients = None
+        # new added section end
         if model_config.model_class == "from_config":
             config = AutoConfig.from_pretrained(model_config.model_name)
             model_arch = config.architectures[0]
