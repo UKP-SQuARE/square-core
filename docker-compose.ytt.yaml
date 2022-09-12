@@ -106,6 +106,10 @@ services:
       #! Middleware redirect from HTTP to HTTPS
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=auth
+      - traefik.http.middlewares.auth.basicauth.users=admin:${SQUARE_ADMIN_PASSWORD}
     ports:
       - "80:80" 
       - "443:443"
@@ -506,6 +510,21 @@ services:
     env_file: #@ skill_env_file(skill)
     environment: #@ skill_environment(skill)
   #@ end
+
+  dozzle:
+    image: amir20/dozzle:v4.0.1
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOZZLE_NO_ANALYTICS: "true"
+      DOZZLE_LEVEL: DEBUG
+      DOZZLE_BASE: /admin/logs
+    labels:
+      - traefik.enable=true
+      - #@ template.replace(traefik_tls("dozzle"))
+      - traefik.http.routers.dozzle.rule=PathPrefix(`/admin/logs`)
+      - traefik.http.routers.dozzle.middlewares=auth
 
 volumes:
   traefik-public-certificates:
