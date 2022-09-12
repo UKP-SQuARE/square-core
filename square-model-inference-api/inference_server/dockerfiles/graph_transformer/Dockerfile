@@ -13,6 +13,9 @@ COPY ./graph_transformer/requirements1.txt ./
 RUN pip install -r requirements1.txt
 RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 
+RUN python3 -m nltk.downloader stopwords
+RUN python3 -m nltk.downloader words
+
 COPY ./graph_transformer/uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
 

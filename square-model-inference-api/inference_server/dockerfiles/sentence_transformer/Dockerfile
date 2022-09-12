@@ -11,17 +11,20 @@ RUN pip install --upgrade pip
 WORKDIR /app
 
 #COPY requirements1.txt ./
-COPY ./transformer/requirements1.txt ./
+COPY ./sentence_transformer/requirements1.txt ./
 
 
 RUN pip install -r requirements1.txt
-RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
+#RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 ## only for graph transformers
+RUN pip install nltk
+RUN python3 -m nltk.downloader stopwords
+RUN python3 -m nltk.downloader words
 
-COPY ./transformer/uninstall_requirements.txt ./
+COPY ./sentence_transformer/uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
 
-COPY ./transformer/requirements2.txt ./
+COPY ./sentence_transformer/requirements2.txt ./
 RUN pip install -r requirements2.txt
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
@@ -29,7 +32,7 @@ RUN pip install -r requirements2.txt
 FROM base as test
 
 COPY ./tests/pre_test_setup_for_docker_caching.py ./tests/pre_test_setup_for_docker_caching.py
-RUN python ./tests/pre_test_setup_for_docker_caching.py --transformer # TODO:add parameters (Down))
+RUN python ./tests/pre_test_setup_for_docker_caching.py --sentence_transformer # TODO:add parameters (Down))
 COPY . ./
 RUN pip install pytest pytest-cov pytest-asyncio pytest-env
 RUN mkdir test-reports
