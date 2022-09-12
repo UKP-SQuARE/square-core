@@ -63,7 +63,7 @@
               </svg>
             </div>
             <h2 class="display-5">Explainability</h2>
-            <p class="lead fs-3">Compare skills through pre-defined <span class="text-success">behavioural tests</span> via CheckList</p>
+            <p class="lead fs-3">Compare skills through <span class="text-success">saliency maps</span> and pre-defined <span class="text-success">behavioural tests</span> via CheckList</p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
               <router-link class="btn btn-outline-success btn-lg px-4" to="/explain">Get started</router-link>
               <a href="/docs/home/components/explainability" target="_blank" class="btn btn-outline-success btn-lg px-4">Learn more</a>
@@ -90,11 +90,16 @@
         <div class="bg-primary bg-gradient flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
           <div class="mb-3 pb-3">
             <h2 class="display-5">Social</h2>
-            <p class="lead fs-3">Follow us on Twitter</p>
+            <p class="lead fs-3">Follow us on Twitter and Medium</p>
             <a href="https://twitter.com/UKP_SQuARE" target="_blank" class="fs-1 text-white d-inline-flex align-items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-twitter" viewBox="0 0 16 16">
                 <path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>
               </svg>
+            </a>
+            &nbsp; <a href="https://medium.com/@ukp-square" target="_blank" class="fs-1 text-white d-inline-flex align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-medium" viewBox="0 0 16 16">
+              <path d="M9.025 8c0 2.485-2.02 4.5-4.513 4.5A4.506 4.506 0 0 1 0 8c0-2.486 2.02-4.5 4.512-4.5A4.506 4.506 0 0 1 9.025 8zm4.95 0c0 2.34-1.01 4.236-2.256 4.236-1.246 0-2.256-1.897-2.256-4.236 0-2.34 1.01-4.236 2.256-4.236 1.246 0 2.256 1.897 2.256 4.236zM16 8c0 2.096-.355 3.795-.794 3.795-.438 0-.793-1.7-.793-3.795 0-2.096.355-3.795.794-3.795.438 0 .793 1.699.793 3.795z"/>
+            </svg>
             </a>
           </div>
         </div>
