@@ -45,19 +45,14 @@
                   class="list-group-item bg-light"
                   v-for="(test_case, index) in test.test_cases.slice(0, 5)"
                   :key="index">
-                <div class="row" v-if="test_case.original_question != undefined">
+                <div class="row">
                   <div class="col">
-                    <strong>Original Question:</strong> <span v-html="HightlightChangesUnmodifiedQuestion(test_case.original_question, test_case)" />
+                    <strong>Question:</strong> <span v-html="applyChanges(test_case.question, test_case)" />
                   </div>
                 </div>
                 <div class="row my-3">
                   <div class="col">
-                    <strong>Modified Question:</strong> <span v-html="HightlightChangesModifiedQuestion(test_case.question, test_case)" />
-                  </div>
-                </div>
-                <div class="row my-3" v-if="test_case.context != undefined">
-                  <div class="col">
-                    <strong>Context:</strong> <span v-html="applyChanges(test_case.context, test_case,)" />
+                    <strong>Context:</strong> <span v-html="applyChanges(test_case.context, test_case)" />
                   </div>
                 </div>
                 <div v-if="'options' in test_case" class="row my-3">
@@ -77,18 +72,7 @@
                 </div>
                 <div class="row my-3">
                   <div class="col">
-                    <strong>Original Prediction:</strong> <span v-if="'prediction_before_change' in test_case && test_case.prediction_before_change !== test_case.prediction" v-html="replaceWithHighlights(`${test_case.prediction_before_change}`) " /><span v-else>{{ test_case.prediction }} </span>
-                    &nbsp;<span class="text-danger d-inline-flex align-items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
-                        <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-                <div class="row my-3">
-                  <div class="col">
-                    <strong>Prediction for the modified question:</strong> <span v-if="'prediction_before_change' in test_case && test_case.prediction_before_change !== test_case.prediction" v-html="replaceWithHighlights(`${test_case.prediction}`) " /><span v-else>{{ test_case.prediction }} </span>
+                    <strong class="text-danger">Prediction:</strong> <span v-if="'prediction_before_change' in test_case && test_case.prediction_before_change !== test_case.prediction" v-html="replaceWithHighlights(`[${test_case.prediction_before_change}->${test_case.prediction}]`) " /><span v-else>{{ test_case.prediction }} </span>
                     &nbsp;<span class="text-danger d-inline-flex align-items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
@@ -125,12 +109,6 @@ export default Vue.component('explain-detail', {
       return new RegExp('([^\\w])' + token + '([^\\w])', 'ig')
     },
     applyChanges(value, test_case) {
-      if (value == undefined && test_case != undefined ){
-        // if there is no context
-        value = "No context for this sample"
-
-        return value
-      }
       if ('changed' in test_case) {
         if ('where' in test_case && test_case[test_case.where] !== value) {
           // Skip changes if they are not universal and not included in the `where` field
@@ -140,82 +118,22 @@ export default Vue.component('explain-detail', {
           test_case.changed.from.forEach((from, index) => {
             let re = this.prepareRegExp(test_case.changed.to[index])
             value = value.replaceAll(re, `$1[${from}->${test_case.changed.to[index]}]$2`)
-            // value = re
           })
         } else {
           // Single replacement
           let re = this.prepareRegExp(test_case.changed.to)
           value = value.replaceAll(re, `$1[${test_case.changed.from}->${test_case.changed.to}]$2`)
         }
-        return value
-      } else if ('span' in test_case && test_case.context === value) {
-        let span = value.substring(test_case.span[0], test_case.span[1])
-        return value.replace(span, `<mark class="bg-success text-light">${span}</mark>`)
-      }
-      return this.replaceWithHighlights(value)
-    },
-    HightlightChangesModifiedQuestion(value, test_case, ) {
-      if ('changed' in test_case) {
-        if ('where' in test_case && test_case[test_case.where] !== value) {
-          // Skip changes if they are not universal and not included in the `where` field
-          return value
-        } else if (Array.isArray(test_case.changed.from)) {
-          // Multiple replacements
-
-          test_case.changed.from.forEach((from, index) => {
-            let re = this.prepareRegExp(test_case.changed.to[index])
-            value = value.replaceAll(re, `$1[${test_case.changed.to[index]}]$2`)
-            // value = re
-          })
-
-
-        } else {
-          // Single replacement
-          let re = this.prepareRegExp(test_case.changed.to)
-          value = value.replaceAll(re, `$1[${test_case.changed.to}]$2`)
-        }
-        return this.replaceWithHighlights_yellow(value)
+        return this.replaceWithHighlights(value)
       } else if ('span' in test_case && test_case.context === value) {
         let span = value.substring(test_case.span[0], test_case.span[1])
         return value.replace(span, `<mark class="bg-success text-light">${span}</mark>`)
       }
       return value
-    },
-    HightlightChangesUnmodifiedQuestion(value, test_case) {
-      if ('changed' in test_case) {
-        if (Array.isArray(test_case.changed.from)) {
-          // Multiple replacements
-
-          test_case.changed.from.forEach((from, index) => {
-            let re = this.prepareRegExp(test_case.changed.from[index])
-            value = value.replaceAll(re, `$1[${test_case.changed.from[index]}]$2`)
-            // value = re
-          })
-
-        } else {
-          // Single replacement
-          let re = this.prepareRegExp(test_case.changed.from)
-          value = value.replaceAll(re, `$1[${test_case.changed.from}]$2`)
-        }
-        return this.replaceWithHighlights_red(value)
-      } else if ('span' in test_case && test_case.context === value) {
-        let span = value.substring(test_case.span[0], test_case.span[1])
-        return value.replace(span, `<mark class="bg-success text-light">${span}</mark>`)
-      }
-      return value
-    },
-
-    replaceWithHighlights_red(value) {
-      return value.replaceAll(/\[([^\]]*)\]/ig, '<mark  class="bg-primary text-light">$1</mark>')
-    },
-
-    replaceWithHighlights_yellow(value){
-      return value.replaceAll(/\[([^\]]*)\]/ig, '<mark  class="bg-warning">$1</mark>')
     },
     replaceWithHighlights(value) {
       return value.replaceAll(/\[([^\]]*)->([^[]*)\]/ig, '<mark class="bg-warning">$1</mark><span class="d-inline-flex align-items-center px-1"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-arrow-right-circle" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/></svg></span><mark class="bg-primary text-light">$2</mark>')
     }
-
   }
 })
 </script>
