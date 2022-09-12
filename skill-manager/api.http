@@ -117,7 +117,30 @@ Cache-Control: no-cache
 }
 
 ###
-# @name query_bert_socialiqa_skill
+# @name query_skill_squad_bm25
+POST /api/skill-manager/skill/62c2a1f93f28686f3c9d9363/query HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+Cache-Control: no-cache
+
+{
+  "query": "When was the UN founded?",
+  "skill_args": {
+    "context": "Immediately behind the basilica is the Grotto, a Marian place of prayer and reflection. It is a replica of the grotto at Lourdes, France where the Virgin Mary reputedly appeared to Saint Bernadette Soubirous in 1858.",
+    "show_null_answers": false
+  },
+  "skill": {},
+  "user_id": "",
+  "explain_kwargs": {
+    "method": "attention",
+    "top_k": 10,
+    "mode": "all"
+  }
+}
+
+###
+# @name query_bert_socialiqa_skill_with_adversarial
 @token =  {{get_token.response.body.access_token}}
 POST /api/skill-manager/skill/62c1ae23536b1bb18ff91cfa/query HTTP/1.1
 Host: {{hostname}}
@@ -139,6 +162,39 @@ Cache-Control: no-cache
 }
 ###
 # @name query_bert_squad11_skill
+  "skill_args": {"context": "Cameron decided to have a barbecue and gathered her friends together.\n like attending\n like staying home\n a good friend to have"},
+  "skill": {},
+  "user_id": "",
+  "explain_kwargs": {},
+  "attack_kwargs": {
+    "method": "topk_tokens",
+    "saliency_method": "attention",
+    "max_tokens": 3
+  }
+}
+
+###
+# @name query_bert_socialiqa_skill_with_explainability
+@token =  {{get_token.response.body.access_token}}
+POST /api/skill-manager/skill/62c1ae23536b1bb18ff91cfa/query HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+Cache-Control: no-cache
+
+{
+  "query": "What will Kendall want to do next?",
+  "skill_args": {"context": "Cameron decided to have a barbecue and gathered her friends together.\n like attending\n like staying home\n a good friend to have"},
+  "skill": {},
+  "user_id": "",
+  "explain_kwargs": {
+    "method": "attention",
+    "top_k": 10,
+    "mode": "all"
+  }
+}
+###
+# @name query_bert_squad11_skill_with_adversarial
 @token =  {{get_token.response.body.access_token}}
 POST /api/skill-manager/skill/62c1ae21536b1bb18ff91cf6/query HTTP/1.1
 Host: {{hostname}}

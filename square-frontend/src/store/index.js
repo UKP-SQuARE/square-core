@@ -33,7 +33,8 @@ export default new Vuex.Store({
         selectedSkills: Array(3).fill('None')
       }
     },
-    loadingExplainability: false
+    loadingExplainability: false,
+    attackResults: [],
   },
   mutations: {
     setAnsweredQuestion(state, payload) {
@@ -41,6 +42,9 @@ export default new Vuex.Store({
       state.currentContext = payload.context
       state.currentResults = payload.results
       state.currentSkills = payload.skills
+    },
+    setAttack(state, payload) {
+      state.attackResults = payload.results
     },
     setSkills(state, payload) {
       state.availableSkills = payload.skills
@@ -79,15 +83,29 @@ export default new Vuex.Store({
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
               skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
-              predictions: response.data.predictions
+              predictions: response.data.predictions,
+              adversarial: response.data.adversarial
             }))
             context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
           })).finally(() => {
             if ( "explain_kwargs" in options ){
               clearTimeout(timeoutExplainabilityLoading);
               context.commit('setLoadingExplainability', {'value': false});
-          }
+            }
           })
+    },
+    attack(context, { question, inputContext, options }) {
+      options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
+      return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
+          .then(axios.spread((...responses) => {
+            // Map responses to a list with the skill metadata and predictions combined
+            let results = responses.map((response, index) => ({
+              skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
+              predictions: response.data.predictions,
+              adversarial: response.data.adversarial
+            }))
+            context.commit('setAttack', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
+          }))
     },
     signIn(context, { userInfo, token }) {
       context.commit('setAuthentication', { userInfo: userInfo, token: token })

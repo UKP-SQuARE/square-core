@@ -458,13 +458,12 @@ def test_query_skill(
         # HACK: remove attributions/prediction_graph from repsonse since the object 
         # saved in mongo does not contain it because it is "unset" and we remove all 
         # unset values when creating the mongo object
+        response.pop("adversarial")
         for p in response["predictions"]:
             p.pop("attributions")
             p.pop("prediction_graph")
 
-        TestCase().assertDictEqual(
-            response, {"predictions": saved_prediction["predictions"]}
-        )
+        TestCase().assertDictEqual(response, {"predictions": saved_prediction["predictions"]})
     else:
         assert response.status_code == 403
 

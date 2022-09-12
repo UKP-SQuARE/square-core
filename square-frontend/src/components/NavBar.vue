@@ -17,7 +17,7 @@
                 <router-link class="nav-link" to="/qa" exact-active-class="active">QA</router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" to="/explain" exact-active-class="active">Explainability</router-link>
+                <router-link class="nav-link" to="/explain" exact-active-class="active">Behavioral Tests</router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="https://arxiv.org/abs/2203.13693" target="_blank">Publication</a>
