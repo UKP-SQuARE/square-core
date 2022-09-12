@@ -165,7 +165,7 @@ services:
   dpr_worker:
     build:
       context: ./inference_server
-      dockerfile: ./transformer/Dockerfile
+      dockerfile: ./dockerfiles/transformer/Dockerfile
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -193,7 +193,7 @@ services:
   bert_worker:
     build:
       context: ./inference_server
-      dockerfile: ./transformer/Dockerfile
+      dockerfile: ./dockerfiles/transformer/Dockerfile
     container_name: bert_worker
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info --concurrency=2
     volumes:
@@ -222,7 +222,7 @@ services:
   roberta_worker:
     build:
       context: ./inference_server
-      dockerfile: ./transformer/Dockerfile
+      dockerfile: ./dockerfiles/transformer/Dockerfile
     container_name: roberta_worker
     command: celery -A tasks worker -Q roberta-base --loglevel=info --concurrency=2
     volumes:
@@ -251,7 +251,7 @@ services:
 #  qagnn_worker:
 #    build:
 #      context: ./inference_server
-#      dockerfile: ./graph_transformer/Dockerfile
+#      dockerfile: ./dockerfiles/graph_transformer/Dockerfile
 #    command: celery -A tasks worker -Q qagnn --loglevel=info
 #    volumes:
 #      - ./:/usr/src/app
@@ -280,7 +280,7 @@ services:
   bart_worker:
     build:
       context: ./inference_server
-      dockerfile: ./transformer/Dockerfile
+      dockerfile: ./dockerfiles/transformer/Dockerfile
     command: celery -A tasks worker -Q bart-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -352,7 +352,7 @@ services:
 ##    image: ukpsquare/square-model-api-v1:latest
 #    build:
 #      context: ./inference_server
-#      dockerfile: ./onnx/Dockerfile
+#      dockerfile: ./dockerfiles/onnx/Dockerfile
 #    env_file:
 #      - ./inference_server/.env.bert_onnx
 #    environment:
