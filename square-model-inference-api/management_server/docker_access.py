@@ -86,6 +86,16 @@ def start_new_model_container(identifier: str, uid: str, env):
     env["REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD", "secret")
     env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
+    if env["MODEL_TYPE"] in ["transformer","adapter"]:
+        MODEL_API_IMAGE="ukpsquare/square-model-api-v2-transformer:latest"
+    if env["MODEL_TYPE"] in ["sentence-transformer"]:
+        MODEL_API_IMAGE = "ukpsquare/square-model-api-v2-sentence-transformer:latest"
+    if env["MODEL_TYPE"] in ["graph-transformer"]:
+        MODEL_API_IMAGE = "ukpsquare/square-model-api-v2-graph-transformer:latest"
+    if env["MODEL_TYPE"] in ["onnx"]:
+        MODEL_API_IMAGE = "ukpsquare/square-model-api-v2-onnx:latest"
+
+
     try:
         logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
