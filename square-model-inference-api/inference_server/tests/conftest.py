@@ -3,8 +3,10 @@ import pytest
 from pre_test_setup_for_docker_caching import (
     TRANSFORMERS_TESTING_CACHE,
     TRANSFORMER_MODEL,
+    TRANSFORMER_MODEL_ROBERTA,
     SENTENCE_MODEL,
-    ONNX_MODEL
+    ONNX_MODEL,
+
 )
 import torch
 import os
@@ -27,6 +29,7 @@ from main import get_app, auth
 from tasks.inference.transformer import Transformer
 from tasks.inference.adaptertransformer import AdapterTransformer
 from tasks.inference.sentencetransformer import SentenceTransformer
+
 from tasks.inference.onnx import Onnx
 from tasks.config.model_config import ModelConfig, set_test_config, model_config
 from square_model_inference.models.request import PredictionRequest
@@ -45,6 +48,20 @@ def test_transformer_sequence_classification():
     torch.manual_seed(987654321)
     set_test_config(
         model_name=TRANSFORMER_MODEL,
+        model_class="sequence_classification",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+        model_type="transformer",
+
+    )
+    return Transformer()
+
+@pytest.fixture(scope="class")
+def test_transformer_sequence_classification_roberta():
+    torch.manual_seed(987654321)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL_ROBERTA,
         model_class="sequence_classification",
         disable_gpu=True,
         batch_size=1,
@@ -90,6 +107,32 @@ def test_transformer_question_answering():
     torch.manual_seed(987654321)
     set_test_config(
         model_name=TRANSFORMER_MODEL,
+        model_class="question_answering",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+        model_type="transformers",
+    )
+    return Transformer()
+
+@pytest.fixture(scope="class")
+def test_transformer_explainability():
+    torch.manual_seed(987654321)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL,
+        model_class="question_answering",
+        disable_gpu=True,
+        batch_size=1,
+        max_input_size=50,
+        model_type="transformers",
+    )
+    return Transformer()
+
+@pytest.fixture(scope="class")
+def test_transformer_explainability_roberta():
+    torch.manual_seed(987654321)
+    set_test_config(
+        model_name=TRANSFORMER_MODEL_ROBERTA,
         model_class="question_answering",
         disable_gpu=True,
         batch_size=1,

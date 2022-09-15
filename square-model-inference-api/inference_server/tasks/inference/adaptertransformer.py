@@ -18,7 +18,6 @@ class AdapterTransformer(Transformer):
 
     def __init__(self,  **kwargs):
         """
-
         Initialize the Adapter with its underlying Transformer 
         and pre-load all available adapters from adapterhub.ml
 
@@ -30,6 +29,7 @@ class AdapterTransformer(Transformer):
              kwargs: Not used
         """
         self.task = None
+        self.gradients = None
         self._load_model(
             AutoAdapterModel, model_config.model_name, model_config.disable_gpu
         )

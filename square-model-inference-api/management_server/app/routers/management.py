@@ -381,7 +381,7 @@ async def start_from_db(token: str = Depends(client_credentials)):
             identifier = model["IDENTIFIER"]
             env = model
             del env["_id"]
-            del env["container"]
+            del env["CONTAINER"]
             res = tasks.deploy_task.delay(env, allow_overwrite=True)
             logger.info(res.id)
             deployed.append(identifier)
