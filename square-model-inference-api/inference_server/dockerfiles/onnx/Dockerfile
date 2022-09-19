@@ -16,11 +16,11 @@ RUN pip install -r requirements1.txt
 RUN pip install nltk
 RUN python3 -m nltk.downloader stopwords
 RUN python3 -m nltk.downloader words
-COPY ./dockerfiles/onnx/uninstall_requirements.txt ./
-RUN pip uninstall -y -r uninstall_requirements.txt
-
-COPY ./dockerfiles/onnx/requirements2.txt ./
-RUN pip install -r requirements2.txt
+#COPY ./dockerfiles/onnx/uninstall_requirements.txt ./
+#RUN pip uninstall -y -r uninstall_requirements.txt
+#
+#COPY ./dockerfiles/onnx/requirements2.txt ./
+#RUN pip install -r requirements2.txt
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
 # run the tests

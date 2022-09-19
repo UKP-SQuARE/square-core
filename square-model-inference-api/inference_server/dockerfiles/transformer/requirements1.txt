@@ -6,6 +6,7 @@ sentencepiece==0.1.96           # tokenizer
 torch==1.11.0                   # pytorch libs
 square-auth>=0.0.7              # keycloak authentication
 celery==5.1.2                   # queue requests
+adapter-transformers==3.0.0
 redis==4.1.4
 pytest-env==0.6.2
 spacy>=3.0.0,<4.0.0
