@@ -19,6 +19,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     context = request.skill_args.get("context")
     choices = request.skill_args["choices"]
+    explain_kwargs = request.explain_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     if request.skill.get("skill_type") == "categorical":
         # answer choices for categorical skills are hard-coded and not required as
@@ -33,8 +35,11 @@ async def predict(request: QueryRequest) -> QueryOutput:
     # Call Model API
     model_request = {
         "input": prepared_input,
-        "adapter_name": request.skill_args["adapter"],
+        "explain_kwargs": explain_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
     logger.debug("Request for model api:{}".format(model_request))
 
     model_api_output = await model_api(
@@ -56,5 +61,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
         ]
 
     return QueryOutput.from_sequence_classification(
-        answers=choices, model_api_output=model_api_output, context=context
+        questions=query,
+        answers=choices,
+        model_api_output=model_api_output,
+        context=context,
     )

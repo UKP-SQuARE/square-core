@@ -2,6 +2,7 @@ import jwt
 import pytest
 from skill_manager.models import Skill, SkillSettings
 from testcontainers.mongodb import MongoDbContainer
+from testcontainers.redis import RedisContainer
 
 
 @pytest.fixture(scope="module")
@@ -15,22 +16,38 @@ def monkeymodule():
 
 @pytest.fixture(scope="module")
 def init_mongo_db():
-    mongo_db_test_container = MongoDbContainer("mongo:5.0.4")
-    mongo_db_test_container.start()
+    mongo_db = MongoDbContainer("mongo:5.0.4")
+    mongo_db.start()
+    mongo_db._connect()
     try:
-        yield mongo_db_test_container
+        yield mongo_db
     except Exception as err:
         raise err
     finally:
-        mongo_db_test_container.stop()
+        mongo_db.stop()
+
+
+@pytest.fixture(scope="module")
+def init_redis():
+    redis_password = "redis-pass"
+    redis = RedisContainer("redis:latest", password=redis_password)
+    redis.start()
+    redis._connect()
+    try:
+        yield redis
+    except Exception as err:
+        raise err
+    finally:
+        redis.stop()
 
 
 @pytest.fixture
 def skill_prediction_factory():
-    def skill_prediction():
+    def skill_prediction(**kwargs):
         return {
             "predictions": [
                 {
+                    "question": "What is the answer to the ultimate question of life, the universe, and everything?",
                     "prediction_score": 1,
                     "prediction_output": {"output": "answer", "output_score": "1"},
                     "prediction_documents": [
@@ -44,6 +61,7 @@ def skill_prediction_factory():
                             "document_score": 0.0,
                         }
                     ],
+                    **kwargs,
                 }
             ]
         }

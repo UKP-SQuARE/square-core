@@ -18,6 +18,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query = request.query
     context = request.skill_args.get("context", "")
+    explain_kwargs = request.explain_kwargs or {}
+    attack_kwargs = request.attack_kwargs or {}
 
     if context:
         query_context_seperator = request.skill_args.get("query_context_seperator", " ")
@@ -30,8 +32,11 @@ async def predict(request: QueryRequest) -> QueryOutput:
             "output_scores": True,
             **request.skill_args.get("model_kwargs", {}),
         },
-        "adapter_name": request.skill_args["adapter"],
+        "explain_kwargs": explain_kwargs,
+        "attack_kwargs": attack_kwargs,
     }
+    if request.skill_args.get("adapter"):
+        model_request["adapter_name"] = request.skill_args["adapter"]
 
     model_api_output = await model_api(
         model_name=request.skill_args["base_model"],
@@ -41,5 +46,5 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info(f"Model API output:\n{model_api_output}")
 
     return QueryOutput.from_generation(
-        model_api_output=model_api_output, context=context
+        questions=query, model_api_output=model_api_output, context=context
     )

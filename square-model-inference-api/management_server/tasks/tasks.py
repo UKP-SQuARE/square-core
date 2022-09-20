@@ -1,16 +1,14 @@
 import asyncio
 import logging
-import os
-import time
 from abc import ABC
 
-import requests
 from celery import Task
 
-from app.core.config import settings
+# from app.core.config import settings
 from app.routers import client_credentials
+from app.db.database import MongoClass
+
 from docker_access import remove_model_container, start_new_model_container
-from mongo_access import MongoClass
 
 from .celery import app
 
@@ -60,7 +58,8 @@ def deploy_task(self, env, allow_overwrite=False):
         logger.exception(e)
         return {"success": False, "message": "Connection to the database failed."}
     try:
-        deployment_result = start_new_model_container(identifier, env)
+        deployment_result = start_new_model_container(identifier, uid=env["UUID"], env=env)
+        logger.info(deployment_result)
         container = deployment_result["container"]
         # models = asyncio.run(self.client.get_models_db())
         # model_ids = [m["IDENTIFIER"] for m in models]
@@ -70,32 +69,15 @@ def deploy_task(self, env, allow_overwrite=False):
                 "container": container.id,
                 "message": "Model deployed. Check the `/api/models/deployed-models` " "endpoint for more info.",
             }
-            response = None
-            while container.status in ["created", "running"] and (response is None or response.status_code != 200):
-                time.sleep(20)
-                logger.info("Waiting for container %s which is %s", container.id, container.status)
-                response = requests.get(
-                    url=f"{settings.API_URL}/api/{identifier}/stats",
-                    headers={"Authorization": f"Bearer {self.credentials()}"},
-                    verify=os.getenv("VERIFY_SSL", 1) == 1,
-                )
 
-                if response.status_code == 200:
-                    logger.info(env)
-                    env["container"] = container.id
-                    asyncio.run(self.client.add_model_db(env, allow_overwrite))
-                    return result
-            logger.info(container.status)
-            logger.info(response.status_code)
-            return {
-                "success": False,
-                "container_status": container.status,
-            }
+            env["CONTAINER"] = container.id
+
+            asyncio.run(self.client.add_model_db(env, allow_overwrite))
+            return result
 
     except Exception as e:
         logger.exception("Deployment failed", exc_info=True)
         logger.info("Caught exception. %s ", e)
-
     return {"success": False}
 
 
@@ -112,9 +94,11 @@ def remove_model_task(self, identifier):
     except Exception:
         return {"success": False, "message": "Connection to the database failed."}
     try:
-        container_id = self.client.get_container_id(identifier)
-        logger.info("Starting to remove docker container %s", container_id)
-        result = remove_model_container(container_id)
+        containers = self.client.get_model_container_ids(identifier)
+        for c in containers:
+            container_id = c["CONTAINER"]
+            logger.info("Starting to remove docker container %s", container_id)
+            result = remove_model_container(container_id)
         if result:
             asyncio.run(self.client.remove_model_db(identifier))
             return {"success": result, "message": "Model removal successful"}
@@ -122,3 +106,57 @@ def remove_model_task(self, identifier):
         logger.info(e)
         logger.exception("Could not remove model", exc_info=True)
     return {"success": False, "message": "Model removal not successful"}
+
+
+@app.task(
+    bind=True,
+    base=ModelTask,
+)
+def add_worker(self, identifier, env, id, num):
+    try:
+        containers = []
+        for i in range(num):
+            deployment_result = start_new_model_container(identifier, env, id+i)
+            logger.info(deployment_result)
+            container = deployment_result["container"]
+            if containers is None:
+                return {
+                    "success": False,
+                    "message": deployment_result["message"],
+                }
+            containers.append(container.id)
+        if len(containers) > 0:  # and identifier not in model_ids:
+            result = {
+                "success": True,
+                "container": containers,
+                "message": f" {len(containers)} model container added for {identifier}",
+            }
+            for id in containers:
+                asyncio.run(self.client.add_container(identifier, id))
+            return result
+
+    except Exception as e:
+        logger.exception("Adding model worker failed", exc_info=True)
+        logger.info("Caught exception. %s ", e)
+        return {"success": False}
+    return {
+        "success": False,
+    }
+
+
+@app.task(
+    bind=True,
+    base=ModelTask,
+)
+def remove_worker(self, containers):
+    try:
+        for c in containers:
+            result = remove_model_container(c)
+        if result:
+            asyncio.run(self.client.remove_container(containers))
+            return {"success": result, "message": "Worker removal successful"}
+
+    except Exception as e:
+        logger.exception("Adding model worker failed", exc_info=True)
+        logger.info("Caught exception. %s ", e)
+    return {"success": False}

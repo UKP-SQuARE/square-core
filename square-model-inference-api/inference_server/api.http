@@ -1,0 +1,41 @@
+@hostname = square.ukp-lab.de
+
+### GET TOKEN
+# @name get_token
+# @prompt username
+# @prompt password
+POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+Host: {{hostname}}
+content-type: application/x-www-form-urlencoded
+
+client_id=square-api&grant_type=password&username={{username}}&password={{password}}
+
+### 
+# @name qagnn_query
+@token =  {{get_token.response.body.access_token}}
+POST /api/main/qagnn/sequence-classification HTTP/1.1 
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "input": [
+    ["Google Maps and other highway and street GPS services have replaced what?", "united states"],
+    ["Google Maps and other highway and street GPS services have replaced what?", "mexico"],
+    ["Google Maps and other highway and street GPS services have replaced what?", "countryside"],
+    ["Google Maps and other highway and street GPS services have replaced what?", "atlas"],
+    ["Google Maps and other highway and street GPS services have replaced what?", "oceans"]
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {"output_lm_subgraph": true, "output_attn_subgraph": true, "topk_lm_score": 50, "topk_attn": 5},
+  "task_kwargs": {},
+  "adapter_name": ""
+}
+
+###
+# @prompt task_id
+GET /api/models/task_result/{{task_id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json

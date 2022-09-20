@@ -66,10 +66,25 @@ export function postQuery(headers, question, context, options) {
     let data = {
         query: question,
         skill_args: {},
+        explain_kwargs: {},
+        attack_kwargs: {},
         num_results: options.maxResultsPerSkill
     }
     if (context.length > 0) {
         data.skill_args.context = context
+    }
+    if (options.explain_kwargs) {
+        data.explain_kwargs = {"method": options.explain_kwargs.method,
+                                "top_k": options.explain_kwargs.top_k,
+                                "mode": options.explain_kwargs.mode}
+    }
+    if (options.attack_kwargs) {
+        data.attack_kwargs = {"method": options.attack_kwargs.method,
+                              "saliency_method": options.attack_kwargs.saliency_method,
+                              "max_flips": options.attack_kwargs.max_flips,
+                              "max_reductions": options.attack_kwargs.max_reductions,
+                              "max_tokens": options.attack_kwargs.max_tokens,
+                            }
     }
     let results = options.selectedSkills.map(skillId => {
         return axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: headers })

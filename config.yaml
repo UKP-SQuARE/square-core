@@ -10,19 +10,15 @@ skills:
     author: ukp
   - name: commonsense-qa
     author: ukp
-  - name: squad-v2
-    author: ukp
-  - name: open-bioasq
-    author: ukp
-  - name: open-squad
-    author: ukp
   - name: extractive-qa
-    author: ukp
-  - name: multiple-choice-qa
     author: ukp
   - name: generative-qa
     author: ukp
+  - name: multiple-choice-qa
+    author: ukp
   - name: open-extractive-qa
+    author: ukp
+  - name: qa-gnn
     author: ukp
 
 web_concurrency: 2
@@ -45,7 +41,7 @@ keycloak_base_url:
   prod: square.ukp-lab.de
   local: square.ukp-lab.localhost
 
-frotnend_url:
+frontend_url:
   prod: square.ukp-lab.de
   local: square.ukp-lab.localhost
 

@@ -4,7 +4,7 @@ version: "3.3"
 
 services:
   traefik:
-    image: traefik:v2.6.1
+    image: traefik:v2.8.1
     container_name: traefik
     command:
       - --api.insecure=true
@@ -50,29 +50,29 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-    environment:
-      - RABBITMQ_DEFAULT_USER=ukp
     env_file:
-      - management_server/.env
-    volumes:
-      - ./management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./management_server/.env
+#    volumes:
+#      - ./management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+#      - ./management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
 
   redishost:
     hostname: redishost
     image: redis:latest
     ports:
       - '6379:6379'
-    command: ["redis-server", "/etc/redis/redis.conf"]
     env_file:
-      - management_server/.env
-    volumes:
-      - square-redis-data:/square/redis/data:rw
-      - ./management_server/redis/redis.conf:/etc/redis/redis.conf
+      - .env
+    command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
+
+#    volumes:
+#      - square-redis-data:/square/redis/data:rw
+#      - ./management_server/redis/redis.conf:/etc/redis/redis.conf
 
   maintaining_worker:
 #    image: ukpsquare/square-model-management:latest
     build: ./management_server
+    container_name: maintaining_worker
     command: celery -A tasks worker --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -81,14 +81,11 @@ services:
       - ./management_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
       - VERIFY_SSL=0
-      - REDIS_USER=default
-      - RABBITMQ_DEFAULT_USER=ukp
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-      - REALM=Models-test
+      - REALM=square
       - CLIENT_ID=models
     links:
       - rabbit
@@ -101,6 +98,7 @@ services:
   maintaining:
 #    image: ukpsquare/square-model-management:latest
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
+    container_name: maintaining
     build: ./management_server
     ports:
       - 9001:9001
@@ -114,18 +112,14 @@ services:
       - ./management_server/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - MODEL_API_IMAGE=ukpsquare/square-model-api-v1:latest
+      - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=1
       - ONNX_VOLUME=square-model-inference-api_onnx-models
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-      - REALM=Models-test
+      - REALM=square
       - CLIENT_ID=models
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
-      - REDIS_USER=default
-      - RABBITMQ_DEFAULT_USER=ukp
+      - CONFIG_PATH=/model_configs
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
@@ -140,49 +134,214 @@ services:
 ##################################################################
 # --------- Example config for transformer model server ---------#
 ##################################################################
-  model_dpr:
+  main_model:
 #    image: ukpsquare/square-model-api-v1:latest
     build: ./inference_server
+    container_name: main_model
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     env_file:
-      - ./inference_server/.env.dpr
+#      - ./inference_server/.env.dpr
+      - inference_server/.env
     environment:
       - WEB_CONCURRENCY=1
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - QUEUE=facebook-dpr-question_encoder-single-nq-base
+      - CONFIG_PATH=/model_configs
+#      - TEST=1   # for testing model config
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
+      - model_configs:/model_configs
+#      - onnx-models:/onnx_models
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/facebook-dpr-question_encoder-single-nq-base`)"
+      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
       - "traefik.http.routers.model-dpr.entrypoints=websecure"
       - "traefik.http.routers.model-dpr.tls=true"
       - "traefik.http.routers.model-dpr.tls.certresolver=le"
       - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
-      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/facebook-dpr-question_encoder-single-nq-base"
+      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
+  dpr_worker:
+    build:
+      context: ./inference_server
+      dockerfile: ./dockerfiles/transformer/Dockerfile
+    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./inference_server/.env.dpr
+      - inference_server/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=facebook-dpr-question_encoder-single-nq-base
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+  bert_worker:
+    build:
+      context: ./inference_server
+      dockerfile: ./dockerfiles/transformer/Dockerfile
+    container_name: bert_worker
+    command: celery -A tasks worker -Q bert-base-uncased --loglevel=info --concurrency=2
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./inference_server/.env.bert_adapter
+      - inference_server/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=bert-base-uncased
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+  roberta_worker:
+    build:
+      context: ./inference_server
+      dockerfile: ./dockerfiles/transformer/Dockerfile
+    container_name: roberta_worker
+    command: celery -A tasks worker -Q roberta-base --loglevel=info --concurrency=2
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./inference_server/.env.roberta_adapter
+      - inference_server/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=roberta-base
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+#  qagnn_worker:
+#    build:
+#      context: ./inference_server
+#      dockerfile: ./dockerfiles/graph_transformer/Dockerfile
+#    command: celery -A tasks worker -Q qagnn --loglevel=info
+#    volumes:
+#      - ./:/usr/src/app
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - model_configs:/model_configs
+#      - models:/models
+#    env_file:
+#      - ./inference_server/.env.qagnn
+#      - inference_server/.env
+#    environment:
+#      - DOCKER_HOST_URL=https://172.17.0.1:8443
+#      - VERIFY_SSL=0
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - REALM=square
+#      - CLIENT_ID=models
+#      - QUEUE=qagnn
+#      - CONFIG_PATH=/model_configs
+#    links:
+#      - rabbit
+#      - redishost
+#    depends_on:
+#      - maintaining
+#      - rabbit
+#      - redishost
+
+  bart_worker:
+    build:
+      context: ./inference_server
+      dockerfile: ./dockerfiles/transformer/Dockerfile
+    command: celery -A tasks worker -Q bart-base --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./inference_server/.env.bart_adapter
+      - inference_server/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=bart-base
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redishost
+    depends_on:
+      - maintaining
+      - rabbit
+      - redishost
+
+#  # --------- Example config for abstractive QA adapter model server ---------
+#  model_bart_base_adapter:
+#    #    image: ukpsquare/square-model-api-v1:latest
+#    build: ./inference_server
+#    env_file:
+#      - ./inference_server/.env.bart_adapter
+#    environment:
+#      - WEB_CONCURRENCY=1
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#    volumes:
+#      - ./.cache/:/etc/huggingface/.cache/
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.model-bart-base-adapter.rule=PathPrefix(`/api/facebook-bart-base`)"
+#      - "traefik.http.routers.model-bart-base-adapter.entrypoints=websecure"
+#      - "traefik.http.routers.model-bart-base-adapter.tls=true"
+#      - "traefik.http.routers.model-bart-base-adapter.tls.certresolver=le"
+#      - "traefik.http.routers.model-bart-base-adapter.middlewares=model-bart-base-adapter-stripprefix,model-bart-base-adapter-addprefix"
+#      - "traefik.http.middlewares.model-bart-base-adapter-stripprefix.stripprefix.prefixes=/api/facebook-bart-base"
+#      - "traefik.http.middlewares.model-bart-base-adapter-addprefix.addPrefix.prefix=/api"
 
   mongo:
     hostname: mongo
     image: mongo:5.0.4
     restart: always
     volumes:
-      - skill-manager-mongo-data:/data/db
+      - mongo-data:/data/db
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_HOST: mongo
-      MONGO_PORT: 27017
     env_file:
       - management_server/.env
 
   mongo-express:
     image: mongo-express:latest
     restart: always
-    environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongo:27017
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+    env_file:
+      - ./management_server/.env
     ports:
       - 8081:8081
 
@@ -191,12 +350,14 @@ services:
 ###########################################################
 #  model_bert_onnx:
 ##    image: ukpsquare/square-model-api-v1:latest
-#    build: ./inference_server
+#    build:
+#      context: ./inference_server
+#      dockerfile: ./dockerfiles/onnx/Dockerfile
 #    env_file:
 #      - ./inference_server/.env.bert_onnx
 #    environment:
 #      - WEB_CONCURRENCY=1
-#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - KEYCLOAK_BASE_URL=https://square.ukp.informatik.tu-darmstadt.de
 #    volumes:
 #      - ./.cache/:/etc/onnx/.cache/
 #      - onnx-models:/onnx_models
@@ -213,17 +374,24 @@ services:
 volumes:
   traefik-public-certificates:
 
-  skill-manager-mongo-data:
+  mongo-data:
     driver: local
 
-  square-redis-data:
-    driver: local
+#  square-redis-data:
+#    driver: local
 
   # onnx-model folder on the vm
+#
   onnx-models:
+    driver: local
+
+  models:
     driver: local
     driver_opts:
       o: bind
       type: none
-#      device: /home/sterz/onnx_models
-      device: /home/rachneet/onnx_models
+      #      device: /home/sterz/onnx_models
+      device: /home/rachneet/projects/qagnn/graph_transformers/data
+
+  model_configs:
+    driver: local

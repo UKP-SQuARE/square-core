@@ -3,16 +3,19 @@ FROM python:3.7.6-slim-buster as base
 ENV PYTHONUNBUFFERED 1
 
 # required to install packages from github
-RUN apt-get -y update
-RUN apt-get -y install git
+RUN apt-get -y update && apt-get -y install git rabbitmq-server
 
 RUN pip install --upgrade pip
 
 WORKDIR /app
 
-RUN pip download torch==1.8.1
 COPY requirements1.txt ./
 RUN pip install -r requirements1.txt
+
+RUN pip install nltk
+RUN python3 -m nltk.downloader stopwords
+RUN python3 -m nltk.downloader words
+RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 
 COPY uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
@@ -27,7 +30,7 @@ FROM base as test
 COPY ./tests/pre_test_setup_for_docker_caching.py ./tests/pre_test_setup_for_docker_caching.py
 RUN python ./tests/pre_test_setup_for_docker_caching.py
 COPY . ./
-RUN pip install pytest pytest-cov pytest-asyncio
+RUN pip install pytest pytest-cov pytest-asyncio pytest-env
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
@@ -43,6 +46,6 @@ COPY main.py main.py
 COPY ./square_model_inference square_model_inference
 COPY logging.conf logging.conf
 
-EXPOSE 8000
+COPY ./tasks tasks
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "logging.conf"]
+EXPOSE 8000

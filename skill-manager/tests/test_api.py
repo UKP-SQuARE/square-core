@@ -2,11 +2,16 @@ import json
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
+import uuid
 
 import pytest
 import responses
 from fastapi.testclient import TestClient
+from testcontainers.redis import RedisContainer
+from testcontainers.mongodb import MongoDbContainer
+
 from skill_manager import mongo_client
+from skill_manager.core.model_management_client import ModelManagementClient
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
 from skill_manager.routers import client_credentials
@@ -23,23 +28,16 @@ app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 
 app.dependency_overrides[client_credentials] = lambda: "test-token"
 
+mock_model_management_client = lambda: MagicMock()
+app.dependency_overrides[ModelManagementClient] = mock_model_management_client
+
 client = TestClient(app)
 
 
 @pytest.fixture(scope="module")
-def pers_client(monkeymodule, init_mongo_db):
-    # connection_url = init_mongo_db.get_connection_url()
-
-    # # HACK: *for MAC* host detection does not work properly when running inside docker
-    # # therefore, we set an env variable in the Dockerfile and manually replace
-    # # the host. Once the issue below is fixed in testcontainers, this could be removed.
-    # # https://github.com/testcontainers/testcontainers-python/issues/43
-    # if os.getenv("INSIDE_DOCKER", False) == 1:
-    #     lindex = connection_url.index("@") + 1
-    #     rindex = max(i for i, v in enumerate(connection_url) if v == ":")
-    #     connection_url = (
-    #         connection_url[:lindex] + "host.docker.internal" + connection_url[rindex:]
-    #     )
+def pers_client(
+    monkeymodule, init_mongo_db: MongoDbContainer, init_redis: RedisContainer
+):
 
     monkeymodule.setenv(
         "MONGO_INITDB_ROOT_USERNAME", init_mongo_db.MONGO_INITDB_ROOT_USERNAME
@@ -49,6 +47,14 @@ def pers_client(monkeymodule, init_mongo_db):
     )
     monkeymodule.setenv("MONGO_HOST", init_mongo_db.get_container_host_ip())
     monkeymodule.setenv("MONGO_PORT", init_mongo_db.get_exposed_port(27017))
+
+    monkeymodule.setenv("REDIS_USER", "default")
+    monkeymodule.setenv("REDIS_PASSWORD", init_redis.password)
+    monkeymodule.setenv("REDIS_HOST", init_redis.get_container_host_ip())
+    monkeymodule.setenv(
+        "REDIS_PORT", init_redis.get_exposed_port(init_redis.port_to_expose)
+    )
+
     with TestClient(app) as client:
         yield client
 
@@ -87,15 +93,9 @@ def assert_skills_equal_from_response(skill, response):
     skill = skill.dict()
     added_skill = response.json()
     for k in added_skill:
-        if k in ["id", "client_id", "client_secret"]:
+        if k in ["id", "client_id", "client_secret", "created_at"]:
             # these attributes were created when inserting into mongo/keycloak
             continue
-        if k in ["created_at"]:
-            added_skill[k] = datetime.fromisoformat(added_skill[k])
-            # mongodb does not store timezone and nanoseconds
-            skill[k] = skill[k].replace(
-                tzinfo=None, microsecond=skill[k].microsecond // 1000 * 1000
-            )
 
         assert (
             added_skill[k] == skill[k]
@@ -142,6 +142,7 @@ async def test_create_skill(pers_client: TestClient, skill_factory, token_factor
     app.dependency_overrides[auth] = lambda: dict(
         realm="test-realm", username=test_user
     )
+
     test_skill = skill_factory(user_id=test_user)
     token = token_factory(preferred_username=test_user)
 
@@ -433,7 +434,7 @@ def test_query_skill(
         status=200,
     )
 
-    query = "a unique query form test_query_skill"
+    query = "a unique query form test_query_skill " + str(uuid.uuid1())
     query_request = QueryRequest(
         query=query,
         user_id="test-user",
@@ -453,9 +454,16 @@ def test_query_skill(
             {"query": query}
         )
 
-        TestCase().assertDictEqual(
-            response.json(), {"predictions": saved_prediction["predictions"]}
-        )
+        response = response.json()
+        # HACK: remove attributions/prediction_graph from repsonse since the object 
+        # saved in mongo does not contain it because it is "unset" and we remove all 
+        # unset values when creating the mongo object
+        response.pop("adversarial")
+        for p in response["predictions"]:
+            p.pop("attributions")
+            p.pop("prediction_graph")
+
+        TestCase().assertDictEqual(response, {"predictions": saved_prediction["predictions"]})
     else:
         assert response.status_code == 403
 
@@ -511,3 +519,143 @@ def test_query_skill_with_default_skill_args(
     expected_skill_query_body = default_skill_args
     expected_skill_query_body["context"] = query_context["context"]
     TestCase().assertDictEqual(actual_skill_query_body, expected_skill_query_body)
+
+
+@responses.activate
+def test_query_skill_with_attributions(
+    pers_client,
+    skill_factory,
+    skill_prediction_factory,
+    token_factory,
+    create_skill_via_api,
+):
+    test_realm = "test-realm"
+    test_user = "test-user"
+    default_skill_args = {"adapter": "my-adapter", "context": "default context"}
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=test_user,
+        published=False,
+        default_skill_args=default_skill_args,
+    )
+
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
+    response = pers_client.post(
+        "/api/skill", data=skill.json(), headers=dict(Authorization="Bearer " + token)
+    )
+    skill_id = response.json()["id"]
+
+    attributions = {
+        "topk_question_idx": [0, 1, 2],
+        "topk_context_idx": [0, 1],
+        "question_tokens": [[0, "how", 0.2], [1, "are", 0.3], [2, "you", 0.5]],
+        "context_tokens": [[0, "hello", 0.2], [1, "world", 0.8]],
+    }
+
+    responses.add(
+        responses.POST,
+        url=f"{skill.url}/query",
+        json=skill_prediction_factory(attributions=attributions),
+        status=200,
+    )
+
+    query_context = {"context": "hello"}
+    query_request = QueryRequest(
+        query="query",
+        user_id="test-user",
+        skill_args=query_context,
+        num_results=1,
+    )
+    response = pers_client.post(
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+    assert response.status_code == 200
+
+    response = response.json()
+    TestCase().assertDictEqual(response["predictions"][0]["attributions"], attributions)
+
+
+@responses.activate
+def test_query_skill_with_cache(
+    pers_client,
+    skill_factory,
+    skill_prediction_factory,
+    token_factory,
+    create_skill_via_api,
+):
+    test_realm = "test-realm"
+    test_user = "test-user"
+    default_skill_args = {"adapter": "my-adapter", "context": "default context"}
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        username=test_user,
+        published=False,
+        default_skill_args=default_skill_args,
+    )
+
+    token = token_factory(preferred_username=test_user)
+    app.dependency_overrides[auth] = lambda: dict(realm=test_realm, username=test_user)
+    response = pers_client.post(
+        "/api/skill", data=skill.json(), headers=dict(Authorization="Bearer " + token)
+    )
+    skill_id = response.json()["id"]
+
+    query_context = {"context": "hello"}
+    query_request = QueryRequest(
+        query="query",
+        user_id="test-user",
+        skill_args=query_context,
+        num_results=1,
+    )
+
+    # define the first response of the skill
+    prediction_output = {"output": "answer-1", "output_score": "1"}
+    responses.add(
+        responses.POST,
+        url=f"{skill.url}/query",
+        json=skill_prediction_factory(prediction_output=prediction_output),
+        status=200,
+    )
+    response_1 = pers_client.post(
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+
+    # update the response
+    updateded_output = "updated_output"
+    prediction_output = {"output": updateded_output, "output_score": "1"}
+    responses.add(
+        responses.POST,
+        url=f"{skill.url}/query",
+        json=skill_prediction_factory(prediction_output=prediction_output),
+        status=200,
+    )
+    response_2 = pers_client.post(
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+    # response 1 and 2 should be equal, bc the response was cached on the second request
+    assert (
+        response_1.json()["predictions"][0]["prediction_output"]["output"]
+        == response_2.json()["predictions"][0]["prediction_output"]["output"]
+    )
+
+    # add no-cache Header to avoid reading from cache
+    response_3 = pers_client.post(
+        f"/api/skill/{skill_id}/query",
+        json=query_request.dict(),
+        headers={"Authorization": "Bearer " + token, "Cache-Control": "no-cache"},
+    )
+    assert (
+        response_3.json()["predictions"][0]["prediction_output"]["output"]
+        == updateded_output
+    )
