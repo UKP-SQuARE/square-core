@@ -252,6 +252,9 @@ export default Vue.component('edit-skill', {
         case 'categorical':
           this.skill.url = 'http://multiple-choice-qa'
           break
+        case 'information-retrieval':
+          this.skill.url = 'http://information-retrieval'
+          break
         default:
           // 
           break

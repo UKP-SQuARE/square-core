@@ -16,6 +16,7 @@ class SkillType(str, Enum):
     span_extraction = "span-extraction"
     multiple_choice = "multiple-choice"
     categorical = "categorical"
+    information_retrieval = "information-retrieval"
 
 
 class SkillSettings(BaseModel):
