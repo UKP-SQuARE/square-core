@@ -50,8 +50,10 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+#    env_file:
+#      - ./management_server/.env
     env_file:
-      - ./management_server/.env
+      - ../model-manager/.env
 #    volumes:
 #      - ./management_server/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 #      - ./management_server/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
@@ -61,8 +63,10 @@ services:
     image: redis:latest
     ports:
       - '6379:6379'
+#    env_file:
+#      - .env
     env_file:
-      - .env
+      - ../model-manager/.env
     command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
 #    volumes:
@@ -71,14 +75,19 @@ services:
 
   maintaining_worker:
 #    image: ukpsquare/square-model-management:latest
-    build: ./management_server
+#    build: ./management_server
+    build:
+      context: ../model-manager
+      dockerfile: Dockerfile
     container_name: maintaining_worker
     command: celery -A tasks worker --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
+#    env_file:
+#      - ./management_server/.env
     env_file:
-      - ./management_server/.env
+      - ../model-manager/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
       - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
@@ -99,7 +108,10 @@ services:
 #    image: ukpsquare/square-model-management:latest
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     container_name: maintaining
-    build: ./management_server
+#    build: ./management_server
+    build:
+      context: ../model-manager
+      dockerfile: Dockerfile
     ports:
       - 9001:9001
     volumes:
@@ -108,8 +120,10 @@ services:
       - mongo
     depends_on:
       - mongo
+#    env_file:
+#      - ./management_server/.env
     env_file:
-      - ./management_server/.env
+      -  ../model-manager/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
       - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
@@ -363,13 +377,17 @@ services:
     ports:
       - 27017:27017
     env_file:
-      - management_server/.env
+      - ../model-manager/.env
+#    env_file:
+#      - management_server/.env
 
   mongo-express:
     image: mongo-express:latest
     restart: always
+#    env_file:
+#      - ./management_server/.env
     env_file:
-      - ./management_server/.env
+      - ../model-manager/.env
     ports:
       - 8081:8081
 
