@@ -11,7 +11,7 @@ RUN pip install --upgrade pip
 WORKDIR /app
 
 #COPY requirements1.txt ./
-COPY ./sentence_transformer/requirements1.txt ./
+COPY ./dockerfiles/sentence_transformer/requirements1.txt ./
 
 
 RUN pip install -r requirements1.txt
@@ -21,10 +21,10 @@ RUN pip install nltk
 RUN python3 -m nltk.downloader stopwords
 RUN python3 -m nltk.downloader words
 
-COPY ./sentence_transformer/uninstall_requirements.txt ./
+COPY ./dockerfiles/sentence_transformer/uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
 
-COPY ./sentence_transformer/requirements2.txt ./
+COPY ./dockerfiles/sentence_transformer/requirements2.txt ./
 RUN pip install -r requirements2.txt
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then

@@ -9,17 +9,18 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
-COPY ./graph_transformer/requirements1.txt ./
+COPY ./dockerfiles/graph_transformer/requirements1.txt ./
 RUN pip install -r requirements1.txt
 RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 
+RUN pip install nltk
 RUN python3 -m nltk.downloader stopwords
 RUN python3 -m nltk.downloader words
 
-COPY ./graph_transformer/uninstall_requirements.txt ./
+COPY ./dockerfiles/graph_transformer/uninstall_requirements.txt ./
 RUN pip uninstall -y -r uninstall_requirements.txt
 
-COPY ./graph_transformer/requirements2.txt ./
+COPY ./dockerfiles/graph_transformer/requirements2.txt ./
 RUN pip install -r requirements2.txt
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
