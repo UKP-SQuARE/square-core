@@ -9,12 +9,14 @@ all: clean test install run deploy down
 test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
 	PYTHONPATH=inference_server/ pytest inference_server/  --cov
-	PYTHONPATH=management_server/ pytest management_server/  --cov
+	PYTHONPATH=../model-manager/ pytest ../model-manager/  --cov
+# 	PYTHONPATH=management_server/ pytest management_server/  --cov
 
 full-test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
 	PYTHONPATH=inference_server/ pytest inference_server/  --cov
-	PYTHONPATH=management_server/ pytest management_server/  --cov
+	PYTHONPATH=../model-manager/ pytest ../model-manager/  --cov
+# 	PYTHONPATH=management_server/ pytest management_server/  --cov
 	PYTHONPATH=management_client/ pytest management_client/  --cov
 
 install:
