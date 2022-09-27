@@ -13,6 +13,7 @@ COPY ./dockerfiles/graph_transformer/requirements1.txt ./
 RUN pip install -r requirements1.txt
 RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 
+RUN pip install nltk
 RUN python3 -m nltk.downloader stopwords
 RUN python3 -m nltk.downloader words
 
