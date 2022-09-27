@@ -6,22 +6,22 @@ from celery import Task
 
 from .celery import app
 from .config.model_config import model_config
-from .inference.adaptertransformer import AdapterTransformer
-from .inference.onnx import Onnx
-from .inference.sentencetransformer import SentenceTransformer
-from .inference.transformer import Transformer
-from .inference.graph_transformers import GraphTransformers
+# from .inference.adaptertransformer import AdapterTransformer
+# from .inference.onnx import Onnx
+# from .inference.sentencetransformer import SentenceTransformer
+# from .inference.transformer import Transformer
+# from .inference.graph_transformers import GraphTransformers
 from .models.request import PredictionRequest
 
 logger = logging.getLogger(__name__)
 
-MODEL_MAPPING = {
-    "adapter": AdapterTransformer,
-    "transformer": Transformer,
-    "sentence-transformer": SentenceTransformer,
-    "onnx": Onnx,
-    "graph": GraphTransformers
-}
+# MODEL_MAPPING = {
+#     "adapter": AdapterTransformer,
+#     "transformer": Transformer,
+#     "sentence-transformer": SentenceTransformer,
+#     "onnx": Onnx,
+#     "graph": GraphTransformers
+# }
 
 
 class ModelTask(Task, ABC):
@@ -41,6 +41,27 @@ class ModelTask(Task, ABC):
         """
         model_config.update()
         logger.info(f"Configuration: {model_config}")
+        if model_config.model_type=="transformer":
+            from .inference.transformer import Transformer
+            MODEL_MAPPING = {"transformer": Transformer}
+
+        if model_config.model_type=="adapter":
+            from .inference.adaptertransformer import AdapterTransformer
+            MODEL_MAPPING = {"adapter": AdapterTransformer}
+
+        if model_config.model_type=="sentence-transformer":
+            from .inference.sentencetransformer import SentenceTransformer
+            MODEL_MAPPING = {"sentence-transformer": SentenceTransformer}
+
+        if model_config.model_type=="onnx":
+            from .inference.onnx import Onnx
+            MODEL_MAPPING = {"onnx": Onnx}
+
+        if model_config.model_type == "graph":
+            from .inference.graph_transformers import GraphTransformers
+            MODEL_MAPPING = {"graph": GraphTransformers}
+
+
         if not self.model:
             logger.info(model_config)
             model_instance = MODEL_MAPPING[model_config.model_type]()
