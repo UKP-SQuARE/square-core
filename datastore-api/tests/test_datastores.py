@@ -1,18 +1,19 @@
-from email import header
+import pytest
 from app.models.datastore import DatastoreField
+import requests
 
 
 class TestDatastores:
-    def test_get_all_datastores(self, client, wiki_datastore):
-        response = client.get("/datastores")
+    def test_get_all_datastores(self, client: str, wiki_datastore):
+        response = requests.get(f"{client}/datastores")
         assert response.status_code == 200
         assert isinstance(response.json(), list)
         assert len(response.json()) >= 1
         # first item should be the demo datastore
         assert response.json()[0] == wiki_datastore.dict()
 
-    def test_get_datastore(self, client, wiki_datastore):
-        response = client.get("/datastores/{}".format(wiki_datastore.name))
+    def test_get_datastore(self, client: str, wiki_datastore):
+        response = requests.get(f"{client}/datastores/{wiki_datastore.name}")
         assert response.status_code == 200
         assert response.json() == wiki_datastore.dict()
 
@@ -27,9 +28,9 @@ class TestDatastores:
             DatastoreField(name="field2", type="long").dict(),
         ]
         response = client.put(
-            "/datastores/{}".format(new_datastore_name), 
+            "/datastores/{}".format(new_datastore_name),
             json=new_datastore_fields,
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 201
         assert response.json()["name"] == new_datastore_name
@@ -39,21 +40,25 @@ class TestDatastores:
         response = client.get("/datastores/{}".format(new_datastore_name))
         assert response.status_code == 200
         assert response.json()["name"] == new_datastore_name
+
         def sort_by(d):
             return (d["name"], d["type"])
-        assert sorted(response.json()["fields"], key=sort_by) == sorted(new_datastore_fields,  key=sort_by)
+
+        assert sorted(response.json()["fields"], key=sort_by) == sorted(
+            new_datastore_fields, key=sort_by
+        )
 
     def test_delete_datastore(self, client, token):
         datastore_name = "datastore-test-for_delete"
         response = client.put(
-            "/datastores/{}".format(datastore_name), 
+            "/datastores/{}".format(datastore_name),
             json=[{"name": "text", "type": "text"}],
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 201
         response = client.delete(
             "/datastores/{}".format(datastore_name),
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 204
         response = client.get("/datastores/{}".format(datastore_name))
@@ -61,8 +66,7 @@ class TestDatastores:
 
     def test_delete_datastore_not_found(self, client, token):
         response = client.delete(
-            "/datastores/not_found", 
-            headers={"Authorization": f"Bearer {token}"}
+            "/datastores/not_found", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 404
 
@@ -77,18 +81,18 @@ class TestDatastores:
     def test_delete_datastore_no_permission(self, client, token, token_no_permission):
         datastore_name = "datastore-test-for_delete"
         response = client.put(
-            "/datastores/{}".format(datastore_name), 
+            "/datastores/{}".format(datastore_name),
             json=[{"name": "text", "type": "text"}],
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 201
         response = client.delete(
             "/datastores/{}".format(datastore_name),
-            headers={"Authorization": f"Bearer {token_no_permission}"}
+            headers={"Authorization": f"Bearer {token_no_permission}"},
         )
         assert response.status_code == 403
         response = client.delete(
             "/datastores/{}".format(datastore_name),
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 204
