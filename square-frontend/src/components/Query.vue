@@ -28,18 +28,45 @@
           </div>
         </div>
       </div>
-      <div v-if="skillSettings.requiresContext" class="col-md-4 mt-4 mt-md-0">
+      <!-- if requiresContext and not requiresMultipleChoices -->
+
+      <div v-if="skillSettings.requiresContext && !skillSettings.requiresMultipleChoices" class="col-md-4 ms-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
             <textarea
                 v-model="inputContext"
-                class="form-control mb-2"
+                class="form-control form-control-lg mb-2"
                 style="resize: none; height: calc(38px * 7);"
                 id="context"
                 :placeholder="contextPlaceholder"
                 required />
             <small class="text-muted">{{ contextHelp }}</small>
+          </div>
+        </div>
+      </div>
+      <!-- if requiresMultipleChoices -->
+      <div v-if="skillSettings.requiresMultipleChoices" class="col-md-4 mt-4 mt-md-0">
+        <div class="bg-light border border-warning rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="context" class="form-label">3. Provide context</label>
+            <textarea
+                v-model="inputContext"
+                class="form-control form-control-lg mb-2"
+                style="resize: none; height: calc(48px * 2.25);"
+                id="context"
+                :placeholder="contextPlaceholder"
+                required />
+            <small class="text-muted">{{ contextHelp }}</small>
+            <label for="choices" class="form-label">4. Provide answer choices</label>
+            <textarea
+                v-model="inputChoices"
+                class="form-control form-control-lg mb-2"
+                style="resize: none; height: calc(48px * 2.25);"
+                id="choices"
+                :placeholder="choicesPlaceholder"
+                required />
+                <small class="text-muted">{{ choicesHelp }}</small>
           </div>
         </div>
       </div>
@@ -83,6 +110,7 @@ export default Vue.component('query-skills', {
       },
       inputQuestion: '',
       inputContext: '',
+      inputChoices: '',
       failure: false,
       skillSettings: {
         skillType: null,
@@ -129,28 +157,34 @@ export default Vue.component('query-skills', {
         return 'No context required'
       }
     },
-    contextHelp() {
-      let help = 'no'
+    contextHelp(){
+      return ""
+    },
+    choicesHelp() {
       if (this.skillSettings.requiresMultipleChoices) {
-        let choices = this.skillSettings.requiresMultipleChoices
-        help = `${choices > 1 ? choices + ' lines' : 'one line'} of`
+        return `Provide at least 2 answer choices, one per line.`
+      } else {
+        return 'No answer choices required'
       }
-      return `Your selected skills require ${help} context.`
+
     }
   },
   methods: {
     changeSelectedSkills(options, skillSettings) {
       this.options = options
       this.skillSettings = skillSettings
+      console.log('skillSettings', skillSettings)
     },
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
     },
     askQuestion() {
+      let list_choices = this.inputChoices.split('\n')
       this.waiting = true
       this.$store.dispatch('query', {
         question: this.inputQuestion,
         inputContext: this.inputContext,
+        choices: list_choices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.options.maxResultsPerSkill
