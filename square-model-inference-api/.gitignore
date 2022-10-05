@@ -140,3 +140,6 @@ test.py
 # api envs
 inference_server/*.json
 inference_api/tasks/inference/transformer_legacy.py
+
+# test data envs
+inference_api/http-client.env.json
