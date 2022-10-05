@@ -1,9 +1,0 @@
-# env files
-.env
-
-# rabbitmq cache
-.rabbitmq
-
-# config files
-rabbitmq
-redis

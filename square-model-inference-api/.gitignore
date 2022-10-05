@@ -139,4 +139,4 @@ test.py
 
 # api envs
 inference_server/*.json
-inference_server/tasks/inference/transformer_legacy.py
+inference_api/tasks/inference/transformer_legacy.py
