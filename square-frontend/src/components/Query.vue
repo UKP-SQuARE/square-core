@@ -30,7 +30,7 @@
       </div>
       <!-- if requiresContext and not requiresMultipleChoices -->
 
-      <div v-if="skillSettings.requiresContext && !skillSettings.requiresMultipleChoices" class="col-md-4 ms-auto mt-4 mt-md-0">
+      <div v-if="skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice'" class="col-md-4 ms-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
@@ -45,8 +45,8 @@
           </div>
         </div>
       </div>
-      <!-- if requiresMultipleChoices -->
-      <div v-if="skillSettings.requiresMultipleChoices" class="col-md-4 mt-4 mt-md-0">
+      <!-- if the skill is multiple-choice -->
+      <div v-if="skillSettings.skillType == 'multiple-choice'" class="col-md-4 mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
@@ -64,7 +64,7 @@
                 class="form-control form-control-lg mb-2"
                 style="resize: none; height: calc(48px * 2.25);"
                 id="choices"
-                :placeholder="choicesPlaceholder"
+                placeholder="Provice at least two answer choices. Each answer choice should be on a new line."
                 required />
                 <small class="text-muted">{{ choicesHelp }}</small>
           </div>
@@ -173,7 +173,6 @@ export default Vue.component('query-skills', {
     changeSelectedSkills(options, skillSettings) {
       this.options = options
       this.skillSettings = skillSettings
-      console.log('skillSettings', skillSettings)
     },
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
