@@ -46,7 +46,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api/dockerfiles/transformer
+          dockerfile: ./dockerfiles/transformer/Dockerfile
+          context: ./square-model-inference-api/inference_api
           target: test
           load: true
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
@@ -90,7 +91,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api/dockerfiles/transformer
+          dockerfile: ./dockerfiles/transformer/Dockerfile
+          context: ./square-model-inference-api/inference_api
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
