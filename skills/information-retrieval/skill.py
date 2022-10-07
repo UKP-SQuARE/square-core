@@ -12,7 +12,7 @@ model_api = ModelAPI()
 data_api = DataAPI()
 
 def softmax(x):
-    return(100*np.exp(x)/np.exp(x).sum())
+    return(np.exp(x)/np.exp(x).sum())
 
 async def predict(request: QueryRequest) -> QueryOutput:
     """Given a question, performs open-domain, extractive QA. First, background
