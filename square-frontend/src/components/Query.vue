@@ -56,7 +56,7 @@
                 style="resize: none; height: calc(48px * 2.25);"
                 id="context"
                 :placeholder="contextPlaceholder"
-                required />
+                />
             <small class="text-muted">{{ contextHelp }}</small>
             <label for="choices" class="form-label">4. Provide answer choices</label>
             <textarea
