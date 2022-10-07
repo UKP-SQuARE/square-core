@@ -130,6 +130,9 @@ export default Vue.component('skill-results', {
           return SpanExtraction
         case 'categorical':
           return Categorical
+        // TODO: Create a separate results view for the information retrieval
+        case 'information-retrieval':
+          return SpanExtraction
         default:
             return null
       }
