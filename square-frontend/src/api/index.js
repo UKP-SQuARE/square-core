@@ -70,7 +70,9 @@ export function postQuery(headers, question, context, choices, options) {
         attack_kwargs: {},
         num_results: options.maxResultsPerSkill
     }
-    data.skill_args.context = context
+    if (context.length > 0) {
+        data.skill_args.context = context
+    }
     if (choices.length > 0) {
         data.skill_args.choices = choices
     }
