@@ -51,8 +51,8 @@ jobs:
           target: test
           load: true
           tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
-          no-cahce: true
-#          cache-from: type=local,src=/tmp/.buildx-cache
+#          no-cahce: true
+          cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
         # Temp fix
