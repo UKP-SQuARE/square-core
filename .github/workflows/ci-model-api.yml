@@ -122,14 +122,14 @@ jobs:
         with:
           install: true
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-model_api-
-            ${{ runner.os }}-buildx-
+#      - name: Cache Docker layers
+#        uses: actions/cache@v2
+#        with:
+#          path: /tmp/.buildx-cache
+#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
+#          restore-keys: |
+#            ${{ runner.os }}-buildx-model_api-
+#            ${{ runner.os }}-buildx-
 
       - name: Build  sentence-transformers test image
         uses: docker/build-push-action@v2
@@ -205,14 +205,14 @@ jobs:
         with:
           install: true
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-model_api-
-            ${{ runner.os }}-buildx-
+#      - name: Cache Docker layers
+#        uses: actions/cache@v2
+#        with:
+#          path: /tmp/.buildx-cache
+#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
+#          restore-keys: |
+#            ${{ runner.os }}-buildx-model_api-
+#            ${{ runner.os }}-buildx-
 
       - name: Build onnx test image
         uses: docker/build-push-action@v2
@@ -289,14 +289,14 @@ jobs:
         with:
           install: true
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-model_api-
-            ${{ runner.os }}-buildx-
+#      - name: Cache Docker layers
+#        uses: actions/cache@v2
+#        with:
+#          path: /tmp/.buildx-cache
+#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
+#          restore-keys: |
+#            ${{ runner.os }}-buildx-model_api-
+#            ${{ runner.os }}-buildx-
 
       - name: Build graph test image
         uses: docker/build-push-action@v2
