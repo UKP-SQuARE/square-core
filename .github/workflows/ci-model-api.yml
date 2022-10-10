@@ -21,14 +21,14 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Prepare
-        id: prep
+        id: transformer-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           IMAGE="ukpsquare/square-model-api-v3-transformer"
           echo ::set-output name=image::${IMAGE}
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
-        id: buildx
+        id: transformer-buildx
         uses: docker/setup-buildx-action@v1
         with:
           install: true
@@ -64,7 +64,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
-        id: extract
+        id: transformer-extract
         uses: shrink/actions-docker-extract@v1
         with:
           image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
@@ -110,14 +110,14 @@ jobs:
 
       # sentence-transformers
       - name: Prepare
-        id: prep
+        id: sentence-transformer-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           IMAGE="ukpsquare/square-model-api-v3-sentence-transformer"
           echo ::set-output name=image::${IMAGE}
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
-        id: buildx
+        id: sentence-transformer-buildx
         uses: docker/setup-buildx-action@v1
         with:
           install: true
@@ -150,7 +150,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
-        id: extract
+        id: sentence-transformer-extract
         uses: shrink/actions-docker-extract@v1
         with:
           image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
