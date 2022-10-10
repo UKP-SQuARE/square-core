@@ -45,12 +45,12 @@ jobs:
       - name: Build transformer test image
         uses: docker/build-push-action@v2
         with:
-          builder: ${{ steps.buildx.outputs.name }}
+          builder: ${{ steps.transformer-buildx.outputs.name }}
           context: ./square-model-inference-api/inference_api
           file: ./square-model-inference-api/inference_api/dockerfiles/transformer/Dockerfile
           target: test
           load: true
-          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
 #          no-cahce: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
@@ -67,18 +67,18 @@ jobs:
         id: transformer-extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          image: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
           path: /inference_api/test-reports
 
       - uses: actions/upload-artifact@v2
         with:
           name: model_api-test-reports
-          path: ${{ steps.extract.outputs.destination }}/test-reports
+          path: ${{ steps.transformer-extract.outputs.destination }}/test-reports
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
         with:
-          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          report_paths: ${{ steps.transformer-extract.outputs.destination }}/test-reports/junit.xml
           check_name: Model API Test Report
           fail_on_failure: true
 
@@ -91,12 +91,12 @@ jobs:
       - name: Build transformer deployable image
         uses: docker/build-push-action@v2
         with:
-          builder: ${{ steps.buildx.outputs.name }}
+          builder: ${{ steps.transformer-buildx.outputs.name }}
           context: ./square-model-inference-api/inference_api
           file: ./square-model-inference-api/inference_api/dockerfiles/transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
@@ -134,12 +134,12 @@ jobs:
       - name: Build  sentence-transformers test image
         uses: docker/build-push-action@v2
         with:
-          builder: ${{ steps.buildx.outputs.name }}
+          builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./square-model-inference-api/inference_api
           file: ./square-model-inference-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
           target: test
           load: true
-          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
 #          no-cahce: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
@@ -153,18 +153,18 @@ jobs:
         id: sentence-transformer-extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          image: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
           path: /inference_api/test-reports
 
       - uses: actions/upload-artifact@v2
         with:
           name: model_api-test-reports
-          path: ${{ steps.extract.outputs.destination }}/test-reports
+          path: ${{ steps.sentence-transformer-extract.outputs.destination }}/test-reports
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
         with:
-          report_paths: ${{ steps.extract.outputs.destination }}/test-reports/junit.xml
+          report_paths: ${{ steps.sentence-transformer-extract.outputs.destination }}/test-reports/junit.xml
           check_name: Model API Test Report
           fail_on_failure: true
 
@@ -177,12 +177,12 @@ jobs:
       - name: Build sentence-transformers deployable image
         uses: docker/build-push-action@v2
         with:
-          builder: ${{ steps.buildx.outputs.name }}
+          builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./square-model-inference-api/inference_api
           file: ./square-model-inference-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}, ${{ steps.prep.outputs.image }}:latest
+          tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
