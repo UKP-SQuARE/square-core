@@ -87,13 +87,13 @@ def start_new_model_container(identifier: str, uid: str, env):
     env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
     if env["MODEL_TYPE"] in ["transformer","adapter"]:
-        MODEL_API_IMAGE="ukpsquare/square-model-api-v2-transformer:latest"
+        MODEL_API_IMAGE="ukpsquare/square-model-api-transformer:latest"
     if env["MODEL_TYPE"] in ["sentence-transformer"]:
-        MODEL_API_IMAGE = "ukpsquare/square-model-api-v2-sentence-transformer:latest"
+        MODEL_API_IMAGE = "ukpsquare/square-model-api-sentence-transformer:latest"
     if env["MODEL_TYPE"] in ["graph-transformer"]:
-        MODEL_API_IMAGE = "ukpsquare/square-model-api-v2-graph-transformer:latest"
+        MODEL_API_IMAGE = "ukpsquare/square-model-api-graph-transformer:latest"
     if env["MODEL_TYPE"] in ["onnx"]:
-        MODEL_API_IMAGE = "ukpsquare/square-model-api-v2-onnx:latest"
+        MODEL_API_IMAGE = "ukpsquare/square-model-api-onnx:latest"
 
 
     try:
