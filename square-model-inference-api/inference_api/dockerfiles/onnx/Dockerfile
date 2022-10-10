@@ -38,7 +38,7 @@ COPY tests/generic/ tests/$MODEL/generic
 COPY pytest.ini pytest.ini
 
 # run tests
-RUN python ./tests/pre_test_setup_for_docker_caching.py --transformer  # TODO: onnx
+#RUN python ./tests/pre_test_setup_for_docker_caching.py --transformer
 
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
