@@ -21,7 +21,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     documents are used for span extraction. Finally, the extracted answers are returned.
     """
 
-    if request.skill_args["feedback_documents"]:
+    if "feedback_documents" in request.skill_args:
         feedback_docs = request.skill_args["feedback_documents"]
         query = request.query
         data = await data_api(
@@ -42,7 +42,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     if request.skill_args["datastore"] == "bioasq":
         for d in data:
             pubmed_url = f"https://pubmed.ncbi.nlm.nih.gov/{d['id']}"
-            d["document"]["text"] = f"""{d["document"]["text"]} <p><a href="{pubmed_url}" target="_blank">Article: {pubmed_url}</a></p>"""
+            d["document"]["text"] = f"""{d["document"]["text"]} <p><a href="{pubmed_url}" target="_blank">{pubmed_url}</a></p>"""
             context.append(d["document"]["text"])
     else:
         context = [d["document"]["text"] for d in data]
