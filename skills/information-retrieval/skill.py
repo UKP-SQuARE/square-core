@@ -28,12 +28,11 @@ async def predict(request: QueryRequest) -> QueryOutput:
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
             query=query,
-            feedback=True,
             feedback_documents=feedback_docs
         )
 
         # logger.info(f"Data API output:\n{data}")
-        context = [d["document"]["text"] for d in data]
+        context = [d["document"]["text"] + " Article: https://pubmed.ncbi.nlm.nih.gov/" + d["id"] for d in data]
         context_score = softmax(context_score).round(2).tolist()
 
         return QueryOutput.from_information_retrieval(
@@ -46,12 +45,11 @@ async def predict(request: QueryRequest) -> QueryOutput:
         data = await data_api(
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
-            query=query,
-            feedback=False
+            query=query
         )
 
         # logger.info(f"Data API output:\n{data}")
-        context = [d["document"]["text"] for d in data]
+        context = [d["document"]["text"] + " Article: https://pubmed.ncbi.nlm.nih.gov/" + d["id"] for d in data]
         context_score = softmax(context_score).round(2).tolist()
 
         return QueryOutput.from_information_retrieval(
