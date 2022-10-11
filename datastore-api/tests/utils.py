@@ -122,7 +122,7 @@ class MockConnector(BaseConnector):
 
     # --- Search ---
 
-    async def search(self, datastore_name: str, query: str, n_hits=10) -> List[QueryResult]:
+    async def search(self, datastore_name: str, query: str, feedback_documents: List[str] = None, n_hits=10) -> List[QueryResult]:
         return [QueryResult(document=self.query_document, score=1.0, id='doc0')]
 
     async def search_for_id(self, datastore_name: str, query: str, document_id: str):
