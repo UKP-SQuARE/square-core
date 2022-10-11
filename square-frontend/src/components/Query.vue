@@ -189,6 +189,7 @@ export default Vue.component('query-skills', {
         this.waiting = false
       })
       this.$root.$emit('clearUpvotes');
+      this.feedbackDocuments = []
     }
   }
 })
