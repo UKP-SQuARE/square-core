@@ -30,16 +30,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
             query=query,
             feedback_documents=feedback_docs
         )
-
-        # logger.info(f"Data API output:\n{data}")
-        context = [d["document"]["text"] + " Article: https://pubmed.ncbi.nlm.nih.gov/" + d["id"] for d in data]
-        context_score = softmax(context_score).round(2).tolist()
-
-        return QueryOutput.from_information_retrieval(
-            questions=query,
-            context=context,
-            context_score=context_score,
-        )
     else:
         query = request.query
         data = await data_api(
@@ -47,13 +37,21 @@ async def predict(request: QueryRequest) -> QueryOutput:
             index_name=request.skill_args.get("index", ""),
             query=query
         )
+    
+    context = []
+    if request.skill_args["datastore"] == "bioasq":
+        for d in data:
+            pubmed_url = f"https://pubmed.ncbi.nlm.nih.gov/{d['id']}"
+            d["document"]["text"] = f"""{d["document"]["text"]} <p><a href="{pubmed_url}" target="_blank">Article: {pubmed_url}</a></p>"""
+            context.append(d["document"]["text"])
+    else:
+        context = [d["document"]["text"] for d in data]
+    
+    context_score = [d["score"] for d in data]
+    context_score = softmax(context_score).round(2).tolist()
 
-        # logger.info(f"Data API output:\n{data}")
-        context = [d["document"]["text"] + " Article: https://pubmed.ncbi.nlm.nih.gov/" + d["id"] for d in data]
-        context_score = softmax(context_score).round(2).tolist()
-
-        return QueryOutput.from_information_retrieval(
-            questions=query,
-            context=context,
-            context_score=context_score,
-        )
+    return QueryOutput.from_information_retrieval(
+        questions=query,
+        context=context,
+        context_score=context_score,
+    )

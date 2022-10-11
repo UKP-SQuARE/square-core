@@ -352,8 +352,8 @@ class ElasticsearchConnector(BaseConnector):
             n_hits (int): Number of hits to return.
             feedback_documents (List[str]): List of relevant feedback documents
         """
+        docs_index = self._datastore_docs_index_name(datastore_name)
         if not feedback_documents:
-            docs_index = self._datastore_docs_index_name(datastore_name)
             search_body = {
                 "query": {
                     "multi_match": {
@@ -362,7 +362,6 @@ class ElasticsearchConnector(BaseConnector):
                 },
                 "size": n_hits,
             }
-            result = await self.es.search(index=docs_index, body=search_body)
         else:
             docs_index = self._datastore_docs_index_name(datastore_name)
             search_body = {
@@ -387,7 +386,7 @@ class ElasticsearchConnector(BaseConnector):
                 },
                 "size": n_hits
             }
-            result = await self.es.search(index=docs_index, body=search_body)
+        result = await self.es.search(index=docs_index, body=search_body)
 
         return self.converter.convert_to_query_results(result)
 
