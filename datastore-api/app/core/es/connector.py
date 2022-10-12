@@ -377,7 +377,7 @@ class ElasticsearchConnector(BaseConnector):
                                 "more_like_this": {
                                     "like": feedback_documents,
                                     "min_term_freq": 1,
-                                    "max_query_terms": 12,
+                                    "max_query_terms": 20,
                                     "fields": ["title", "text"]
                                 }
                             }
