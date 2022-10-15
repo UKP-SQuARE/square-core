@@ -128,8 +128,9 @@ Contact person: [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmsta
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 ## Citation
+If you find our work useful, please consider citing our ACL and AACL papers.
 
-[ACL 2022 Demo Track](https://aclanthology.org/2022.acl-demo.2/).      
+[SQuARE v1@ACL 2022 Demo Track](https://aclanthology.org/2022.acl-demo.2/).      
 ```bibtex
 @inproceedings{baumgartner-etal-2022-ukp,
     title = "{UKP}-{SQ}u{ARE}: An Online Platform for Question Answering Research",
@@ -157,8 +158,8 @@ Don't hesitate to send us an e-mail or report an issue, if something is broken (
 }
 
 ```
+[SQuARE v2@AACL 2022 Demo Track](https://arxiv.org/abs/2208.09316).      
 
-[SQuARE v2](https://arxiv.org/abs/2208.09316)
 ```bibtex
 @article{Sachdeva2022UKPSQuARE,
   title={{UKP}-{SQ}u{ARE} v2 Explainability and Adversarial Attacks for Trustworthy QA},
