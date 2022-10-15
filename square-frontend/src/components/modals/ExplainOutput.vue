@@ -69,8 +69,8 @@
             <div v-if="show_saliency_map">
               <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.currentResults" :key="index">
                 <div class="col-12">
-                  <h4>{{ skillResult.skill.name }}</h4>
                   <hr/>
+                  <h4>{{ skillResult.skill.name }}</h4>
                 </div>
 
                 <div v-if="show_saliency_map"> <!-- show question -->
