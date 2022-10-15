@@ -117,11 +117,13 @@ For a whole (open QA) skill pipeline, it requires 6 steps:
 }
 ``` -->
 
-The main contributors of this repository are:
-- [Tim Baumgärtner](https://github.com/timbmg), [Kexin Wang](https://github.com/kwang2049), [Rachneet Singh Sachdeva](https://github.com/Rachneet), [
-Max Eichler](https://github.com/maexe), [Gregor Geigle](https://github.com/gregor-ge), [Clifton Poth](https://github.com/calpt), [Hannah Sterz](https://github.com/hSterz)
+The current main contributors of this repository are:
+- [Tim Baumgärtner](https://github.com/timbmg), [Kexin Wang](https://github.com/kwang2049), [Rachneet Singh Sachdeva](https://github.com/Rachneet), [Haritz Puerto](https://github.com/HaritzPuerto), [Hao Zhang](https://github.com/HaoZ-Work), [Sewin Tariverdian](https://github.com/SevenDaysDA)
 
-Contact person: [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmstadt.de) (Skills and general questions), [Kexin Wang](mailto:kexin.wang.2049@gmail.com) (Datastores), [Rachneet Singh Sachdeva](mailto:sachdeva@ukp.informatik.tu-darmstadt.de) (Models)
+Contact person: [Haritz Puerto](mailto:puerto@ukp.informatik.tu-darmstadt.de) (UI and general questions), [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmstadt.de) (Skills), [Kexin Wang](mailto:kexin.wang.2049@gmail.com) (Datastores), [Rachneet Singh Sachdeva](mailto:sachdeva@ukp.informatik.tu-darmstadt.de) (Models), 
+
+Previous contributors:
+- [Max Eichler](https://github.com/maexe), [Gregor Geigle](https://github.com/gregor-ge), [Clifton Poth](https://github.com/calpt), [Hannah Sterz](https://github.com/hSterz)
 
 [https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
 
