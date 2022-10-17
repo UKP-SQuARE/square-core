@@ -1,4 +1,4 @@
-name: "CI Model API"
+name: "CI Model Manager API"
 
 on:
   push:
