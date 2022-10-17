@@ -1,11 +1,12 @@
-FROM python:3.7.6-slim-buster as base
+#FROM python:3.7.6-slim-buster as base
+FROM ukpsquare/square-model-api-base-model:latest as base
 
 ENV PYTHONUNBUFFERED 1
 
 # required to install packages from github
-RUN apt-get -y update && apt-get -y install git rabbitmq-server
-
-RUN pip install --upgrade pip
+#RUN apt-get -y update && apt-get -y install git rabbitmq-server
+#
+#RUN pip install --upgrade pip
 
 WORKDIR /inference_api
 
@@ -13,9 +14,9 @@ COPY ./dockerfiles/graph_transformer/requirements.txt ./
 RUN pip install -r requirements.txt
 RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
 
-RUN pip install nltk
-RUN python3 -m nltk.downloader stopwords
-RUN python3 -m nltk.downloader words
+#RUN pip install nltk
+#RUN python3 -m nltk.downloader stopwords
+#RUN python3 -m nltk.downloader words
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
 # run the tests
