@@ -28,6 +28,7 @@ async def search(
     index_name: Optional[str] = Query(None, description="Index name."),
     query: str = Query(..., description="The query string."),
     top_k: int = Query(40, description="Number of documents to retrieve."),
+    feedback_documents: List[str] = Query(None, description="Relevant feedback documents from previous query."),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
     credential_token=Depends(client_credentials)
@@ -48,7 +49,7 @@ async def search(
             raise HTTPException(status_code=500, detail=str(other_ex))
     # do sparse retrieval
     else:
-        return await conn.search(datastore_name, query, n_hits=top_k)
+        return await conn.search(datastore_name, query, n_hits=top_k, feedback_documents=feedback_documents)
 
 
 @router.post(

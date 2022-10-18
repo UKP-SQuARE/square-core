@@ -7,6 +7,32 @@
             <h2 class="display-5">News</h2>
             <div class="container">
             <div class="row" data-masonry='{"percentPosition": true }'>
+
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
+                  <img :src="`${publicPath}aacl_logo.png`" class="card-img-top" alt="ScaDS.AI logo">
+                  <div class="card-body">
+                    <h5 class="card-title">AACL 2022</h5>
+                    <p class="card-text">SQuARE v2 is accepted at AACL as a <a href="https://arxiv.org/abs/2208.09316" target="_blank">demo paper</a>.</p>
+                    <p class="card-text"><small class="text-muted">Oct. 2022</small></p>
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
+                  <img :src="`${publicPath}ellis_logo.png`" class="card-img-top" alt="ScaDS.AI logo">
+                  <div class="card-body">
+                    <h5 class="card-title">2022 ELLIS PhD Sympsosium</h5>
+                    <p class="card-text">SQuARE is presented at the <a href="https://ellisalicante.org/eds2022/" target="_blank">ELLIS PhD Sympsosium</a> in Alicante. Check the <a href="https://twitter.com/UKP_SQuARE/status/1572885615426805760?s=20&t=eQ6TQzLT3dTf85SAT4by8Q" target="_blank">Tweet</a>!</p>
+                    <p class="card-text"><small class="text-muted">Sep. 2022</small></p>
+                  </div>
+                </div>
+              </div>
+
+
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
                   <img :src="`${publicPath}scadsai.png`" class="card-img-top" alt="ScaDS.AI logo">

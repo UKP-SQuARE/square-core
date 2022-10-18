@@ -123,12 +123,12 @@
                     </div>
                 </div>
             </div>
-
+            
             <div v-if="showAttackOutput">
               <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.attackResults" :key="index">
                 <div class="col-12">
-                  <h4>{{ skillResult.skill.name }}</h4>
                   <hr/>
+                  <h4>{{ skillResult.skill.name }}</h4>
                 </div>
 
                   <div class="row mt-3">
