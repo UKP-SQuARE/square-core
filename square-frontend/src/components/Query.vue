@@ -36,8 +36,8 @@
           </div>
         </div>
       </div>
-      <!-- if the skill is multiple-choice -->
-      <div v-if="skillSettings.skillType == 'multiple-choice'" class="col-md-4 mt-4 mt-md-0">
+      <!-- if the skill is multiple-choice and requires context -->
+      <div v-if="skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice'" class="col-md-4 mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
@@ -47,7 +47,7 @@
                 style="resize: none; height: calc(48px * 2.25);"
                 id="context"
                 :placeholder="contextPlaceholder"
-                />
+                required />
             <small class="text-muted">{{ contextHelp }}</small>
             <label for="choices" class="form-label">4. Provide answer choices</label>
             <textarea
@@ -58,6 +58,23 @@
                 placeholder="Provice at least two answer choices. Each answer choice should be on a new line."
                 required />
                 <small class="text-muted">{{ choicesHelp }}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- if the skill is multiple-choice and does not require context -->
+      <div v-if="!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice'" class="col-md-4 ms-auto mt-4 mt-md-0">
+        <div class="bg-light border border-warning rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="choices" class="form-label">3. Provide answer choices</label>
+            <textarea
+                v-model="inputContext"
+                class="form-control form-control-lg mb-2"
+                style="resize: none; height: calc(38px * 7);"
+                id="choices"
+                placeholder="Provice at least two answer choices. Each answer choice should be on a new line."
+                required />
+            <small class="text-muted">{{ choicesHelp }}</small>
           </div>
         </div>
       </div>
