@@ -34,18 +34,18 @@ COPY ./tasks tasks
 # copy test files
 COPY tests/pre_test_setup_for_docker_caching.py tests/pre_test_setup_for_docker_caching.py
 #COPY tests/$MODEL tests/$MODEL
-#COPY tests/generic/ tests/$MODEL/generic
+COPY tests/generic/ tests/$MODEL/generic
 COPY pytest.ini pytest.ini
 
 ## run tests
 #RUN python ./tests/pre_test_setup_for_docker_caching.py --transformer
 #
-#RUN PYTHONPATH=./ pytest \
-#    --junitxml=test-reports/junit.xml \
-#    --cov \
-#    --cov-report=xml:test-reports/coverage.xml \
-#    --cov-report=html:test-reports/coverage.html; \
-#    echo $? > test-reports/pytest.existcode
+RUN PYTHONPATH=./ pytest \
+    --junitxml=test-reports/junit.xml \
+    --cov \
+    --cov-report=xml:test-reports/coverage.xml \
+    --cov-report=html:test-reports/coverage.html; \
+    echo $? > test-reports/pytest.existcode
 
 # Deployment stage
 FROM base as build

@@ -658,13 +658,19 @@ class GraphTransformers(Model):
 
     def _get_edge_info(self, node_ids: list) -> dict:
         pair_list = [list(i) for i in list(itertools.product(node_ids, node_ids))]
-        edges = [
-            cpnet[pair[0]][pair[1]][0]
-            for pair in pair_list
-            if cpnet_simple.has_edge(pair[0], pair[1])
-        ]
+        # edges = [
+        #     cpnet[pair[0]][pair[1]][0]
+        #     for pair in pair_list
+        #     if cpnet_simple.has_edge(pair[0], pair[1])
+        # ]
+        edges = []
+        linked_pairs = []
+        for pair in pair_list:
+            if cpnet_simple.has_edge(pair[0], pair[1]):
+                edges.append(cpnet[pair[0]][pair[1]][0])
+                linked_pairs.append([pair[0], pair[1]])
         edge_attributes = {}
-        for i, (node_pair, edge) in enumerate(zip(pair_list, edges)):
+        for i, (node_pair, edge) in enumerate(zip(linked_pairs, edges)):
             tmp_dict = dict()
             tmp_dict["source"] = node_pair[0]
             tmp_dict["target"] = node_pair[1]
