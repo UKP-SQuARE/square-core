@@ -12,10 +12,8 @@ model_api = ModelAPI()
 async def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and a set of answer candidates, predicts the most likely answer."""
 
-    # commonsense-qa does not take a context, but the skill-manager put the first
-    # answer choice into the context field, therefore adding it back to choices
     query = request.query
-    choices = [request.skill_args["context"]] + request.skill_args["choices"]
+    choices = request.skill_args["choices"]
     prepared_input = [[query, c] for c in choices]
 
     explain_kwargs = request.explain_kwargs or {}
