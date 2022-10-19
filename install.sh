@@ -19,7 +19,8 @@ POSTGRES_PASSWORD=${4:-$(generate_password)}
 MONGO_PASSWORD=${5:-$(generate_password)}
 RABBITMQ_PASSWORD=${6:-$(generate_password)}
 REDIS_PASSWORD=${7:-$(generate_password)}
-
+SQUARE_ADMIN_PASSWORD=${8:-$(generate_password)}
+SQUARE_ADMIN_PASSWORD_HASHED=$(openssl passwd -apr1 $SQUARE_ADMIN_PASSWORD)
 keycloak_get_admin_token () {
 	# returns an admin token from the master realm
 	RESPONSE=$(curl -s -k -L -X POST \
@@ -212,6 +213,12 @@ keycloak_create_frontend_client () {
 }
 
 # replace passwords in env files
+if [ -f ./.env ]; then
+	echo "./.env already exists. Skipping."
+else
+	sed -e "s/%%SQUARE_ADMIN_PASSWORD%%/$SQUARE_ADMIN_PASSWORD_HASHED/g" -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./.env.template > ./.env
+fi
+
 if [ -f ./keycloak/.env ]; then
 	echo "./keycloak/.env already exists. Skipping."
 	eval "$(grep ^KEYCLOAK_PASSWORD= ./keycloak/.env)"
@@ -219,6 +226,7 @@ if [ -f ./keycloak/.env ]; then
 else
 	sed -e "s/%%KEYCLOAK_PASSWORD%%/$KEYCLOAK_PASSWORD/g" -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./keycloak/.env.template > ./keycloak/.env 
 	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.template > ./postgres/.env 
+	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/init/init_db.sql.template > ./postgres/init/init_db.sql
 fi
 
 if [ -f ./mongodb/.env ]; then
@@ -299,12 +307,13 @@ keycloak_create_frontend_client $SKILL_MANAGER_SECRET
 
 docker-compose down
 
-echo "Building frontend."
-# build frontend with updated env file
-cp square-frontend/.env.production square-frontend/.env.production-backup
-sed -e "s/%%SQUARE_URL%%/https:\/\/$SQUARE_URL/g" square-frontend/.env.template > square-frontend/.env.production
+# TODO: Put an if clause here about whether to enable the front end
+# echo "Building frontend."
+# # build frontend with updated env file
+# cp square-frontend/.env.production square-frontend/.env.production-backup
+# sed -e "s/%%SQUARE_URL%%/https:\/\/$SQUARE_URL/g" square-frontend/.env.template > square-frontend/.env.production
 
-docker-compose build -q frontend
+# docker-compose build -q frontend
 
 E=$(cat <<- EOF
 	H4sIAERZKmIAA5VTQQ7DMAi79xU8dYcedlykJpMm7XO8ZKRqBoHUTSUOyCkY2yqX
