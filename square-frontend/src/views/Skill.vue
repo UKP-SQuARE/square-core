@@ -115,6 +115,24 @@
               :id="`context${index}`"
               placeholder="Context" />
         </div>
+
+        <div v-if="skill.skill_type=='multiple-choice'" class="col-md mt-2">
+          <label for="choices_loop" class="form-label">Write at least 2 answer choices.</label>
+          <div class="row g-0" v-for="(choice, choice_idx) in list_answer_choices[index]" :key="choice_idx" id="choices_loop">
+            <div class="col-sm">
+              <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="basic-addon1">{{choice_idx+1}}</span>
+                <input v-model="list_answer_choices[index][choice_idx]" type="text" class="form-control form-control-sm">
+              </div>
+            </div>
+          </div>
+          <!-- button to add one more element to list_choices -->
+          <div class="form-inline">
+            <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice(index)">Add Choice</button>
+            <!-- button to remove one element of list_choices -->
+            <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice(index)">Remove Choice</button>
+          </div>
+        </div>
       </div>
     </Card>
   </form>
@@ -155,7 +173,8 @@ export default Vue.component('edit-skill', {
       failure: false,
       stringifiedJSON: '',
       validJSON: true,
-      numberSkillExamples: 3
+      numberSkillExamples: 3,
+      list_answer_choices: [["", ""], ["", ""], ["", ""]]
     }
   },
   components: {
@@ -230,6 +249,12 @@ export default Vue.component('edit-skill', {
       if(this.skill.skill_type=='span-extraction') {
         this.skill.skill_settings.requires_context ? this.skill.url = 'http://extractive-qa' : this.skill.url = 'http://open-extractive-qa'
       }
+    },
+    addChoice(index) {
+      this.list_answer_choices[index].push("")
+    },
+    removeChoice(index) {
+      this.list_answer_choices[index].pop()
     }
   },
   watch: {
