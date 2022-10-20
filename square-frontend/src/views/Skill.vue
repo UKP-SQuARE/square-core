@@ -219,6 +219,12 @@ export default Vue.component('edit-skill', {
     },
     updateSkill() {
       this.success = false
+      // if skill type is multiple-choice, add the list_answer_choices to the skill_input_examples
+      if (this.skill.skill_type == 'multiple-choice') {
+        for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
+          this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
+        }
+      }
       this.$store
           .dispatch('updateSkill', { skill: this.skill })
           .then(() => {
@@ -231,6 +237,12 @@ export default Vue.component('edit-skill', {
           })
     },
     createSkill() {
+      // if skill type is multiple-choice, add the list_answer_choices to the skill_input_examples
+      if (this.skill.skill_type == 'multiple-choice') {
+        for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
+          this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
+        }
+      }
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
@@ -303,6 +315,10 @@ export default Vue.component('edit-skill', {
             // Trigger setter
             this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
+            if ('choices' in this.skill.skill_input_examples){
+              this.list_answer_choices = this.skill.skill_input_examples.choices
+            }
+            
           })
     } else {
       this.addInputExampleFields()
