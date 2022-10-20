@@ -315,7 +315,6 @@ export default Vue.component('edit-skill', {
             // Trigger setter
             this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
-            console.log(this.skill.skill_input_examples[0])
             if ('choices' in this.skill.skill_input_examples[0]){
               // for each skill_input_example, add the choices to the list_answer_choices
               for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
