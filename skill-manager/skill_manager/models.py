@@ -39,8 +39,8 @@ class SkillInputExample(BaseModel):
     context: Optional[str] = Field(
         description="Additional input to the skill, for example background knowledge."
     )
-    answers: Optional[List[str]] = Field(
-        None, description="List of answer candidates for multiple-choice skills."
+    choices: Optional[List[str]] = Field(
+        None, description="List of choices (answer candidates) for multiple-choice skills."
     )
 
 
