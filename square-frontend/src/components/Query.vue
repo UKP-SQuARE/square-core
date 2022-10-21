@@ -24,7 +24,7 @@
       </div>
 
       <!-- Context and Answer Choices -->
-      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="skillSettings.skillType !== null">
+      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="skillSettings.requiresContext || skillSettings.skillType == 'multiple-choice'">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <!-- Context Input -->
@@ -194,7 +194,13 @@ export default Vue.component('query-skills', {
       this.list_choices.push("")
     },
     removeChoice() {
-      this.list_choices.pop()
+      // we always need at least 2 choices
+      if (this.list_choices.length > 2) {
+        this.list_choices.pop()
+      } else {
+        alert("You need at least 2 choices")
+      }
+      
     },
     askQuestion() {
       console.log("list_choices", this.list_choices)
