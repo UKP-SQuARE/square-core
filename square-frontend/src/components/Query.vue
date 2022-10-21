@@ -216,12 +216,13 @@ export default Vue.component('query-skills', {
       })
     },
     selectExample(example) {
+      this.list_choices = ["", "", ""]
       this.inputQuestion = example.query
       if (this.skillSettings.requiresContext) {
         this.inputContext = example.context
       }
       if (example.choices) {
-        this.list_choices = example.choices
+        this.list_choices = example.choices.map((x) => x);
       }
       this.askQuestion()
     },
