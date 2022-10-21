@@ -257,7 +257,11 @@ export default Vue.component('edit-skill', {
       this.list_answer_choices[index].push("")
     },
     removeChoice(index) {
-      this.list_answer_choices[index].pop()
+      if (this.list_answer_choices[index].length > 2) {
+        this.list_answer_choices[index].pop()
+      } else {
+        alert("You must have at least 2 choices.")
+      }
     }
   },
   watch: {
@@ -318,7 +322,7 @@ export default Vue.component('edit-skill', {
               }
             }
             // for the transition period between old format of answer choices and the new one
-            if (this.skill.skill_input_examples[0].choices !== null && this.skill.skill_type == 'multiple-choice') {
+            if (this.skill.skill_input_examples[0].choices == null && this.skill.skill_type == 'multiple-choice') {
               this.list_answer_choices = [["", ""], ["", ""], ["", ""]]
             }
             
