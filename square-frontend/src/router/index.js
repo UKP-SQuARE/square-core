@@ -13,6 +13,7 @@ const Skill = () => import('../views/Skill')
 const Feedback = () => import('../views/Feedback')
 const Terms = () => import('../views/Terms')
 const News = () => import('../views/News')
+const Publications = () => import('../views/Publications')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
 
@@ -60,6 +61,11 @@ const routes = [
     path: '/news',
     name: 'news',
     component: News
+  },
+  {
+    path: '/publications',
+    name: 'publications',
+    component: Publications
   },
   {
     path: '/terms-and-conditions',
