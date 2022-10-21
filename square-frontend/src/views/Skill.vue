@@ -35,16 +35,7 @@
             </select>
         </div>
       </div>
-      <div class="row">
-        <div class="col-md-6 mt-3">
-          <label for="description" class="form-label">Description</label>
-            <input v-model="skill.description" type="text" class="form-control" id="description" placeholder="Description">
-        </div>
-        <div class="col-md-6 mt-3">
-          <label for="maxResultsSkill" class="form-label">Minimum multiple choice options</label>
-            <input v-model="skill.skill_settings.requires_multiple_choices" type="number" class="form-control" id="maxResultsSkill" required>
-        </div>
-      </div>
+      
       <div class="row">
         <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
