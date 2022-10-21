@@ -110,8 +110,8 @@ jobs:
       - name: remove images
         run: |
           docker kill $(docker ps -q)
-          docker rm $(docker ps -a -q)
-          docker image rm $(docker images -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
 
 ##################################
       - name: Prepare
@@ -204,8 +204,8 @@ jobs:
       - name: remove images
         run: |
           docker kill $(docker ps -q)
-          docker rm $(docker ps -a -q)
-          docker image rm $(docker images -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
 
       # sentence-transformers
       - name: Prepare
@@ -293,8 +293,8 @@ jobs:
       - name: remove images
         run: |
           docker kill $(docker ps -q)
-          docker rm $(docker ps -a -q)
-          docker image rm $(docker images -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
 
       # onnx
       - name: Prepare
@@ -382,8 +382,8 @@ jobs:
       - name: remove images
         run: |
           docker kill $(docker ps -q)
-          docker rm $(docker ps -a -q)
-          docker image rm $(docker images -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
       
 
       # graph- transformer
