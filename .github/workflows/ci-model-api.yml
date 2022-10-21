@@ -109,6 +109,8 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: remove images
         run: |
+          docker kill $(docker ps -q)
+          docker rm $(docker ps -a -q)
           docker image rm $(docker images -q)
 
 ##################################
@@ -201,6 +203,8 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: remove images
         run: |
+          docker kill $(docker ps -q)
+          docker rm $(docker ps -a -q)
           docker image rm $(docker images -q)
 
       # sentence-transformers
@@ -288,6 +292,8 @@ jobs:
 
       - name: remove images
         run: |
+          docker kill $(docker ps -q)
+          docker rm $(docker ps -a -q)
           docker image rm $(docker images -q)
 
       # onnx
@@ -372,8 +378,11 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
       - name: remove images
         run: |
+          docker kill $(docker ps -q)
+          docker rm $(docker ps -a -q)
           docker image rm $(docker images -q)
       
 
