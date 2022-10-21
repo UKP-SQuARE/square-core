@@ -306,7 +306,7 @@ export default Vue.component('edit-skill', {
             // Trigger setter
             this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
-            if ('choices' in this.skill.skill_input_examples[0]){
+            if (this.skill.skill_input_examples[0].choices !== null){
               // for each skill_input_example, add the choices to the list_answer_choices
               for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
                 this.list_answer_choices[i] = this.skill.skill_input_examples[i]['choices']
@@ -316,6 +316,10 @@ export default Vue.component('edit-skill', {
                   this.list_answer_choices.push(["", ""])
                 }
               }
+            }
+            // for the transition period between old format of answer choices and the new one
+            if (this.skill.skill_input_examples[0].choices !== null && this.skill.skill_type == 'multiple-choice') {
+              this.list_answer_choices = [["", ""], ["", ""], ["", ""]]
             }
             
           })
