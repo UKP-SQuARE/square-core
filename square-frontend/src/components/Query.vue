@@ -220,6 +220,9 @@ export default Vue.component('query-skills', {
       if (this.skillSettings.requiresContext) {
         this.inputContext = example.context
       }
+      if (example.choices) {
+        this.list_choices = example.choices
+      }
       this.askQuestion()
     },
     askQuestionWithFeedback() {
