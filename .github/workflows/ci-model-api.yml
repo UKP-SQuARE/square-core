@@ -107,6 +107,9 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: remove images
+        run: |
+          docker image rm $(docker images -q)
 
 ##################################
       - name: Prepare
@@ -196,6 +199,9 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: remove images
+        run: |
+          docker image rm $(docker images -q)
 
       # sentence-transformers
       - name: Prepare
@@ -280,6 +286,10 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+      - name: remove images
+        run: |
+          docker image rm $(docker images -q)
+
       # onnx
       - name: Prepare
         id: onnx-prep
@@ -362,6 +372,9 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: remove images
+        run: |
+          docker image rm $(docker images -q)
       
 
       # graph- transformer
@@ -446,3 +459,4 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      
