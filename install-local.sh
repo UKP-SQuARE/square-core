@@ -1,6 +1,6 @@
 #!/bin/bash
 # Restore everything back:
-bash ./reset.sh
+source ./reset.sh
 
 # Begin the usual installation steps: (note that docker-compose.ytt.yaml.min will be used)
 set -e
