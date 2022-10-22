@@ -10,7 +10,7 @@ sed -i -e "s/environment: prod/environment: local/g" ./config.yaml
 
 # Set init client secrets:
 sed -e "s/%%CLIENT_SECRET%%/skill-manager/g" skill-manager/.env.template > skill-manager/.env
-# sed -e "s/%%CLIENT_SECRET%%/models/g" square-model-inference-api/management_server/.env.template > square-model-inference-api/management_server/.env
+sed -e "s/%%CLIENT_SECRET%%/models/g" square-model-inference-api/management_server/.env.template > square-model-inference-api/management_server/.env
 sed -e "s/%%CLIENT_SECRET%%/datastores/g" datastore-api/.env.template > datastore-api/.env
 
 # Install ytt:
