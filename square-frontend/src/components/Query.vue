@@ -203,7 +203,10 @@ export default Vue.component('query-skills', {
       
     },
     askQuestion() {
-      console.log("list_choices", this.list_choices)
+      // if skill does not require context, set context to null
+      if (!this.skillSettings.requiresContext) {
+        this.inputContext = ""
+      }
       this.waiting = true
       this.$store.dispatch('query', {
         question: this.inputQuestion,

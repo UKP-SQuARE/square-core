@@ -21,6 +21,7 @@ export default new Vuex.Store({
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
+    currentChoices: [],
     currentSkills: [],
     availableSkills: [],
     mySkills: [],
