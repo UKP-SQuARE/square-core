@@ -186,6 +186,7 @@ export default Vue.component("explain-output",{
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
         inputContext: context,
+        choices: this.$store.state.currentChoices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
