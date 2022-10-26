@@ -1,6 +1,6 @@
-git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2
-git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.34
-square-auth>=0.0.7
+square-elk-json-formatter==0.0.3
+square-skill-api==0.0.35
+square-auth==0.0.11
 uvicorn>=0.15.0
 fastapi>=0.70.0
 pydantic>=1.8.2

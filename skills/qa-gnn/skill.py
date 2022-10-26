@@ -2,11 +2,11 @@ import logging
 
 from square_skill_api.models import QueryOutput, QueryRequest
 
-from square_skill_helpers import ModelAPI
+from square_model_client import SQuAREModelClient
 
 logger = logging.getLogger(__name__)
 
-model_api = ModelAPI()
+square_model_client = SQuAREModelClient()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -14,7 +14,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     # HACK: the UI currently does not support choices, therefore the first choice will
     # be processed insde the context.
-    choices = [request.skill_args["context"]] + request.skill_args["choices"]
+    choices = request.skill_args["choices"]
     model_kwargs = request.skill_args.get("model_kwargs", {})
     model_kwargs["output_lm_subgraph"] = model_kwargs.get("output_lm_subgraph", True)
     model_kwargs["output_attn_subgraph"] = model_kwargs.get(
@@ -35,13 +35,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
     }
     logger.debug("Request for model api:{}".format(model_request))
 
-    model_api_output = await model_api(
+    model_response = await square_model_client(
         model_name="qagnn",
         pipeline="sequence-classification",
         model_request=model_request,
     )
-    logger.info("Model API output: {}".format(model_api_output))
+    logger.info("Model response: {}".format(model_response))
 
     return QueryOutput.from_sequence_classification_with_graph(
-        questions=query, answers=choices, model_api_output=model_api_output
+        questions=query, answers=choices, model_api_output=model_response
     )
