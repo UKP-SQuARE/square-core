@@ -9,5 +9,5 @@ celery==5.1.2                   # queue requests
 redis==4.1.4
 pytest-env==0.6.2
 spacy>=3.0.0,<4.0.0
+square-elk-json-formatter==0.0.3
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz#egg=en_core_web_sm
-git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # ELK logger

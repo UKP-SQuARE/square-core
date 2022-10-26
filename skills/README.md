@@ -12,8 +12,8 @@ To create a new skill, only a predict function needs to be implemented. For faci
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
 ```bash
-pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.9
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.34  
+pip install square-skill-helpers
+pip install square-skill-api
 ```
 Next, we can implement the `predict` function:
 ```python3
