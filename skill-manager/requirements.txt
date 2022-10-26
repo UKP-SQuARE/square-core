@@ -1,5 +1,5 @@
 square-elk-json-formatter==0.0.3
-square-skil-api==0.0.35
+square-skill-api==0.0.35
 square-auth==0.0.9
 uvicorn>=0.15.0
 fastapi>=0.70.0
