@@ -1,4 +1,4 @@
-FROM python:3.7.6-slim-buster as base
+FROM python:3.11-slim-buster as base
 
 # required to install packages from github
 RUN apt-get -y update && apt-get -y install git
