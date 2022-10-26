@@ -7,6 +7,8 @@ from transformers.adapters import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
 from .transformer import Transformer
+import os
+
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +139,11 @@ class AdapterTransformer(Transformer):
 
     def _prepare_adapter(self, adapter_name):
         if adapter_name is not None:
-            self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
+            TEST = os.environ.get('TEST','0')
+            if TEST == '1':
+                self.model.load_adapter(adapter_name, model_name='bert-base-uncased',load_as=adapter_name, source=None)
+            if TEST == '0':
+                self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
 
         if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
             raise ValueError(
