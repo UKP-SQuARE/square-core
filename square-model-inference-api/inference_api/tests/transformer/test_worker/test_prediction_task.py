@@ -1,8 +1,12 @@
 import unittest
-
+import os
 from app.models.request import PredictionRequest
 from tasks.tasks import prediction_task
 from tasks.models.request import Task
+
+
+TEST_MODEL_PATH = os.getenv("TEST_MODEL_PATH", "./model4test")
+
 
 class TestTasks(unittest.TestCase):
     def test_embedding_task(self):
@@ -10,7 +14,7 @@ class TestTasks(unittest.TestCase):
         task = Task.embedding
         model_config = {"identifier": "test_config",
             "model_type": "adapter",
-            "model_name": "bert-base-uncased",
+            "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
             "batch_size": 32,
             "max_input": 1024,
@@ -28,7 +32,7 @@ class TestTasks(unittest.TestCase):
         task = Task.sequence_classification
         model_config = {"identifier": "test_config",
             "model_type": "adapter",
-            "model_name": "bert-base-uncased",
+            "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
             "batch_size": 32,
             "max_input": 1024,
@@ -45,7 +49,7 @@ class TestTasks(unittest.TestCase):
         task = Task.token_classification
         model_config = {"identifier": "test_config",
             "model_type": "adapter",
-            "model_name": "bert-base-uncased",
+            "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
             "batch_size": 32,
             "max_input": 1024,
@@ -63,7 +67,7 @@ class TestTasks(unittest.TestCase):
         task = Task.question_answering
         model_config = {"identifier": "test_config",
             "model_type": "adapter",
-            "model_name": "bert-base-uncased",
+            "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
             "batch_size": 32,
             "max_input": 1024,
