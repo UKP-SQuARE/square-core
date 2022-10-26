@@ -1,15 +1,18 @@
 import pytest
-
+import os
 from pre_test_setup_for_docker_caching import (
-    SENTENCE_MODEL,
+    # SENTENCE_MODEL,
+    TRANSFORMERS_TESTING_CACHE,
 )
-
+SENTENCE_MODEL = os.getenv("TEST_MODEL_PATH","./model4test")
 from main import get_app, auth
 
 from tasks.inference.sentencetransformer import SentenceTransformer
 
 from tasks.config.model_config import ModelConfig, set_test_config, model_config
 from app.models.request import PredictionRequest
+
+
 
 
 @pytest.fixture(scope="session")
@@ -26,8 +29,9 @@ def test_sentence_transformer():
         disable_gpu=True,
         batch_size=1,
         max_input_size=50,
-        model_type="sentence-transformer"
+        model_type="sentence-transformer",
     )
+
     return SentenceTransformer()
 
 
