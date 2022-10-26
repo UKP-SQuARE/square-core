@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  model-api:
+  model-api-base-model:
     runs-on: ubuntu-latest
 
     steps:
@@ -113,6 +113,11 @@ jobs:
           docker image rm -f $(docker images -q)
 
 ##################################
+  model-api-transformer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
       - name: Prepare
         id: transformer-prep
         run: |
@@ -206,6 +211,11 @@ jobs:
 #          docker rm -f $(docker ps -a -q)
 #          docker image rm -f $(docker images -q)
 
+  model-api-sentence-transformer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
       # sentence-transformers
       - name: Prepare
         id: sentence-transformer-prep
@@ -295,6 +305,11 @@ jobs:
           docker rm -f $(docker ps -a -q)
           docker image rm -f $(docker images -q)
 
+  model-api-onnx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
       # onnx
       - name: Prepare
         id: onnx-prep
@@ -384,7 +399,11 @@ jobs:
           docker rm -f $(docker ps -a -q)
           docker image rm -f $(docker images -q)
 
+  model-api-graph-transformer:
+    runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v2
       # graph- transformer
       - name: Prepare
         id: graph-prep
