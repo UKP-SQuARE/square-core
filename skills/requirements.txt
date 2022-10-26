@@ -1,3 +1,4 @@
 square-elk-json-formatter==0.0.3
-square-skill-helpers==0.0.10
+square-datastore-client==0.0.1
+square-model-client==0.0.1
 square-skill-api==0.0.35
