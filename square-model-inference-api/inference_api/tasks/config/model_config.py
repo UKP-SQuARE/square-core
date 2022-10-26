@@ -15,6 +15,8 @@ CONFIG_PATH = os.getenv("CONFIG_PATH")
 IDENTIFIER = os.getenv("QUEUE")
 
 
+
+
 @dataclass
 class ModelConfig(Mapping):
     # Corresponds to the Huggingface name for finetuned Transformers or the name of a finetuned SentenceTransformers
@@ -139,6 +141,7 @@ class ModelConfig(Mapping):
 model_config = ModelConfig.load()
 
 
+
 # for testing the inference models
 def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_size, model_class="base",
                     cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path="", data_path=""):
@@ -157,5 +160,7 @@ def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_s
 
 
 if os.getenv("TEST", 0) == '1':
-    set_test_config("bert-base-uncased", True, 8, "adapter", 512)
+    TEST_MODEL_PATH = os.getenv("TEST_MODEL_PATH", "./model4test")
+
+    set_test_config( TEST_MODEL_PATH, True, 8, "adapter", 512)
     model_config.save(IDENTIFIER)
