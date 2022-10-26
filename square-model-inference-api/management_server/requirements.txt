@@ -3,7 +3,7 @@ fastapi>=0.73.0                 # REST API Framework
 pydantic==1.8.2                 # models
 requests>=2.26.0                # requests
 docker                          # docker client
-square-auth>=0.0.7              # keycloak authentication
+square-auth>=0.0.11             # keycloak authentication
 celery==5.1.2                   # queue requests
 redis==4.1.4
 pymongo>=3.12.1
