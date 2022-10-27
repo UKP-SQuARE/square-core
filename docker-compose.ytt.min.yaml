@@ -321,10 +321,12 @@ services:
       CONFIG_PATH: /model_configs
       QUEUE: facebook-dpr-question_encoder-single-nq-base
       CONFIG_VOLUME: square-core_model_configs
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
       - model_configs:/model_configs
       - onnx_models:/onnx_models
+      - ./local_deploy:/local_deploy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
@@ -342,6 +344,7 @@ services:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
+      - ./local_deploy:/local_deploy
     env_file:
       - ./rabbitmq/.env
       - ./redis/.env
@@ -356,6 +359,7 @@ services:
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
       QUEUE: facebook-dpr-question_encoder-single-nq-base
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
     depends_on:
       #! - maintaining
       - rabbit
@@ -467,6 +471,9 @@ services:
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    volumes:
+      - ./local_deploy:/local_deploy
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("datastores"))
