@@ -1,19 +1,18 @@
-import pytest
-from app.models.datastore import DatastoreField
-import requests
+from app.models.datastore import Datastore, DatastoreField
+from fastapi.testclient import TestClient
 
 
 class TestDatastores:
-    def test_get_all_datastores(self, client: str, wiki_datastore):
-        response = requests.get(f"{client}/datastores")
+    def test_get_all_datastores(self, client: TestClient, wiki_datastore: Datastore):
+        response = client.get("/datastores")
         assert response.status_code == 200
         assert isinstance(response.json(), list)
         assert len(response.json()) >= 1
         # first item should be the demo datastore
         assert response.json()[0] == wiki_datastore.dict()
 
-    def test_get_datastore(self, client: str, wiki_datastore):
-        response = requests.get(f"{client}/datastores/{wiki_datastore.name}")
+    def test_get_datastore(self, client: TestClient, wiki_datastore: Datastore):
+        response = client.get(f"/datastores/{wiki_datastore.name}")
         assert response.status_code == 200
         assert response.json() == wiki_datastore.dict()
 
@@ -21,12 +20,13 @@ class TestDatastores:
         response = client.get("/datastores/not_found")
         assert response.status_code == 404
 
-    def test_put_datastore(self, client, token):
+    def test_put_datastore(self, client: TestClient, token):
         new_datastore_name = "datastore-test-new_datastore"
         new_datastore_fields = [
             DatastoreField(name="field1", type="text").dict(),
             DatastoreField(name="field2", type="long").dict(),
         ]
+
         response = client.put(
             "/datastores/{}".format(new_datastore_name),
             json=new_datastore_fields,
@@ -36,6 +36,7 @@ class TestDatastores:
         assert response.json()["name"] == new_datastore_name
         assert response.json()["fields"] == new_datastore_fields
         assert "fieldsets" not in response.json()
+
         # get new datastore to see if it was added
         response = client.get("/datastores/{}".format(new_datastore_name))
         assert response.status_code == 200

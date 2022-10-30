@@ -1,10 +1,9 @@
-from multiprocessing import Process
 import os
 import time
-from fastapi import FastAPI
+from typing import Tuple
+from fastapi.testclient import TestClient
 
 import pytest
-import requests
 from app.core.es.connector import ElasticsearchConnector
 from app.core.config import settings
 from app.core.dense_retrieval import DenseRetrieval
@@ -29,8 +28,6 @@ for k, v in settings.dict().items():
 from testcontainers.mongodb import MongoDbContainer
 from testcontainers.elasticsearch import ElasticSearchContainer
 import asyncio
-import tqdm
-import uvicorn
 
 
 file_dir = os.path.dirname(__file__)
@@ -126,21 +123,20 @@ def user_id() -> str:
 
 
 @pytest.fixture(scope="package")
-def mock_connector(
+def es_container(
     wiki_datastore: Datastore,
-    mock_mongo_client: MongoClient,
+    mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
     second_index: Index,
     test_document: Document,
     query_document: Document,
-):
+) -> str:
     # TODO: Use real docker via testcontainers
     # os.environ["TC_HOST"] = settings.ES_URL
     es_container = ElasticSearchContainer("elasticsearch:7.16.1")
     es_container.start()
     host_url = es_container.get_url()
-
     try:
         es_connector = ElasticsearchConnector(host_url)
         loop = asyncio.get_event_loop()
@@ -160,32 +156,35 @@ def mock_connector(
             ),
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
-        es_connector = ElasticsearchConnector(
-            host_url
-        )  # otherwise: "RuntimeError: Timeout context manager should be used inside a task"
 
         # add binding
         datastore_name = wiki_datastore.name
-        mock_mongo_client.user_datastore_bindings.insert_one(
+        mongo_client = build_mongo_client(*mongo_container)
+        mongo_client.user_datastore_bindings.insert_one(
             {
                 "user_id": user_id,
-                mock_mongo_client.item_keys["datastore"]: datastore_name,
+                mongo_client.item_keys["datastore"]: datastore_name,
             }
         )
-        yield es_connector
+        yield host_url
     finally:
         es_container.stop()
 
 
-@pytest.fixture(scope="package")
-def mock_search_client(mock_connector):
+@pytest.fixture(scope="function")
+def es_connector(es_container: str):
+    return ElasticsearchConnector(es_container)
+
+
+@pytest.fixture(scope="function")
+def mock_search_client(es_connector):
     model_api = ModelAPIClient(settings.MODEL_API_URL)
     faiss = FaissClient()
-    return DenseRetrieval(mock_connector, model_api, faiss)
+    return DenseRetrieval(es_connector, model_api, faiss)
 
 
 @pytest.fixture(scope="package")
-def mock_mongo_client():
+def mongo_container() -> Tuple[str, str]:
     mongo_container = MongoDbContainer("mongo:latest")
     mongo_container.start()
     mongo_container.get_connection_client().list_databases()  # This is actually for waiting the docker to be ready
@@ -193,18 +192,28 @@ def mock_mongo_client():
         settings.MONGO_PORT
     )  # We need to get this from testcontainers, since it is generated but set
     try:
-        yield MongoClient(
-            mongo_container.get_container_host_ip(),  # Inside docker, we cannot use localhost
-            port,
-            settings.MONGO_INITDB_ROOT_USERNAME,
-            settings.MONGO_INITDB_ROOT_PASSWORD,
-            settings.MONGO_SERVER_SELECTION_TIMEOUT_MS,
-        )
+        yield (mongo_container.get_container_host_ip(), port)
     finally:
         mongo_container.stop()
 
 
-@pytest.fixture(scope="package")
+def build_mongo_client(host_ip: str, port: str) -> MongoClient:
+    return MongoClient(
+        host_ip,  # Inside docker, we cannot use localhost
+        port,
+        settings.MONGO_INITDB_ROOT_USERNAME,
+        settings.MONGO_INITDB_ROOT_PASSWORD,
+        settings.MONGO_SERVER_SELECTION_TIMEOUT_MS,
+    )
+
+
+@pytest.fixture(scope="function")
+def mongo_client(mongo_container) -> MongoClient:
+    host_ip, port = mongo_container
+    return build_mongo_client(host_ip, port)
+
+
+@pytest.fixture(scope="function")
 def token(user_id):
     token = jwt.encode(
         {
@@ -217,7 +226,7 @@ def token(user_id):
     return token
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def token_no_permission():
     token = jwt.encode(
         {
@@ -230,33 +239,15 @@ def token_no_permission():
     return token
 
 
-def run_server(app: FastAPI, host: str, port: int):
-    uvicorn.run(app, host=host, port=port)
-
-
-@pytest.fixture(scope="package")
-def client(mock_connector, mock_search_client, mock_mongo_client, token) -> str:
+@pytest.fixture(scope="function")
+def client(es_container, mock_search_client, mongo_client, token) -> TestClient:
     app = get_app()
     app.dependency_overrides[auth] = lambda: token
     app.dependency_overrides[client_credentials] = lambda: token
-    app.dependency_overrides[get_storage_connector] = lambda: mock_connector
+    app.dependency_overrides[get_storage_connector] = lambda: ElasticsearchConnector(
+        es_container
+    )
     app.dependency_overrides[get_search_client] = lambda: mock_search_client
-    app.dependency_overrides[get_mongo_client] = lambda: mock_mongo_client
-
-    host = "0.0.0.0"
-    port = 7000
-    proc = Process(target=run_server, args=(app, host, port), daemon=True)
-    proc.start()
-    url = f"http://{host}:{port}"
-
-    timeout = 100
-    for _ in tqdm.trange(timeout, desc="Waiting for server up (s)"):
-        try:
-            response = requests.get(f"{url}/docs#")
-            if response.status_code == 200:
-                break
-        except requests.exceptions.ConnectionError:
-            time.sleep(1)
-
-    yield url
-    proc.kill()
+    app.dependency_overrides[get_mongo_client] = lambda: mongo_client
+    client = TestClient(app)
+    return client
