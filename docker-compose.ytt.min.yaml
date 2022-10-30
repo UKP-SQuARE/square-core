@@ -337,9 +337,9 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
-  dpr_worker:
+  tasb_worker:
     image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
-    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
+    command: celery -A tasks worker -Q tasb --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
@@ -348,7 +348,7 @@ services:
     env_file:
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/inference_server/.env.dpr
+      - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -358,7 +358,7 @@ services:
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
-      QUEUE: facebook-dpr-question_encoder-single-nq-base
+      QUEUE: tasb
       SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
     depends_on:
       #! - maintaining

@@ -1,3 +1,4 @@
+import os
 from square_auth.client_credentials import ClientCredentials
 
 
@@ -10,5 +11,5 @@ def get_token() -> str:
 
 
 if __name__ == "__main__":
-    # export SQUARE_PRIVATE_KEY_FILE=${PWD}/local_deploy/private_key.pem; python local_deploy/get_token.py
+    os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
     print(get_token())

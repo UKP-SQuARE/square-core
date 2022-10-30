@@ -233,22 +233,20 @@ if __name__ == "__main__":
     faiss_container_resource_dir = encode_and_index_corpus(
         dataset_dir=dataset_name,
         embeddings_and_index_dir=embeddings_and_index_dir,
-        model_name_or_path="sentence-transformers/facebook-dpr-question_encoder-single-nq-base",
+        model_name_or_path="msmarco-distilbert-base-tas-b",
     )
 
     start_faiss_container(
-        faiss_container_name="faiss_scifact_dpr",
+        faiss_container_name="faiss_scifact_tasb",
         faiss_container_resource_dir=faiss_container_resource_dir,
         expose_port=5001,
-        wait_seconds=2
+        wait_seconds=2,
     )
 
-    index_name = "dpr"
-    query_encoder = "facebook/dpr-question_encoder-single-nq-base"
-    document_encoder = (
-        "sentence-transformers/facebook-dpr-question_encoder-single-nq-base"
-    )
-    embedding_mode = "pooler"
+    index_name = "tasb"
+    query_encoder = "msmarco-distilbert-base-tas-b"
+    document_encoder = "msmarco-distilbert-base-tas-b"
+    embedding_mode = "cls"
     embedding_size = 768
     add_index(
         datastore_name=dataset_name,
