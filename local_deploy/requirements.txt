@@ -1,0 +1,4 @@
+tqdm
+square-auth>=0.0.11
+faiss-instant
+docker
