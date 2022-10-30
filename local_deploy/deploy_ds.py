@@ -60,7 +60,7 @@ def create_datastore(datastore_name: str) -> None:
         headers={"Authorization": f"Bearer {get_token()}"},
         json=[{"name": "title", "type": "text"}, {"name": "text", "type": "text"}],
     )
-    assert response.status_code == 200, f"Cannot create datastore: {response}"
+    assert response.status_code in [200, 201], f"Cannot create datastore: {response}"
 
 
 def upload_documents(datastore_name: str, docs: List[dict]) -> None:
@@ -196,7 +196,7 @@ def add_index(
         },
         headers={"Authorization": f"Bearer {get_token()}"},
     )
-    assert response.status_code == 200, f"Cannot add index: {response}"
+    assert response.status_code in [200, 201], f"Cannot add index: {response}"
 
 
 def dense_search_by_vector(
