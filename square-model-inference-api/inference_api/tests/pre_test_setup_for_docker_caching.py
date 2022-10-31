@@ -16,6 +16,15 @@ environ["MAX_INPUT_SIZE"] = "100"
 
 
 def create_test_model_path(model_type: str):
+    '''
+    Create a mini untrained bert model to run the tests.It will create the model and config in local_dir
+    Args:
+        model_type: transformer or sentence-transformer
+
+
+    '''
+
+    #common config for model
     vocab = [
         "[PAD]",
         "[UNK]",
@@ -50,10 +59,12 @@ def create_test_model_path(model_type: str):
     model = BertModel(config)
     tokenizer = BertTokenizer(vocab_file=vocab_file)
 
+
     if model_type == "transformer":
         tokenizer.save_pretrained(local_dir)
         model.save_pretrained(local_dir)
     if model_type == "sentence-transformer":
+        # the way to create sentence-bert is different.
 
         tokenizer.save_pretrained(local_dir)
         model.save_pretrained(local_dir)
@@ -68,9 +79,8 @@ def create_test_model_path(model_type: str):
     return local_dir
 
 
-# Downloaded models:
+# Downloaded models: no need anymore. only to show which kinds of model were used
 # TRANSFORMER_MODEL = "bert-base-uncased"
-
 # TRANSFORMER_MODEL =create_test_model_path("transformer")
 # TRANSFORMER_MODEL_ROBERTA= "roberta-base"
 # SENTENCE_MODEL = "paraphrase-albert-small-v2"
