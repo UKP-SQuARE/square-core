@@ -2,9 +2,10 @@ import os
 
 import pytest
 import torch
+from pre_test_setup_for_docker_caching import ONNX_MODEL
+
 from app.models.request import PredictionRequest
 from main import auth, get_app
-from pre_test_setup_for_docker_caching import ONNX_MODEL
 from tasks.config.model_config import (ModelConfig, model_config,
                                        set_test_config)
 from tasks.inference.onnx import Onnx
