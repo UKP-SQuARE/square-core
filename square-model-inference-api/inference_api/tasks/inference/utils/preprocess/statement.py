@@ -42,8 +42,11 @@ def replace_wh_word_with_blank(question_str: str):
         # Replace the last question mark with period.
         question_str = re.sub(r"\?$", "", question_str.strip())
         # Introduce the blank in place of the wh-word
-        fitb_question = (question_str[:wh_word_start_offset] + BLANK_STR +
-                         question_str[wh_word_start_offset + len(wh_word_found):])
+        fitb_question = (
+            question_str[:wh_word_start_offset]
+            + BLANK_STR
+            + question_str[wh_word_start_offset + len(wh_word_found) :]
+        )
         # Drop "of the following" as it doesn't make sense in the absence of a multiple-choice
         # question. E.g. "Which of the following force ..." -> "___ force ..."
         final = fitb_question.replace(BLANK_STR + " of the following", BLANK_STR)
@@ -53,7 +56,9 @@ def replace_wh_word_with_blank(question_str: str):
     elif " them called?" in question_str:
         return question_str.replace(" them called?", " " + BLANK_STR + ".")
     elif " meaning he was not?" in question_str:
-        return question_str.replace(" meaning he was not?", " he was not " + BLANK_STR + ".")
+        return question_str.replace(
+            " meaning he was not?", " he was not " + BLANK_STR + "."
+        )
     elif " one of these?" in question_str:
         return question_str.replace(" one of these?", " " + BLANK_STR + ".")
     elif re.match(r".*[^\.\?] *$", question_str):
@@ -101,5 +106,7 @@ def convert_to_entailment(input: List):
     for idx, inp in enumerate(input):
         statement = create_hypothesis(inp[0], inp[1])
         # Create the output dictionary from the input, premise and hypothesis statement
-        prepared_input["statements"].append({"label": True if idx == 0 else False, "statement": statement})
+        prepared_input["statements"].append(
+            {"label": True if idx == 0 else False, "statement": statement}
+        )
     return prepared_input

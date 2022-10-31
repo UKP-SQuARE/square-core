@@ -1,13 +1,15 @@
+import base64
+from io import BytesIO
+
+import numpy as np
+import torch
 from starlette.config import Environ
 from tasks.models.prediction import PredictionOutput, _encode_numpy
-from io import BytesIO
-import base64
-import torch
-import numpy as np
+
 
 def test_prediction_output_numpy_encoded() -> None:
 
-    arr = np.ones(shape=(10,10), dtype="float32")
+    arr = np.ones(shape=(10, 10), dtype="float32")
     output = _encode_numpy({"test": torch.from_numpy(arr)}, return_plaintext=False)
     encoded_arr = output["test"]
 
@@ -21,7 +23,7 @@ def test_prediction_output_numpy_encoded() -> None:
 
 def test_prediction_output_numpy_plaintext() -> None:
 
-    arr = np.ones(shape=(10,10), dtype="float32")
+    arr = np.ones(shape=(10, 10), dtype="float32")
     output = _encode_numpy({"test": torch.from_numpy(arr)}, return_plaintext=True)
     plaintext_list_arr = output["test"]
     # reversing code

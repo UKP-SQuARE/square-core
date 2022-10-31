@@ -1,17 +1,18 @@
-import os
 import logging
+import os
 from logging.config import fileConfig
-
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
 
 from app.api.routes.router import api_router
 from app.core.config import API_PREFIX, APP_NAME, APP_VERSION, OPENAPI_URL
 from app.core.event_handlers import start_app_handler, stop_app_handler
-
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from square_auth.auth import Auth
-auth = Auth(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"))
+
+auth = Auth(
+    keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de")
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +22,15 @@ def get_app() -> FastAPI:
     try:
         fileConfig("logging.conf", disable_existing_loggers=False)
     except:
-        logger.info("Failed to load 'logging.conf'. Continuing without configuring the server logger")
-    fast_app = FastAPI(title=APP_NAME,
-                       version=APP_VERSION,
-                       openapi_url=OPENAPI_URL,
-                       dependencies=[Depends(auth)]
-                       )
+        logger.info(
+            "Failed to load 'logging.conf'. Continuing without configuring the server logger"
+        )
+    fast_app = FastAPI(
+        title=APP_NAME,
+        version=APP_VERSION,
+        openapi_url=OPENAPI_URL,
+        dependencies=[Depends(auth)],
+    )
     fast_app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -62,7 +66,9 @@ def custom_openapi():
         api_mod = "/".join(api_split)
         replaced_keys[api] = api_mod
 
-    new_openapi_paths = {replaced_keys[k]: v for k, v in openapi_schema["paths"].items()}
+    new_openapi_paths = {
+        replaced_keys[k]: v for k, v in openapi_schema["paths"].items()
+    }
     openapi_schema["paths"] = new_openapi_paths
     app.openapi_schema = openapi_schema
     return app.openapi_schema
@@ -73,4 +79,5 @@ app.openapi_schema = custom_openapi()
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8002)

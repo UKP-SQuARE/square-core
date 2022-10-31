@@ -1,14 +1,14 @@
-from typing import List, Dict, Tuple
 import random
-import torch
-import numpy as np
 import string
+from typing import Dict, List, Tuple
+
+import numpy as np
+import torch
+from nltk.corpus import stopwords, words
 from tasks.attacks.attack import Attacker
 from transformers.models.gpt2.tokenization_gpt2 import bytes_to_unicode
 
-from nltk.corpus import stopwords, words
-
-stop_words = stopwords.words('english')
+stop_words = stopwords.words("english")
 # special = ["@@NULL@@", ".", ",", ";", "!", "?", "[MASK]", "[SEP]", "[CLS]", "[PAD]", "<s>", "</s>"]
 valid_words = set(words.words())
 
@@ -18,8 +18,18 @@ class Hotflip(Attacker):
     Flips the tokens in the input text and returns the flipped text
     """
 
-    def __init__(self, task, request, model_outputs, tokenizer, grads, embeddings, model_type, word_mappings,
-                 include_answer=False):
+    def __init__(
+        self,
+        task,
+        request,
+        model_outputs,
+        tokenizer,
+        grads,
+        embeddings,
+        model_type,
+        word_mappings,
+        include_answer=False,
+    ):
         """
         Initialize the Hotflip attack
         Args:
@@ -44,7 +54,7 @@ class Hotflip(Attacker):
         self.task = task
 
     def attack_instance(
-            self, ans_start, ans_end
+        self, ans_start, ans_end
     ) -> Tuple[List[List], List]:  # ignore the signature
         """
         post-process the word attributions to merge the sub-words tokens
@@ -88,11 +98,13 @@ class Hotflip(Attacker):
             context_start = len(question_attributions) + sep_length + 1
             question_word_map = self.word_mappings[0][1:context_start]
         else:
-            question_word_map = self.word_mappings[0][context_length + sep_length + 1:]
+            question_word_map = self.word_mappings[0][context_length + sep_length + 1 :]
             context_start = 1
 
         # to get the word map of the context
-        context_word_map = self.word_mappings[0][context_start:context_start + context_length + 1]
+        context_word_map = self.word_mappings[0][
+            context_start : context_start + context_length + 1
+        ]
 
         # first newly added section end here
 
@@ -160,16 +172,10 @@ class Hotflip(Attacker):
         ]
 
         # get the question tokens indexes
-        question_tokens = [
-            k
-            for i, k, v in question_attributions
-        ]
+        question_tokens = [k for i, k, v in question_attributions]
 
         # get the context tokens indexes
-        context_tokens = [
-            k
-            for i, k, v in context_attributions
-        ]
+        context_tokens = [k for i, k, v in context_attributions]
 
         # since the tokens contains the subwords of, that is why more than one subword of the
         # same token can be in the top_k tokens of the here we try to make sure that only subword
@@ -193,15 +199,25 @@ class Hotflip(Attacker):
         invalid_replacement_indices = []
         for k, v in vocab.items():
             k = k.replace("Ġ", "")
-            if k.isalnum() == False or k in stop_words or (k not in valid_words and k.isnumeric() == False):
+            if (
+                k.isalnum() == False
+                or k in stop_words
+                or (k not in valid_words and k.isnumeric() == False)
+            ):
                 invalid_replacement_indices.append(v)
 
         # get the replcement tokens for the chosen tokens
         if self.grads == None:
-            replacement_tokens = self._get_random_tokens(proc_context, vocab, invalid_replacement_indices)
+            replacement_tokens = self._get_random_tokens(
+                proc_context, vocab, invalid_replacement_indices
+            )
         else:
-            replacement_tokens = self._first_order_taylor(imp_tokens_idx[0:n], proc_context,
-                                                          invalid_replacement_indices, context_start)
+            replacement_tokens = self._first_order_taylor(
+                imp_tokens_idx[0:n],
+                proc_context,
+                invalid_replacement_indices,
+                context_start,
+            )
 
         # print("\nReplacement Tokens :")
         # print(replacement_tokens)
@@ -220,9 +236,7 @@ class Hotflip(Attacker):
         all_contexts.extend(new_contexts)
 
         questions = [" ".join([w for w in processed_question])] * (self.top_k + 1)
-        prepared_inputs = [
-            [q, c] for q, c in zip(questions, all_contexts)
-        ]
+        prepared_inputs = [[q, c] for q, c in zip(questions, all_contexts)]
 
         batch_request = self.base_prediction_request
         batch_request["input"] = prepared_inputs
@@ -251,18 +265,20 @@ class Hotflip(Attacker):
             # we only considers the words from vocab
             new_token = random.choice(words)
             while (
-                    new_token in tokens
-                    or new_token in already_generated
-                    or vocab[new_token] in invalid_replacement_indices
-                    or "#" in new_token
-                    or len(new_token) < 3
+                new_token in tokens
+                or new_token in already_generated
+                or vocab[new_token] in invalid_replacement_indices
+                or "#" in new_token
+                or len(new_token) < 3
             ):
                 new_token = random.choice(words)
             already_generated.append(new_token)
             replacement_tokens.append(new_token.replace("Ġ", ""))
         return replacement_tokens
 
-    def _first_order_taylor(self, imp_tokens, context_tokens, invalid_replacement_indices, context_start):
+    def _first_order_taylor(
+        self, imp_tokens, context_tokens, invalid_replacement_indices, context_start
+    ):
         """Function to generate replacemment tokens to flip a word
             Args:
                 imp_tokens : indices of the important tokens of the context
@@ -284,10 +300,17 @@ class Hotflip(Attacker):
             # get the gradient
             token_grad = self.grads[0][0][grad_idx]
             token_id_in_vocab = self.tokenizer.convert_tokens_to_ids(token)
-            grad_to_emb_matrix = torch.einsum("in,kj->ik", (token_grad.unsqueeze(0), self.embeddings.weight))
+            grad_to_emb_matrix = torch.einsum(
+                "in,kj->ik", (token_grad.unsqueeze(0), self.embeddings.weight)
+            )
             # multiply the gradient of the token of domension (1, 768) and the word emebdding of the token of dimension (1 , 768)
-            grad_to_word_emb = torch.einsum("in,kj->ik", (
-            token_grad.unsqueeze(0), self.embeddings.weight[token_id_in_vocab, :].unsqueeze(0)))
+            grad_to_word_emb = torch.einsum(
+                "in,kj->ik",
+                (
+                    token_grad.unsqueeze(0),
+                    self.embeddings.weight[token_id_in_vocab, :].unsqueeze(0),
+                ),
+            )
             # subtract
             sub = (-1) * (grad_to_emb_matrix - grad_to_word_emb)
             sub = sub.detach().numpy()
@@ -325,7 +348,7 @@ class Hotflip(Attacker):
             word = word.replace("##", "")
             word = word.replace("Ġ", "")
             if word_idx == word_map[idx + 1] and not word == self.tokenizer.sep_token:
-                filtered_tokens[-1] = f'{filtered_tokens[-1]}{word}'
+                filtered_tokens[-1] = f"{filtered_tokens[-1]}{word}"
             else:
                 filtered_tokens.append(word)
         return filtered_tokens

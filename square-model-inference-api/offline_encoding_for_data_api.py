@@ -1,28 +1,32 @@
 # This is a stand-alone script that does not require additional code (except the imported packages).
 # We copy-pasted code from Model API and removing some not needed stuff for this.
 import argparse
-import os
-import logging
 import json
+import logging
+import os
 import pickle
+import queue
 import time
 from dataclasses import dataclass
-from typing import Union, List
+from typing import List, Union
+
 import h5py
-import torch
 import numpy as np
-# Conditionally load adapter or sentence-transformer later to simplify installation
-#from sentence_transformers import SentenceTransformer as SentenceTransformerModel
-import transformers
+import torch
 import torch.multiprocessing as mp
-import queue
-from transformers import AutoModel, AutoTokenizer  #, AutoModelWithHeads
+# Conditionally load adapter or sentence-transformer later to simplify installation
+# from sentence_transformers import SentenceTransformer as SentenceTransformerModel
+import transformers
+from transformers import AutoModel, AutoTokenizer  # , AutoModelWithHeads
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter('%(processName)s-%(levelname)s-%(asctime)s: %(message)s'))
+handler.setFormatter(
+    logging.Formatter("%(processName)s-%(levelname)s-%(asctime)s: %(message)s")
+)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+
 
 @dataclass
 class PredictionRequest:
@@ -30,6 +34,7 @@ class PredictionRequest:
     Prediction request containing the input, pre-processing parameters, parameters for the model forward pass,
      the task with task-specific parameters, and parameters for any post-processing
     """
+
     input: Union[List[str], List[List[str]], dict]
     preprocessing_kwargs: dict
     model_kwargs: dict
@@ -60,14 +65,22 @@ class SentenceTransformer:
         Model will be moved to GPU unless CUDA is unavailable or disable_gpu is true.
         """
         import sentence_transformers
+
         logger.debug(f"Loading model {model_name}")
         device = "cuda" if torch.cuda.is_available() and not disable_gpu else "cpu"
-        model = sentence_transformers.SentenceTransformer(model_name_or_path=model_name, device=device)
+        model = sentence_transformers.SentenceTransformer(
+            model_name_or_path=model_name, device=device
+        )
         logger.info(f"Model {model_name} loaded on {device}")
         self.model = model
 
     def embedding(self, request):
-        embeddings = self.model.encode(request.input, batch_size=self.batch_size, show_progress_bar=False, convert_to_tensor=True)
+        embeddings = self.model.encode(
+            request.input,
+            batch_size=self.batch_size,
+            show_progress_bar=False,
+            convert_to_tensor=True,
+        )
         return embeddings
 
 
@@ -75,6 +88,7 @@ class Transformer:
     """
     The class for all Huggingface transformer-based models
     """
+
     SUPPORTED_EMBEDDING_MODES = ["mean", "max", "cls", "token"]
 
     def __init__(self, model_name, batch_size, disable_gpu):
@@ -126,14 +140,21 @@ class Transformer:
         :return: The model outputs and optionally the input features
         """
         all_predictions = []
-        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
-        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get("truncation", True)
-        features = self.tokenizer(request.input,
-                                  return_tensors="pt",
-                                  **request.preprocessing_kwargs)
+        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get(
+            "padding", True
+        )
+        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get(
+            "truncation", True
+        )
+        features = self.tokenizer(
+            request.input, return_tensors="pt", **request.preprocessing_kwargs
+        )
         for start_idx in range(0, len(request.input), self.batch_size):
             with torch.no_grad():
-                input_features = {k: features[k][start_idx:start_idx+self.batch_size] for k in features.keys()}
+                input_features = {
+                    k: features[k][start_idx : start_idx + self.batch_size]
+                    for k in features.keys()
+                }
                 input_features = self._ensure_tensor_on_device(**input_features)
                 predictions = self.model(**input_features, **request.model_kwargs)
                 all_predictions.append(predictions)
@@ -144,10 +165,14 @@ class Transformer:
             # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
             # Generation should NOT use this function
             if isinstance(all_predictions[0][key], tuple):
-                tuple_of_lists = list(zip(*[[p.cpu() for p in tpl[key]] for tpl in all_predictions]))
+                tuple_of_lists = list(
+                    zip(*[[p.cpu() for p in tpl[key]] for tpl in all_predictions])
+                )
                 final_prediction[key] = tuple(torch.cat(l) for l in tuple_of_lists)
             else:
-                final_prediction[key] = torch.cat([p[key].cpu() for p in all_predictions])
+                final_prediction[key] = torch.cat(
+                    [p[key].cpu() for p in all_predictions]
+                )
         if output_features:
             return final_prediction, features
         return final_prediction
@@ -162,18 +187,26 @@ class Transformer:
         embedding_mode = request.task_kwargs.get("embedding_mode", "mean")
 
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
-            raise ValueError(f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}")
+            raise ValueError(
+                f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}"
+            )
 
         if embedding_mode == "cls":
             emb = hidden_state[:, 0, :]
         # copied from sentence-transformers pooling
         elif embedding_mode == "max":
-            input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
-            hidden_state[input_mask_expanded == 0] = -1e9  # Set padding tokens to large negative value
+            input_mask_expanded = (
+                attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+            )
+            hidden_state[
+                input_mask_expanded == 0
+            ] = -1e9  # Set padding tokens to large negative value
             emb = torch.max(hidden_state, 1)[0]
         # copied from sentence-transformers pooling
         elif embedding_mode == "mean":
-            input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+            input_mask_expanded = (
+                attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+            )
             sum_embeddings = torch.sum(hidden_state * input_mask_expanded, 1)
             sum_mask = input_mask_expanded.sum(1)
             emb = sum_embeddings / sum_mask
@@ -186,7 +219,10 @@ class AdapterTransformer(Transformer):
     """
     The class for all adapter-based models using the adapter-transformers package
     """
-    def __init__(self, model_name, batch_size, disable_gpu, transformers_cache, adapter_name):
+
+    def __init__(
+        self, model_name, batch_size, disable_gpu, transformers_cache, adapter_name
+    ):
         """
         Initialize the Adapter with its underlying Transformer and pre-load all available adapters from adapterhub.ml
         :param model_name: the Huggingface model name
@@ -196,7 +232,9 @@ class AdapterTransformer(Transformer):
         This folder will be used to store the adapters
         """
         self._load_model(transformers.AutoModelWithHeads, model_name, disable_gpu)
-        self.model.load_adapter(adapter_name, load_as=adapter_name, cache_dir=transformers_cache)
+        self.model.load_adapter(
+            adapter_name, load_as=adapter_name, cache_dir=transformers_cache
+        )
         self.model.to(self.model.device)
         self.model.set_active_adapters(adapter_name)
         self.batch_size = batch_size
@@ -234,7 +272,9 @@ def encode(args):
     elif model_type == "transformer":
         model = Transformer(model_name, batch_size, False)
     elif model_type == "adapter":
-        model = AdapterTransformer(model_name, batch_size, False, transformers_cache, adapter_name)
+        model = AdapterTransformer(
+            model_name, batch_size, False, transformers_cache, adapter_name
+        )
 
     logger.info(f"Reading input from {input_file}")
     if os.path.dirname(output_file):
@@ -253,7 +293,12 @@ def encode(args):
                 texts = [line["text"] for line in lines]
                 ids = [line["id"] for line in lines]
 
-                input = PredictionRequest(input=texts, preprocessing_kwargs={}, model_kwargs={}, task_kwargs={"embedding_mode": "mean"})
+                input = PredictionRequest(
+                    input=texts,
+                    preprocessing_kwargs={},
+                    model_kwargs={},
+                    task_kwargs={"embedding_mode": "mean"},
+                )
                 embeddings = model.embedding(input)
                 embeddings = embeddings.cpu().numpy()
                 if args.float16:
@@ -266,20 +311,38 @@ def encode(args):
             current_processed_lines += len(lines)
 
             if current_processed_lines >= chunk_size or finished_reading:
-                logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
+                logger.info(
+                    f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)"
+                )
 
-                current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+                current_output["embeddings"] = np.concatenate(
+                    current_output["embeddings"]
+                )
 
                 if args.hdf5:
                     chunk_output_file = f"{output_file}_{chunk_idx}.h5"
                     with h5py.File(chunk_output_file, "w") as out_f:
                         logger.info(f"Writing chunk in {chunk_output_file}")
                         if args.hdf5_gzip_level < 0:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"])
+                            out_f.create_dataset(
+                                "ids", data=np.array(current_output["ids"], dtype="S")
+                            )
+                            out_f.create_dataset(
+                                "embeddings", data=current_output["embeddings"]
+                            )
                         else:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                            out_f.create_dataset(
+                                "ids",
+                                data=np.array(current_output["ids"], dtype="S"),
+                                compression="gzip",
+                                compression_opts=min(args.hdf5_gzip_level, 9),
+                            )
+                            out_f.create_dataset(
+                                "embeddings",
+                                data=current_output["embeddings"],
+                                compression="gzip",
+                                compression_opts=min(args.hdf5_gzip_level, 9),
+                            )
                 else:
                     chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
                     with open(chunk_output_file, "wb") as out_f:
@@ -302,7 +365,12 @@ def _read_process(input_file, batch_size, input_queue):
                 texts = [line["text"] for line in lines]
                 ids = [line["id"] for line in lines]
 
-                input = PredictionRequest(input=texts, preprocessing_kwargs={}, model_kwargs={}, task_kwargs={"embedding_mode": "mean"})
+                input = PredictionRequest(
+                    input=texts,
+                    preprocessing_kwargs={},
+                    model_kwargs={},
+                    task_kwargs={"embedding_mode": "mean"},
+                )
                 input_queue.put((input, ids), block=True)
 
 
@@ -338,20 +406,38 @@ def _write_process(output_file, chunk_size, args, output_queue):
             current_processed_lines += len(ids)
 
             if current_processed_lines >= chunk_size:
-                logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
+                logger.info(
+                    f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)"
+                )
 
-                current_output["embeddings"] = np.concatenate(current_output["embeddings"])
+                current_output["embeddings"] = np.concatenate(
+                    current_output["embeddings"]
+                )
 
                 if args.hdf5:
                     chunk_output_file = f"{output_file}_{chunk_idx}.h5"
                     with h5py.File(chunk_output_file, "w") as out_f:
                         logger.info(f"Writing chunk in {chunk_output_file}")
                         if args.hdf5_gzip_level < 0:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"])
+                            out_f.create_dataset(
+                                "ids", data=np.array(current_output["ids"], dtype="S")
+                            )
+                            out_f.create_dataset(
+                                "embeddings", data=current_output["embeddings"]
+                            )
                         else:
-                            out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                            out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                            out_f.create_dataset(
+                                "ids",
+                                data=np.array(current_output["ids"], dtype="S"),
+                                compression="gzip",
+                                compression_opts=min(args.hdf5_gzip_level, 9),
+                            )
+                            out_f.create_dataset(
+                                "embeddings",
+                                data=current_output["embeddings"],
+                                compression="gzip",
+                                compression_opts=min(args.hdf5_gzip_level, 9),
+                            )
                 else:
                     chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
                     with open(chunk_output_file, "wb") as out_f:
@@ -361,18 +447,34 @@ def _write_process(output_file, chunk_size, args, output_queue):
                 current_output = {"ids": [], "embeddings": []}
                 chunk_idx += 1
         except queue.Empty:
-            logger.info(f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)")
+            logger.info(
+                f"Processed {total_processed_lines} lines ({chunk_idx+1} chunks)"
+            )
             current_output["embeddings"] = np.concatenate(current_output["embeddings"])
             if args.hdf5:
                 chunk_output_file = f"{output_file}_{chunk_idx}.h5"
                 with h5py.File(chunk_output_file, "w") as out_f:
                     logger.info(f"Writing chunk in {chunk_output_file}")
                     if args.hdf5_gzip_level < 0:
-                        out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"))
-                        out_f.create_dataset("embeddings", data=current_output["embeddings"])
+                        out_f.create_dataset(
+                            "ids", data=np.array(current_output["ids"], dtype="S")
+                        )
+                        out_f.create_dataset(
+                            "embeddings", data=current_output["embeddings"]
+                        )
                     else:
-                        out_f.create_dataset("ids", data=np.array(current_output["ids"], dtype="S"),  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
-                        out_f.create_dataset("embeddings", data=current_output["embeddings"],  compression="gzip", compression_opts=min(args.hdf5_gzip_level, 9))
+                        out_f.create_dataset(
+                            "ids",
+                            data=np.array(current_output["ids"], dtype="S"),
+                            compression="gzip",
+                            compression_opts=min(args.hdf5_gzip_level, 9),
+                        )
+                        out_f.create_dataset(
+                            "embeddings",
+                            data=current_output["embeddings"],
+                            compression="gzip",
+                            compression_opts=min(args.hdf5_gzip_level, 9),
+                        )
             else:
                 chunk_output_file = f"{output_file}_{chunk_idx}.pkl"
                 with open(chunk_output_file, "wb") as out_f:
@@ -389,59 +491,108 @@ def encode_multiprocess(args):
     batch_size = args.batch_size
     chunk_size = args.chunk_size
     input_file = args.input_file
-    output_file = os.path.splitext(args.output_file)[0]  # Remove file extension from name
+    output_file = os.path.splitext(args.output_file)[
+        0
+    ]  # Remove file extension from name
     adapter_name = args.adapter_name
     devices = args.gpus.split(",")
 
-    ctx = mp.get_context('spawn')
+    ctx = mp.get_context("spawn")
 
     if model_type == "sentence-transformer":
         model = SentenceTransformer(model_name, batch_size, True)
     elif model_type == "transformer":
         model = Transformer(model_name, batch_size, True)
     elif model_type == "adapter":
-        model = AdapterTransformer(model_name, batch_size, True, transformers_cache, adapter_name)
+        model = AdapterTransformer(
+            model_name, batch_size, True, transformers_cache, adapter_name
+        )
 
     if os.path.dirname(output_file):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-    input_queue = ctx.Queue(maxsize=2*len(devices))
+    input_queue = ctx.Queue(maxsize=2 * len(devices))
     output_queue = ctx.Queue()
 
-    read_p = ctx.Process(target=_read_process, args=(input_file, batch_size, input_queue), daemon=True)
+    read_p = ctx.Process(
+        target=_read_process, args=(input_file, batch_size, input_queue), daemon=True
+    )
     read_p.start()
-    write_p = ctx.Process(target=_write_process, args=(output_file, chunk_size, args, output_queue), daemon=True)
+    write_p = ctx.Process(
+        target=_write_process,
+        args=(output_file, chunk_size, args, output_queue),
+        daemon=True,
+    )
     write_p.start()
     for cuda_id in devices:
-        p = ctx.Process(target=_encode_process, args=(model, cuda_id, args.float16, input_queue, output_queue), daemon=True)
+        p = ctx.Process(
+            target=_encode_process,
+            args=(model, cuda_id, args.float16, input_queue, output_queue),
+            daemon=True,
+        )
         p.start()
 
     write_p.join()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--transformers_cache", help="Cache folder where model files will be downloaded into and loaded from")
-    parser.add_argument("--model_name", help="Model name, i.e., name used in transformers oder sentence-transformers to load the pre-trained model")
-    parser.add_argument("--model_type", help="Model type, one of 'adapter', 'transformer', 'sentence-transformer'")
+    parser.add_argument(
+        "--transformers_cache",
+        help="Cache folder where model files will be downloaded into and loaded from",
+    )
+    parser.add_argument(
+        "--model_name",
+        help="Model name, i.e., name used in transformers oder sentence-transformers to load the pre-trained model",
+    )
+    parser.add_argument(
+        "--model_type",
+        help="Model type, one of 'adapter', 'transformer', 'sentence-transformer'",
+    )
     parser.add_argument("--batch_size", type=int, help="Batch size used for encoding")
-    parser.add_argument("--chunk_size", type=int, help="Chunk size used for writing out embeddings. "
-                                                       "ATTENTION: This value will be set to the first value satisfying: true_chunk_size mod batch_size == 0"
-                                                       "Each output file contains chunk_size embeddings "
-                                                       "(except the last one if len(input) mod chunk_size != 0)")
-    parser.add_argument("--input_file", help="Input .jsonl file. Each line is a dict object: {'id': 'xxx', 'text': 'abc...'}")
-    parser.add_argument("--output_file", help="Output .pkl/.h5 file. A chunk index will be inserted between the name and extension: e.g. 'path/to/name_chunkidx.pkl' ."
-                                              "Format: {'ids': List[str], 'embeddings': ndarray}. "
-                                              "Note for hdf5, use f['ids'].asstr() to load ids as string because default is binary.")
-    parser.add_argument("--adapter_name", help="For model_type=adapter, the name of the adapter that should be loaded")
-    parser.add_argument("--hdf5", action="store_true", help="Save output with hdf5 instead of pickle")
-    parser.add_argument("--hdf5-gzip-level", type=int, default=4, help="GZIP compression level for HDF5 in range 0-9, default 4 (bigger is more compressed). "
-                                                                       "Set to negative value to disable compression."
-                                                                       "Only used when --hdf5 is also set.")
-    parser.add_argument("--float16", action="store_true", help="Save embeddings as float16")
-    parser.add_argument("--gpus", help="Set this value to use multiprocessing."
-                                       "Comma-separated list of devices (e.g., cuda:0,cuda:1) for multi-GPU processing."
-                                       "Reading, writing and each GPU is assigned its own process."
-                                       "Can also be used with only one device to use the multiprocessing for reading/ writing of outputs but this is not necessarily faster with one GPU.")
+    parser.add_argument(
+        "--chunk_size",
+        type=int,
+        help="Chunk size used for writing out embeddings. "
+        "ATTENTION: This value will be set to the first value satisfying: true_chunk_size mod batch_size == 0"
+        "Each output file contains chunk_size embeddings "
+        "(except the last one if len(input) mod chunk_size != 0)",
+    )
+    parser.add_argument(
+        "--input_file",
+        help="Input .jsonl file. Each line is a dict object: {'id': 'xxx', 'text': 'abc...'}",
+    )
+    parser.add_argument(
+        "--output_file",
+        help="Output .pkl/.h5 file. A chunk index will be inserted between the name and extension: e.g. 'path/to/name_chunkidx.pkl' ."
+        "Format: {'ids': List[str], 'embeddings': ndarray}. "
+        "Note for hdf5, use f['ids'].asstr() to load ids as string because default is binary.",
+    )
+    parser.add_argument(
+        "--adapter_name",
+        help="For model_type=adapter, the name of the adapter that should be loaded",
+    )
+    parser.add_argument(
+        "--hdf5", action="store_true", help="Save output with hdf5 instead of pickle"
+    )
+    parser.add_argument(
+        "--hdf5-gzip-level",
+        type=int,
+        default=4,
+        help="GZIP compression level for HDF5 in range 0-9, default 4 (bigger is more compressed). "
+        "Set to negative value to disable compression."
+        "Only used when --hdf5 is also set.",
+    )
+    parser.add_argument(
+        "--float16", action="store_true", help="Save embeddings as float16"
+    )
+    parser.add_argument(
+        "--gpus",
+        help="Set this value to use multiprocessing."
+        "Comma-separated list of devices (e.g., cuda:0,cuda:1) for multi-GPU processing."
+        "Reading, writing and each GPU is assigned its own process."
+        "Can also be used with only one device to use the multiprocessing for reading/ writing of outputs but this is not necessarily faster with one GPU.",
+    )
     args = parser.parse_args()
 
     start_time = time.time()

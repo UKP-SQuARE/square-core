@@ -1,29 +1,46 @@
 import multiprocessing
+
+import nltk
 # import multiprocessing.pool
 # from multiprocessing import Pool
 from billiard.pool import Pool
 from spacy.matcher import Matcher
 from tqdm import tqdm
-import nltk
 
-__all__ = ['ground']
+__all__ = ["ground"]
 
 # the lemma of it/them/mine/.. is -PRON-
 
-blacklist = {"-PRON-", "actually", "likely", "possibly", "want",
-             "make", "my", "someone", "sometimes_people",
-             "sometimes", "would", "want_to", "one", "something",
-             "sometimes", "everybody", "somebody", "could", "could_be"}
+blacklist = {
+    "-PRON-",
+    "actually",
+    "likely",
+    "possibly",
+    "want",
+    "make",
+    "my",
+    "someone",
+    "sometimes_people",
+    "sometimes",
+    "would",
+    "want_to",
+    "one",
+    "something",
+    "sometimes",
+    "everybody",
+    "somebody",
+    "could",
+    "could_be",
+}
 
 
-nltk.download('stopwords', quiet=True)
-nltk_stopwords = nltk.corpus.stopwords.words('english')
+nltk.download("stopwords", quiet=True)
+nltk_stopwords = nltk.corpus.stopwords.words("english")
 
 CPNET_VOCAB = None
 PATTERN_PATH = None
 nlp = None
 matcher = None
-
 
 
 class NoDaemonProcess(multiprocessing.Process):
@@ -35,26 +52,53 @@ class NoDaemonProcess(multiprocessing.Process):
     def daemon(self, value):
         pass
 
+
 class NoDaemonContext(type(multiprocessing.get_context())):
     Process = NoDaemonProcess
+
 
 # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
 # because the latter is only a wrapper function, not a proper class.
 class NestablePool(multiprocessing.pool.Pool):
     def __init__(self, *args, **kwargs):
-        kwargs['context'] = NoDaemonContext()
+        kwargs["context"] = NoDaemonContext()
         super(NestablePool, self).__init__(*args, **kwargs)
 
 
 def create_pattern(nlp, doc, debug=False):
-    pronoun_list = {"my", "you", "it", "its", "your", "i", "he", "she",
-                    "his", "her", "they", "them", "their", "our", "we"}
+    pronoun_list = {
+        "my",
+        "you",
+        "it",
+        "its",
+        "your",
+        "i",
+        "he",
+        "she",
+        "his",
+        "her",
+        "they",
+        "them",
+        "their",
+        "our",
+        "we",
+    }
     # Filtering concepts consisting of all stop words and longer than four words.
-    if len(doc) >= 5 or doc[0].text in pronoun_list or doc[-1].text in pronoun_list or \
-            all([(token.text in nltk_stopwords or
-                  token.lemma_ in nltk_stopwords or
-                  token.lemma_ in blacklist)
-                 for token in doc]):
+    if (
+        len(doc) >= 5
+        or doc[0].text in pronoun_list
+        or doc[-1].text in pronoun_list
+        or all(
+            [
+                (
+                    token.text in nltk_stopwords
+                    or token.lemma_ in nltk_stopwords
+                    or token.lemma_ in blacklist
+                )
+                for token in doc
+            ]
+        )
+    ):
         if debug:
             return False, doc.text
         return None  # ignore this concept as pattern
@@ -107,7 +151,9 @@ def ground_mentioned_concepts(nlp, matcher, s, ans=None):
 
     if ans is not None:
         ans_matcher = Matcher(nlp.vocab)
-        ans_matcher.add(ans, [[{'TEXT': token.text.lower()} for token in nlp.tokenizer.pipe(ans)]])
+        ans_matcher.add(
+            ans, [[{"TEXT": token.text.lower()} for token in nlp.tokenizer.pipe(ans)]]
+        )
 
         ans_match = ans_matcher(doc)
         ans_mentions = set()
@@ -148,8 +194,13 @@ def ground_mentioned_concepts(nlp, matcher, s, ans=None):
             else:
                 mentioned_concepts.add(c)
 
-        exact_match = set([concept for concept in concepts_sorted
-                           if concept.replace("_", " ").lower() == span.lower()])
+        exact_match = set(
+            [
+                concept
+                for concept in concepts_sorted
+                if concept.replace("_", " ").lower() == span.lower()
+            ]
+        )
         assert len(exact_match) < 2
         mentioned_concepts.update(exact_match)
     return mentioned_concepts
@@ -229,13 +280,13 @@ def ground(statement, cpnet_vocab, _nlp, _matcher, num_processes=1, debug=False)
 
     sents = []
     answers = []
-    global matcher ,nlp
+    global matcher, nlp
     matcher = _matcher
     nlp = _nlp
     del _nlp, _matcher
 
     for sentence in statement["statements"]:
-            sents.append(sentence["statement"])
+        sents.append(sentence["statement"])
 
     for answer in statement["choices"]:
         try:
@@ -246,5 +297,5 @@ def ground(statement, cpnet_vocab, _nlp, _matcher, num_processes=1, debug=False)
 
     res = match_mentioned_concepts(sents, answers, num_processes)
     res = prune(res, cpnet_vocab)
-    print(f'grounding concepts finished ')
+    print(f"grounding concepts finished ")
     return res

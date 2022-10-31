@@ -1,5 +1,6 @@
+from typing import Dict, List, Tuple
+
 import numpy as np
-from typing import Dict, Tuple, List
 
 
 class Attacker:

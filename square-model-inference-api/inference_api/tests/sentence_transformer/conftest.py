@@ -1,18 +1,15 @@
-import pytest
 import os
-from pre_test_setup_for_docker_caching import (
-    # SENTENCE_MODEL,
-    TRANSFORMERS_TESTING_CACHE,
-)
-SENTENCE_MODEL = os.getenv("TEST_MODEL_PATH","./model4test")
-from main import get_app, auth
 
-from tasks.inference.sentencetransformer import SentenceTransformer
+import pytest
+from pre_test_setup_for_docker_caching import \
+    TRANSFORMERS_TESTING_CACHE  # SENTENCE_MODEL,
 
-from tasks.config.model_config import ModelConfig, set_test_config, model_config
+SENTENCE_MODEL = os.getenv("TEST_MODEL_PATH", "./model4test")
 from app.models.request import PredictionRequest
-
-
+from main import auth, get_app
+from tasks.config.model_config import (ModelConfig, model_config,
+                                       set_test_config)
+from tasks.inference.sentencetransformer import SentenceTransformer
 
 
 @pytest.fixture(scope="session")
@@ -37,12 +34,14 @@ def test_sentence_transformer():
 
 @pytest.fixture()
 def prediction_request():
-    request = PredictionRequest.parse_obj({
-        "input": ["test"],
-        "is_preprocessed": False,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
-        "task_kwargs": {},
-        "adapter_name": ""
-    })
+    request = PredictionRequest.parse_obj(
+        {
+            "input": ["test"],
+            "is_preprocessed": False,
+            "preprocessing_kwargs": {},
+            "model_kwargs": {},
+            "task_kwargs": {},
+            "adapter_name": "",
+        }
+    )
     return request

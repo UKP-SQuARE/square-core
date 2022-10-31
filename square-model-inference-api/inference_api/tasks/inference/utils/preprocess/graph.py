@@ -1,13 +1,13 @@
-import torch
-from tqdm import tqdm
+import time
+from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
+
 import numpy as np
-from scipy.sparse import coo_matrix
+import torch
 # from multiprocessing import Pool
 from billiard.pool import Pool
-from concurrent.futures import ThreadPoolExecutor
-from collections import OrderedDict
-import time
-
+from scipy.sparse import coo_matrix
+from tqdm import tqdm
 
 concept2id = None
 id2concept = None
@@ -18,23 +18,23 @@ cpnet_all = None
 cpnet_simple = None
 
 merged_relations = [
-    'antonym',
-    'atlocation',
-    'capableof',
-    'causes',
-    'createdby',
-    'isa',
-    'desires',
-    'hassubevent',
-    'partof',
-    'hascontext',
-    'hasproperty',
-    'madeof',
-    'notcapableof',
-    'notdesires',
-    'receivesaction',
-    'relatedto',
-    'usedfor',
+    "antonym",
+    "atlocation",
+    "capableof",
+    "causes",
+    "createdby",
+    "isa",
+    "desires",
+    "hassubevent",
+    "partof",
+    "hascontext",
+    "hasproperty",
+    "madeof",
+    "notcapableof",
+    "notdesires",
+    "receivesaction",
+    "relatedto",
+    "usedfor",
 ]
 
 id2relation = merged_relations
@@ -52,8 +52,8 @@ def concepts2adj(node_ids):
             if cpnet.has_edge(s_c, t_c):
                 for e_attr in cpnet[s_c][t_c].values():
                     # print("edge attributes:", e_attr)
-                    if e_attr['rel'] >= 0 and e_attr['rel'] < n_rel:
-                        adj[e_attr['rel']][s][t] = 1
+                    if e_attr["rel"] >= 0 and e_attr["rel"] < n_rel:
+                        adj[e_attr["rel"]][s][t] = 1
     # cids += 1  # note!!! index 0 is reserved for padding
     adj = coo_matrix(adj.reshape(-1, n_node))
     return adj, cids
@@ -61,20 +61,15 @@ def concepts2adj(node_ids):
 
 def get_LM_score(cids, question, model, tokenizer):
     cids = cids[:]
-    cids.insert(0, -1)   # QAcontext node
+    cids.insert(0, -1)  # QAcontext node
     sents, scores = [], []
     sents = [
-        tokenizer.encode(
-            question.lower(),
-            add_special_tokens=True
-        )
+        tokenizer.encode(question.lower(), add_special_tokens=True)
         if cid == -1
         else tokenizer.encode(
-            '{} {}.'.format(
-                question.lower(),
-                ' '.join(id2concept[cid].split('_'))
-            ),
-            add_special_tokens=True)
+            "{} {}.".format(question.lower(), " ".join(id2concept[cid].split("_"))),
+            add_special_tokens=True,
+        )
         for cid in cids
     ]
     n_cids = len(cids)
@@ -83,28 +78,23 @@ def get_LM_score(cids, question, model, tokenizer):
     batch_size = 128
     while cur_idx < n_cids:
         # Prepare batch
-        input_ids = sents[cur_idx: cur_idx+batch_size]
+        input_ids = sents[cur_idx : cur_idx + batch_size]
         max_len = max([len(seq) for seq in input_ids])
         for j, seq in enumerate(input_ids):
-            seq += [tokenizer.pad_token_id] * (max_len-len(seq))
+            seq += [tokenizer.pad_token_id] * (max_len - len(seq))
             input_ids[j] = seq
         input_ids = torch.tensor(input_ids)
         mask = (input_ids != 1).long()
         # Get LM score
         with torch.no_grad():
-            outputs = model(
-                input_ids,
-                attention_mask=mask,
-                masked_lm_labels=input_ids
-            )
+            outputs = model(input_ids, attention_mask=mask, masked_lm_labels=input_ids)
             loss = outputs[0]  # [B, ]
             _scores = list(-loss.detach().cpu().numpy())
         scores += _scores
         cur_idx += batch_size
     assert len(sents) == len(scores) == len(cids)
     cid2score = OrderedDict(
-        sorted(list(zip(cids, scores)),
-               key=lambda x: -x[1])
+        sorted(list(zip(cids, scores)), key=lambda x: -x[1])
     )  # score: from high to low
 
     return cid2score
@@ -117,50 +107,44 @@ def concepts_to_adj_matrices_part1(data):
 
     for qid in qa_nodes:
         for aid in qa_nodes:
-            if qid != aid and qid in cpnet_simple.nodes \
-                    and aid in cpnet_simple.nodes:
-                extra_nodes |= set(cpnet_simple[qid]) &\
-                               set(cpnet_simple[aid])  # list of node ids
+            if qid != aid and qid in cpnet_simple.nodes and aid in cpnet_simple.nodes:
+                extra_nodes |= set(cpnet_simple[qid]) & set(
+                    cpnet_simple[aid]
+                )  # list of node ids
     extra_nodes = extra_nodes - qa_nodes
 
-    return (
-        sorted(qc_ids),
-        sorted(ac_ids),
-        question,
-        sorted(extra_nodes)
-    )
+    return (sorted(qc_ids), sorted(ac_ids), question, sorted(extra_nodes))
 
 
 def concepts_to_adj_matrices_part3(data):
     qc_ids, ac_ids, question, extra_nodes, cid2score = data
-    schema_graph = qc_ids + ac_ids + sorted(
-        extra_nodes, key=lambda x: -cid2score[x]
-    ) # score: from high to low
+    schema_graph = (
+        qc_ids + ac_ids + sorted(extra_nodes, key=lambda x: -cid2score[x])
+    )  # score: from high to low
     arange = np.arange(len(schema_graph))
     qmask = arange < len(qc_ids)
-    amask = (arange >= len(qc_ids)) & \
-            (arange < (len(qc_ids) + len(ac_ids)))
+    amask = (arange >= len(qc_ids)) & (arange < (len(qc_ids) + len(ac_ids)))
     # print("schema: ", schema_graph)
     adj, concepts = concepts2adj(schema_graph)
     return {
-        'adj': adj,
-        'concepts': concepts,
-        'qmask': qmask,
-        'amask': amask,
-        'cid2score': cid2score
+        "adj": adj,
+        "concepts": concepts,
+        "qmask": qmask,
+        "amask": amask,
+        "cid2score": cid2score,
     }
 
 
 def generate_adj_data_from_grounded_concepts__use_LM(
-        statements,
-        grounded,
-        concept2id,
-        _cpnet_vocab,
-        _cpnet,
-        _cpnet_simple,
-        model,
-        tokenizer,
-        num_processes=1
+    statements,
+    grounded,
+    concept2id,
+    _cpnet_vocab,
+    _cpnet,
+    _cpnet_simple,
+    model,
+    tokenizer,
+    num_processes=1,
 ):
     """
     This function will save
@@ -197,41 +181,33 @@ def generate_adj_data_from_grounded_concepts__use_LM(
     for ex in grounded:
         # use API to get q_ids and a_ids (?)
         # API input :  entity, output : id
-        q_ids = set(concept2id[c] for c in ex['qc'])
-        a_ids = set(concept2id[c] for c in ex['ac'])
+        q_ids = set(concept2id[c] for c in ex["qc"])
+        a_ids = set(concept2id[c] for c in ex["ac"])
         q_ids = q_ids - a_ids
-        QAcontext = "{} {}.".format(statements['question'], ex['ans'])
+        QAcontext = "{} {}.".format(statements["question"], ex["ans"])
         qa_data.append((q_ids, a_ids, QAcontext))
 
     # start = time.time()
     with Pool(num_processes) as p:
-        res1 = list(tqdm(p.imap(
-            concepts_to_adj_matrices_part1,
-            qa_data),
-            total=len(qa_data)
-        ))
+        res1 = list(
+            tqdm(p.imap(concepts_to_adj_matrices_part1, qa_data), total=len(qa_data))
+        )
 
     global concepts_to_adj_matrices_part2
+
     def concepts_to_adj_matrices_part2(data):
         qc_ids, ac_ids, question, extra_nodes = data
         cid2score = get_LM_score(
-            qc_ids + ac_ids + extra_nodes,
-            question,
-            model,
-            tokenizer
+            qc_ids + ac_ids + extra_nodes, question, model, tokenizer
         )
         return (qc_ids, ac_ids, question, extra_nodes, cid2score)
 
     workers = 5
     with ThreadPoolExecutor(workers) as pool:
-        res2= list(pool.map(concepts_to_adj_matrices_part2, res1))
+        res2 = list(pool.map(concepts_to_adj_matrices_part2, res1))
 
     with Pool(num_processes) as p:
-        res3 = list(tqdm(p.imap(
-            concepts_to_adj_matrices_part3,
-            res2),
-            total=len(res2)
-        ))
+        res3 = list(tqdm(p.imap(concepts_to_adj_matrices_part3, res2), total=len(res2)))
     # print(f"concepts_to_adj_matrices_2hop_all_pair__use_LM__Part3 takes {end-start}")
 
     return res3

@@ -1,18 +1,21 @@
-import unittest
 import os
-from app.models.request import PredictionRequest
-from tasks.tasks import prediction_task
-from tasks.models.request import Task
+import unittest
 
+from app.models.request import PredictionRequest
+from tasks.models.request import Task
+from tasks.tasks import prediction_task
 
 TEST_MODEL_PATH = os.getenv("TEST_MODEL_PATH", "./model4test")
 
 
 class TestTasks(unittest.TestCase):
     def test_embedding_task(self):
-        request = PredictionRequest(input=["Some text"], adapter_name="lingaccept/cola@ukp")
+        request = PredictionRequest(
+            input=["Some text"], adapter_name="lingaccept/cola@ukp"
+        )
         task = Task.embedding
-        model_config = {"identifier": "test_config",
+        model_config = {
+            "identifier": "test_config",
             "model_type": "adapter",
             "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
@@ -30,7 +33,8 @@ class TestTasks(unittest.TestCase):
         adapter_name = "lingaccept/cola@ukp"
         request = PredictionRequest(input=["Some text"], adapter_name=adapter_name)
         task = Task.sequence_classification
-        model_config = {"identifier": "test_config",
+        model_config = {
+            "identifier": "test_config",
             "model_type": "adapter",
             "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
@@ -47,7 +51,8 @@ class TestTasks(unittest.TestCase):
         adapter_name = "ner/conll2003@ukp"
         request = PredictionRequest(input=["Some text"], adapter_name=adapter_name)
         task = Task.token_classification
-        model_config = {"identifier": "test_config",
+        model_config = {
+            "identifier": "test_config",
             "model_type": "adapter",
             "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,
@@ -63,9 +68,13 @@ class TestTasks(unittest.TestCase):
 
     def test_question_answering_task(self):
         adapter_name = "qa/squad1@ukp"
-        request = PredictionRequest(input=[["What is a test?", "A test is a thing where you test."]], adapter_name=adapter_name)
+        request = PredictionRequest(
+            input=[["What is a test?", "A test is a thing where you test."]],
+            adapter_name=adapter_name,
+        )
         task = Task.question_answering
-        model_config = {"identifier": "test_config",
+        model_config = {
+            "identifier": "test_config",
             "model_type": "adapter",
             "model_name": TEST_MODEL_PATH,
             "disable_gpu": False,

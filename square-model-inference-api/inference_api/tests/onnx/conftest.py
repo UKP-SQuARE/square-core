@@ -1,16 +1,13 @@
-import pytest
-
-from pre_test_setup_for_docker_caching import (
-    ONNX_MODEL,
-)
-import torch
 import os
 
-from main import get_app, auth
-
-from tasks.inference.onnx import Onnx
-from tasks.config.model_config import ModelConfig, set_test_config, model_config
+import pytest
+import torch
 from app.models.request import PredictionRequest
+from main import auth, get_app
+from pre_test_setup_for_docker_caching import ONNX_MODEL
+from tasks.config.model_config import (ModelConfig, model_config,
+                                       set_test_config)
+from tasks.inference.onnx import Onnx
 
 
 @pytest.fixture(scope="session")
@@ -109,12 +106,14 @@ def test_onnx_generation():
 
 @pytest.fixture()
 def prediction_request():
-    request = PredictionRequest.parse_obj({
-        "input": ["test"],
-        "is_preprocessed": False,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
-        "task_kwargs": {},
-        "adapter_name": ""
-    })
+    request = PredictionRequest.parse_obj(
+        {
+            "input": ["test"],
+            "is_preprocessed": False,
+            "preprocessing_kwargs": {},
+            "model_kwargs": {},
+            "task_kwargs": {},
+            "adapter_name": "",
+        }
+    )
     return request

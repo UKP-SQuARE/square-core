@@ -1,42 +1,28 @@
-import os
+import itertools
 import json
 import logging
-import itertools
 import operator
-from tqdm import tqdm
-from typing import Union, Tuple, List
-
-import numpy as np
-import torch
+import os
+from typing import List, Tuple, Union
 
 import networkx as nx
+import numpy as np
 import spacy
+import torch
 from spacy.matcher import Matcher
-
-from tasks.inference.model import Model
-from tasks.models.request import Task
 from tasks.config.model_config import model_config
+from tasks.inference.model import Model
 from tasks.models.prediction import (
-    PredictionOutput,
-    PredictionOutputForGraphSequenceClassification,
-)
-from tasks.models.request import PredictionRequest
+    PredictionOutput, PredictionOutputForGraphSequenceClassification)
+from tasks.models.request import PredictionRequest, Task
+from tqdm import tqdm
+from transformers import (BERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
+                          OPENAI_GPT_PRETRAINED_CONFIG_ARCHIVE_MAP,
+                          ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP,
+                          XLNET_PRETRAINED_CONFIG_ARCHIVE_MAP, AutoTokenizer)
 
-from .utils.modelling import roberta, qagnn
-from .utils.preprocess import (
-    statement,
-    grounding,
-    graph,
-)
-
-
-from transformers import (
-    AutoTokenizer,
-    OPENAI_GPT_PRETRAINED_CONFIG_ARCHIVE_MAP,
-    BERT_PRETRAINED_CONFIG_ARCHIVE_MAP,
-    XLNET_PRETRAINED_CONFIG_ARCHIVE_MAP,
-    ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP,
-)
+from .utils.modelling import qagnn, roberta
+from .utils.preprocess import graph, grounding, statement
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
@@ -689,12 +675,12 @@ class GraphTransformers(Model):
         """
 
         def _get_node_info(lm_scores: dict, grounded: dict) -> dict:
-
             def softmax(score: float, score_map: dict):
                 values = np.array(list(score_map.values()))
                 sum = np.exp(values).sum()
 
                 return np.exp(score) / sum
+
             node_attributes = {}
             for node_id, score in lm_scores.items():
                 node = dict()
@@ -706,7 +692,7 @@ class GraphTransformers(Model):
                     node["q_node"] = True
                 elif node["name"] in grounded["ac"]:
                     node["ans_node"] = True
-                node["weight"] = float(softmax(float(score),lm_scores))
+                node["weight"] = float(softmax(float(score), lm_scores))
                 node_attributes[node_id] = node
             return node_attributes
 

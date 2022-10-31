@@ -1,10 +1,11 @@
-from collections.abc import Mapping
-from dataclasses import dataclass, asdict
 import json
 import os
-from starlette.config import Config
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass
+
 from app.models.statistics import ModelStatistics
 from filelock import FileLock
+from starlette.config import Config
 
 APP_VERSION = "0.1.0"
 APP_NAME = "SQuARE Model Inference API"
@@ -13,8 +14,6 @@ OPENAPI_URL = "/api/openapi.json"
 
 CONFIG_PATH = os.getenv("CONFIG_PATH")
 IDENTIFIER = os.getenv("QUEUE")
-
-
 
 
 @dataclass
@@ -83,7 +82,7 @@ class ModelConfig(Mapping):
         )
 
     def update(self):
-        with open(f"{CONFIG_PATH}/{IDENTIFIER}.json", 'r') as f:
+        with open(f"{CONFIG_PATH}/{IDENTIFIER}.json", "r") as f:
             config = json.load(f)
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
@@ -113,7 +112,9 @@ class ModelConfig(Mapping):
             max_input_size=config("MAX_INPUT_SIZE", cast=int, default=1024),
             transformers_cache=config("TRANSFORMERS_CACHE", default=None),
             model_class=config("MODEL_CLASS", default="base"),
-            return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
+            return_plaintext_arrays=config(
+                "RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False
+            ),
         )
         model_config.save(IDENTIFIER)
         return model_config
@@ -122,29 +123,39 @@ class ModelConfig(Mapping):
     def load_from_file(identifier):
         identifier = identifier.replace("/", "-")
         with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
-            with open(f"{CONFIG_PATH}/{identifier}.json", 'r') as f:
+            with open(f"{CONFIG_PATH}/{identifier}.json", "r") as f:
                 config = json.load(f)
         return ModelConfig(**config)
 
     def save(self, identifier):
         identifier = identifier.replace("/", "-")
-        if not os.path.exists(f'{CONFIG_PATH}/{identifier}.json'):
+        if not os.path.exists(f"{CONFIG_PATH}/{identifier}.json"):
             try:
-                os.makedirs(os.path.dirname(f'{CONFIG_PATH}/{identifier}.json'))
+                os.makedirs(os.path.dirname(f"{CONFIG_PATH}/{identifier}.json"))
             except OSError as err:
                 print(err)
         with FileLock(f"{CONFIG_PATH}/{identifier}.lock"):
-            with open(f'{CONFIG_PATH}/{identifier}.json', 'w+') as json_file:
+            with open(f"{CONFIG_PATH}/{identifier}.json", "w+") as json_file:
                 json.dump(self.to_dict(), json_file)
 
 
 model_config = ModelConfig.load()
 
 
-
 # for testing the inference models
-def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_size, model_class="base",
-                    cache="./.cache", preloaded_adapters=False, onnx_path="", decoder_path="", data_path=""):
+def set_test_config(
+    model_name,
+    disable_gpu,
+    batch_size,
+    model_type,
+    max_input_size,
+    model_class="base",
+    cache="./.cache",
+    preloaded_adapters=False,
+    onnx_path="",
+    decoder_path="",
+    data_path="",
+):
     global model_config
     model_config.model_name = model_name
     model_config.model_class = model_class
@@ -159,8 +170,8 @@ def set_test_config(model_name, disable_gpu, batch_size, model_type, max_input_s
     model_config.decoder_path = decoder_path
 
 
-if os.getenv("TEST", 0) == '1':
+if os.getenv("TEST", 0) == "1":
     TEST_MODEL_PATH = os.getenv("TEST_MODEL_PATH", "./model4test")
 
-    set_test_config( TEST_MODEL_PATH, True, 8, "adapter", 512)
+    set_test_config(TEST_MODEL_PATH, True, 8, "adapter", 512)
     model_config.save(IDENTIFIER)

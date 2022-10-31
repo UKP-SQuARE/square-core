@@ -13,11 +13,13 @@ def task_query(config, endpoint):
     :param endpoint: the endpoint for the query
     :return: the closure for the Locust task function that makes the specified query
     """
+
     def query(user):
         path = f"/api/{config['model']}/{endpoint}"
         query_json = config["query_json"]
         # headers = {config.get("api_key_header", "Authorization"): config["api_key"]}
-        user.client.post(path, json=query_json)   # , headers=headers)
+        user.client.post(path, json=query_json)  # , headers=headers)
+
     return query
 
 

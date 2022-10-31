@@ -93,7 +93,7 @@ class Transformer(Model):
         self.tokenizer = tokenizer
 
     def encode(
-            self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None
+        self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None
     ):
         """
         Encode inputs using the model tokenizer
@@ -136,7 +136,7 @@ class Transformer(Model):
         return {name: tensor.to(self.model.device) for name, tensor in inputs.items()}
 
     def get_model_embeddings(
-            self, embedding_type: str = "word_embeddings"
+        self, embedding_type: str = "word_embeddings"
     ) -> Module or ModuleList:
         """
         Get the model embedding layer
@@ -306,7 +306,7 @@ class Transformer(Model):
         return grad_dict
 
     def _predict(
-            self, request: PredictionRequest, output_features=False
+        self, request: PredictionRequest, output_features=False
     ) -> Union[dict, Tuple[dict, dict]]:
         """
         Inference on the input.
@@ -364,7 +364,7 @@ class Transformer(Model):
         for start_idx in range(0, len(request.input), model_config.batch_size):
             with torch.no_grad():
                 input_features = {
-                    k: features[k][start_idx: start_idx + model_config.batch_size]
+                    k: features[k][start_idx : start_idx + model_config.batch_size]
                     for k in features.keys()
                 }
                 input_features = self._ensure_tensor_on_device(**input_features)
@@ -404,7 +404,7 @@ class Transformer(Model):
         return final_prediction
 
     def _interpret(
-            self, request: PredictionRequest, prediction: Dict, method: str, **kwargs
+        self, request: PredictionRequest, prediction: Dict, method: str, **kwargs
     ):
         """
         gets the word attributions
@@ -587,7 +587,7 @@ class Transformer(Model):
             )
             hidden_state[
                 input_mask_expanded == 0
-                ] = -1e9  # Set padding tokens to large negative value
+            ] = -1e9  # Set padding tokens to large negative value
             emb = torch.max(hidden_state, 1)[0]
         # copied from sentence-transformers pooling
         elif embedding_mode == "mean":
@@ -616,7 +616,7 @@ class Transformer(Model):
             "word_ids": [features.word_ids(i) for i in range(len(request.input))],
         }
         if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get(
-                "is_regression", False
+            "is_regression", False
         ):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
@@ -643,7 +643,7 @@ class Transformer(Model):
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
         if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get(
-                "is_regression", False
+            "is_regression", False
         ):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
@@ -679,7 +679,7 @@ class Transformer(Model):
                 else "all",
                 task="sequence_classification",
                 # new added parameter in process_output method
-                attack_method=attack_method
+                attack_method=attack_method,
             )
             # print(word_imp)
             task_outputs["attributions"] = word_imp
@@ -752,11 +752,11 @@ class Transformer(Model):
         # Making heavy use of https://huggingface.co/transformers/
         # _modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
         def decode(
-                start_: np.ndarray,
-                end_: np.ndarray,
-                topk: int,
-                max_answer_len: int,
-                undesired_tokens_: np.ndarray,
+            start_: np.ndarray,
+            end_: np.ndarray,
+            topk: int,
+            max_answer_len: int,
+            undesired_tokens_: np.ndarray,
         ) -> Tuple:
             """
             Take the output of any :obj:`ModelForQuestionAnswering` and
@@ -818,10 +818,10 @@ class Transformer(Model):
         task_outputs = {
             "answers": [],
             "attributions": [],
-            "adversarial": {"indices": [], },  # for hotflip, input_reduction and topk
+            "adversarial": {"indices": [],},  # for hotflip, input_reduction and topk
         }
         for idx, (start, end, (_, context)) in enumerate(
-                zip(predictions["start_logits"], predictions["end_logits"], request.input)
+            zip(predictions["start_logits"], predictions["end_logits"], request.input)
         ):
             start = start.numpy()
             end = end.numpy()
@@ -869,10 +869,10 @@ class Transformer(Model):
                     ],
                     "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
                     "answer": context[
-                              enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[
-                                  0
-                              ]: enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]
-                              ],
+                        enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[
+                            0
+                        ] : enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]
+                    ],
                 }
                 for s, e, score in zip(starts, ends, scores)
             ]
@@ -881,8 +881,8 @@ class Transformer(Model):
                     {"score": no_answer_score, "start": 0, "end": 0, "answer": ""}
                 )
             answers = sorted(answers, key=lambda x: x["score"], reverse=True)[
-                      : request.task_kwargs.get("topk", 1)
-                      ]
+                : request.task_kwargs.get("topk", 1)
+            ]
             task_outputs["answers"].append(answers)
 
             # word attributions
@@ -922,15 +922,15 @@ class Transformer(Model):
                     else "all",
                     task="question_answering",
                     # new added paramter in process_ourput method
-                    attack_method=attack_method
+                    attack_method=attack_method,
                 )
                 # print(word_imp)
                 task_outputs["attributions"] = word_imp
 
             if (
-                    not request.attack_kwargs
-                    and not request.explain_kwargs
-                    and not request.model_kwargs.get("output_attentions", False)
+                not request.attack_kwargs
+                and not request.explain_kwargs
+                and not request.model_kwargs.get("output_attentions", False)
             ):
                 predictions.pop("attentions", None)
 
@@ -943,7 +943,7 @@ class Transformer(Model):
         )
 
     def _model_attacks(
-            self, request: PredictionRequest, task_outputs
+        self, request: PredictionRequest, task_outputs
     ) -> PredictionOutput:
         """
         Perform attacks on the model output.
@@ -970,7 +970,7 @@ class Transformer(Model):
                 grads=self.gradients,
                 embeddings=self.get_model_embeddings(),
                 model_type=self.model.config.model_type,
-                word_mappings=self.word_mappings
+                word_mappings=self.word_mappings,
             )
 
             batch_request, indices = attack.attack_instance(
@@ -1048,7 +1048,7 @@ class Transformer(Model):
             return self._generation(request)
 
     def _bpe_decode(
-            self, tokens: List[str], attributions: List
+        self, tokens: List[str], attributions: List
     ) -> Tuple[List[str], np.array]:
         """
         Byte-pair encoding for roberta-type models
@@ -1069,10 +1069,10 @@ class Transformer(Model):
         for idx, token in enumerate(decoded_each_tok):
             # special token, punctuation, alphanumeric
             if (
-                    token in self.tokenizer.all_special_tokens
-                    or token in string.punctuation
-                    or not any([x.isalnum() for x in token.lstrip()])
-                    or token.lstrip == "'s"
+                token in self.tokenizer.all_special_tokens
+                or token in string.punctuation
+                or not any([x.isalnum() for x in token.lstrip()])
+                or token.lstrip == "'s"
             ):
                 end_points.append(idx)
                 force_break = True
@@ -1105,7 +1105,7 @@ class Transformer(Model):
         return filtered_tokens, attribution_score
 
     def _wordpiece_decode(
-            self, tokens: List[str], attributions: List, word_map: List
+        self, tokens: List[str], attributions: List, word_map: List
     ) -> Tuple[List[str], np.array]:
 
         """
@@ -1130,7 +1130,12 @@ class Transformer(Model):
         return filtered_tokens, np.array(attribution_score)
 
     def process_outputs(
-            self, attributions: List[List], top_k: int, mode: str, task: str, attack_method=None
+        self,
+        attributions: List[List],
+        top_k: int,
+        mode: str,
+        task: str,
+        attack_method=None,
     ) -> List[Dict]:
         """
         post-process the word attributions to merge the sub-words tokens
@@ -1157,7 +1162,9 @@ class Transformer(Model):
             sep_tokens: int = 0
             if self.model.config.model_type in ["roberta", "bart"]:
                 if attack_method != "hotflip":
-                    filtered_tokens, importance = self._bpe_decode(dec_texts[idx], score)
+                    filtered_tokens, importance = self._bpe_decode(
+                        dec_texts[idx], score
+                    )
                 else:
                     filtered_tokens, importance = dec_texts[idx], score
                 sep_tokens = 2

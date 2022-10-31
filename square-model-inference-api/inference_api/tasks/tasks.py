@@ -28,6 +28,7 @@ class ModelTask(Task, ABC):
     """
     Abstraction of Celery's Task class to support providing mongo client.
     """
+
     abstract = True
 
     def __init__(self):
@@ -41,26 +42,30 @@ class ModelTask(Task, ABC):
         """
         model_config.update()
         logger.info(f"Configuration: {model_config}")
-        if model_config.model_type=="transformer":
+        if model_config.model_type == "transformer":
             from .inference.transformer import Transformer
+
             MODEL_MAPPING = {"transformer": Transformer}
 
-        if model_config.model_type=="adapter":
+        if model_config.model_type == "adapter":
             from .inference.adaptertransformer import AdapterTransformer
+
             MODEL_MAPPING = {"adapter": AdapterTransformer}
 
-        if model_config.model_type=="sentence-transformer":
+        if model_config.model_type == "sentence-transformer":
             from .inference.sentencetransformer import SentenceTransformer
+
             MODEL_MAPPING = {"sentence-transformer": SentenceTransformer}
 
-        if model_config.model_type=="onnx":
+        if model_config.model_type == "onnx":
             from .inference.onnx import Onnx
+
             MODEL_MAPPING = {"onnx": Onnx}
 
         if model_config.model_type == "graph":
             from .inference.graph_transformers import GraphTransformers
-            MODEL_MAPPING = {"graph": GraphTransformers}
 
+            MODEL_MAPPING = {"graph": GraphTransformers}
 
         if not self.model:
             logger.info(model_config)
@@ -70,8 +75,7 @@ class ModelTask(Task, ABC):
 
 
 @app.task(
-    bind=True,
-    base=ModelTask,
+    bind=True, base=ModelTask,
 )
 def prediction_task(self, prediction_request, task, model_config):
     logger.info(f"Prediction Request: {prediction_request} for task {task}")

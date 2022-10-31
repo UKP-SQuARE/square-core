@@ -1,9 +1,10 @@
 import time
 
 import nebullvm
-from nebullvm.api.functions import optimize_model
-
 import torch
+from nebullvm.api.functions import optimize_model
+# BERT optimization
+from transformers import BertModel, BertTokenizer
 
 # from transformers import GPT2Tokenizer, GPT2Model
 #
@@ -63,8 +64,6 @@ import torch
 # print(f"Average response time for GPT2 ({encoded_input['input_ids'].shape[1]} tokens): {optimized_short_token_time} ms")
 
 
-# BERT optimization
-from transformers import BertTokenizer, BertModel
 
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 model = BertModel.from_pretrained("bert-base-uncased")
@@ -98,7 +97,9 @@ for _ in range(100):
     st = time.time()
     with torch.no_grad():
         outputs = optimized_model(**inputs)
-    times.append(time.time()-st)
-optimized_bert_short = sum(times)/len(times)*1000
-print(f"Average response time for BERT: ({inputs['input_ids'].shape[1]} tokens): {optimized_bert_short} ms")
+    times.append(time.time() - st)
+optimized_bert_short = sum(times) / len(times) * 1000
+print(
+    f"Average response time for BERT: ({inputs['input_ids'].shape[1]} tokens): {optimized_bert_short} ms"
+)
 print(outputs)

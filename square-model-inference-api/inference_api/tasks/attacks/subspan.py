@@ -1,5 +1,5 @@
-from typing import List, Dict, Tuple
 import logging
+from typing import Dict, List, Tuple
 
 from tasks.attacks.attack import Attacker
 

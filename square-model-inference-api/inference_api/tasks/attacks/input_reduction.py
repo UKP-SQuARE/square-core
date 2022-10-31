@@ -1,10 +1,9 @@
-from typing import List, Dict, Tuple
-from copy import deepcopy
-import numpy as np
 import logging
+from copy import deepcopy
+from typing import Dict, List, Tuple
 
+import numpy as np
 from tasks.attacks.attack import Attacker
-
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +12,7 @@ class InputReduction(Attacker):
     """
     Reduce the input to the top k words with the highest importance
     """
+
     def __init__(self, request, task, model_outputs):
         """
         Initialize the input reduction attack

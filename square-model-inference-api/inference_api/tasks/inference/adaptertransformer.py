@@ -1,4 +1,5 @@
 import logging
+import os
 
 from tasks.config.model_config import model_config
 from tasks.models.prediction import PredictionOutput
@@ -7,8 +8,6 @@ from transformers.adapters import AutoAdapterModel, list_adapters
 from transformers.adapters.heads import CausalLMHead
 
 from .transformer import Transformer
-import os
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class AdapterTransformer(Transformer):
     The class for all adapter-based models using the adapter-transformers package
     """
 
-    def __init__(self,  **kwargs):
+    def __init__(self, **kwargs):
         """
         Initialize the Adapter with its underlying Transformer 
         and pre-load all available adapters from adapterhub.ml
@@ -106,7 +105,7 @@ class AdapterTransformer(Transformer):
     #         logger.debug(f"Adapter {adapter_name} is already loaded. Not loading again")
 
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
-        # We only have to change the label2id mapping from config.label2id 
+        # We only have to change the label2id mapping from config.label2id
         # (what super() uses) to the mapping
         # of the chosen head
         prediction = super()._token_classification(request)
@@ -118,7 +117,7 @@ class AdapterTransformer(Transformer):
         return prediction
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
-        # We only have to change the label2id mapping from 
+        # We only have to change the label2id mapping from
         # config.label2id (what super() uses) to the mapping
         # of the chosen head
         logger.info(f"sequence classification request:\n{request.json()}")
@@ -139,10 +138,15 @@ class AdapterTransformer(Transformer):
 
     def _prepare_adapter(self, adapter_name):
         if adapter_name is not None:
-            TEST = os.environ.get('TEST','0')
-            if TEST == '1':
-                self.model.load_adapter(adapter_name, model_name='bert-base-uncased',load_as=adapter_name, source=None)
-            if TEST == '0':
+            TEST = os.environ.get("TEST", "0")
+            if TEST == "1":
+                self.model.load_adapter(
+                    adapter_name,
+                    model_name="bert-base-uncased",
+                    load_as=adapter_name,
+                    source=None,
+                )
+            if TEST == "0":
                 self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
 
         if not adapter_name or adapter_name not in self.model.config.adapters.adapters:

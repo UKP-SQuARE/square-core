@@ -1,16 +1,14 @@
-from celery.result import AsyncResult
-from fastapi import APIRouter, HTTPException
+import logging
 import os
 
-from app.models.request import PredictionRequest, Task
 from app.models.prediction import AsyncTaskResult
+from app.models.request import PredictionRequest, Task
 from app.models.statistics import ModelStatistics, UpdateModel
+from celery.result import AsyncResult
+from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
-
 from tasks.config.model_config import ModelConfig
 from tasks.tasks import prediction_task
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +22,18 @@ def check_valid_request(request):
     return True, None
 
 
-@router.post("/{identifier}/sequence-classification", response_model=AsyncTaskResult,
-             name="sequence classification")
-@router.post("/{hf_username}/{identifier}/sequence-classification", response_model=AsyncTaskResult,
-             name="sequence classification")
+@router.post(
+    "/{identifier}/sequence-classification",
+    response_model=AsyncTaskResult,
+    name="sequence classification",
+)
+@router.post(
+    "/{hf_username}/{identifier}/sequence-classification",
+    response_model=AsyncTaskResult,
+    name="sequence classification",
+)
 async def sequence_classification(
-        identifier: str,
-        prediction_request: PredictionRequest,
-        hf_username: str = None
+    identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
@@ -43,21 +45,26 @@ async def sequence_classification(
         (
             prediction_request.dict(),
             Task.sequence_classification,
-            model_config.to_dict()),
-        queue=identifier.replace("/", "-")
+            model_config.to_dict(),
+        ),
+        queue=identifier.replace("/", "-"),
     )
 
     return AsyncTaskResult(message="Queued sequence classification", task_id=res.id)
 
 
-@router.post("/{identifier}/token-classification", response_model=AsyncTaskResult,
-             name="token classification")
-@router.post("/{hf_username}/{identifier}/token-classification", response_model=AsyncTaskResult,
-             name="token classification")
+@router.post(
+    "/{identifier}/token-classification",
+    response_model=AsyncTaskResult,
+    name="token classification",
+)
+@router.post(
+    "/{hf_username}/{identifier}/token-classification",
+    response_model=AsyncTaskResult,
+    name="token classification",
+)
 async def token_classification(
-        identifier: str,
-        prediction_request: PredictionRequest,
-        hf_username: str = None
+    identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
@@ -66,22 +73,22 @@ async def token_classification(
         return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async(
-        (
-            prediction_request.dict(),
-            Task.token_classification,
-            model_config.to_dict()
-        ),
-        queue=identifier.replace("/", "-")
+        (prediction_request.dict(), Task.token_classification, model_config.to_dict()),
+        queue=identifier.replace("/", "-"),
     )
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
-@router.post("/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding")
-@router.post("/{hf_username}/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding")
+@router.post(
+    "/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding"
+)
+@router.post(
+    "/{hf_username}/{identifier}/embedding",
+    response_model=AsyncTaskResult,
+    name="embedding",
+)
 async def embedding(
-        identifier: str,
-        prediction_request: PredictionRequest,
-        hf_username: str = None
+    identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
@@ -90,22 +97,24 @@ async def embedding(
         return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async(
-        (
-            prediction_request.dict(),
-            Task.embedding,
-            model_config.to_dict()
-        ),
-        queue=identifier.replace("/", "-")
+        (prediction_request.dict(), Task.embedding, model_config.to_dict()),
+        queue=identifier.replace("/", "-"),
     )
     return AsyncTaskResult(message="Queued embedding", task_id=res.id)
 
 
-@router.post("/{identifier}/question-answering", response_model=AsyncTaskResult, name="question answering")
-@router.post("/{hf_username}/{identifier}/question-answering", response_model=AsyncTaskResult, name="question answering")
+@router.post(
+    "/{identifier}/question-answering",
+    response_model=AsyncTaskResult,
+    name="question answering",
+)
+@router.post(
+    "/{hf_username}/{identifier}/question-answering",
+    response_model=AsyncTaskResult,
+    name="question answering",
+)
 async def question_answering(
-        identifier: str,
-        prediction_request: PredictionRequest,
-        hf_username: str = None
+    identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
@@ -114,22 +123,22 @@ async def question_answering(
         return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async(
-        (
-            prediction_request.dict(),
-            Task.question_answering,
-            model_config.to_dict()
-        ),
-        queue=identifier.replace("/", "-")
+        (prediction_request.dict(), Task.question_answering, model_config.to_dict()),
+        queue=identifier.replace("/", "-"),
     )
     return AsyncTaskResult(message="Queued question answering", task_id=res.id)
 
 
-@router.post("/{identifier}/generation", response_model=AsyncTaskResult, name="generation")
-@router.post("/{hf_username}/{identifier}/generation", response_model=AsyncTaskResult, name="generation")
+@router.post(
+    "/{identifier}/generation", response_model=AsyncTaskResult, name="generation"
+)
+@router.post(
+    "/{hf_username}/{identifier}/generation",
+    response_model=AsyncTaskResult,
+    name="generation",
+)
 async def generation(
-        identifier: str,
-        prediction_request: PredictionRequest,
-        hf_username: str = None
+    identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
@@ -138,12 +147,8 @@ async def generation(
         return HTTPException(status_code=422, detail=msg)
     model_config = ModelConfig.load_from_file(identifier)
     res = prediction_task.apply_async(
-        (
-            prediction_request.dict(),
-            Task.generation,
-            model_config.to_dict()
-        ),
-        queue=identifier.replace("/", "-")
+        (prediction_request.dict(), Task.generation, model_config.to_dict()),
+        queue=identifier.replace("/", "-"),
     )
     return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
@@ -152,13 +157,19 @@ async def generation(
 async def get_task_results(task_id: str):
     task = AsyncResult(task_id)
     if not task.ready():
-        return JSONResponse(status_code=202, content={'task_id': str(task_id), 'status': 'Processing'})
+        return JSONResponse(
+            status_code=202, content={"task_id": str(task_id), "status": "Processing"}
+        )
     result = task.get()
-    return {'task_id': str(task_id), 'status': 'Finished', 'result': result}
+    return {"task_id": str(task_id), "status": "Finished", "result": result}
 
 
 @router.get("/{identifier}/stats", response_model=ModelStatistics, name="statistics")
-@router.get("/{hf_username}/{identifier}/stats", response_model=ModelStatistics, name="statistics")
+@router.get(
+    "/{hf_username}/{identifier}/stats",
+    response_model=ModelStatistics,
+    name="statistics",
+)
 async def statistics(identifier: str, hf_username: str = None) -> ModelStatistics:
     """
     Returns the statistics of the model
@@ -184,9 +195,13 @@ async def update(identifier: str, updated_param: UpdateModel, hf_username: str =
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
     model_config = ModelConfig.load_from_file(identifier)
-    if model_config.model_type in ["onnx", "sentence-transformer"] and \
-            model_config.disable_gpu != updated_param.disable_gpu:
-        raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
+    if (
+        model_config.model_type in ["onnx", "sentence-transformer"]
+        and model_config.disable_gpu != updated_param.disable_gpu
+    ):
+        raise HTTPException(
+            status_code=400, detail="Can't change gpu setting for the model"
+        )
     model_config.disable_gpu = updated_param.disable_gpu
     model_config.batch_size = updated_param.batch_size
     model_config.max_input_size = updated_param.max_input

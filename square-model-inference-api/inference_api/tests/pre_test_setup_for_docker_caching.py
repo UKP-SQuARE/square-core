@@ -1,9 +1,9 @@
 import argparse
 import logging
 import os
+
 logger = logging.getLogger(__name__)
 from starlette.config import environ
-
 
 TRANSFORMERS_TESTING_CACHE = "./.model_testing_cache"
 environ["TRANSFORMERS_CACHE"] = TRANSFORMERS_TESTING_CACHE
@@ -13,7 +13,9 @@ environ["DISABLE_GPU"] = "True"
 environ["BATCH_SIZE"] = "1"
 environ["RETURN_PLAINTEXT_ARRAYS"] = "True"
 environ["MAX_INPUT_SIZE"] = "100"
-def create_test_model_path(model_type:str):
+
+
+def create_test_model_path(model_type: str):
     vocab = [
         "[PAD]",
         "[UNK]",
@@ -28,7 +30,7 @@ def create_test_model_path(model_type:str):
         "was",
         "he",
     ]
-    local_dir =  os.getenv("TEST_MODEL_PATH", "./model4test")
+    local_dir = os.getenv("TEST_MODEL_PATH", "./model4test")
 
     if not os.path.exists(local_dir):
         os.mkdir(local_dir)
@@ -48,21 +50,20 @@ def create_test_model_path(model_type:str):
     model = BertModel(config)
     tokenizer = BertTokenizer(vocab_file=vocab_file)
 
-    if model_type=="transformer":
+    if model_type == "transformer":
         tokenizer.save_pretrained(local_dir)
         model.save_pretrained(local_dir)
-    if model_type=="sentence-transformer":
-
+    if model_type == "sentence-transformer":
 
         tokenizer.save_pretrained(local_dir)
         model.save_pretrained(local_dir)
         word_embedding_model = models.Transformer(local_dir)
 
-        pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
+        pooling_model = models.Pooling(
+            word_embedding_model.get_word_embedding_dimension()
+        )
         smodel = SentenceTransformer(modules=[word_embedding_model, pooling_model])
         smodel.save(local_dir)
-
-
 
     return local_dir
 
@@ -78,7 +79,6 @@ def create_test_model_path(model_type:str):
 ONNX_MODEL = "bert-base-uncased"
 
 
-
 if __name__ == "__main__":
     # We pre-download all models needed for the tests.
     # We have to be careful to NOT import anything from square_model_inference because this script runs in the Dockerfile
@@ -87,18 +87,22 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="indicate the pre-downloaded model")
 
-    parser.add_argument("--transformer",  help="transformer based model",action="store_true")
-    parser.add_argument("--sentence_transformer",  help="sentence transformer based model",action="store_true")
+    parser.add_argument(
+        "--transformer", help="transformer based model", action="store_true"
+    )
+    parser.add_argument(
+        "--sentence_transformer",
+        help="sentence transformer based model",
+        action="store_true",
+    )
     # parser.add_argument("y", type=int, help="the exponent")
 
     args = parser.parse_args()
     if args.transformer == True:
 
-        from transformers import AutoTokenizer, list_adapters
+        from transformers import (AutoTokenizer, BertConfig, BertModel,
+                                  BertTokenizer, list_adapters)
         from transformers.adapters import BertAdapterModel
-        from transformers import BertConfig
-        from transformers import BertModel
-        from transformers import BertTokenizer
 
         TRANSFORMER_MODEL = create_test_model_path("transformer")
 
@@ -107,32 +111,35 @@ if __name__ == "__main__":
         _ = AutoTokenizer.from_pretrained(TRANSFORMER_MODEL)
         model = BertAdapterModel.from_pretrained(TRANSFORMER_MODEL).to(device)
 
-
-
         # Pre-download adapters
         # logger.info("Loading all available adapters")
         # adapter_infos = [info for info in list_adapters(source="ah") if info.model_name==TRANSFORMER_MODEL]
         # adapters = set(f"{adapter_info.task}/{adapter_info.subtask}@{adapter_info.username}" for adapter_info in adapter_infos)
 
-
-        adapters = set(["nli/rte@ukp", "ner/conll2003@ukp", "sts/sts-b@ukp", "qa/squad2@ukp"])
+        adapters = set(
+            ["nli/rte@ukp", "ner/conll2003@ukp", "sts/sts-b@ukp", "qa/squad2@ukp"]
+        )
         for adapter in adapters:
             logger.debug(f"Loading adapter {adapter}")
             try:
-                model.load_adapter(adapter,model_name='bert-base-uncased',load_as=adapter, with_head=True, cache_dir=TRANSFORMERS_TESTING_CACHE)
+                model.load_adapter(
+                    adapter,
+                    model_name="bert-base-uncased",
+                    load_as=adapter,
+                    with_head=True,
+                    cache_dir=TRANSFORMERS_TESTING_CACHE,
+                )
             except RuntimeError as e:
                 if "Error(s) in loading state_dict" in e.args[0]:
-                    logger.debug(f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}")
+                    logger.debug(
+                        f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}"
+                    )
                 else:
-                    raise(e)
+                    raise (e)
 
     if args.sentence_transformer == True:
         from sentence_transformers import SentenceTransformer, models
-        from transformers import BertConfig
-        from transformers import BertModel
-        from transformers import BertTokenizer
-
-
+        from transformers import BertConfig, BertModel, BertTokenizer
 
         SENTENCE_MODEL = create_test_model_path("sentence-transformer")
         # Pre-download sentence-transformer models for tests

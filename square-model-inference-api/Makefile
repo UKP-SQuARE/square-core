@@ -19,6 +19,10 @@ full-test:
 # 	PYTHONPATH=management_server/ pytest management_server/  --cov
 	PYTHONPATH=management_client/ pytest management_client/  --cov
 
+reformat:
+	black .
+	isort .
+
 install:
 	pip install --upgrade pip
 	pip install -r inference_server/requirements1.txt

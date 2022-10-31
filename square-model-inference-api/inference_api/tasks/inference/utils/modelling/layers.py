@@ -1,9 +1,10 @@
+import math
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-import numpy as np
-import math
 
 
 def freeze_net(module):
@@ -17,7 +18,11 @@ def gelu(x):
     in Google Bert repo (identical to OpenAI GPT).
     Also see https://arxiv.org/abs/1606.08415
     """
-    return 0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
+    return (
+        0.5
+        * x
+        * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
+    )
 
 
 class GELU(nn.Module):
@@ -58,10 +63,21 @@ class MLP(nn.Module):
     ----------
     num_layers: number of hidden layers
     """
-    activation_classes = {'gelu': GELU, 'relu': nn.ReLU, 'tanh': nn.Tanh}
 
-    def __init__(self, input_size, hidden_size, output_size, num_layers, dropout, batch_norm=False,
-                 init_last_layer_bias_to_zero=False, layer_norm=False, activation='gelu'):
+    activation_classes = {"gelu": GELU, "relu": nn.ReLU, "tanh": nn.Tanh}
+
+    def __init__(
+        self,
+        input_size,
+        hidden_size,
+        output_size,
+        num_layers,
+        dropout,
+        batch_norm=False,
+        init_last_layer_bias_to_zero=False,
+        layer_norm=False,
+        activation="gelu",
+    ):
         super().__init__()
 
         self.input_size = input_size
@@ -78,14 +94,20 @@ class MLP(nn.Module):
         for i in range(self.num_layers + 1):
             n_in = self.input_size if i == 0 else self.hidden_size
             n_out = self.hidden_size if i < self.num_layers else self.output_size
-            self.layers.add_module(f'{i}-Linear', nn.Linear(n_in, n_out))
+            self.layers.add_module(f"{i}-Linear", nn.Linear(n_in, n_out))
             if i < self.num_layers:
-                self.layers.add_module(f'{i}-Dropout', nn.Dropout(self.dropout))
+                self.layers.add_module(f"{i}-Dropout", nn.Dropout(self.dropout))
                 if self.batch_norm:
-                    self.layers.add_module(f'{i}-BatchNorm1d', nn.BatchNorm1d(self.hidden_size))
+                    self.layers.add_module(
+                        f"{i}-BatchNorm1d", nn.BatchNorm1d(self.hidden_size)
+                    )
                 if self.layer_norm:
-                    self.layers.add_module(f'{i}-LayerNorm', nn.LayerNorm(self.hidden_size))
-                self.layers.add_module(f'{i}-{activation}', self.activation_classes[activation.lower()]())
+                    self.layers.add_module(
+                        f"{i}-LayerNorm", nn.LayerNorm(self.hidden_size)
+                    )
+                self.layers.add_module(
+                    f"{i}-{activation}", self.activation_classes[activation.lower()]()
+                )
         if init_last_layer_bias_to_zero:
             self.layers[-1].bias.data.fill_(0)
 
@@ -110,10 +132,14 @@ class MaxPoolLayer(nn.Module):
         """
         bs, sl, _ = inputs.size()
         if len(mask_or_lengths.size()) == 1:
-            mask = (torch.arange(sl, device=inputs.device).unsqueeze(0).expand(bs, sl) >= mask_or_lengths.unsqueeze(1))
+            mask = torch.arange(sl, device=inputs.device).unsqueeze(0).expand(
+                bs, sl
+            ) >= mask_or_lengths.unsqueeze(1)
         else:
             mask = mask_or_lengths
-        masked_inputs = inputs.masked_fill(mask.unsqueeze(-1).expand_as(inputs), float('-inf'))
+        masked_inputs = inputs.masked_fill(
+            mask.unsqueeze(-1).expand_as(inputs), float("-inf")
+        )
         max_pooled = masked_inputs.max(1)[0]
         return max_pooled
 
@@ -135,7 +161,9 @@ class MeanPoolLayer(nn.Module):
         """
         bs, sl, _ = inputs.size()
         if len(mask_or_lengths.size()) == 1:
-            mask = (torch.arange(sl, device=inputs.device).unsqueeze(0).expand(bs, sl) >= mask_or_lengths.unsqueeze(1))
+            mask = torch.arange(sl, device=inputs.device).unsqueeze(0).expand(
+                bs, sl
+            ) >= mask_or_lengths.unsqueeze(1)
             lengths = mask_or_lengths.float()
         else:
             mask, lengths = mask_or_lengths, (1 - mask_or_lengths.float()).sum(1)
@@ -174,8 +202,15 @@ class EmbeddingDropout(nn.Module):
             masked_embed = self.emb.weight * mask
         else:
             masked_embed = self.emb.weight
-        return F.embedding(words, masked_embed, self.pad_idx, self.emb.max_norm,
-                           self.emb.norm_type, self.emb.scale_grad_by_freq, self.emb.sparse)
+        return F.embedding(
+            words,
+            masked_embed,
+            self.pad_idx,
+            self.emb.max_norm,
+            self.emb.norm_type,
+            self.emb.scale_grad_by_freq,
+            self.emb.sparse,
+        )
 
 
 class RNNDropout(nn.Module):
@@ -186,16 +221,28 @@ class RNNDropout(nn.Module):
         self.p = p
 
     def forward(self, x):
-        if not self.training or self.p == 0.:
+        if not self.training or self.p == 0.0:
             return x
         m = dropout_mask(x.data, (x.size(0), 1, x.size(2)), self.p)
         return x * m
 
 
 class LSTMEncoder(nn.Module):
-
-    def __init__(self, vocab_size=300, emb_size=300, hidden_size=300, num_layers=2, bidirectional=True,
-                 emb_p=0, input_p=0, hidden_p=0, output_p=0, pretrained_emb=None, pooling=True, pad=False):
+    def __init__(
+        self,
+        vocab_size=300,
+        emb_size=300,
+        hidden_size=300,
+        num_layers=2,
+        bidirectional=True,
+        emb_p=0,
+        input_p=0,
+        hidden_p=0,
+        output_p=0,
+        pretrained_emb=None,
+        pooling=True,
+        pad=False,
+    ):
         super().__init__()
         self.vocab_size = vocab_size
         self.emb_size = emb_size
@@ -216,9 +263,14 @@ class LSTMEncoder(nn.Module):
             nn.init.uniform_(self.emb.emb.weight, -bias, bias)
         self.input_dropout = nn.Dropout(input_p)
         self.output_dropout = nn.Dropout(output_p)
-        self.rnn = nn.LSTM(input_size=emb_size, hidden_size=(hidden_size // 2 if self.bidirectional else hidden_size),
-                           num_layers=num_layers, dropout=hidden_p, bidirectional=bidirectional,
-                           batch_first=True)
+        self.rnn = nn.LSTM(
+            input_size=emb_size,
+            hidden_size=(hidden_size // 2 if self.bidirectional else hidden_size),
+            num_layers=num_layers,
+            dropout=hidden_p,
+            bidirectional=bidirectional,
+            batch_first=True,
+        )
         self.max_pool = MaxPoolLayer()
 
     def forward(self, inputs, lengths):
@@ -231,17 +283,31 @@ class LSTMEncoder(nn.Module):
         bz, full_length = inputs.size()
         embed = self.emb(inputs)
         embed = self.input_dropout(embed)
-        lstm_inputs = pack_padded_sequence(embed, lengths, batch_first=True, enforce_sorted=False)
+        lstm_inputs = pack_padded_sequence(
+            embed, lengths, batch_first=True, enforce_sorted=False
+        )
         rnn_outputs, _ = self.rnn(lstm_inputs)
-        rnn_outputs, _ = pad_packed_sequence(rnn_outputs, batch_first=True, total_length=full_length)
+        rnn_outputs, _ = pad_packed_sequence(
+            rnn_outputs, batch_first=True, total_length=full_length
+        )
         rnn_outputs = self.output_dropout(rnn_outputs)
         return self.max_pool(rnn_outputs, lengths) if self.pooling else rnn_outputs
 
 
 class TripleEncoder(nn.Module):
-    def __init__(self, emb_dim, hidden_dim, input_p, output_p, hidden_p, num_layers, bidirectional=True, pad=False,
-                 concept_emb=None, relation_emb=None
-                 ):
+    def __init__(
+        self,
+        emb_dim,
+        hidden_dim,
+        input_p,
+        output_p,
+        hidden_p,
+        num_layers,
+        bidirectional=True,
+        pad=False,
+        concept_emb=None,
+        relation_emb=None,
+    ):
         super().__init__()
         if pad:
             raise NotImplementedError
@@ -253,26 +319,36 @@ class TripleEncoder(nn.Module):
         self.input_dropout = nn.Dropout(input_p)
         self.output_dropout = nn.Dropout(output_p)
         self.bidirectional = bidirectional
-        self.rnn = nn.GRU(input_size=emb_dim, hidden_size=(hidden_dim // 2 if self.bidirectional else hidden_dim),
-                          num_layers=num_layers, dropout=hidden_p, bidirectional=bidirectional,
-                          batch_first=True)
+        self.rnn = nn.GRU(
+            input_size=emb_dim,
+            hidden_size=(hidden_dim // 2 if self.bidirectional else hidden_dim),
+            num_layers=num_layers,
+            dropout=hidden_p,
+            bidirectional=bidirectional,
+            batch_first=True,
+        )
 
     def forward(self, inputs):
-        '''
+        """
         inputs: (batch_size, seq_len)
 
         returns: (batch_size, h_dim(*2))
-        '''
+        """
         bz, sl = inputs.size()
         h, r, t = torch.chunk(inputs, 3, dim=1)  # (bz, 1)
 
-        h, t = self.input_dropout(self.cpt_emb(h)), self.input_dropout(self.cpt_emb(t))  # (bz, 1, dim)
+        h, t = (
+            self.input_dropout(self.cpt_emb(h)),
+            self.input_dropout(self.cpt_emb(t)),
+        )  # (bz, 1, dim)
         r = self.input_dropout(self.rel_emb(r))
         inputs = torch.cat((h, r, t), dim=1)  # (bz, 3, dim)
         rnn_outputs, _ = self.rnn(inputs)  # (bz, 3, dim)
         if self.bidirectional:
             outputs_f, outputs_b = torch.chunk(rnn_outputs, 2, dim=2)
-            outputs = torch.cat((outputs_f[:, -1, :], outputs_b[:, 0, :]), 1)  # (bz, 2 * h_dim)
+            outputs = torch.cat(
+                (outputs_f[:, -1, :], outputs_b[:, 0, :]), 1
+            )  # (bz, 2 * h_dim)
         else:
             outputs = rnn_outputs[:, -1, :]
 
@@ -280,7 +356,6 @@ class TripleEncoder(nn.Module):
 
 
 class MatrixVectorScaledDotProductAttention(nn.Module):
-
     def __init__(self, temperature, attn_dropout=0.1):
         super().__init__()
         self.temperature = temperature
@@ -306,12 +381,13 @@ class MatrixVectorScaledDotProductAttention(nn.Module):
 
 
 class AttPoolLayer(nn.Module):
-
     def __init__(self, d_q, d_k, dropout=0.1):
         super().__init__()
         self.w_qs = nn.Linear(d_q, d_k)
         nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q + d_k)))
-        self.attention = MatrixVectorScaledDotProductAttention(temperature=np.power(d_k, 0.5))
+        self.attention = MatrixVectorScaledDotProductAttention(
+            temperature=np.power(d_k, 0.5)
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, mask=None):
@@ -328,10 +404,11 @@ class AttPoolLayer(nn.Module):
 
 
 class MultiheadAttPoolLayer(nn.Module):
-
     def __init__(self, n_head, d_q_original, d_k_original, dropout=0.1):
         super().__init__()
-        assert d_k_original % n_head == 0  # make sure the output dimension equals to d_k_origin
+        assert (
+            d_k_original % n_head == 0
+        )  # make sure the output dimension equals to d_k_origin
         self.n_head = n_head
         self.d_k = d_k_original // n_head
         self.d_v = d_k_original // n_head
@@ -340,11 +417,19 @@ class MultiheadAttPoolLayer(nn.Module):
         self.w_ks = nn.Linear(d_k_original, n_head * self.d_k)
         self.w_vs = nn.Linear(d_k_original, n_head * self.d_v)
 
-        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k)))
-        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k)))
-        nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v)))
+        nn.init.normal_(
+            self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v))
+        )
 
-        self.attention = MatrixVectorScaledDotProductAttention(temperature=np.power(self.d_k, 0.5))
+        self.attention = MatrixVectorScaledDotProductAttention(
+            temperature=np.power(self.d_k, 0.5)
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, mask=None):
@@ -372,16 +457,19 @@ class MultiheadAttPoolLayer(nn.Module):
         output, attn = self.attention(qs, ks, vs, mask=mask)
 
         output = output.view(n_head, bs, d_v)
-        output = output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)  # (b, n*dv)
+        output = (
+            output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)
+        )  # (b, n*dv)
         output = self.dropout(output)
         return output, attn
 
 
 class TypedMultiheadAttPoolLayer(nn.Module):
-
     def __init__(self, n_head, d_q_original, d_k_original, dropout=0.1, n_type=1):
         super().__init__()
-        assert d_k_original % n_head == 0  # make sure the outpute dimension equals to d_k_origin
+        assert (
+            d_k_original % n_head == 0
+        )  # make sure the outpute dimension equals to d_k_origin
         self.n_head = n_head
         self.d_k = d_k_original // n_head
         self.d_v = d_k_original // n_head
@@ -390,11 +478,19 @@ class TypedMultiheadAttPoolLayer(nn.Module):
         self.w_ks = TypedLinear(d_k_original, n_head * self.d_k, n_type)
         self.w_vs = TypedLinear(d_k_original, n_head * self.d_v, n_type)
 
-        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k)))
-        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k)))
-        nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v)))
+        nn.init.normal_(
+            self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v))
+        )
 
-        self.attention = MatrixVectorScaledDotProductAttention(temperature=np.power(self.d_k, 0.5))
+        self.attention = MatrixVectorScaledDotProductAttention(
+            temperature=np.power(self.d_k, 0.5)
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, mask=None, type_ids=None):
@@ -411,8 +507,12 @@ class TypedMultiheadAttPoolLayer(nn.Module):
         bs, len_k, _ = k.size()
 
         qs = self.w_qs(q).view(bs, n_head, d_k)  # (b, n, dk)
-        ks = self.w_ks(k, type_ids=type_ids).view(bs, len_k, n_head, d_k)  # (b, l, n, dk)
-        vs = self.w_vs(k, type_ids=type_ids).view(bs, len_k, n_head, d_v)  # (b, l, n, dv)
+        ks = self.w_ks(k, type_ids=type_ids).view(
+            bs, len_k, n_head, d_k
+        )  # (b, l, n, dk)
+        vs = self.w_vs(k, type_ids=type_ids).view(
+            bs, len_k, n_head, d_v
+        )  # (b, l, n, dv)
 
         qs = qs.permute(1, 0, 2).contiguous().view(n_head * bs, d_k)
         ks = ks.permute(2, 0, 1, 3).contiguous().view(n_head * bs, len_k, d_k)
@@ -423,13 +523,14 @@ class TypedMultiheadAttPoolLayer(nn.Module):
         output, attn = self.attention(qs, ks, vs, mask=mask)
 
         output = output.view(n_head, bs, d_v)
-        output = output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)  # (b, n*dv)
+        output = (
+            output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)
+        )  # (b, n*dv)
         output = self.dropout(output)
         return output, attn
 
 
 class BilinearAttentionLayer(nn.Module):
-
     def __init__(self, query_dim, value_dim):
         super().__init__()
         self.linear = nn.Linear(value_dim, query_dim, bias=False)
@@ -452,11 +553,13 @@ class BilinearAttentionLayer(nn.Module):
         return pooled, attn
 
 
-def masked_softmax(vector: torch.Tensor,
-                   mask: torch.Tensor,
-                   dim: int = -1,
-                   memory_efficient: bool = True,
-                   mask_fill_value: float = -1e32) -> torch.Tensor:
+def masked_softmax(
+    vector: torch.Tensor,
+    mask: torch.Tensor,
+    dim: int = -1,
+    memory_efficient: bool = True,
+    mask_fill_value: float = -1e32,
+) -> torch.Tensor:
     """
     ``torch.nn.functional.softmax(vector)`` does not work if some elements of ``vector`` should be
     masked.  This performs a softmax on just the non-masked portions of ``vector``.  Passing
@@ -486,14 +589,15 @@ def masked_softmax(vector: torch.Tensor,
             # result = result / (result.sum(dim=dim, keepdim=True) + 1e-13)
             raise NotImplementedError
         else:
-            masked_vector = vector.masked_fill(mask.to(dtype=torch.uint8), mask_fill_value)
+            masked_vector = vector.masked_fill(
+                mask.to(dtype=torch.uint8), mask_fill_value
+            )
             result = nn.functional.softmax(masked_vector, dim=dim)
             result = result * (1 - mask)
     return result
 
 
 class DiffTopK(torch.autograd.Function):
-
     @staticmethod
     def forward(ctx, x, k):
         """
@@ -523,7 +627,8 @@ class SimilarityFunction(nn.Module):
     The similarity function could be as simple as a dot product, or it could be a more complex,
     parameterized function.
     """
-    default_implementation = 'dot_product'
+
+    default_implementation = "dot_product"
 
     def forward(self, tensor_1: torch.Tensor, tensor_2: torch.Tensor) -> torch.Tensor:
         """
@@ -562,28 +667,34 @@ class MatrixAttention(nn.Module):
         self._similarity_function = similarity_function or DotProductSimilarity()
 
     def forward(self, matrix_1: torch.Tensor, matrix_2: torch.Tensor) -> torch.Tensor:
-        tiled_matrix_1 = matrix_1.unsqueeze(2).expand(matrix_1.size()[0],
-                                                      matrix_1.size()[1],
-                                                      matrix_2.size()[1],
-                                                      matrix_1.size()[2])
-        tiled_matrix_2 = matrix_2.unsqueeze(1).expand(matrix_2.size()[0],
-                                                      matrix_1.size()[1],
-                                                      matrix_2.size()[1],
-                                                      matrix_2.size()[2])
+        tiled_matrix_1 = matrix_1.unsqueeze(2).expand(
+            matrix_1.size()[0],
+            matrix_1.size()[1],
+            matrix_2.size()[1],
+            matrix_1.size()[2],
+        )
+        tiled_matrix_2 = matrix_2.unsqueeze(1).expand(
+            matrix_2.size()[0],
+            matrix_1.size()[1],
+            matrix_2.size()[1],
+            matrix_2.size()[2],
+        )
 
         return self._similarity_function(tiled_matrix_1, tiled_matrix_2)
 
 
 class CustomizedEmbedding(nn.Module):
-    def __init__(self,
-                 concept_num,
-                 concept_in_dim,
-                 concept_out_dim,
-                 use_contextualized=True,
-                 pretrained_concept_emb=None,
-                 freeze_ent_emb=True,
-                 scale=1.0,
-                 init_range=0.02):
+    def __init__(
+        self,
+        concept_num,
+        concept_in_dim,
+        concept_out_dim,
+        use_contextualized=True,
+        pretrained_concept_emb=None,
+        freeze_ent_emb=True,
+        scale=1.0,
+        init_range=0.02,
+    ):
         super().__init__()
         self.scale = scale
         self.use_contextualized = use_contextualized
@@ -607,21 +718,25 @@ class CustomizedEmbedding(nn.Module):
         """
         if contextualized_emb is not None:
             assert index.size(0) == contextualized_emb.size(0)
-            if hasattr(self, 'cpt_transform'):
-                contextualized_emb = self.activation(self.cpt_transform(contextualized_emb * self.scale))
+            if hasattr(self, "cpt_transform"):
+                contextualized_emb = self.activation(
+                    self.cpt_transform(contextualized_emb * self.scale)
+                )
             else:
                 contextualized_emb = contextualized_emb * self.scale
             emb_dim = contextualized_emb.size(-1)
-            return contextualized_emb.gather(1, index.unsqueeze(-1).expand(-1, -1, emb_dim))
+            return contextualized_emb.gather(
+                1, index.unsqueeze(-1).expand(-1, -1, emb_dim)
+            )
         else:
-            if hasattr(self, 'cpt_transform'):
+            if hasattr(self, "cpt_transform"):
                 return self.activation(self.cpt_transform(self.emb(index) * self.scale))
             else:
                 return self.emb(index) * self.scale
 
 
 def run_test():
-    print('testing BilinearAttentionLayer...')
+    print("testing BilinearAttentionLayer...")
     att = BilinearAttentionLayer(100, 20)
     mask = (torch.randn(70, 30) > 0).float()
     mask.requires_grad_()
@@ -631,7 +746,7 @@ def run_test():
     o.sum().backward()
     print(mask.grad)
 
-    print('testing DiffTopK...')
+    print("testing DiffTopK...")
     x = torch.randn(5, 3)
     x.requires_grad_()
     k = 2
@@ -639,7 +754,7 @@ def run_test():
     loss = (r ** 2).sum()
     loss.backward()
     assert (x.grad == r * 2).all()
-    print('pass')
+    print("pass")
 
     a = TripleEncoder()
 

@@ -1,22 +1,17 @@
 import os
 
 import pytest
-
-from pre_test_setup_for_docker_caching import (
-    TRANSFORMERS_TESTING_CACHE,
-    # TRANSFORMER_MODEL,
-)
+from pre_test_setup_for_docker_caching import \
+    TRANSFORMERS_TESTING_CACHE  # TRANSFORMER_MODEL,
 
 TRANSFORMER_MODEL = os.getenv("TEST_MODEL_PATH", "./model4test")
 import torch
-
-from main import get_app, auth
-
-from tasks.inference.transformer import Transformer
-from tasks.inference.adaptertransformer import AdapterTransformer
-
-from tasks.config.model_config import ModelConfig, set_test_config, model_config
 from app.models.request import PredictionRequest
+from main import auth, get_app
+from tasks.config.model_config import (ModelConfig, model_config,
+                                       set_test_config)
+from tasks.inference.adaptertransformer import AdapterTransformer
+from tasks.inference.transformer import Transformer
 
 
 @pytest.fixture(scope="session")
@@ -95,8 +90,6 @@ def test_transformer_explainability():
         model_type="transformers",
     )
     return Transformer()
-
-
 
 
 @pytest.fixture(scope="class")

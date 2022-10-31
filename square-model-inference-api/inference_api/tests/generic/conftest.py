@@ -1,10 +1,9 @@
-import pytest
-
-
-import torch
 import os
 
-from main import get_app, auth
+import pytest
+import torch
+from main import auth, get_app
+
 
 @pytest.fixture(scope="session")
 def test_app():

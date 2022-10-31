@@ -25,5 +25,5 @@ app = Celery(
 #     'tasks.predict': {'queue': 'dpr'}
 # }
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.start()
