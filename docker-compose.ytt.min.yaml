@@ -339,7 +339,7 @@ services:
 
   tasb_worker:
     image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
-    command: celery -A tasks worker -Q tasb --loglevel=info
+    command: celery -A tasks worker -Q msmarco-distilbert-base-tas-b --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
@@ -358,7 +358,7 @@ services:
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
-      QUEUE: tasb
+      QUEUE: msmarco-distilbert-base-tas-b
       SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
     depends_on:
       #! - maintaining
@@ -449,7 +449,7 @@ services:
 
   datastore_api:
     privileged: true
-    image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
+    #! image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
     build: 
       context: ./datastore-api
       target: build

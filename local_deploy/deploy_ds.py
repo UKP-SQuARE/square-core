@@ -217,6 +217,24 @@ def dense_search_by_vector(
     return response.json()
 
 
+def dense_search(
+    datastore_name: str, index_name: str, query: str, top_k: int
+) -> dict:
+    response = requests.get(
+        f"http://localhost:7000/datastores/{datastore_name}/search",
+        params={
+            "index_name": index_name,
+            "query": query,
+            "top_k": top_k,
+        },
+        headers={"Authorization": f"Bearer {get_token()}"},
+    )
+    assert (
+        response.status_code == 200
+    ), f"Cannot do dense search: {response}"
+    return response.json()
+
+
 if __name__ == "__main__":
     os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
     dataset_name = "scifact"
@@ -257,12 +275,10 @@ if __name__ == "__main__":
         embedding_mode=embedding_mode,
     )
 
-    search_result = dense_search_by_vector(
+    search_result = dense_search(
         datastore_name=dataset_name,
         index_name=index_name,
-        query_embedding=[
-            0,
-        ],
+        query=query,
         top_k=3,
     )
     print(
