@@ -3,36 +3,61 @@
   <div class="bg-light border rounded shadow h-100 p-3">
     <div class="w-100">
       <div class="mb-3">
-        <label for="skill1" class="form-label d-block placeholder-glow">
-          <span v-if="waiting" class="placeholder w-25" />
-          <span v-else>1. Select a skill</span>
-        </label>
-        <SkillSelector
-            v-model="options.selectedSkills[0]"
-            v-on:input="selectSkill"
-            :skills="availableSkills"
-            id="skill1"
-            :disabled="waiting" />
-      </div>
-      <div class="mb-3">
-        <label for="skill2" class="form-label d-block placeholder-glow">
-          <span v-if="waiting" class="placeholder w-50" />
-          <span v-else>Compare up to three skills</span>
-        </label>
-        <SkillSelector
-            v-model="options.selectedSkills[1]"
-            v-on:input="selectSkill"
-            :skills="availableSkillsBasedOnSettings"
-            id="skill2"
-            :disabled="!minSkillsSelected(1)" />
-      </div>
-      <div class="mb-3">
-        <SkillSelector
-            v-model="options.selectedSkills[2]"
-            v-on:input="selectSkill"
-            :skills="availableSkillsBasedOnSettings"
-            id="skill3"
-            :disabled="!minSkillsSelected(2)" />
+        <div>
+            <input v-model="searchText" placeholder="Search skill" class="search-bar form-control-lg mb-2" style="margin-left: 8px;" />
+          </div>
+          <div class="container" style="height: 20em; overflow-y: scroll;">
+            <div class="row row-cols" >
+              <div class="col col-sm-4" v-for="(skill, index) in filteredSkills" :key="skill.id">
+                <input class="btn-check" type="checkbox"
+                      v-on:input="selectSkill(skill.id, index)"
+                      v-bind:value="skill.id"
+                      :disabled="waiting"
+                      :id="skill.id"
+                      data-bs-toggle="tooltip" data-bs-placement="top"
+                      data-bs-custom-class="custom-tooltip"
+                      data-bs-title="This top tooltip is themed via CSS variables.">
+                <label class="btn btn-outline-primary w-100 h-100 align-middle" :for="skill.id" >{{skill.name}}
+                  <br>
+                  <small class="text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                          <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                          <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                        </svg>
+                        {{skill.skill_type}}
+                        <span class="px-1.5 text-gray-300">• </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                          <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                        </svg>
+                        BASE MODEL
+                      </small>
+                </label><br>
+
+                <!-- <label class="btn" :for="skill.id" :id="skill.id+'-label'">
+                  <div class="card h-100" :id="skill.id+'-card'">
+                    <div class="card-body">
+                      <h5 class="card-title" :id="skill.id+'-card-title'">{{skill.name}}</h5>
+                    </div>
+                    <div class="card-footer">
+                      <small class="text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                          <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                          <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                        </svg>
+                        {{skill.skill_type}}
+                        <span class="px-1.5 text-gray-300">• </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                          <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                        </svg>
+                        BASE MODEL
+                      </small>
+                    </div>
+                  </div>
+                </label>  -->
+              </div>
+              
+            </div>
+            </div>  
       </div>
     </div>
   </div>
@@ -40,22 +65,36 @@
 
 <script>
 import Vue from 'vue'
-import SkillSelector from '@/components/SkillSelector.vue'
 
 export default Vue.component('compare-skills', {
   props: ['selectorTarget', 'skillFilter'],
   data() {
     return {
+      searchText: '',
+      chosenSkillType: '',
       waiting: false,
       options: {
         selectedSkills: []
       }
     }
   },
-  components: {
-    SkillSelector
-  },
   computed: {
+    filteredSkills() {
+        return this.searchText
+          ? this.filteredSkills1.filter((item) => this.searchText
+              .toLowerCase()
+              .split(" ")
+              .every(v => item.name.toLowerCase().includes(v)))
+          : this.filteredSkills1
+    },
+    filteredSkills1() {
+      // if number of None in selectedSkills is 3, then return all skills
+      if (this.options.selectedSkills.filter(skill => skill == 'None').length === 3) {
+        return this.availableSkills
+      } else {
+        return this.availableSkillsBasedOnSettings
+      }
+    },
     availableSkills() {
       let availableSkills = this.$store.state.availableSkills
       // Apply optional filter from props
@@ -102,10 +141,19 @@ export default Vue.component('compare-skills', {
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
     },
-    selectSkill() {
+    selectSkill(skill_id) {
+      if(this.options.selectedSkills.includes(skill_id)){
+        let index = this.options.selectedSkills.indexOf(skill_id)
+        this.$set(this.options.selectedSkills, index, "None")
+      }
+      else{
+        let index = this.options.selectedSkills.indexOf('None')
+        this.$set(this.options.selectedSkills, index, skill_id)
+      }
       this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
       this.$emit('input', this.options, this.skillSettings)
-    }
+      
+    },
   },
   beforeMount() {
     this.waiting = true

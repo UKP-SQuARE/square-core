@@ -1,11 +1,26 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
   <form v-on:submit.prevent="askQuestion">
+    <div class="row mt-4 mt-md-0 mb-4">
+      <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              Selected Skills: {{strSelectedSkills}}
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body">
+              <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="border-danger" />
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
     <div class="row">
       <!-- Skill input -->
-      <div class="col-md-4 ms-auto">
-        <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="border-danger" />
-      </div>
+      
 
       <!-- Question Input -->
       <div class="col-md-4 me-auto mt-4 mt-md-0">
@@ -137,6 +152,13 @@ export default Vue.component('query-skills', {
   computed: {
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
+    },
+    strSelectedSkills() {
+      let availableSkills = this.$store.state.availableSkills;
+      // filter available skills to only include selected skills
+      availableSkills = availableSkills.filter(skill => this.selectedSkills.includes(skill.id));
+      // return a string of the selected skills
+      return availableSkills.map(skill => skill.name).join(', ');
     },
     currentQuestion: {
       get: function () {
