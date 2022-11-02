@@ -3,8 +3,28 @@
   <div class="bg-light border rounded shadow h-100 p-3">
     <div class="w-100">
       <div class="mb-3">
-        <div>
-            <input v-model="searchText" placeholder="Search skill" class="search-bar form-control-lg mb-2" style="margin-left: 8px;" />
+          <div class="container">
+            <div class="row mb-2">
+              <div class="col-2">
+                <input v-model="searchText" placeholder="Search skill" class="form-control-xs mb-2 ml-2" />
+              </div>
+              <div class="col-10">
+                Filter by Task: {{chosenSkillType}}
+                <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">
+                  <input type="radio" v-model="chosenSkillType" value="span-extraction" class="btn-check" name="btnradio" id="extractive_btn" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="extractive_btn">Extractive</label>
+
+                  <input type="radio"  v-model="chosenSkillType" value="multiple-choice" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio2">Multiple Choice</label>
+
+                  <input type="radio"  v-model="chosenSkillType" value="categorical" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio3">Categorical</label>
+
+                  <input type="radio"  v-model="chosenSkillType" value="abstractive" class="btn-check" name="btnradio" id="btnradio4" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio4">Abstractive</label>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="container" style="height: 20em; overflow-y: scroll;">
             <div class="row row-cols" >
@@ -71,7 +91,7 @@ export default Vue.component('compare-skills', {
   data() {
     return {
       searchText: '',
-      chosenSkillType: '',
+      chosenSkillType: null,
       waiting: false,
       options: {
         selectedSkills: []
@@ -90,7 +110,12 @@ export default Vue.component('compare-skills', {
     filteredSkills1() {
       // if number of None in selectedSkills is 3, then return all skills
       if (this.options.selectedSkills.filter(skill => skill == 'None').length === 3) {
-        return this.availableSkills
+        // if chosenSkillType is not empty, then filter by skill type
+        if (this.chosenSkillType) {
+          return this.availableSkills.filter(skill => skill.skill_type == this.chosenSkillType)
+        } else {
+          return this.availableSkills
+        }
       } else {
         return this.availableSkillsBasedOnSettings
       }
@@ -105,8 +130,10 @@ export default Vue.component('compare-skills', {
       }
     },
     availableSkillsBasedOnSettings() {
+
       return this.availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
           && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
+      
     },
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
@@ -140,6 +167,10 @@ export default Vue.component('compare-skills', {
   methods: {
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
+    },
+    filterByTask(chosenSkillType) {
+      this.skillSettings.skillType = chosenSkillType
+      console.log(this.skillSettings.skillType)
     },
     selectSkill(skill_id) {
       if(this.options.selectedSkills.includes(skill_id)){
