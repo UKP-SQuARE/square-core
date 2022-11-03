@@ -4,15 +4,16 @@
     <div class="w-100">
       <div class="mb-3">
           <div class="container">
-            <div class="row mb-2">
-              <div class="col-2">
+            <div class="row mb-2 ">
+              <div class="col-sm">
                 <input v-model="searchText" placeholder="Search skill" class="form-control-xs mb-2 ml-2" />
-              </div>
-              <div class="col-10">
-                Filter by Task: {{chosenSkillType}}
-                <div class="btn-group btn-group-sm" role="group" aria-label="Basic radio toggle button group">
+              </div>              
+              <div class="col-sm text-end">
+                <label for="btn_group_task">Filter by task: </label>
+                <div class="btn-group btn-group-sm flex-wrap" id="btn_group_task" role="group" aria-label="Filter by task">
+
                   <input type="radio" v-model="chosenSkillType" value="span-extraction" class="btn-check" name="btnradio" id="extractive_btn" autocomplete="off">
-                  <label class="btn btn-outline-primary" for="extractive_btn">Extractive</label>
+                  <label class="btn btn-outline-primary ms-2" for="extractive_btn">Extractive</label>
 
                   <input type="radio"  v-model="chosenSkillType" value="multiple-choice" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
                   <label class="btn btn-outline-primary" for="btnradio2">Multiple Choice</label>
@@ -22,7 +23,9 @@
 
                   <input type="radio"  v-model="chosenSkillType" value="abstractive" class="btn-check" name="btnradio" id="btnradio4" autocomplete="off">
                   <label class="btn btn-outline-primary" for="btnradio4">Abstractive</label>
+                  
                 </div>
+                
               </div>
             </div>
           </div>
