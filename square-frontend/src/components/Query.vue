@@ -5,7 +5,7 @@
       <div class="accordion" id="accordionExample">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingOne">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            <button v-on:click="inputMode=!inputMode" id="btn_collapseOne" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
               Selected Skills: {{strSelectedSkills}}
             </button>
           </h2>
@@ -18,12 +18,20 @@
         
       </div>
     </div>
+
+    <div class="row mb-2" v-if="!inputMode">
+      <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+        <input type="checkbox" v-model="inputMode" class="btn-check" id="btn-check" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <label class="btn btn-danger btn-lg shadow text-white" for="btn-check">Next</label>
+      </div>
+
+    </div>
     <div class="row">
       <!-- Skill input -->
       
 
       <!-- Question Input -->
-      <div class="col-md-4 me-auto mt-4 mt-md-0">
+      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="inputMode">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="question" class="form-label">2. Enter you question</label>
@@ -39,7 +47,7 @@
       </div>
 
       <!-- Context and Answer Choices -->
-      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="skillSettings.requiresContext || skillSettings.skillType == 'multiple-choice'">
+      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="inputMode && (skillSettings.requiresContext || skillSettings.skillType == 'multiple-choice')">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <!-- Context Input -->
@@ -63,7 +71,7 @@
             </div>
 
             <!-- Answer Choices -->
-            <div class="row" v-if="skillSettings.skillType == 'multiple-choice'">
+            <div class="row" v-if="inputMode && skillSettings.skillType == 'multiple-choice'">
               <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
@@ -99,7 +107,7 @@
         </Alert>
       </div>
     </div>
-    <div v-if="minSkillsSelected(1)" class="col">
+    <div v-if="inputMode && minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <div class="d-grid gap-1 d-md-flex justify-content-md-center">
           <button type="submit" class="btn btn-danger btn-lg shadow text-white" :disabled="waiting">
@@ -143,6 +151,7 @@ export default Vue.component('query-skills', {
       },
       feedbackDocuments: [],
       feedback: false,
+      inputMode: false,
     }
   },
   components: {
