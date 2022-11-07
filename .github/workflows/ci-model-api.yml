@@ -4,12 +4,12 @@ on:
   push:
     branches: [ model-api-v3 ]
     paths:
-      - "square-model-inference-api/**"
+      - "model-api/**"
       - ".github/**"
   pull_request:
     branches: [ master ]
     paths:
-      - "square-model-inference-api/**"
+      - "model-api/**"
       - ".github/**"
   workflow_dispatch:
 
@@ -46,8 +46,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/base_model/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/base_model/Dockerfile
           target: test
           load: true
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}-test
@@ -91,8 +91,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/base_model/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/base_model/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
@@ -144,8 +144,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/transformer/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
@@ -189,8 +189,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/transformer/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
@@ -242,8 +242,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
@@ -285,8 +285,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
@@ -336,8 +336,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.onnx-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/onnx/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/onnx/Dockerfile
           target: test
           load: true
           tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}-test
@@ -378,8 +378,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.onnx-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/onnx/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/onnx/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}, ${{ steps.onnx-prep.outputs.image }}:latest
@@ -429,8 +429,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/graph_transformer/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/graph_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
@@ -471,8 +471,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
-          context: ./square-model-inference-api/inference_api
-          file: ./square-model-inference-api/inference_api/dockerfiles/graph_transformer/Dockerfile
+          context: ./model-api/inference_api
+          file: ./model-api/inference_api/dockerfiles/graph_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}, ${{ steps.graph-prep.outputs.image }}:latest
