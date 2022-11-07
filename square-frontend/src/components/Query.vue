@@ -26,12 +26,10 @@
       </div>
 
     </div>
-    <div class="row">
-      <!-- Skill input -->
-      
-
+    <!-- Input for span-extraction -->
+    <div class="row" v-if="inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'span-extraction')">
       <!-- Question Input -->
-      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="inputMode">
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="question" class="form-label">2. Enter you question</label>
@@ -40,28 +38,18 @@
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
-              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query
-              }}</span>
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Context and Answer Choices -->
-      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="inputMode && (skillSettings.requiresContext || skillSettings.skillType == 'multiple-choice')">
+      <!-- Context -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
-            <!-- Context Input -->
-            <div class="row" v-if="skillSettings.requiresContext">
+            <div class="row">
               <label for="context" class="form-label">3. Provide context</label>
               <textarea 
-                  v-if="skillSettings.skillType == 'multiple-choice'"
-                  v-model="inputContext"
-                  class="form-control form-control-lg mb-2"
-                  id="context"
-                  :placeholder="contextPlaceholder"
-                  required />
-              <textarea 
-                  v-if="skillSettings.skillType != 'multiple-choice'"
                   v-model="inputContext"
                   class="form-control form-control-lg mb-2"
                   style="resize: none; height: calc(38px * 6);"
@@ -69,9 +57,71 @@
                   :placeholder="contextPlaceholder"
                   required />
             </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- Answer Choices -->
-            <div class="row" v-if="inputMode && skillSettings.skillType == 'multiple-choice'">
+    </div>
+
+    <!-- Input for span-extraction open domain -->
+    <div class="row" v-if="inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'span-extraction')">
+      <!-- Question Input -->
+      <div class="col-md-12 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
+              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span role="button" v-for="(example, index) in currentExamples" :key="index"
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input for multiple choice that requires context-->
+    <div class="row" v-if="inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+      <!-- Question Input -->
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
+              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span role="button" v-for="(example, index) in currentExamples" :key="index"
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Context -->
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-warning rounded shadow h-100 p-3">
+          <div class="w-100">
+            <div class="row">
+              <label for="context" class="form-label">3. Provide context</label>
+              <textarea 
+                  v-if="skillSettings.skillType == 'multiple-choice'"
+                  v-model="inputContext"
+                  class="form-control form-control-lg mb-2"
+                  style="resize: none; height: calc(38px * 6);"
+                  id="context"
+                  :placeholder="contextPlaceholder"
+                  required />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer Choices -->
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-danger rounded shadow h-100 p-3">
+          <div class="w-100">
+            <div class="row">
               <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
@@ -91,10 +141,55 @@
           </div>
         </div>
       </div>
-      
-      
 
     </div>
+
+    <!-- Input for multiple choice that DO NOT require context-->
+    <div class="row" v-if="inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+      <!-- Question Input -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
+              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span role="button" v-for="(example, index) in currentExamples" :key="index"
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Answer Choices -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-danger rounded shadow h-100 p-3">
+          <div class="w-100">
+            <div class="row">
+              <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
+              <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
+                <div class="col-sm">
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" id="basic-addon1">{{index+1}}</span>
+                    <input v-model="list_choices[index]" type="text" class="form-control form-control-sm">
+                  </div>
+                </div>
+              </div>
+              <!-- button to add one more element to list_choices -->
+              <div class="form-inline">
+                <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice">Add Choice</button>
+                <!-- button to remove one element of list_choices -->
+                <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove Choice</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+      
     <div v-if="failure" class="row">
       <div class="col-md-4 mx-auto mt-4">
         <Alert class="bg-warning" :dismissible="true">An error occurred
