@@ -26,8 +26,8 @@
       </div>
 
     </div>
-    <!-- Input for span-extraction -->
-    <div class="row" v-if="inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'span-extraction')">
+    <!-- Input for span-extraction, categorical and abstractive (i.e., not multiple-choice) -->
+    <div class="row" v-if="inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -47,16 +47,14 @@
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
-            <div class="row">
-              <label for="context" class="form-label">3. Provide context</label>
-              <textarea 
-                  v-model="inputContext"
-                  class="form-control form-control-lg mb-2"
-                  style="resize: none; height: calc(38px * 6);"
-                  id="context"
-                  :placeholder="contextPlaceholder"
-                  required />
-            </div>
+            <label for="context" class="form-label">3. Provide context</label>
+            <textarea 
+                v-model="inputContext"
+                class="form-control mb-2"
+                style="resize: none; height: calc(38px * 7);"
+                id="context"
+                :placeholder="contextPlaceholder"
+                required />
           </div>
         </div>
       </div>
@@ -102,17 +100,15 @@
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
-            <div class="row">
-              <label for="context" class="form-label">3. Provide context</label>
-              <textarea 
-                  v-if="skillSettings.skillType == 'multiple-choice'"
-                  v-model="inputContext"
-                  class="form-control form-control-lg mb-2"
-                  style="resize: none; height: calc(38px * 6);"
-                  id="context"
-                  :placeholder="contextPlaceholder"
-                  required />
-            </div>
+            <label for="context" class="form-label">3. Provide context</label>
+            <textarea 
+                v-if="skillSettings.skillType == 'multiple-choice'"
+                v-model="inputContext"
+                class="form-control mb-2"
+                style="resize: none; height: calc(38px * 7);"
+                id="context"
+                :placeholder="contextPlaceholder"
+                required />
           </div>
         </div>
       </div>
