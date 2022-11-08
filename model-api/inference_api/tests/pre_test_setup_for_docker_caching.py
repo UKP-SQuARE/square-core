@@ -24,7 +24,7 @@ def create_test_model_path(model_type: str):
         model_type: transformer or sentence-transformer
     """
 
-    # common config for model
+    # small vocab for model
     vocab = [
         "[PAD]",
         "[UNK]",
@@ -76,11 +76,12 @@ def create_test_model_path(model_type: str):
     return local_dir
 
 
-# Downloaded models: no need anymore. only to show which kinds of model were used
+################### Models used for testing ###################
 # TRANSFORMER_MODEL = "bert-base-uncased"
 # TRANSFORMER_MODEL =create_test_model_path("transformer")
 # TRANSFORMER_MODEL_ROBERTA= "roberta-base"
 # SENTENCE_MODEL = "paraphrase-albert-small-v2"
+# -------------------------------------------------------------
 
 
 ONNX_MODEL = "bert-base-uncased"
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     # parser.add_argument("y", type=int, help="the exponent")
 
     args = parser.parse_args()
-    if args.transformer == True:
+    if args.transformer:
 
         from transformers import AutoTokenizer, BertConfig, BertModel, BertTokenizer
         from transformers.adapters import BertAdapterModel
@@ -134,7 +135,7 @@ if __name__ == "__main__":
                 else:
                     raise (e)
 
-    if args.sentence_transformer == True:
+    if args.sentence_transformer:
         from sentence_transformers import SentenceTransformer, models
         from transformers import BertConfig, BertModel, BertTokenizer
 
