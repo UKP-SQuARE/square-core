@@ -18,7 +18,7 @@ from transformers import AutoTokenizer
 from .transformer import Transformer
 
 from optimum.onnxruntime import ORTModelForFeatureExtraction as ORTModelForFeatureExtraction_model
-
+from optimum.onnxruntime import  ORTModelForQuestionAnswering
 
 
 from transformers.modeling_outputs import (
@@ -83,7 +83,7 @@ class Onnx(Transformer):
         self.tokenizer = AutoTokenizer.from_pretrained(model_config.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        # self.session = onnxonnxruntimeruntime.InferenceSession(model_config.model_path)
+        self.session = onnxruntime.InferenceSession(model_config.model_path)
         # # check whether a decoder model is available
         # self.is_encoder_decoder = (
         #     model_config.decoder_path is not None and model_config.decoder_path != ""
@@ -263,8 +263,8 @@ class Onnx(Transformer):
         features = self.tokenizer(
             request.input, return_tensors="pt", **request.preprocessing_kwargs
         )
-        embedding_model = ORTModelForFeatureExtraction.from_pretrained(model_config.model_path)
-        #embedding_model = ORTModelForFeatureExtraction(self.session)
+        # embedding_model = ORTModelForFeatureExtraction.from_pretrained(model_config.model_path)
+        embedding_model = ORTModelForFeatureExtraction(self.session)
 
 
 
@@ -313,6 +313,29 @@ class Onnx(Transformer):
         predictions["embeddings"] = emb
 
         return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
+
+    def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
+        '''
+
+        Answer the given questions.
+
+
+        Args:
+             request: The request containing e.g. the input text
+
+        Returns:
+                 The prediction output containing the predicted labels
+
+        '''
+        print("******QA Task*******")
+        #model_qa = ORTModelForQuestionAnswering.from_pretrained(model_config.model_path)
+        model_qa = ORTModelForQuestionAnswering(self.session)
+
+
+        ##TODO:TBD
+        return PredictionOutputForSequenceClassification(
+            model_outputs=predictions, **task_outputs
+        )
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         """
