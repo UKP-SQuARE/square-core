@@ -5,8 +5,8 @@
       <div class="mb-3">
           <div class="container">
             <div class="row mb-2 ">
-              <div class="col-sm">
-                <input v-model="searchText" placeholder="Search skill" class="form-control-xs mb-2 ml-2" />
+              <div class="col col-sm-4">
+                <input v-model="searchText" placeholder="Search skill" class="form-control form-control-xs mb-2 ml-2" />
               </div>              
               <div class="col-sm text-end">
                 <label for="btn_group_task">Filter by task: </label>
