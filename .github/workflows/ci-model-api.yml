@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Prepare
         id: base-prep
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Prepare
         id: transformer-prep
         run: |
@@ -158,7 +158,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # sentence-transformers
       - name: Prepare
         id: sentence-transformer-prep
@@ -228,7 +228,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # onnx
       - name: Prepare
         id: onnx-prep
@@ -299,7 +299,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # graph- transformer
       - name: Prepare
         id: graph-prep
