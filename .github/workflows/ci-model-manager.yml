@@ -2,7 +2,7 @@ name: "CI Model Manager API"
 
 on:
   push:
-    branches: [ model-api-v3 ]
+    branches: [ master, model-api-v3 ]
     paths:
       - "model-manager/**"
       - ".github/**"
