@@ -40,10 +40,10 @@
                       v-bind:value="skill.id"
                       :disabled="waiting"
                       :id="skill.id"
-                      data-bs-toggle="tooltip" data-bs-placement="top"
-                      data-bs-custom-class="custom-tooltip"
-                      data-bs-title="This top tooltip is themed via CSS variables.">
-                <label class="btn btn-outline-primary w-100 h-100 align-middle" :for="skill.id" >{{skill.name}}
+                      >
+                <label class="btn btn-outline-primary w-100 h-100 align-middle" :for="skill.id" 
+                        data-bs-toggle="tooltip" data-bs-placement="top" :title=skill.description style="--bs-bg-opacity: 1">
+                  {{skill.name}}
                   <br>
                   <small class="text-muted">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
@@ -102,6 +102,7 @@ export default Vue.component('compare-skills', {
       options: {
         selectedSkills: []
       }
+
     }
   },
   computed: {
