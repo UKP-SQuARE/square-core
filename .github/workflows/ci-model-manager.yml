@@ -2,14 +2,14 @@ name: "CI Model Manager API"
 
 on:
   push:
-    branches: [ master  ]
+    branches: [ model-api-v3 ]
     paths:
-      - "model-api/**"
+      - "model-manager/**"
       - ".github/**"
   pull_request:
     branches: [ master ]
     paths:
-      - "model-api/**"
+      - "model-manager/**"
       - ".github/**"
   workflow_dispatch:
 
