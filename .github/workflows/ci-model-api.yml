@@ -29,12 +29,12 @@ jobs:
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
         id: base-buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           install: true
 
       - name: Build base test image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -63,13 +63,13 @@ jobs:
           fail_on_failure: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build base deployable image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -99,12 +99,12 @@ jobs:
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
         id: transformer-buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           install: true
 
       - name: Build transformer test image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -133,13 +133,13 @@ jobs:
           fail_on_failure: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build transformer deployable image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -169,12 +169,12 @@ jobs:
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
         id: sentence-transformer-buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           install: true
 
       - name: Build  sentence-transformers test image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -203,13 +203,13 @@ jobs:
           fail_on_failure: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build sentence-transformers deployable image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -239,13 +239,13 @@ jobs:
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
         id: onnx-buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           install: true
 
 #  -------- IGNORE FOR NOW ---------
 #      - name: Build onnx test image
-#        uses: docker/build-push-action@v2
+#        uses: docker/build-push-action@v3
 #        with:
 #          builder: ${{ steps.onnx-buildx.outputs.name }}
 #          context: ./model-api/inference_api
@@ -274,13 +274,13 @@ jobs:
 #          fail_on_failure: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build onnx deployable image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.onnx-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -310,12 +310,12 @@ jobs:
           echo ::set-output name=tag::${TAG}
       - name: Set up Docker Buildx
         id: graph-buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
         with:
           install: true
 
       - name: Build graph test image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
           context: ./model-api/inference_api
@@ -344,13 +344,13 @@ jobs:
           fail_on_failure: true
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build graph deployable image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
           context: ./model-api/inference_api
