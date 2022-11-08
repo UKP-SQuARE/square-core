@@ -258,6 +258,34 @@ services:
       - maintaining
       - rabbit
       - redis
+  distilbert_onnx_worker:
+    build:
+      context: ./inference_api
+      dockerfile: ./dockerfiles/onnx/Dockerfile
+    command: celery -A tasks worker -Q distilbert_onnx --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+      - onnx-models:/onnx_models
+    env_file:
+      - ./inference_api/model_configs/.env.distilbert_onnx_qa
+      - .env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=distilbert_onnx
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redis
+    depends_on:
+      - maintaining
+      - rabbit
+      - redis
 #
 #  bart_onnx_worker:
 #    build:
