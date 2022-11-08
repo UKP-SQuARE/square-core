@@ -33,15 +33,6 @@ jobs:
         with:
           install: true
 
-#      - name: Cache Docker layers
-#        uses: actions/cache@v2
-#        with:
-#          path: /tmp/.buildx-cache
-#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-#          restore-keys: |
-#            ${{ runner.os }}-buildx-model_api-
-#            ${{ runner.os }}-buildx-
-
       - name: Build base test image
         uses: docker/build-push-action@v2
         with:
@@ -51,16 +42,6 @@ jobs:
           target: test
           load: true
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}-test
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#        # Temp fix
-#        # https://github.com/docker/build-push-action/issues/252
-#        # https://github.com/moby/buildkit/issues/1896
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
         id: base-extract
@@ -96,23 +77,14 @@ jobs:
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      #  Temp fix
-#      # https://github.com/docker/build-push-action/issues/252
-#      # https://github.com/moby/buildkit/issues/1896
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-#      - name: remove images
-#        run: |
-#          docker kill $(docker ps -q)
-#          docker rm -f $(docker ps -a -q)
-#          docker image rm -f $(docker images -q)
 
-##################################
+      - name: remove images
+        run: |
+          docker kill $(docker ps -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
+
+################################# MODEL IMAGES ##################################
   model-api-transformer:
     runs-on: ubuntu-latest
 
@@ -131,15 +103,6 @@ jobs:
         with:
           install: true
 
-#      - name: Cache Docker layers
-#        uses: actions/cache@v2
-#        with:
-#          path: /tmp/.buildx-cache
-#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-#          restore-keys: |
-#            ${{ runner.os }}-buildx-model_api-
-#            ${{ runner.os }}-buildx-
-
       - name: Build transformer test image
         uses: docker/build-push-action@v2
         with:
@@ -149,16 +112,6 @@ jobs:
           target: test
           load: true
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#        # Temp fix
-#        # https://github.com/docker/build-push-action/issues/252
-#        # https://github.com/moby/buildkit/issues/1896
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
         id: transformer-extract
@@ -194,21 +147,12 @@ jobs:
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      #  Temp fix
-#      # https://github.com/docker/build-push-action/issues/252
-#      # https://github.com/moby/buildkit/issues/1896
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-#      - name: remove images
-#        run: |
-#          docker kill $(docker ps -q)
-#          docker rm -f $(docker ps -a -q)
-#          docker image rm -f $(docker images -q)
+
+      - name: remove images
+        run: |
+          docker kill $(docker ps -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
 
   model-api-sentence-transformer:
     runs-on: ubuntu-latest
@@ -229,15 +173,6 @@ jobs:
         with:
           install: true
 
-#      - name: Cache Docker layers
-#        uses: actions/cache@v2
-#        with:
-#          path: /tmp/.buildx-cache
-#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-#          restore-keys: |
-#            ${{ runner.os }}-buildx-model_api-
-#            ${{ runner.os }}-buildx-
-
       - name: Build  sentence-transformers test image
         uses: docker/build-push-action@v2
         with:
@@ -247,14 +182,6 @@ jobs:
           target: test
           load: true
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
-          no-cahce: true
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
         id: sentence-transformer-extract
@@ -290,19 +217,12 @@ jobs:
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-#      - name: remove images
-#        run: |
-#          docker kill $(docker ps -q)
-#          docker rm -f $(docker ps -a -q)
-#          docker image rm -f $(docker images -q)
+      - name: remove images
+        run: |
+          docker kill $(docker ps -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
 
   model-api-onnx:
     runs-on: ubuntu-latest
@@ -323,15 +243,6 @@ jobs:
         with:
           install: true
 
-#      - name: Cache Docker layers
-#        uses: actions/cache@v2
-#        with:
-#          path: /tmp/.buildx-cache
-#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-#          restore-keys: |
-#            ${{ runner.os }}-buildx-model_api-
-#            ${{ runner.os }}-buildx-
-
       - name: Build onnx test image
         uses: docker/build-push-action@v2
         with:
@@ -341,13 +252,6 @@ jobs:
           target: test
           load: true
           tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}-test
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
         id: onnx-extract
@@ -383,19 +287,12 @@ jobs:
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}, ${{ steps.onnx-prep.outputs.image }}:latest
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-#      - name: remove images
-#        run: |
-#          docker kill $(docker ps -q)
-#          docker rm -f $(docker ps -a -q)
-#          docker image rm -f $(docker images -q)
+      - name: remove images
+        run: |
+          docker kill $(docker ps -q)
+          docker rm -f $(docker ps -a -q)
+          docker image rm -f $(docker images -q)
 
   model-api-graph-transformer:
     runs-on: ubuntu-latest
@@ -416,15 +313,6 @@ jobs:
         with:
           install: true
 
-#      - name: Cache Docker layers
-#        uses: actions/cache@v2
-#        with:
-#          path: /tmp/.buildx-cache
-#          key: ${{ runner.os }}-buildx-model_api-${{ github.sha }}
-#          restore-keys: |
-#            ${{ runner.os }}-buildx-model_api-
-#            ${{ runner.os }}-buildx-
-
       - name: Build graph test image
         uses: docker/build-push-action@v2
         with:
@@ -434,13 +322,6 @@ jobs:
           target: test
           load: true
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Retrieve Test Reports
         id: graph-extract
@@ -476,11 +357,3 @@ jobs:
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}, ${{ steps.graph-prep.outputs.image }}:latest
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-#
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-      
