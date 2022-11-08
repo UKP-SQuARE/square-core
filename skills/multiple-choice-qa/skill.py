@@ -3,11 +3,11 @@ import uuid
 
 from square_skill_api.models import QueryOutput, QueryRequest
 
-from square_skill_helpers import ModelAPI
+from square_model_client import SQuAREModelClient
 
 logger = logging.getLogger(__name__)
 
-model_api = ModelAPI()
+square_model_client = SQuAREModelClient()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -42,12 +42,12 @@ async def predict(request: QueryRequest) -> QueryOutput:
         model_request["adapter_name"] = request.skill_args["adapter"]
     logger.debug("Request for model api:{}".format(model_request))
 
-    model_api_output = await model_api(
+    model_response = await square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="sequence-classification",
         model_request=model_request,
     )
-    logger.info("Model API output: {}".format(model_api_output))
+    logger.info("Model response: {}".format(model_response))
 
     if request.skill_args.get("multiple_answers", False):
         # if multiple answers can be correct, logits is a 2d array:
@@ -56,13 +56,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
         # index of the logits to select for answer selection
         idx = request.skill_args.get("multiple_answers_idx", 1)
-        model_api_output["model_outputs"]["logits"] = [
-            [l[idx] for l in model_api_output["model_outputs"]["logits"]]
+        model_response["model_outputs"]["logits"] = [
+            [l[idx] for l in model_response["model_outputs"]["logits"]]
         ]
 
     return QueryOutput.from_sequence_classification(
         questions=query,
         answers=choices,
-        model_api_output=model_api_output,
+        model_api_output=model_response,
         context=context,
     )

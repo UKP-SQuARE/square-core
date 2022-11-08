@@ -232,16 +232,6 @@ async def query_skill(
         # add default skill args, potentially overwrite with query.skill_args
         query_request.skill_args = {**default_skill_args, **query_request.skill_args}
 
-    # FIXME: Once UI sends context and answers seperatly, this code block can be deleted
-    if (
-        skill.skill_type == SkillType.multiple_choice
-        and "choices" not in query_request.skill_args
-    ):
-        choices = query_request.skill_args["context"].split("\n")
-        if skill.skill_settings.requires_context:
-            query_request.skill_args["context"], *choices = choices
-        query_request.skill_args["choices"] = choices
-
     headers = {"Authorization": f"Bearer {token}"}
     if request.headers.get("Cache-Control"):
         headers["Cache-Control"] = request.headers.get("Cache-Control")

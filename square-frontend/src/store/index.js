@@ -21,6 +21,7 @@ export default new Vuex.Store({
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
+    currentChoices: [],
     currentSkills: [],
     availableSkills: [],
     mySkills: [],
@@ -40,6 +41,7 @@ export default new Vuex.Store({
     setAnsweredQuestion(state, payload) {
       state.currentQuestion = payload.question
       state.currentContext = payload.context
+      state.currentChoices = payload.choices
       state.currentResults = payload.results
       state.currentSkills = payload.skills
     },
@@ -69,7 +71,7 @@ export default new Vuex.Store({
    * Mostly wrappers around API calls that manage committing the received results
    */
   actions: {
-    query(context, { question, inputContext, options }) {
+    query(context, { question, inputContext, choices, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
       // if explain_kwargs in options
       var timeoutExplainabilityLoading = null
@@ -78,7 +80,7 @@ export default new Vuex.Store({
           context.commit('setLoadingExplainability', {'value': true});
         }, 8000);
       }
-      return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
+      return postQuery(context.getters.authenticationHeader(), question, inputContext, choices, options)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
@@ -86,7 +88,11 @@ export default new Vuex.Store({
               predictions: response.data.predictions,
               adversarial: response.data.adversarial
             }))
-            context.commit('setAnsweredQuestion', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
+            context.commit('setAnsweredQuestion', { results: results, 
+                                                    question: question, 
+                                                    context: inputContext, 
+                                                    choices: choices, 
+                                                    skills: options.selectedSkills })
           })).finally(() => {
             if ( "explain_kwargs" in options ){
               clearTimeout(timeoutExplainabilityLoading);
@@ -94,9 +100,9 @@ export default new Vuex.Store({
             }
           })
     },
-    attack(context, { question, inputContext, options }) {
+    attack(context, { question, inputContext, choices, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
-      return postQuery(context.getters.authenticationHeader(), question, inputContext, options)
+      return postQuery(context.getters.authenticationHeader(), question, inputContext, choices, options)
           .then(axios.spread((...responses) => {
             // Map responses to a list with the skill metadata and predictions combined
             let results = responses.map((response, index) => ({
@@ -104,7 +110,11 @@ export default new Vuex.Store({
               predictions: response.data.predictions,
               adversarial: response.data.adversarial
             }))
-            context.commit('setAttack', { results: results, question: question, context: inputContext, skills: options.selectedSkills })
+            context.commit('setAttack', { results: results,
+                                          question: question,
+                                          context: inputContext,
+                                          choices: choices,
+                                          skills: options.selectedSkills })
           }))
     },
     signIn(context, { userInfo, token }) {

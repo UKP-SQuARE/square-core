@@ -82,6 +82,6 @@
 <script>
 import Vue from 'vue'
 
-export default Vue.component('send-feedback', {})
+export default Vue.component('terms-conditions', {})
 </script>
 

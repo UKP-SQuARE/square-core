@@ -250,6 +250,7 @@ export default Vue.component("attack-output",{
       this.$store.dispatch('attack', {
         question: this.$store.state.currentQuestion,
         inputContext: this.$store.state.currentContext,
+        choices: this.$store.state.currentChoices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,

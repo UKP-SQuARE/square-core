@@ -62,7 +62,7 @@ export function putSkill(headers, skillId, newSkill) {
  * @param {String} context the provided context
  * @param {Object} options the options for the request
  */
-export function postQuery(headers, question, context, options) {
+export function postQuery(headers, question, context, choices, options) {
     let data = {
         query: question,
         skill_args: {},
@@ -73,6 +73,9 @@ export function postQuery(headers, question, context, options) {
     }
     if (context.length > 0) {
         data.skill_args.context = context
+    }
+    if (choices.length > 0) {
+        data.skill_args.choices = choices
     }
     if (options.explain_kwargs) {
         data.explain_kwargs = {"method": options.explain_kwargs.method,

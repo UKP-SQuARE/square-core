@@ -21,7 +21,7 @@ skills:
   - name: qa-gnn
     author: ukp
   - name: information-retrieval
-    author: serwar
+    author: ukp
 
 web_concurrency: 2
 

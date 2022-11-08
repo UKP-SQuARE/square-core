@@ -659,20 +659,22 @@ class GraphTransformers(Model):
     def _get_edge_info(self, node_ids: list) -> dict:
         pair_list = [list(i) for i in list(itertools.product(node_ids, node_ids))]
         edges = [
-            cpnet[pair[0]][pair[1]][0]
+            [pair, cpnet[pair[0]][pair[1]][0]]
             for pair in pair_list
             if cpnet_simple.has_edge(pair[0], pair[1])
         ]
+
+        linked_pairs = [r[0] for r in edges]
         edge_attributes = {}
-        for i, (node_pair, edge) in enumerate(zip(pair_list, edges)):
+        for i, (node_pair, edge) in enumerate(zip(linked_pairs, edges)):
             tmp_dict = dict()
             tmp_dict["source"] = node_pair[0]
             tmp_dict["target"] = node_pair[1]
-            tmp_dict["weight"] = edge["weight"]
-            if edge["rel"] >= len(id2relation):
-                tmp_dict["label"] = id2relation[edge["rel"] - len(id2relation)]
+            tmp_dict["weight"] = edge[1]["weight"]
+            if edge[1]["rel"] >= len(id2relation):
+                tmp_dict["label"] = id2relation[edge[1]["rel"] - len(id2relation)]
             else:
-                tmp_dict["label"] = id2relation[edge["rel"]]
+                tmp_dict["label"] = id2relation[edge[1]["rel"]]
             edge_attributes[i] = tmp_dict
         return edge_attributes
 
