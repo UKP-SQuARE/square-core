@@ -244,6 +244,7 @@ services:
       - "traefik.http.middlewares.datastores-addprefix.addPrefix.prefix=/datastores"
 
   datastore_es:
+    mem_limit: 512m
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
     environment:
       - discovery.type=single-node

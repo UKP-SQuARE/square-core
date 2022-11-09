@@ -19,6 +19,6 @@ This will start the minimal SQUARE service and run the example script `local_dep
 - Download example corpus scifact;
 - Upload the corpus (to the ES in SQUARE);
 - Do BM25 search;
-- Embed and index the corpus with DPR;
+- Embed and index the corpus with DPR (GPU 1min, CPU 30min);
 - Start a Faiss container to load the built dense index;
 - Do dense search.
