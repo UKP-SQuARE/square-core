@@ -11,9 +11,7 @@ from square_model_inference.core.config import API_PREFIX, APP_NAME, APP_VERSION
 from square_model_inference.core.event_handlers import start_app_handler, stop_app_handler
 
 from square_auth.auth import Auth
-auth = Auth(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"))
-
-logger = logging.getLogger(__name__)
+auth = Auth()
 
 
 def get_app() -> FastAPI:
