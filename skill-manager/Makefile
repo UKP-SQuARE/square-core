@@ -13,8 +13,9 @@ install-dev:
 
 ##		Format code base. Run before commiting.
 format:
-	isort --profile black skill_manager
-	black skill_manager
+	black .
+	isort --profile black --filter-files skill_manager
+	isort --profile black --filter-files tests
 
 ##			Run tests.
 test:
