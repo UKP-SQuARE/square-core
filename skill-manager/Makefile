@@ -34,13 +34,13 @@ up:
 	docker compose --env-file .local.env up -d 
 ##			Bring down the development environment.
 down:
-	docker compose down
+	docker compose --env-file .local.env down
 ##		Build the development environment.
 build:
-	docker compose build 
+	docker compose --env-file .local.env build 
 ##			Show logs from the development environment.
 logs:
-	docker compose logs -f skill-manager
+	docker compose --env-file .local.env logs -f skill-manager
 
 
 # COLORS
