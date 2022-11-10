@@ -4,62 +4,83 @@ The Skill-Manager serves as a central service for interacting with the Skills. I
 ## Project Structure
 ```
 ├───skill_manager
+│   ├───core
+│   │   ├───model_management_client.py      # Client for interacting with model management service
+│   │   ├───redis_client.py                 # Client for interacting with Redis
+│   │   ├───session_cache.py                # Skill Query Cache Config
 │   ├───mongo
-│   │   ├───mongo_client.py         # wrapper class for (dis-)connecting to mongoDB
-│   │   ├───mongo_model.py          # utility interface for loading data from and to mongoDB
-│   │   ├───py_object_id.py         # utility class for mongoDB ID
-│   ├───settings
-│   │   ├───keycloak_settings.py    # Settings class for Keycloak, loads .env variables
-│   │   ├───mongo_settings.py       # Settings class for MongoDB, loads .env variables
+│   │   ├───mongo_client.py                 # Wrapper class for (dis-)connecting to mongoDB
+│   │   ├───mongo_model.py                  # Utility interface for loading data from and to mongoDB
+│   │   ├───py_object_id.py                 # Utility class for mongoDB ID
 │   ├───routers
-│   │   ├───api.py                  # main router for all routes with `/api` prefix
-│   │   ├───health.py               # routes with `/api/health` prefix
-│   │   ├───skill_types.py          # routes with `/api/skill-types` prefix
-│   │   ├───skill.py                # routes with `/api/skill` prefix
-│   ├───keycloak_api.py             # Class for managaing Clients in Keycloak
-│   ├───main.py                     # main file creatng the `app` object
-│   ├───models.py                   # input and output of endpoints
+│   │   ├───api.py                          # Main router for all routes with `/api` prefix
+│   │   ├───health.py                       # Routes with `/api/health` prefix
+│   │   ├───skill_types.py                  # Routes with `/api/skill-types` prefix
+│   │   ├───skill.py                        # Routes with `/api/skill` prefix
+│   ├───settings
+│   │   ├───keycloak_settings.py            # Settings class for Keycloak, loads .env variables
+│   │   ├───model_management_settings.py    # Settings class for model management client 
+│   │   ├───redis_settings.py               # Settings class for Redis
+│   │   ├───mongo_settings.py               # Settings class for MongoDB, loads .env variables
+│   ├───auth_utils.py                       # Class for managaing Clients in Keycloak
+│   ├───keycloak_api.py                     # Class for managaing Clients in Keycloak
+│   ├───main.py                             # main file creatng the `app` object
+│   ├───models.py                           # input and output of endpoints
 ├───tests
-│   ├───test_api.py
-├───.env                            # environment file loaded by root docker-compose.yaml
-├───Dockerfile                      # image definition
-├───logging.conf                    # logging configuration
-├───requirements.dev.txt            # dependencies for development
-├───requirements.txt                # dependencies
+│   ├───conftest.py                         # shared test utilities
+│   ├───test_api.py                         # endpoint tests
+│   ├───test_keycloak_api.py                # keycloak api class tests
+├───.env.template                           # env file template
+├───.local.env                              # env file for local deployment
+├───.pre-commit-config.yaml                 # pre-commit config           
+├───api.http                                # rest client api
+├───docker-compose.yaml                     # docker-compose for local deployment
+├───Dockerfile                              # image definition
+├───logging.conf                            # logging configuration
+├───Makefile                                # Makefile
+├───pytest.ini                              # pytest config
+├───README.md                               # this file
+├───requirements.dev.txt                    # dependencies for development
+├───requirements.txt                        # dependencies
 ```
+
+## Local Setup
+Create a virtual environment and install the dependencies and development dependencies:
+```bash
+python -m venv .venv
+make install
+make install-dev
+```
+
+To setup the authentication locally, create a private key and token. The command below will create a file called `private_key.pem` in the root of the project. Furthermore, it will print a token.
+```bash
+make auth
+```
+Copy the token and insert in in [`api.http`](./api.http).
+```http
+@token = eyJ0e...
+```
+
+Next, build and bring up the project.
+```bash
+make build
+make up
+```
+You can see the logs of the skill manager by running:
+```bash
+make logs
+```
+You should now be able to interact with the skill manager using the [api.http](./api.http) file, through curl, or via the auto generated ui at [localhost:8000/docs](http://localhost:8000/docs).
+
+Note, we run unvicorn with the `--reload` flag. Whenver you modify your code locally, it will restart the webserver to reflect the latest changes.
 
 ## Testing
 Tests include integration tests with mongoDB. To run them successfully docker needs to be installed and running on your system. The test will automatically spin up a mongoDB instance for testing and shut it down at the end of testing.
+First, make sure the development dependencies are installed:
 ```bash
-pip install -r requirements.txt
-pip install -r requirements.dev.txt
-python -m pytest
+make install-dev
 ```
-## Setup
-### Environment Configuration
-The `.env` file holds the access information to the mongoDB. We recommend running mongoDB through docker.  
-The access information for MongoDB has to be configured when starting the service via docker. For example:  
+To run the tests run:
 ```bash
-docker run -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=example mongo
+make test
 ```
-In this case, mongoDB will be running on the `localhost` on port `27017`. The root username will be `root`, and the password `example`. For details see the docker hub [mongo](https://hub.docker.com/_/mongo) image description.  
-Set the same configuration in the `.env`. For example:
-```bash
-MONGO_INITDB_ROOT_USERNAME=root
-MONGO_INITDB_ROOT_PASSWORD=example
-MONGO_HOST=localhost
-MONGO_PORT=27017
-CLIENT_SECRET=PASTE_FROM_NEXT_STEP
-```
-### Keycloak Skill-Manager Client Setup
-When new skills are created, the skill-manager also creates new clients in Keycloak. For this, the skill-manager requires the privilages to create clients.
-1. Login to the admin console of keycloak
-2. Select the realm where the skill-manager should create clients
-3. Create a new client with client id `skill-manager` (or any other client id, but then it needs to be set as the `CLIENT_ID` env variable)
-4. In the Settings tab
-    - set the Access Type to `confidential`
-    - disable Standard Flow Enabled and Direct Access Grants Enabled
-    - enable Service Accounts Enabled
-    - save
-5. In the Service Account Roles tab under at Client Roles, select `realm-management` and add the `create-client` and `manage-client` to the assigned roles
-6. In the Credentials tab copy the secret and set it in the .env file
