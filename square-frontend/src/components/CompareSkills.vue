@@ -6,8 +6,16 @@
           <div class="container">
             <div class="row mb-2 ">
               <div class="col col-sm-4">
-                <input v-model="searchText" placeholder="Search skill" class="form-control form-control-xs mb-2 ml-2" />
-              </div>              
+                <div class="input-group input-group-sm mb-2">
+                  <span class="input-group-text" id="basic-addon1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+                    </svg>
+                  </span>
+                  <input v-model="searchText" placeholder="Search skill" class="form-control form-control-xs"/>
+                </div>
+              </div> <!-- end search col -->
+              
               <div class="col-sm text-end">
                 <label for="btn_group_task">Filter by task: </label>
                 <div class="btn-group btn-group-sm flex-wrap" id="btn_group_task" role="group" aria-label="Filter by task">
@@ -34,7 +42,7 @@
           </div>
           <div class="container" style="height: 20em; overflow-y: scroll;">
             <div class="row row-cols" >
-              <div class="col col-sm-4" v-for="(skill, index) in filteredSkills" :key="skill.id">
+              <div class="col col-sm-4 mb-2" v-for="(skill, index) in filteredSkills" :key="skill.id">
                 <input class="btn-check" type="checkbox"
                       v-on:input="selectSkill(skill.id, index)"
                       v-bind:value="skill.id"
