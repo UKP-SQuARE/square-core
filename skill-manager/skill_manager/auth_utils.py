@@ -1,13 +1,13 @@
 from typing import Dict
+
 import jwt
 from bson import ObjectId
-from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.exceptions import HTTPException
-from square_auth.auth import Auth
-from starlette.requests import Request
-
+from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from skill_manager import mongo_client
 from skill_manager.models import Skill
+from square_auth.auth import Auth
+from starlette.requests import Request
 
 
 def has_auth_header(request: Request) -> bool:

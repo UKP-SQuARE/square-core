@@ -10,10 +10,13 @@ import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from skill_manager import mongo_client
-from skill_manager.core.session_cache import SessionCache
-from skill_manager.auth_utils import (get_payload_from_token,
-                                      get_skill_if_authorized, has_auth_header)
+from skill_manager.auth_utils import (
+    get_payload_from_token,
+    get_skill_if_authorized,
+    has_auth_header,
+)
 from skill_manager.core import ModelManagementClient
+from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
 from skill_manager.routers import client_credentials
@@ -247,7 +250,9 @@ async def query_skill(
         response.raise_for_status()
     predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
-        "predictions from skill: {predictions}".format(predictions=str(predictions.json())[:100])
+        "predictions from skill: {predictions}".format(
+            predictions=str(predictions.json())[:100]
+        )
     )
 
     # save prediction to mongodb

@@ -3,10 +3,9 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
-from square_skill_api.models.prediction import Prediction as SkillPrediction
-
 from skill_manager.mongo.mongo_model import MongoModel
 from skill_manager.mongo.py_object_id import PyObjectId
+from square_skill_api.models.prediction import Prediction as SkillPrediction
 
 
 class SkillType(str, Enum):
@@ -40,7 +39,8 @@ class SkillInputExample(BaseModel):
         description="Additional input to the skill, for example background knowledge."
     )
     choices: Optional[List[str]] = Field(
-        None, description="List of choices (answer candidates) for multiple-choice skills."
+        None,
+        description="List of choices (answer candidates) for multiple-choice skills.",
     )
 
 
@@ -55,7 +55,9 @@ class Skill(MongoModel):
     skill_type: SkillType
     skill_settings: SkillSettings
     user_id: str = Field(..., description="Username of the skill author.")
-    created_at: Optional[datetime] = Field(None, description="Timestamp of skill creation.")
+    created_at: Optional[datetime] = Field(
+        None, description="Timestamp of skill creation."
+    )
     skill_input_examples: Optional[List[SkillInputExample]]
     description: Optional[str] = Field(
         None,
