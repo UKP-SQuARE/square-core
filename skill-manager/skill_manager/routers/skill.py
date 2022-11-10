@@ -94,9 +94,16 @@ async def create_skill(
     if skill.created_at is None:
         skill.created_at = datetime.datetime.now()
 
-    client = keycloak_api.create_client(
-        realm=realm, username=username, skill_name=skill.name
-    )
+    if not is_local_deployment():
+        client = keycloak_api.create_client(
+            realm=realm, username=username, skill_name=skill.name
+        )
+    else:
+        # In local deployment, we don't have Keycloak, so we just create a dummy client
+        client = {
+            "clientId": "local",
+            "secret": "secret",
+        }
     skill.client_id = client["clientId"]
 
     skill_id = mongo_client.client.skill_manager.skills.insert_one(
