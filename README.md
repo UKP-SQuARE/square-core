@@ -12,6 +12,7 @@ And then:
 ```bash
 docker-compose up -d
 cd local_deploy
+pip install -r requirements.txt
 python deploy_ds.py  # Tested with Python 3.7.13 
 ```
 
@@ -22,3 +23,10 @@ This will start the minimal SQUARE service and run the example script `local_dep
 - Embed and index the corpus with DPR (GPU 1min, CPU 30min);
 - Start a Faiss container to load the built dense index;
 - Do dense search.
+
+One can also get access to the [SWAGGER UI](https://swagger.io/tools/swagger-ui/) page for the interactive API. To do so, one can do 
+```bash
+cd local_deploy
+python get_token.py
+```
+to get the token for authorization. Thereafter, just open http://localhost:7000/docs# and type in the token by clicking on "Authorize". Then you are ready to go.
