@@ -1,14 +1,15 @@
 import json
+import uuid
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
-import uuid
 
 import pytest
 import responses
 from fastapi.testclient import TestClient
-from testcontainers.redis import RedisContainer
+from square_skill_api.models.request import QueryRequest
 from testcontainers.mongodb import MongoDbContainer
+from testcontainers.redis import RedisContainer
 
 from skill_manager import mongo_client
 from skill_manager.core.model_management_client import ModelManagementClient
@@ -16,7 +17,6 @@ from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
 from skill_manager.routers import client_credentials
 from skill_manager.routers.skill import auth
-from square_skill_api.models.request import QueryRequest
 
 keycloak_api_mock = MagicMock()
 keycloak_api_mock.create_client.return_value = {
@@ -455,15 +455,17 @@ def test_query_skill(
         )
 
         response = response.json()
-        # HACK: remove attributions/prediction_graph from repsonse since the object 
-        # saved in mongo does not contain it because it is "unset" and we remove all 
+        # HACK: remove attributions/prediction_graph from repsonse since the object
+        # saved in mongo does not contain it because it is "unset" and we remove all
         # unset values when creating the mongo object
         response.pop("adversarial")
         for p in response["predictions"]:
             p.pop("attributions")
             p.pop("prediction_graph")
 
-        TestCase().assertDictEqual(response, {"predictions": saved_prediction["predictions"]})
+        TestCase().assertDictEqual(
+            response, {"predictions": saved_prediction["predictions"]}
+        )
     else:
         assert response.status_code == 403
 

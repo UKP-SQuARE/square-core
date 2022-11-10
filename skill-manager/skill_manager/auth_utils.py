@@ -1,8 +1,9 @@
 from typing import Dict
+
 import jwt
 from bson import ObjectId
-from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.exceptions import HTTPException
+from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from square_auth.auth import Auth
 from starlette.requests import Request
 

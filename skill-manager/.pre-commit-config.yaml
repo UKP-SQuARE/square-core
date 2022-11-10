@@ -1,0 +1,13 @@
+repos:
+-   repo: https://github.com/psf/black
+    rev: 22.6.0
+    hooks:
+    - id: black
+      args: [--check]
+      language_version: python3.8
+# -   repo: https://github.com/pycqa/isort
+#     rev: 5.10.1
+#     hooks:
+#       - id: isort
+#         name: isort (python)
+#         args: ["--check", "--profile", "black", "--filter-files", "skill_manager"]
