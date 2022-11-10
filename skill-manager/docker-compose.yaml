@@ -13,7 +13,9 @@ services:
     - .local.env
     environment:
       API_PREFIX: ""
-      WEB_CONCURRENCY: "2"
+      WEB_CONCURRENCY: "1"
+      KEYCLOAK_BASE_URL: ""
+      MODEL_API_URL: ""
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
       VERIFY_ISSUER: "0"
