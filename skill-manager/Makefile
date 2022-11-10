@@ -25,6 +25,10 @@ auth:
 	@square_pk
 	@square_token
 
+##		Generate and print an access token from the private key.
+token:
+	@square_token
+
 ##			Bring up the development environment.
 up:
 	docker compose --env-file .local.env up -d 
