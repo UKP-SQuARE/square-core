@@ -11,7 +11,7 @@
           </h2>
           <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-              <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="border-danger" />
+              <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="" />
             </div>
           </div>
         </div>
