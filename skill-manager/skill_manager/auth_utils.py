@@ -4,10 +4,11 @@ import jwt
 from bson import ObjectId
 from fastapi.exceptions import HTTPException
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
-from skill_manager import mongo_client
-from skill_manager.models import Skill
 from square_auth.auth import Auth
 from starlette.requests import Request
+
+from skill_manager import mongo_client
+from skill_manager.models import Skill
 
 
 def has_auth_header(request: Request) -> bool:

@@ -3,6 +3,7 @@ import os
 from datetime import timedelta
 
 import requests_cache
+
 from skill_manager import redis_client
 
 logger = logging.getLogger(__name__)

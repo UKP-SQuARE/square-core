@@ -1,6 +1,6 @@
-from skill_manager.settings.redis_settings import RedisSettings
-
 from redis import Redis
+
+from skill_manager.settings.redis_settings import RedisSettings
 
 
 class RedisClient:

@@ -4,6 +4,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+
 from skill_manager import mongo_client, redis_client
 from skill_manager.routers.api import router
 

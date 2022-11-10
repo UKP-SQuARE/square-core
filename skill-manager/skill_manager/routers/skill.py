@@ -9,6 +9,11 @@ from typing import Dict, List
 import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
+from square_auth.auth import Auth
+from square_auth.utils import is_local_deployment
+from square_skill_api.models.prediction import QueryOutput
+from square_skill_api.models.request import QueryRequest
+
 from skill_manager import mongo_client
 from skill_manager.auth_utils import (
     get_payload_from_token,
@@ -20,9 +25,6 @@ from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
 from skill_manager.routers import client_credentials
-from square_auth.auth import Auth
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
 
 logger = logging.getLogger(__name__)
 
