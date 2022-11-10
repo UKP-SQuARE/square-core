@@ -1,0 +1,49 @@
+services:
+  skill-manager:
+    image: ukpsquare/skill-manager:local
+    build:
+      context: .
+      target: build
+    command: uvicorn skill_manager.main:app --reload --host 0.0.0.0 --port 8000 --log-config logging.conf
+    ports:
+    - 8000:8000
+    expose:
+    - 8000
+    env_file:
+    - .local.env
+    environment:
+      API_PREFIX: ""
+      WEB_CONCURRENCY: "2"
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      VERIFY_ISSUER: "0"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SQUARE_PRIVATE_KEY_FILE: /app/private_key.pem
+    depends_on:
+    - mongodb
+    - redis
+    volumes:
+      - ./skill_manager:/app/skill_manager
+      - ./private_key.pem:/app/private_key.pem
+  mongodb:
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+    - mongo-data:/data/db
+    expose:
+    - 27017
+    env_file:
+    - .local.env
+  redis:
+    image: redis:latest
+    ports:
+    - 6379:6379
+    env_file:
+    - .local.env
+    command:
+    - redis-server
+    - --requirepass ${REDIS_PASSWORD}
+
+volumes:
+  mongo-data:
