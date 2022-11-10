@@ -56,7 +56,7 @@ Authorization: Bearer {{token}}
 content-type: application/json
 
 {
-  "name":"test-skill-123",
+  "name":"test-skill",
   "skill_type":"span-extraction",
   "description":"",
   "skill_settings": {
@@ -65,9 +65,8 @@ content-type: application/json
   },
   "url":"http://open-extractive-qa",
   "default_skill_args": {
-    "base_model":"bert-base-uncased"
   },
-  "user_id":"test",
+  "user_id":"LOCAL_SQUARE_USER",
   "published":false,
   "skill_input_examples": [
     {"query":"","context":""},
