@@ -47,7 +47,6 @@ The Skill-Manager serves as a central service for interacting with the Skills. I
 ## Local Setup
 Create a virtual environment and install the dependencies and development dependencies:
 ```bash
-python -m venv .venv
 make install
 make install-dev
 ```
@@ -83,4 +82,10 @@ make install-dev
 To run the tests run:
 ```bash
 make test
+```
+
+## Contributing
+When you install the dev dependenices, also [pre-commit](https://pre-commit.com/) is installed. Before commiting, this will check if all python files are formatted correctly. If not, the commit will be canceled. You can format the codebase by running:
+```bash
+make format
 ```
