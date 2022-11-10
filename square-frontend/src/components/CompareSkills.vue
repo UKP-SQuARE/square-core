@@ -46,7 +46,7 @@
                 <input class="btn-check" type="checkbox"
                       v-on:input="selectSkill(skill.id, index)"
                       v-bind:value="skill.id"
-                      :disabled="waiting"
+                      :disabled="waiting || (selectedSkills.length >= 3 && !selectedSkills.includes(skill.id))"
                       :id="skill.id"
                       >
                 <label class="btn btn-outline-primary w-100 h-100 align-middle" :for="skill.id" 
