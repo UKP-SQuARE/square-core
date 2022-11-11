@@ -9,11 +9,12 @@ from tasks.models.prediction import (PredictionOutput,
                                      PredictionOutputForEmbedding,
                                      PredictionOutputForGeneration,
                                      PredictionOutputForSequenceClassification,
-                                     PredictionOutputForTokenClassification)
+                                     PredictionOutputForTokenClassification,
+                                     PredictionOutputForQuestionAnswering)
 from tasks.models.request import PredictionRequest
 from torch import nn
 from torch.nn import functional as F
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModel
 
 from .transformer import Transformer
 
@@ -55,6 +56,8 @@ class ORTModelForFeatureExtraction(ORTModelForFeatureExtraction_model):
             onnx_inputs["token_type_ids"] = token_type_ids.cpu().detach().numpy()
         # run inference
         outputs = self.model.run(None, onnx_inputs)
+        print(f"output of ORT EctModel:{outputs}")
+        print(f"self.model_outpus:{self.model_outputs}")
         last_hidden_state = torch.from_numpy(outputs[self.model_outputs["last_hidden_state"]]).to(self.device)
         pooler_output = torch.from_numpy(outputs[self.model_outputs["pooler_output"]]).to(self.device)
         # converts output to namedtuple for pipelines post-processing
@@ -84,6 +87,7 @@ class Onnx(Transformer):
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.session = onnxruntime.InferenceSession(model_config.model_path)
+        self._load_model(AutoModel,model_config.model_name,model_config.disable_gpu)
         # # check whether a decoder model is available
         # self.is_encoder_decoder = (
         #     model_config.decoder_path is not None and model_config.decoder_path != ""
@@ -119,128 +123,18 @@ class Onnx(Transformer):
             features = self.tokenizer(
                 request.input, return_tensors="pt", **request.preprocessing_kwargs
             )
-        for start_idx in range(
-            0, features["input_ids"].shape[0], model_config.batch_size
-        ):
-            input_names = [
-                self.session.get_inputs()[i].name
-                for i in range(len(self.session.get_inputs()))
-            ]
-            ort_inputs = dict(
-                (
-                    k,
-                    to_numpy(
-                        input_data[start_idx : start_idx + model_config.batch_size]
-                    ),
-                )
-                for k, input_data in features.items()
-                if k in input_names
-            )
+        embedding_model = ORTModelForFeatureExtraction(self.session)
+        final_prediction = embedding_model(**features)
 
-            res = self.session.run([], ort_inputs)
-            if self.is_encoder_decoder:
-                if self.decoder_session:
-                    # Prepare decoder input
-                    # This works with encoder decoder models exported similarirly to the FastT5 onnx model
-                    ort_inputs = {
-                        "input_ids": features["decoder_input_ids"]
-                        if "decoder_input_ids" in features
-                        else np.array(
-                            [
-                                [self.get_bos_token()]
-                                for _ in range(features["input_ids"].shape[0])
-                            ],
-                            dtype=np.int64,
-                        ),
-                        "encoder_hidden_states": res[0],
-                        "encoder_attention_mask": to_numpy(features["attention_mask"]),
-                    }
-                    res += self.decoder_session.run([], ort_inputs)
-            all_predictions.append(res)
-        final_prediction = {}
-        output_names = [
-            self.session.get_outputs()[i].name
-            for i in range(len(self.session.get_outputs()))
-        ]
-        if self.is_encoder_decoder:
-            output_names += [
-                self.decoder_session.get_outputs()[i].name
-                for i in range(len(self.decoder_session.get_outputs()))
-            ]
 
-        for idx, key in enumerate(output_names):
-            # HuggingFace outputs for 'attentions' and more is returned as tuple of tensors
-            # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
-            # Generation should NOT use this function
-            final_prediction[key] = torch.cat(
-                [torch.tensor(p[idx]) for p in all_predictions]
-            )
+
+
+
+
         if output_features:
             return final_prediction, features
         return final_prediction
 
-    # def _embedding(self, request: PredictionRequest) -> PredictionOutput:
-    #     """
-    #     Embeds the input from the request
-    #
-    #     Args:
-    #          request: The request containing input and optionally task kwargs like embedding method
-    #
-    #     Return:
-    #          The embedding output
-    #     """
-    #     embedding_mode = request.task_kwargs.get("embedding_mode", "mean")
-    #     if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
-    #         raise ValueError(
-    #             f"Embedding mode {embedding_mode} not in list of supported modes {self.SUPPORTED_EMBEDDING_MODES}"
-    #         )
-    #
-    #     task_outputs = {"embedding_mode": embedding_mode}
-    #     predictions, features = self._predict(request, output_features=True)
-    #
-    #     if embedding_mode == "pooler":
-    #         if "pooler_output" not in predictions:
-    #             raise ValueError(
-    #                 "No pooler output available. Use a different model or an other embedding method"
-    #             )
-    #         emb = predictions["pooler_output"]
-    #     else:
-    #         if "last_hidden_state" not in predictions:
-    #             if "hidden_states" in predictions:
-    #                 hidden_state = predictions["hidden_states"]
-    #             else:
-    #                 raise ValueError(
-    #                     "No last hidden state available. Use a different model or the pooler embedding method"
-    #                 )
-    #         else:
-    #             hidden_state = predictions["last_hidden_state"]
-    #         attention_mask = features["attention_mask"]
-    #         if embedding_mode == "cls":
-    #             emb = hidden_state[:, 0, :]
-    #         elif embedding_mode == "max":
-    #             input_mask_expanded = (
-    #                 attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
-    #             )
-    #             hidden_state[
-    #                 input_mask_expanded == 0
-    #             ] = -1e9  # Set padding tokens to large negative value
-    #             emb = torch.max(hidden_state, 1)[0]
-    #             # copied from sentence-transformers pooling
-    #         elif embedding_mode == "mean":
-    #             input_mask_expanded = (
-    #                 attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
-    #             )
-    #             sum_embeddings = torch.sum(hidden_state * input_mask_expanded, 1)
-    #             sum_mask = input_mask_expanded.sum(1)
-    #             emb = sum_embeddings / sum_mask
-    #         elif embedding_mode == "token":
-    #             emb = hidden_state
-    #             task_outputs["word_ids"] = [
-    #                 features.word_ids(i) for i in range(len(request.input))
-    #             ]
-    #     predictions["embeddings"] = emb
-    #
-    #     return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
 
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
         """
@@ -265,9 +159,6 @@ class Onnx(Transformer):
         )
         # embedding_model = ORTModelForFeatureExtraction.from_pretrained(model_config.model_path)
         embedding_model = ORTModelForFeatureExtraction(self.session)
-
-
-
         predictions = embedding_model(**features)
 
         if embedding_mode == "pooler":
@@ -327,15 +218,196 @@ class Onnx(Transformer):
                  The prediction output containing the predicted labels
 
         '''
+        def decode(
+            start_: np.ndarray,
+            end_: np.ndarray,
+            topk: int,
+            max_answer_len: int,
+            undesired_tokens_: np.ndarray,
+        ) -> Tuple:
+            """
+            Take the output of any :obj:`ModelForQuestionAnswering` and
+                will generate probabilities for each span to be the
+                actual answer.
+            In addition, it filters out some unwanted/impossible cases
+            like answer len being greater than max_answer_len or
+            answer end position being before the starting position.
+            The method supports output the k-best answer through
+            the topk argument.
+            Args:
+                start_ (:obj:`np.ndarray`): Individual start
+                    probabilities for each token.
+                end (:obj:`np.ndarray`): Individual end_ probabilities
+                    for each token.
+                topk (:obj:`int`): Indicates how many possible answer
+                    span(s) to extract from the model output.
+                max_answer_len (:obj:`int`): Maximum size of the answer
+                    to extract from the model's output.
+                undesired_tokens_ (:obj:`np.ndarray`): Mask determining
+                    tokens that can be part of the answer
+            """
+            # Ensure we have batch axis
+            if start_.ndim == 1:
+                start_ = start_[None]
+
+            if end_.ndim == 1:
+                end_ = end_[None]
+
+            # Compute the score of each tuple(start_, end_) to be the real answer
+            outer = np.matmul(np.expand_dims(start_, -1), np.expand_dims(end_, 1))
+
+            # Remove candidate with end_ < start_ and end_ - start_ > max_answer_len
+            candidates = np.tril(np.triu(outer), max_answer_len - 1)
+
+            #  Inspired by Chen & al. (https://github.com/facebookresearch/DrQA)
+            scores_flat = candidates.flatten()
+            if topk == 1:
+                idx_sort = [np.argmax(scores_flat)]
+            elif len(scores_flat) < topk:
+                idx_sort = np.argsort(-scores_flat)
+            else:
+                idx = np.argpartition(-scores_flat, topk)[0:topk]
+                idx_sort = idx[np.argsort(-scores_flat[idx])]
+
+            starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
+            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
+            starts_ = starts_[desired_spans]
+            ends_ = ends_[desired_spans]
+            scores_ = candidates[0, starts_, ends_]
+
+            return starts_, ends_, scores_
+
         print("******QA Task*******")
+        print(f"request:{request}")
         #model_qa = ORTModelForQuestionAnswering.from_pretrained(model_config.model_path)
         model_qa = ORTModelForQuestionAnswering(self.session)
 
+        # self.model = model_qa
 
-        ##TODO:TBD
-        return PredictionOutputForSequenceClassification(
-            model_outputs=predictions, **task_outputs
+        request.preprocessing_kwargs["truncation"] = "only_second"
+
+        features = self.tokenizer(
+            request.input, return_tensors="pt", **request.preprocessing_kwargs
         )
+        # predictions, features = self._predict(request, output_features=True)
+
+        predictions = model_qa(**features)
+        print(f"prediction:{predictions}")
+        print(f"features:{features}")
+
+        task_outputs = {
+            "answers": [],
+            "attributions": [],
+            "adversarial": {
+                "indices": [],
+            },  # for hotflip, input_reduction and topk
+        }
+        for idx, (start, end, (_, context)) in enumerate(
+                zip(predictions["start_logits"], predictions["end_logits"], request.input)
+        ):
+            start = start.numpy()
+            end = end.numpy()
+            # Ensure padded tokens & question tokens cannot
+            # belong to the set of candidate answers.
+            question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
+            # Unmask CLS token for 'no answer'
+            question_tokens[0] = 1
+            undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
+
+            # Generate mask
+            undesired_tokens_mask = undesired_tokens == 0.0
+
+            # Make sure non-context indexes in the tensor cannot
+            # contribute to the softmax
+            start = np.where(undesired_tokens_mask, -10000.0, start)
+            end = np.where(undesired_tokens_mask, -10000.0, end)
+
+            start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
+            end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
+
+            # Get score for 'no answer' then mask for decoding step (CLS token
+            no_answer_score = (start[0] * end[0]).item()
+            start[0] = end[0] = 0.0
+
+            starts, ends, scores = decode(
+                start,
+                end,
+                request.task_kwargs.get("topk", 1),
+                request.task_kwargs.get("max_answer_len", 128),
+                undesired_tokens,
+            )
+            enc = features[idx]
+            self.original_ans_start = enc.token_to_word(starts[0])
+            self.original_ans_end = enc.token_to_word(ends[0])
+            answers = [
+                {
+                    "score": score.item(),
+                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0],
+                    "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
+                    "answer": context[
+                              enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0]: enc.word_to_chars(
+                                  enc.token_to_word(e), sequence_index=1
+                              )[1]
+                              ],
+                }
+                for s, e, score in zip(starts, ends, scores)
+            ]
+            if request.task_kwargs.get("show_null_answers", True):
+                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
+            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
+            task_outputs["answers"].append(answers)
+
+            # word attributions
+            if request.explain_kwargs or request.attack_kwargs:
+                start_idx = torch.argmax(predictions["start_logits"])
+                end_idx = torch.argmax(predictions["end_logits"])
+                answer_start = torch.tensor([start_idx])
+                answer_end = torch.tensor([end_idx])
+
+                grad_kwargs = {
+                    "start_positions": answer_start.to(self.model.device),
+                    "end_positions": answer_end.to(self.model.device),
+                }
+                attributions = self._interpret(
+                    request=request,
+                    prediction=predictions,
+                    method=request.explain_kwargs["method"]
+                    if request.explain_kwargs
+                    else request.attack_kwargs["saliency_method"],
+                    **grad_kwargs,
+                )
+                # new added section start
+                # to extract the name of the attack method
+                attack_method = None
+                if request.attack_kwargs:
+                    for k, v in request.attack_kwargs.items():
+                        if k == "method":
+                            attack_method = v
+                # new added section end
+                word_imp = self.process_outputs(
+                    attributions=attributions,
+                    top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
+                    mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+                    task="question_answering",
+                    # new added paramter in process_ourput method
+                    attack_method=attack_method,
+                )
+                # print(word_imp)
+                task_outputs["attributions"] = word_imp
+
+            if (
+                    not request.attack_kwargs
+                    and not request.explain_kwargs
+                    and not request.model_kwargs.get("output_attentions", False)
+            ):
+                # predictions.pop("attentions", None)
+                pass
+
+            if request.attack_kwargs:
+                new_predictions = self._model_attacks(request, task_outputs)
+                return new_predictions
+
+        return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         """
