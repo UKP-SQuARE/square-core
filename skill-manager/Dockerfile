@@ -1,5 +1,8 @@
 FROM python:3.10.8-slim-buster as base
 
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+
 # required to install packages from github
 RUN apt-get -y update && apt-get -y install git
 
