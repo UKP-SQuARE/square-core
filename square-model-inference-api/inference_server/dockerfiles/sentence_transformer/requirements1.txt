@@ -5,10 +5,10 @@ python-dotenv==0.17.1           # Required for .env configs
 sentencepiece==0.1.96           # tokenizer
 torch==1.11.0                   # pytorch libs
 sentence-transformers==1.2.0    # sentence transformers libs
-square-auth>=0.0.7              # keycloak authentication
+square-auth==0.0.12            # keycloak authentication
 celery==5.1.2                   # queue requests
 redis==4.1.4
 pytest-env==0.6.2
 spacy>=3.0.0,<4.0.0
+square-elk-json-formatter==0.0.3    
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz#egg=en_core_web_sm
-git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # ELK logger

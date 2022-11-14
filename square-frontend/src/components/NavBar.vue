@@ -20,7 +20,7 @@
                 <router-link class="nav-link" to="/explain" exact-active-class="active">Behavioral Tests</router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="https://arxiv.org/abs/2203.13693" target="_blank">Publication</a>
+                <router-link class="nav-link" to="/publications" exact-active-class="active">Publications</router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/docs/" target="_blank">Docs</a>

@@ -1,7 +1,9 @@
-from typing import Dict
 from datetime import datetime
+from typing import Dict
+
 from bson import ObjectId
 from pydantic import BaseConfig, BaseModel
+
 
 # https://github.com/tiangolo/fastapi/issues/1515
 class MongoModel(BaseModel):

@@ -39,8 +39,9 @@ class SkillInputExample(BaseModel):
     context: Optional[str] = Field(
         description="Additional input to the skill, for example background knowledge."
     )
-    answers: Optional[List[str]] = Field(
-        None, description="List of answer candidates for multiple-choice skills."
+    choices: Optional[List[str]] = Field(
+        None,
+        description="List of choices (answer candidates) for multiple-choice skills.",
     )
 
 
@@ -55,7 +56,9 @@ class Skill(MongoModel):
     skill_type: SkillType
     skill_settings: SkillSettings
     user_id: str = Field(..., description="Username of the skill author.")
-    created_at: Optional[datetime] = Field(None, description="Timestamp of skill creation.")
+    created_at: Optional[datetime] = Field(
+        None, description="Timestamp of skill creation."
+    )
     skill_input_examples: Optional[List[SkillInputExample]]
     description: Optional[str] = Field(
         None,
