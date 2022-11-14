@@ -135,6 +135,15 @@ def test_skill_types(client):
     assert isinstance(skill_types, list), type(skill_types)
 
 
+def test_data_sets(client):
+
+    response = client.get("/api/data-sets")
+    assert response.status_code == 200
+
+    data_sets = response.json()
+    assert isinstance(data_sets, list), type(data_sets)
+
+
 @pytest.mark.asyncio
 async def test_create_skill(pers_client: TestClient, skill_factory, token_factory):
 
@@ -144,6 +153,29 @@ async def test_create_skill(pers_client: TestClient, skill_factory, token_factor
     )
 
     test_skill = skill_factory(user_id=test_user)
+    token = token_factory(preferred_username=test_user)
+
+    response = pers_client.post(
+        "/api/skill",
+        data=test_skill.json(),
+        headers=dict(Authorization="Bearer " + token),
+    )
+    assert response.status_code == 201, response.content
+
+    assert_skills_equal_from_response(test_skill, response)
+
+
+@pytest.mark.asyncio
+async def test_create_skill_with_data_sets(
+    pers_client: TestClient, skill_factory, token_factory
+):
+
+    test_user = "test-user"
+    app.dependency_overrides[auth] = lambda: dict(
+        realm="test-realm", username=test_user
+    )
+
+    test_skill = skill_factory(user_id=test_user, data_sets=["SQuAD", "HotpotQA"])
     token = token_factory(preferred_username=test_user)
 
     response = pers_client.post(
