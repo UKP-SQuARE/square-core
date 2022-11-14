@@ -1,5 +1,9 @@
 SHELL := /bin/bash
 
+PYTHON=3.10
+BASENAME=model-api
+CONDA_CH=conda-forge defaults
+
 # files to check for linting
 SRC=$(shell find . -type f -name '*.py')
 
@@ -7,13 +11,6 @@ SRC=$(shell find . -type f -name '*.py')
 check_dirs := ./inference_api
 
 # envs
-define setup_env
-	$(eval ENV_FILE := env/$(1))
-	@echo " - setup env $(ENV_FILE)"
-	$(eval include env/$(1))
-	$(eval export sed 's/=.*//' env/$(1))
-endef
-
 ifneq (,$(wildcard ./.env.test))
     include .env.test
     export
@@ -24,6 +21,11 @@ endif
 .PHONY: all clean test install run deploy clean-deploy down quality lint reformat
 
 all: clean test install run deploy down
+
+# PRE-REQUISITES
+
+env:
+	conda create -n $(BASENAME)  python=$(PYTHON)
 
 quality:
 	isort --check ${check_dirs}
@@ -40,7 +42,6 @@ reformat:
 test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
 	PYTHONPATH=inference_api/ pytest inference_api/  --cov
-	# PYTHONPATH=../model-manager/ pytest ../model-manager/  --cov
 
 full-test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
@@ -51,6 +52,9 @@ install:
 	pip install --upgrade pip
 	pip install -r inference_api/dockerfiles/base_model/requirements.txt
 	pip install -r inference_api/dockerfiles/transformer/requirements.txt
+
+
+## RUN ON LOCAL MACHINE
 
 app:
 	export QUEUE="bert-base-uncased" && \
@@ -68,6 +72,9 @@ worker:
 	#$(call setup_env, inference_api/.env.test)
 	export QUEUE="bert-base-uncased" && \
 	PYTHONPATH=inference_api/ celery -A tasks worker -Q QUEUE --loglevel=info --concurrency=1
+
+
+## RUNNING ON DOCKER
 
 build:
 	docker-compose build
