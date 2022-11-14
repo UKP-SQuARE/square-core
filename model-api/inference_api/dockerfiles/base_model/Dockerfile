@@ -35,6 +35,7 @@ COPY ./tasks tasks
 # copy test files
 COPY tests/pre_test_setup_for_docker_caching.py tests/pre_test_setup_for_docker_caching.py
 COPY tests/generic/ tests/$MODEL/generic
+COPY pytest.ini pytest.ini
 
 
 RUN PYTHONPATH=./ pytest \
