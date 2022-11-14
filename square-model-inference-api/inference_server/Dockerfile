@@ -31,7 +31,7 @@ FROM base as test
 COPY ./tests/pre_test_setup_for_docker_caching.py ./tests/pre_test_setup_for_docker_caching.py
 RUN python ./tests/pre_test_setup_for_docker_caching.py
 COPY . ./
-RUN pip install pytest pytest-cov pytest-asyncio pytest-env
+RUN pip install pytest pytest-cov pytest-asyncio pytest-env httpx
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
