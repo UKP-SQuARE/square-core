@@ -2,6 +2,7 @@
 FROM python:3.9.14-slim-buster as base
 
 ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
 ENV MODEL base_model
 
 # required to install packages from github
@@ -33,8 +34,7 @@ COPY ./tasks tasks
 
 # copy test files
 COPY tests/pre_test_setup_for_docker_caching.py tests/pre_test_setup_for_docker_caching.py
-#COPY tests/$MODEL tests/$MODEL
-COPY tests/generic/ tests/$MODEL/generic
+COPY tests/generic/ tests/generic
 COPY pytest.ini pytest.ini
 
 ## run tests
