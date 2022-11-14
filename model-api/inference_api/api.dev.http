@@ -11,21 +11,21 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
-# @name dpr
-POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "input": [
-    "Do aliens exist?"
-  ],
-  "is_preprocessed": false,
-  "preprocessing_kwargs": {},
-  "model_kwargs": {},
-  "task_kwargs": {},
-  "adapter_name": ""
-}
+## @name dpr
+#POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    "Do aliens exist?"
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
 
 
 ###
@@ -49,24 +49,24 @@ Content-Type: application/json
 #}
 
 ###
-#
-## @name bert_qa
-#POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
-#Authorization: Bearer {{auth_token}}
-#Content-Type: application/json
-#
-#{
-#  "input": [
-#  ["Who stars in The Matrix?",
-#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
-#  ],
-#  "is_preprocessed": false,
-#  "preprocessing_kwargs": {},
-#  "model_kwargs": {},
-#  "task_kwargs": {},
-#  "attack_kwargs":{"method":"hotflip", "saliency_method": "attention", "max_flips":5},
-#  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
-#}
+
+# @name bert_qa
+POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "input": [
+  ["Who stars in The Matrix?",
+     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {},
+  "task_kwargs": {},
+  "attack_kwargs":{"method":"hotflip", "saliency_method": "attention", "max_flips":5},
+  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
+}
 
 ###
 

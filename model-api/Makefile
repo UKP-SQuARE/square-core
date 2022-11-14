@@ -6,6 +6,19 @@ SRC=$(shell find . -type f -name '*.py')
 # files to check for quality
 check_dirs := ./inference_api
 
+# envs
+define setup_env
+	$(eval ENV_FILE := env/$(1))
+	@echo " - setup env $(ENV_FILE)"
+	$(eval include env/$(1))
+	$(eval export sed 's/=.*//' env/$(1))
+endef
+
+ifneq (,$(wildcard ./.env.test))
+    include .env.test
+    export
+endif
+
 # Target section and Global definitions
 # -----------------------------------------------------------------------------
 .PHONY: all clean test install run deploy clean-deploy down quality lint reformat
@@ -27,25 +40,34 @@ reformat:
 test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
 	PYTHONPATH=inference_api/ pytest inference_api/  --cov
-	#PYTHONPATH=../model-manager/ pytest ../model-manager/  --cov
-# 	PYTHONPATH=management_server/ pytest management_server/  --cov
+	# PYTHONPATH=../model-manager/ pytest ../model-manager/  --cov
 
 full-test:
 	python -m pip install --upgrade pip && pip install pytest pytest-cov pytest-asyncio
 	PYTHONPATH=inference_server/ pytest inference_server/  --cov
 	PYTHONPATH=../model-manager/ pytest ../model-manager/  --cov
-# 	PYTHONPATH=management_server/ pytest management_server/  --cov
-	PYTHONPATH=management_client/ pytest management_client/  --cov
 
 install:
 	pip install --upgrade pip
-	pip install -r inference_server/requirements1.txt
-	pip uninstall -y -r inference_server/uninstall_requirements.txt
-	pip install -r inference_server/requirements2.txt
+	pip install -r inference_api/dockerfiles/base_model/requirements.txt
+	pip install -r inference_api/dockerfiles/transformer/requirements.txt
 
-run:
-	export CONFIG_PATH="./.test_configs"  && \
-	PYTHONPATH=inference_server/ uvicorn inference_server.main:app --reload --host 0.0.0.0 --port 8000 --env-file inference_server/.env.bert_adapter
+app:
+	export QUEUE="bert-base-uncased" && \
+	PYTHONPATH=inference_api/ uvicorn inference_api.main:app --reload --host 0.0.0.0 --port 8000 --env-file inference_api/model_configs/.env.bert_adapter
+
+redis:
+	docker build -t redis -f inference_api/dockerfiles/redis/Dockerfile .
+	docker run -d -p 6379:6379 --name redis redis
+
+rabbitmq:
+	docker build -t rabbit -f inference_api/dockerfiles/rabbitmq/Dockerfile .
+	docker run -d -p 5672:5672 --name rabbit rabbit
+
+worker:
+	#$(call setup_env, inference_api/.env.test)
+	export QUEUE="bert-base-uncased" && \
+	PYTHONPATH=inference_api/ celery -A tasks worker -Q QUEUE --loglevel=info --concurrency=1
 
 build:
 	docker-compose build
