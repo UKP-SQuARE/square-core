@@ -17,8 +17,12 @@ let initOptions = {
   onLoad: 'check-sso',
   silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
 }
-
 let keycloak = Keycloak(initOptions)
+// if process.env.VUE_APP_AUTH_TOKEN is set, then use that token instead of Keycloak
+if (process.env.VUE_APP_AUTH_TOKEN) {
+  keycloak.token = process.env.VUE_APP_AUTH_TOKEN
+  keycloak.authenticated = true
+}
 
 keycloak.init({
   onLoad: initOptions.onLoad,

@@ -5,7 +5,7 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, getSkills, putSkill, deleteSkill, postSkill } from '../api'
+import { postQuery, getSkills, putSkill, deleteSkill, postSkill, getAuthToken } from '../api'
 
 Vue.use(Vuex)
 
@@ -17,7 +17,7 @@ export default new Vuex.Store({
    */
   state: {
     userInfo: {},
-    token: '',
+    token: getAuthToken(),
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
