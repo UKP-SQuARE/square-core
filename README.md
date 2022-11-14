@@ -4,15 +4,15 @@ This branch hosts a minimal version of SQuARE for the convenience of local deplo
 
 To get started, please run:
 ```
+pip install -r local_deploy/requirements.txt
 bash install-local.sh
 ```
-to generate a `docker-compose.yaml` file.
+to generate a `docker-compose.yaml` file (and a authentication token for local deployment in `./local_deploy`)
 
 And then:
 ```bash
 docker-compose up -d
 cd local_deploy
-pip install -r requirements.txt
 python deploy_ds.py  # Tested with Python 3.7.13 
 ```
 
