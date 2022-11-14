@@ -98,6 +98,10 @@ class Skill(MongoModel):
     client_secret: Optional[str] = Field(
         None, description="The cleint secret of the skill stored in Keycloak."
     )
+    data_sets: Optional[List[str]] = Field(
+        [],
+        description="This list contains all datasets with which the skill was trained",
+    )
 
     @validator("url")
     def validate_url(cls, url: str) -> str:
@@ -138,6 +142,7 @@ class Skill(MongoModel):
                         "context": "At the water's edge, Moonwatcher and his band stop. They carry their bone clubs and bone knives. Led by One-ear, the Others half-heartly resume the battle-chant. But they are suddenly confrunted with a vision that cuts the sound from their throats, and strikes terror into their hearts.",
                     }
                 ],
+                "data_sets": ["HotpotQA", "SQuAD"],
             }
         }
 
@@ -163,3 +168,7 @@ class Prediction(MongoModel):
     )
     user_id: str = Field(..., description="User that issued the query.")
     predictions: List[SkillPrediction]
+    data_sets: List[str] = Field(
+        [],
+        description="All datasets with which the skill was trained",
+    )
