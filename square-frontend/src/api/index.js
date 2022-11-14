@@ -22,7 +22,7 @@ export function getSkillTypes(headers) {
  * @param {Object} headers optional authentication header
  */
  export function getDataSets(headers) {
-    return axios.get(`${SKILL_URL}/skill-datasets`, { headers: headers })
+    return axios.get(`${SKILL_URL}/data-sets`, { headers: headers })
 }
 
 /**
