@@ -12,7 +12,7 @@ COPY square-frontend/. .
 RUN npm run build
 
 # docs stage
-FROM python:3.7.6-buster as docs-stage
+FROM python:3.10.8-buster as docs-stage
 
 RUN apt-get -y update
 RUN apt-get -y install git
