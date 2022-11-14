@@ -28,10 +28,12 @@ RUN pip install -r requirements2.txt
 # run the tests
 FROM base as test
 
+COPY requirements.dev.txt ./
+RUN pip install -r requirements.dev.txt
+
 COPY ./tests/pre_test_setup_for_docker_caching.py ./tests/pre_test_setup_for_docker_caching.py
 RUN python ./tests/pre_test_setup_for_docker_caching.py
 COPY . ./
-RUN pip install pytest pytest-cov pytest-asyncio pytest-env httpx
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
