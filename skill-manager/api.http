@@ -23,6 +23,11 @@ GET {{path_prefix}}/skill-types HTTP/1.1
 Host: {{hostname}}
 
 ### 
+# @name get_data_sets
+GET {{path_prefix}}/data-sets HTTP/1.1
+Host: {{hostname}}
+
+### 
 # @name get_skill_heartbeat
 # @prompt skill_url
 GET {{path_prefix}}/health/skill-heartbeat?skill_url={{skill_url}} HTTP/1.1
