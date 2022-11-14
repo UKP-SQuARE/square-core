@@ -1,7 +1,7 @@
 ## This is the dockerfile template for transformer based model
 FROM ukpsquare/square-model-api-base-model:latest as base
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV MODEL transformer
 
