@@ -143,6 +143,7 @@ import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
+import Multiselect from 'vue-multiselect'
 import { getSkill, getSkillTypes, getDataSets } from '@/api'
 
 export default Vue.component('edit-skill', {
