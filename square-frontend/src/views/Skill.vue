@@ -83,7 +83,7 @@
         <div class="col mt-3">
           <label for="datasets" class="form-label">Skill Datasets</label>
           <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false" placeholder="Select a dataset"></multiselect>
-          <small class="text-muted">Select one or more datasets that your skill should automatically be evaluated on.</small>
+          <small class="text-muted">Select the dataset on which the Skill was trained.</small>
         </div>
       </div>
       <div class="row">
