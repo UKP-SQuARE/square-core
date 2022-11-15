@@ -7,7 +7,7 @@ import axios from 'axios'
 /**
  * URLs to the SQuARE backend servers
  */
-const SKILL_URL = `${process.env.VUE_APP_URL}/api/skill-manager`
+const SKILL_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
 const AUTH_TOKEN = process.env.VUE_APP_AUTH_TOKEN
 /**
  * Get a list of available skill types.
