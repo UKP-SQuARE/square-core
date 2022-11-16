@@ -8,7 +8,6 @@ import axios from 'axios'
  * URLs to the SQuARE backend servers
  */
 const SKILL_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
-const AUTH_TOKEN = process.env.VUE_APP_AUTH_TOKEN
 /**
  * Get a list of available skill types.
  * @param {Object} headers optional authentication header
@@ -116,12 +115,4 @@ export function postSkill(headers, newSkill) {
 export function pingSkill(headers, skillUrl) {
     headers.params = { skill_url: skillUrl }
     return axios.get(`${SKILL_URL}/health/skill-heartbeat`, headers)
-}
-
-/**
- * Get the authentication token. This will be used for local deployment.
- * @returns {String} the authentication header
- */
-export function getAuthToken() {
-    return AUTH_TOKEN
 }

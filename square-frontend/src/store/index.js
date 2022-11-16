@@ -5,7 +5,7 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, getSkills, putSkill, deleteSkill, postSkill, getAuthToken } from '../api'
+import { postQuery, getSkills, putSkill, deleteSkill, postSkill } from '../api'
 
 Vue.use(Vuex)
 
@@ -17,7 +17,7 @@ export default new Vuex.Store({
    */
   state: {
     userInfo: {},
-    token: getAuthToken(),
+    token: process.env.VUE_APP_AUTH_TOKEN, // will be overwritten by login
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
@@ -118,9 +118,15 @@ export default new Vuex.Store({
           }))
     },
     signIn(context, { userInfo, token }) {
+      if (process.env.VUE_APP_AUTH_TOKEN !== '') {
+        token = process.env.VUE_APP_AUTH_TOKEN
+      }
       context.commit('setAuthentication', { userInfo: userInfo, token: token })
     },
     refreshToken(context, { token }) {
+      if (process.env.VUE_APP_AUTH_TOKEN !== '') {
+        token = process.env.VUE_APP_AUTH_TOKEN
+      }
       context.commit('setAuthentication', { token: token })
     },
     signOut(context) {
@@ -151,6 +157,9 @@ export default new Vuex.Store({
   getters: {
     authenticationHeader: (state) => () => {
       if (state.token) {
+        if (process.env.VUE_APP_AUTH_TOKEN !== '') {
+          return {'Authorization': `Bearer ${process.env.VUE_APP_AUTH_TOKEN}`}
+        }
         return {'Authorization': `Bearer ${state.token}`}
       } else {
         return {}
