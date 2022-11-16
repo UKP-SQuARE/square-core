@@ -1,6 +1,6 @@
 services:
   skill-manager:
-    image: ukpsquare/skill-manager:local
+    image: ukpsquare/skill-manager:latest
     build:
       context: .
       target: build
