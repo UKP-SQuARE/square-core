@@ -17,7 +17,7 @@ export default new Vuex.Store({
    */
   state: {
     userInfo: {},
-    token: process.env.VUE_APP_AUTH_TOKEN, // will be overwritten by login
+    token: '',
     currentResults: [],
     currentQuestion: '',
     currentContext: '',
@@ -118,15 +118,9 @@ export default new Vuex.Store({
           }))
     },
     signIn(context, { userInfo, token }) {
-      if (process.env.VUE_APP_AUTH_TOKEN !== '') {
-        token = process.env.VUE_APP_AUTH_TOKEN
-      }
       context.commit('setAuthentication', { userInfo: userInfo, token: token })
     },
     refreshToken(context, { token }) {
-      if (process.env.VUE_APP_AUTH_TOKEN !== '') {
-        token = process.env.VUE_APP_AUTH_TOKEN
-      }
       context.commit('setAuthentication', { token: token })
     },
     signOut(context) {
@@ -157,9 +151,6 @@ export default new Vuex.Store({
   getters: {
     authenticationHeader: (state) => () => {
       if (state.token) {
-        if (process.env.VUE_APP_AUTH_TOKEN !== '') {
-          return {'Authorization': `Bearer ${process.env.VUE_APP_AUTH_TOKEN}`}
-        }
         return {'Authorization': `Bearer ${state.token}`}
       } else {
         return {}
