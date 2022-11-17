@@ -3,5 +3,5 @@ pytest-env>=0.6.2
 requests-mock>=1.9.3
 pytest-cov>=3.0.0
 pytest-mock>=3.7.0
-testcontainers==3.4.2
+testcontainers>=3.7.0
 ipdb

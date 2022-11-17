@@ -28,8 +28,11 @@ for k, v in settings.dict().items():
 from testcontainers.mongodb import MongoDbContainer
 from testcontainers.elasticsearch import ElasticSearchContainer
 import asyncio
+from tests.utils import start_container, wait_for_up, inside_container
 
 
+NETWORK = os.environ["NETWORK"]
+assert NETWORK
 file_dir = os.path.dirname(__file__)
 
 
@@ -134,9 +137,20 @@ def es_container(
 ) -> str:
     # TODO: Use real docker via testcontainers
     # os.environ["TC_HOST"] = settings.ES_URL
-    es_container = ElasticSearchContainer("elasticsearch:7.16.1")
+    # es = ElasticSearchContainer(image="elasticsearch:7.16.1", remove=True, mem_limit="512m")
+    # import ipdb; ipdb.set_trace()
+    # es.start()
+    es_container = start_container(
+        image="elasticsearch:7.16.1",
+        port_host=9200,
+        port_container=9200,
+        network=NETWORK,
+        name="es",
+        mem_limit="10g",
+    )
     es_container.start()
-    host_url = es_container.get_url()
+    host_url = "http://es:9200" if inside_container() else "http://localhost:9200"
+    wait_for_up(host_url)
     try:
         es_connector = ElasticsearchConnector(host_url)
         loop = asyncio.get_event_loop()
@@ -185,14 +199,25 @@ def mock_search_client(es_connector):
 
 @pytest.fixture(scope="package")
 def mongo_container() -> Tuple[str, str]:
-    mongo_container = MongoDbContainer("mongo:latest")
+    MongoDbContainer
+    mongo_container = start_container(
+        image="mongo:latest",
+        port_host=27017,
+        port_container=27017,
+        network=NETWORK,
+        name="mongo",
+        envs={
+            "MONGO_INITDB_ROOT_USERNAME": "test",
+            "MONGO_INITDB_ROOT_PASSWORD": "test",
+        },
+    )
     mongo_container.start()
-    mongo_container.get_connection_client().list_databases()  # This is actually for waiting the docker to be ready
-    port = mongo_container.get_exposed_port(
-        settings.MONGO_PORT
-    )  # We need to get this from testcontainers, since it is generated but set
+    host_name = "mongo" if inside_container() else "localhost"
+    host_ip = f"http://{host_name}"
+    port = 27017
+    wait_for_up(f"{host_ip}:{port}")
     try:
-        yield (mongo_container.get_container_host_ip(), port)
+        yield (f"mongodb://test:test@{host_name}", port)
     finally:
         mongo_container.stop()
 
