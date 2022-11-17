@@ -17,6 +17,14 @@ export function getSkillTypes(headers) {
 }
 
 /**
+ * Get a list of available datasets.
+ * @param {Object} headers optional authentication header
+ */
+ export function getDataSets(headers) {
+    return axios.get(`${SKILL_URL}/data-sets`, { headers: headers })
+}
+
+/**
  * Get a list of available skills. 
  * The user name is only required for unpublished skills of the user. Published skills are available without.
  * @param {Object} headers optional authentication header

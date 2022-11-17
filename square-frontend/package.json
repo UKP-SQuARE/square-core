@@ -22,6 +22,7 @@
     "string-punctuation-tokenizer": "^2.2.0",
     "tippy.js": "^6.3.7",
     "vue": "^2.6.14",
+    "vue-multiselect": "^2.1.6",
     "vue-router": "^3.5.3",
     "vuex": "^3.6.2"
   },
