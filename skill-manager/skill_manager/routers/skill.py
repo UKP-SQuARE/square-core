@@ -9,17 +9,22 @@ from typing import Dict, List
 import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
+from square_auth.auth import Auth
+from square_auth.utils import is_local_deployment
+from square_skill_api.models.prediction import QueryOutput
+from square_skill_api.models.request import QueryRequest
+
 from skill_manager import mongo_client
-from skill_manager.core.session_cache import SessionCache
-from skill_manager.auth_utils import (get_payload_from_token,
-                                      get_skill_if_authorized, has_auth_header)
+from skill_manager.auth_utils import (
+    get_payload_from_token,
+    get_skill_if_authorized,
+    has_auth_header,
+)
 from skill_manager.core import ModelManagementClient
+from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
 from skill_manager.routers import client_credentials
-from square_auth.auth import Auth
-from square_skill_api.models.prediction import QueryOutput
-from square_skill_api.models.request import QueryRequest
 
 logger = logging.getLogger(__name__)
 
@@ -89,9 +94,16 @@ async def create_skill(
     if skill.created_at is None:
         skill.created_at = datetime.datetime.now()
 
-    client = keycloak_api.create_client(
-        realm=realm, username=username, skill_name=skill.name
-    )
+    if not is_local_deployment():
+        client = keycloak_api.create_client(
+            realm=realm, username=username, skill_name=skill.name
+        )
+    else:
+        # In local deployment, we don't have Keycloak, so we just create a dummy client
+        client = {
+            "clientId": "local",
+            "secret": "secret",
+        }
     skill.client_id = client["clientId"]
 
     skill_id = mongo_client.client.skill_manager.skills.insert_one(
@@ -247,7 +259,9 @@ async def query_skill(
         response.raise_for_status()
     predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
-        "predictions from skill: {predictions}".format(predictions=str(predictions.json())[:100])
+        "predictions from skill: {predictions}".format(
+            predictions=str(predictions.json())[:100]
+        )
     )
 
     # save prediction to mongodb

@@ -11,20 +11,23 @@ import Keycloak from 'keycloak-js'
 Vue.use(bootstrap)
 
 let initOptions = {
-  url: `${process.env.VUE_APP_URL}/auth`,
+  url: `${process.env.VUE_APP_KEYCLOAK_URL}/auth`,
   realm: 'square',
   clientId: 'web-app',
   onLoad: 'check-sso',
-  silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
+  silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
 }
-
 let keycloak = Keycloak(initOptions)
-
 keycloak.init({
   onLoad: initOptions.onLoad,
-  silentCheckSsoRedirectUri: initOptions.silentCheckSsoRedirectUri
+  silentCheckSsoRedirectUri: initOptions.silentCheckSsoRedirectUri,
 }).then((authenticated) => {
-  if (authenticated) {
+  if (process.env.VUE_APP_AUTH_TOKEN !== '') {
+    keycloak.authenticated = true
+    authenticated = true
+    keycloak.token = process.env.VUE_APP_AUTH_TOKEN
+    store.dispatch('signIn', { userInfo: {'preferred_username': 'LOCAL_SQUARE_USER'}, token: process.env.VUE_APP_AUTH_TOKEN })
+  } else if (authenticated) {
     keycloak.loadUserInfo().then(userInfo => {
       store.dispatch('signIn', { userInfo: userInfo, token: keycloak.token })
     })
