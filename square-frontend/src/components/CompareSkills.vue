@@ -4,7 +4,7 @@
     <div class="w-100">
       <div class="mb-3">
           <div class="container">
-            <div class="row mb-2 ">
+            <div class="row align-items-center mb-2 ">
               <div class="col col-sm-4">
                 <div class="input-group input-group-sm mb-2">
                   <span class="input-group-text" id="basic-addon1">
@@ -43,29 +43,32 @@
           <div class="container" style="height: 20em; overflow-y: scroll;">
             <div class="row row-cols" >
               <div class="col col-sm-4 mb-2" v-for="(skill, index) in filteredSkills" :key="skill.id">
-                <input class="btn-check" type="checkbox"
+                <div class="d-flex flex-wrap align-content-center w-100 h-100">
+                  <input class="btn-check" type="checkbox"
                       v-on:input="selectSkill(skill.id, index)"
                       v-bind:value="skill.id"
                       :disabled="waiting || (selectedSkills.length >= 3 && !selectedSkills.includes(skill.id))"
                       :id="skill.id"
                       >
-                <label class="btn btn-outline-primary w-100 h-100 align-middle" :for="skill.id" 
-                        data-bs-toggle="tooltip" data-bs-placement="top" :title=skill.description style="--bs-bg-opacity: 1">
-                  {{skill.name}}
-                  <br>
-                  <small class="text-muted">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                          <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-                          <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
-                        </svg>
-                        {{skill.skill_type}}
-                        <span class="px-1.5 text-gray-300">• </span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
-                          <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
-                        </svg>
-                        {{skillModelType(skill)}}
-                      </small>
-                </label><br>
+                  <label class="btn btn-outline-primary w-100 h-100" :for="skill.id" 
+                          data-bs-toggle="tooltip" data-bs-placement="top" :title=skill.description style="--bs-bg-opacity: 1">
+                    <span class="text-break">{{skill.name}}
+                      <br>
+                      <small class="text-muted">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                          </svg>
+                          {{skill.skill_type}}
+                          <span class="px-1.5 text-gray-300">• </span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                            <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                          </svg>
+                          {{skillModelType(skill)}}
+                        </small>
+                      </span>
+                  </label>
+                </div>
 
               </div>
               
