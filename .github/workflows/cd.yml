@@ -13,6 +13,6 @@ jobs:
     - name: Invoke deployment hook
       uses: distributhor/workflow-webhook@v3
       env:
-        webhook_url: http://${{ secrets.TEST_VM_IP }}:${{ secrets.TEST_VM_WEBHOOK_PORT }}/hooks/redeploy
+        webhook_url: ${{ secrets.TEST_VM_WEBHOOK_URL }}
         webhook_secret: ${{ secrets.TEST_VM_WEBHOOK_SECRET }}
         verify_ssl: false  
