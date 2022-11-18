@@ -1,11 +1,11 @@
 import os
-import time
+from typing import Tuple
+from fastapi.testclient import TestClient
 
 import pytest
-# from app.core.auth import verify_api_key  # deprecated
+from app.core.es.connector import ElasticsearchConnector
 from app.core.config import settings
 from app.core.dense_retrieval import DenseRetrieval
-from app.core.es.class_converter import ElasticsearchClassConverter
 from app.core.faiss import FaissClient
 from app.core.model_api import ModelAPIClient
 from app.core.mongo import MongoClient
@@ -14,19 +14,23 @@ from app.models.datastore import Datastore, DatastoreField
 from app.models.document import Document
 from app.models.index import Index
 from app.models.upload import UploadUrlSet
-from app.routers.dependencies import get_search_client, get_storage_connector, client_credentials, get_mongo_client
-from elasticsearch import Elasticsearch
-from fastapi.testclient import TestClient
-from .utils import MockConnector
+from app.routers.dependencies import (
+    get_search_client,
+    get_storage_connector,
+    client_credentials,
+    get_mongo_client,
+)
 import jwt
-from _pytest.monkeypatch import MonkeyPatch
 
-for k, v in settings.dict().items(): os.environ[k] = str(v)  # have to set up the ENV before importing MongoDbContainer
-from testcontainers.mongodb import MongoDbContainer
+for k, v in settings.dict().items():
+    os.environ[k] = str(v)  # have to set up the ENV before importing MongoDbContainer
+import asyncio
+from tests.utils import start_container, wait_for_up, inside_container
 
+
+NETWORK = os.environ["NETWORK"]
+assert NETWORK
 file_dir = os.path.dirname(__file__)
-
-MOCK_DEPENDENCIES = os.environ.get("MOCK_DEPENDENCIES", "0") == "1"
 
 
 @pytest.fixture
@@ -65,7 +69,7 @@ def wiki_datastore(datastore_name):
 
 
 @pytest.fixture(scope="package")
-def dpr_index(datastore_name):
+def dpr_index(datastore_name: str) -> Index:
     return Index(
         datastore_name=datastore_name,
         name="dpr",
@@ -76,7 +80,7 @@ def dpr_index(datastore_name):
 
 
 @pytest.fixture(scope="package")
-def second_index(datastore_name):
+def second_index(datastore_name: str) -> Index:
     return Index(
         datastore_name=datastore_name,
         name="second",
@@ -87,12 +91,14 @@ def second_index(datastore_name):
 
 
 @pytest.fixture(scope="package")
-def test_document():
-    return Document(__root__={
-        "id": "111",
-        "title": "test document",
-        "text": "this is a test document",
-    })
+def test_document() -> Document:
+    return Document(
+        __root__={
+            "id": "111",
+            "title": "test document",
+            "text": "this is a test document",
+        }
+    )
 
 
 @pytest.fixture(scope="package")
@@ -101,126 +107,168 @@ def test_document_embedding():
 
 
 @pytest.fixture(scope="package")
-def query_document():
-    return Document(__root__={
-        "id": "222",
-        "title": "document title",
-        "text": "document containing the query word quack",
-    })
+def query_document() -> Document:
+    return Document(
+        __root__={
+            "id": "222",
+            "title": "document title",
+            "text": "document containing the query word quack",
+        }
+    )
 
 
 @pytest.fixture(scope="package")
-def mock_connector(wiki_datastore, mock_mongo_client, user_id, dpr_index, second_index, test_document, query_document):
+def user_id() -> str:
+    return "test-user"
+
+
+@pytest.fixture(scope="package")
+def es_container(
+    wiki_datastore: Datastore,
+    mongo_container: Tuple[str, str],
+    user_id: str,
+    dpr_index: Index,
+    second_index: Index,
+    test_document: Document,
+    query_document: Document,
+) -> str:
     # TODO: Use real docker via testcontainers
-    connector = MockConnector(
-        [wiki_datastore],
-        [dpr_index, second_index],
-        [Document(__root__=test_document), Document(__root__=query_document)],
-        query_document=Document(__root__=query_document),
+    # os.environ["TC_HOST"] = settings.ES_URL
+    # es = ElasticSearchContainer(image="elasticsearch:7.16.1", remove=True, mem_limit="512m")
+    # import ipdb; ipdb.set_trace()
+    # es.start()
+    es_container = start_container(
+        image="elasticsearch:7.16.1",
+        port_host=9200,
+        port_container=9200,
+        network=NETWORK,
+        name="es",
+        mem_limit="10g",
     )
-
-    # add binding
-    datastore_name = wiki_datastore.name
-    mock_mongo_client.user_datastore_bindings.insert_one({
-        'user_id': user_id,
-        mock_mongo_client.item_keys['datastore']: datastore_name
-    })
-    return connector
-
-
-@pytest.fixture(scope="package")
-def mock_search_client(mock_connector):
-    model_api = ModelAPIClient(
-        settings.MODEL_API_URL
-    )
-    faiss = FaissClient()
-    return DenseRetrieval(mock_connector, model_api, faiss)
-
-
-@pytest.fixture(scope="package")
-def mock_mongo_client():
-    mongo_container = MongoDbContainer("mongo:latest")
-    mongo_container.start()
-    mongo_container.get_connection_client().list_databases()  # This is actually for waiting the docker to be ready
-    port = mongo_container.get_exposed_port(settings.MONGO_PORT)  # We need to get this from testcontainers, since it is generated but set
+    es_container.start()
+    host_url = "http://es:9200" if inside_container() else "http://localhost:9200"
+    wait_for_up(host_url)
     try:
-        yield MongoClient(
-            mongo_container.get_container_host_ip(),  # Inside docker, we cannot use localhost
-            port,
-            settings.MONGO_INITDB_ROOT_USERNAME,
-            settings.MONGO_INITDB_ROOT_PASSWORD,
-            settings.MONGO_SERVER_SELECTION_TIMEOUT_MS
+        es_connector = ElasticsearchConnector(host_url)
+        loop = asyncio.get_event_loop()
+        tasks = [
+            loop.create_task(es_connector.add_datastore(wiki_datastore)),
+            loop.create_task(es_connector.add_index(dpr_index)),
+            loop.create_task(es_connector.add_index(second_index)),
+            loop.create_task(
+                es_connector.add_document(
+                    wiki_datastore.name, test_document.id, test_document
+                )
+            ),
+            loop.create_task(
+                es_connector.add_document(
+                    wiki_datastore.name, query_document.id, query_document
+                )
+            ),
+        ]
+        loop.run_until_complete(asyncio.gather(*tasks))
+
+        # add binding
+        datastore_name = wiki_datastore.name
+        mongo_client = build_mongo_client(*mongo_container)
+        mongo_client.user_datastore_bindings.insert_one(
+            {
+                "user_id": user_id,
+                mongo_client.item_keys["datastore"]: datastore_name,
+            }
         )
-    except Exception as err:
-        raise err
+        yield host_url
+    finally:
+        es_container.stop()
+
+
+@pytest.fixture(scope="function")
+def es_connector(es_container: str):
+    return ElasticsearchConnector(es_container)
+
+
+@pytest.fixture(scope="function")
+def mock_search_client(es_connector):
+    model_api = ModelAPIClient(settings.MODEL_API_URL)
+    faiss = FaissClient()
+    return DenseRetrieval(es_connector, model_api, faiss)
+
+
+@pytest.fixture(scope="package")
+def mongo_container() -> Tuple[str, str]:
+    mongo_container = start_container(
+        image="mongo:latest",
+        port_host=27017,
+        port_container=27017,
+        network=NETWORK,
+        name="mongo",
+        envs={
+            "MONGO_INITDB_ROOT_USERNAME": "test",
+            "MONGO_INITDB_ROOT_PASSWORD": "test",
+        },
+    )
+    mongo_container.start()
+    host_name = "mongo" if inside_container() else "localhost"
+    host_ip = f"http://{host_name}"
+    port = 27017
+    wait_for_up(f"{host_ip}:{port}")
+    try:
+        yield (f"mongodb://test:test@{host_name}", port)
     finally:
         mongo_container.stop()
 
 
-@pytest.fixture(scope="package")
-def user_id():
-    return 'test-user'
+def build_mongo_client(host_ip: str, port: str) -> MongoClient:
+    return MongoClient(
+        host_ip,  # Inside docker, we cannot use localhost
+        port,
+        settings.MONGO_INITDB_ROOT_USERNAME,
+        settings.MONGO_INITDB_ROOT_PASSWORD,
+        settings.MONGO_SERVER_SELECTION_TIMEOUT_MS,
+    )
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
+def mongo_client(mongo_container) -> MongoClient:
+    host_ip, port = mongo_container
+    return build_mongo_client(host_ip, port)
+
+
+@pytest.fixture(scope="function")
 def token(user_id):
     token = jwt.encode(
         {
-            "preferred_username": user_id, 
-            "iss": "https://square.ukp-lab.test/auth/realms/test-realm"
-        }, 
+            "preferred_username": user_id,
+            "iss": "https://square.ukp-lab.test/auth/realms/test-realm",
+        },
         "secret",
-        algorithm="HS256"
+        algorithm="HS256",
     )
     return token
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="function")
 def token_no_permission():
     token = jwt.encode(
         {
-            "preferred_username": 'test-user-no-permission', 
-            "iss": "https://square.ukp-lab.test/auth/realms/test-realm"
-        }, 
+            "preferred_username": "test-user-no-permission",
+            "iss": "https://square.ukp-lab.test/auth/realms/test-realm",
+        },
         "secret",
-        algorithm="HS256"
+        algorithm="HS256",
     )
     return token
 
 
-@pytest.fixture(scope="package")
-def db_init(datastore_name, wiki_datastore, mock_mongo_client, user_id, dpr_index, second_index, test_document, query_document):
-    if MOCK_DEPENDENCIES:
-        return
-
-    converter = ElasticsearchClassConverter()
-    es = Elasticsearch(hosts=[settings.ES_URL])
-
-    #TODO: Reuse existing source code
-    # configure indices
-    es.indices.delete(index="datastore-test-*")
-    es.indices.create(index=datastore_name + "-docs", body=converter.convert_from_datastore(wiki_datastore))
-    es.indices.create(index=datastore_name + "-search-indices", body={})
-    es.index(index=datastore_name + "-search-indices", id=dpr_index.name, body=converter.convert_from_index(dpr_index))
-    es.index(
-        index=datastore_name + "-search-indices", id=second_index.name, body=converter.convert_from_index(second_index)
-    )
-
-    # add documents
-    es.index(index=datastore_name + "-docs", id=test_document["id"], body=converter.convert_from_document(test_document))
-    es.index(index=datastore_name + "-docs", id=query_document["id"], body=converter.convert_from_document(query_document))
-
-    es.indices.refresh(index="")
-
-
-@pytest.fixture(scope="package")
-def client(db_init, mock_connector, mock_search_client, mock_mongo_client, token):
+@pytest.fixture(scope="function")
+def client(es_container, mock_search_client, mongo_client, token) -> TestClient:
     app = get_app()
     app.dependency_overrides[auth] = lambda: token
     app.dependency_overrides[client_credentials] = lambda: token
-    if MOCK_DEPENDENCIES:
-        app.dependency_overrides[get_storage_connector] = lambda: mock_connector
-        app.dependency_overrides[get_search_client] = lambda: mock_search_client
-        app.dependency_overrides[get_mongo_client] = lambda: mock_mongo_client
+    app.dependency_overrides[get_storage_connector] = lambda: ElasticsearchConnector(
+        es_container
+    )
+    app.dependency_overrides[get_search_client] = lambda: mock_search_client
+    app.dependency_overrides[get_mongo_client] = lambda: mongo_client
     client = TestClient(app)
     return client
