@@ -180,6 +180,7 @@ export default Vue.component('explainability-page', {
     },
     showCheckList() {
       this.waiting = true
+      this.currentSkills = []
       let currentTests = []
       this.selectedSkills.forEach((skillId, index) => {
         if (skillId in this.checklistData) {
