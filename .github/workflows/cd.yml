@@ -16,3 +16,4 @@ jobs:
         webhook_url: ${{ secrets.TEST_VM_WEBHOOK_URL }}
         webhook_secret: ${{ secrets.TEST_VM_WEBHOOK_SECRET }}
         verify_ssl: false  
+        verbose: true
