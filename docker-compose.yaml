@@ -1,0 +1,194 @@
+version: "3.4"
+services:
+  traefik:
+    image: traefik:v2.8.1
+    container_name: traefik
+    command:
+    - --api.insecure=true
+    - --api.dashboard=true
+    - --log.level=DEBUG
+    - --providers.docker=true
+    - --providers.docker.exposedbydefault=false
+    - --entrypoints.web.address=:80
+    - --entrypoints.websecure.address=:443
+    - --accesslog=true
+    - --accesslog.format=json
+    - --accesslog.filepath=/var/log/traefik/access.log.json
+    - --certificatesresolvers.le.acme.tlschallenge=true
+    - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+    - --certificatesresolvers.le.acme.email=square@example.com
+    - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)
+    - traefik.http.routers.http-catchall.entrypoints=web
+    - traefik.http.routers.http-catchall.middlewares=https-redirect
+    - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+    - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+    - traefik.http.routers.traefik.service=api@internal
+    - traefik.http.routers.traefik.middlewares=auth
+    - traefik.http.middlewares.auth.basicauth.users=admin:${SQUARE_ADMIN_PASSWORD}
+    ports:
+    - 80:80
+    - 443:443
+    - 8080:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - traefik-public-certificates:/certificates
+  mongodb:
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+    - mongo-data:/data/db
+    expose:
+    - 27017
+    env_file:
+    - ./mongodb/.env
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3-management
+    ports:
+    - 5672:5672
+    - 15672:15672
+    env_file:
+    - ./rabbitmq/.env
+  redis:
+    image: redis:latest
+    ports:
+    - 6379:6379
+    env_file:
+    - .env
+    - ./redis/.env
+    command:
+    - redis-server
+    - --requirepass ${REDIS_PASSWORD}
+  main_model:
+    image: ukpsquare/square-model-api-v2:latest
+    build:
+      context: ./square-model-inference-api/inference_server
+      target: build
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
+    env_file:
+    - ./rabbitmq/.env
+    - ./redis/.env
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      CONFIG_PATH: /model_configs
+      QUEUE: facebook-dpr-question_encoder-single-nq-base
+      CONFIG_VOLUME: square-core_model_configs
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    volumes:
+    - ./.cache/:/etc/huggingface/.cache/
+    - model_configs:/model_configs
+    - onnx_models:/onnx_models
+    - ./local_deploy:/local_deploy
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)
+    - traefik.http.routers.model-dpr.entrypoints=websecure
+    - traefik.http.routers.model-dpr.tls=true
+    - traefik.http.routers.model-dpr.tls.certresolver=le
+    - traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix
+    - traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main
+    - traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api
+  tasb_worker:
+    image: ukpsquare/square-model-api-v2:latest
+    command: celery -A tasks worker -Q msmarco-distilbert-base-tas-b --loglevel=info
+    volumes:
+    - ./:/usr/src/app
+    - /var/run/docker.sock:/var/run/docker.sock
+    - model_configs:/model_configs
+    - ./local_deploy:/local_deploy
+    env_file:
+    - ./rabbitmq/.env
+    - ./redis/.env
+    - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      MODEL_API_image: ukpsquare/square-model-api-v2:latest
+      ONNX_VOLUME: onnx_models
+      REALM: square
+      CONFIG_PATH: /model_configs
+      QUEUE: msmarco-distilbert-base-tas-b
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+    - rabbit
+    - redis
+  datastore_api:
+    privileged: true
+    build:
+      context: ./datastore-api
+      target: build
+    depends_on:
+    - datastore_es
+    - mongodb
+    ports:
+    - 7000:7000
+    env_file:
+    - ./mongodb/.env
+    - ./datastore-api/.env
+    environment:
+      WEB_CONCURRENCY: "2"
+      FAISS_PORT: 5000
+      MODEL_API_URL: http://main_model:8000/api
+      ES_URL: http://datastore_es:9200
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      REALM: square
+      VERIFY_ISSUER: "0"
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    volumes:
+    - ./local_deploy:/local_deploy
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.datastores.entrypoints=websecure
+    - traefik.http.routers.datastores.tls=true
+    - traefik.http.routers.datastores.tls.certresolver=le
+    - traefik.http.routers.datastores.rule=PathPrefix(`/api/datastores`)
+    - traefik.http.routers.datastores.middlewares=datastores-stripprefix,datastores-addprefix
+    - traefik.http.middlewares.datastores-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+
+    - traefik.http.middlewares.datastores-addprefix.addPrefix.prefix=/datastores
+  datastore_es:
+    mem_limit: 512m
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    environment:
+    - discovery.type=single-node
+    volumes:
+    - datastore-api-es:/usr/share/elasticsearch/data
+    ports:
+    - 7200:9200
+  dozzle:
+    image: amir20/dozzle:v4.0.1
+    restart: unless-stopped
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOZZLE_NO_ANALYTICS: "true"
+      DOZZLE_LEVEL: DEBUG
+      DOZZLE_BASE: /admin/logs
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.dozzle.entrypoints=websecure
+    - traefik.http.routers.dozzle.tls=true
+    - traefik.http.routers.dozzle.tls.certresolver=le
+    - traefik.http.routers.dozzle.rule=PathPrefix(`/admin/logs`)
+    - traefik.http.routers.dozzle.middlewares=auth
+volumes:
+  traefik-public-certificates: null
+  mongo-data:
+    driver: local
+  square-redis-data:
+    driver: local
+  datastore-api-es:
+    driver: local
+  model_configs:
+    driver: local
+  onnx_models:
+    driver: local

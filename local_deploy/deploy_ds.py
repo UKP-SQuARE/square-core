@@ -1,6 +1,4 @@
-from doctest import Example
 import json
-from operator import index
 import os
 import shutil
 import time
@@ -10,6 +8,7 @@ from faiss_instant.encode_and_index import run as encode_and_index
 from square_auth.client_credentials import ClientCredentials
 import docker
 from docker.models.containers import Container
+from beir.util import download_and_unzip
 import tqdm
 
 
@@ -30,13 +29,10 @@ def get_datastores() -> dict:
 
 
 def download_beir_and_load(dataset_name: str) -> List[dict]:
-    if not os.path.exists(f"{dataset_name}.zip"):
-        os.system(
-            f"wget https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset_name}.zip"
-        )
-    if not os.path.exists(dataset_name):
-        os.system(f"unzip {dataset_name}.zip")
-
+    download_and_unzip(
+        url=f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset_name}.zip",
+        out_dir=".",
+    )
     fpath = os.path.join(dataset_name, "corpus.jsonl")
     nlines = sum(1 for _ in open(fpath))
     docs = []
@@ -217,9 +213,7 @@ def dense_search_by_vector(
     return response.json()
 
 
-def dense_search(
-    datastore_name: str, index_name: str, query: str, top_k: int
-) -> dict:
+def dense_search(datastore_name: str, index_name: str, query: str, top_k: int) -> dict:
     response = requests.get(
         f"http://localhost:7000/datastores/{datastore_name}/search",
         params={
@@ -229,9 +223,7 @@ def dense_search(
         },
         headers={"Authorization": f"Bearer {get_token()}"},
     )
-    assert (
-        response.status_code == 200
-    ), f"Cannot do dense search: {response}"
+    assert response.status_code == 200, f"Cannot do dense search: {response}"
     return response.json()
 
 
