@@ -14,3 +14,4 @@ scipy==1.7.3
 pyjwt==2.4.0
 aiohttp>=3.8.1
 git+https://github.com/UKP-SQuARE/elk-json-formatter.git@v0.0.2
+tqdm
