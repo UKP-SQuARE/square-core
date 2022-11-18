@@ -1,5 +1,4 @@
 import os
-import time
 from typing import Tuple
 from fastapi.testclient import TestClient
 
@@ -25,8 +24,6 @@ import jwt
 
 for k, v in settings.dict().items():
     os.environ[k] = str(v)  # have to set up the ENV before importing MongoDbContainer
-from testcontainers.mongodb import MongoDbContainer
-from testcontainers.elasticsearch import ElasticSearchContainer
 import asyncio
 from tests.utils import start_container, wait_for_up, inside_container
 
@@ -199,7 +196,6 @@ def mock_search_client(es_connector):
 
 @pytest.fixture(scope="package")
 def mongo_container() -> Tuple[str, str]:
-    MongoDbContainer
     mongo_container = start_container(
         image="mongo:latest",
         port_host=27017,
