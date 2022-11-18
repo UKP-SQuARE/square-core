@@ -61,8 +61,9 @@
 
     </div>
 
-    <!-- Input for span-extraction open domain -->
-    <div class="row" v-if="inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'span-extraction')">
+    <!-- Input for span-extraction open domain or IR -->
+    <div class="row" v-if="inputMode && (!skillSettings.requiresContext && 
+                                        (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval'))">
       <!-- Question Input -->
       <div class="col-md-12 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -362,6 +363,7 @@ export default Vue.component('query-skills', {
       this.$store.dispatch('query', {
         question: this.inputQuestion,
         inputContext: this.inputContext,
+        choices: this.list_choices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.options.maxResultsPerSkill,
