@@ -123,12 +123,12 @@
                     </div>
                 </div>
             </div>
-
+            
             <div v-if="showAttackOutput">
               <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.attackResults" :key="index">
                 <div class="col-12">
-                  <h4>{{ skillResult.skill.name }}</h4>
                   <hr/>
+                  <h4>{{ skillResult.skill.name }}</h4>
                 </div>
 
                   <div class="row mt-3">
@@ -250,6 +250,7 @@ export default Vue.component("attack-output",{
       this.$store.dispatch('attack', {
         question: this.$store.state.currentQuestion,
         inputContext: this.$store.state.currentContext,
+        choices: this.$store.state.currentChoices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,

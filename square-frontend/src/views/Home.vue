@@ -109,11 +109,11 @@
         <div class="bg-primary bg-gradient flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
           <div class="my-3 py-3">
             <h2 class="display-5">Latest News!</h2>
-            <p class="lead fs-4">SQuARE is presented at the <a href="https://scads.ai/education/summer-schools/scads-ai-summer-school-2022/prof-iryna-gurevychharitz-puerto/" target="_blank"> <span class="text-warning">ScaDS.AI Machine Learning Summer School</span></a> in Leipzig.</p>
+            <p class="lead fs-4">SQuARE is accepted as a demo paper at AACL '22! Read the <a href="https://arxiv.org/abs/2208.09316" target="_blank"> <span class='text-warning'> paper </span></a>!</p>
             
             <div class="d-grid gap-2 d-flex justify-content-center mt-5">
               <a
-                  href="https://twitter.com/Sca_DS/status/1546789948644286465"
+                  href="https://twitter.com/UKP_SQuARE/status/1580582890160594944?s=20&t=ATpKXGnV_Maodo6Y37KSpw"
                   target="_blank"
                   role="button"
                   class="btn btn-light btn-lg px-4 d-flex justify-content-center align-items-center">

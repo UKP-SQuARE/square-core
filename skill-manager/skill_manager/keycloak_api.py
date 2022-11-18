@@ -1,6 +1,6 @@
 import json
-import string
 import secrets
+import string
 from typing import Dict
 
 import requests

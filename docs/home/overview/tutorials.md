@@ -66,7 +66,7 @@ Now we can start implementing the Skill, in the newly created `skill.py` file. W
 
 - `QueryRequest`: Class holding the input to the Skill from the UI.
 - `QueryOutput`: Class for holding the output of the Skill to the UI.
-- `DataAPI` & `ModelAPI`: Utility classes that facilitate the interaction with SQuARE's Datastores and Models
+- `SQuAREDatastoreClient` & `SQuAREModelClient`: Utility classes that facilitate the interaction with SQuARE's Datastores and Models
 
 ```python
 import logging
@@ -74,12 +74,14 @@ import logging
 from square_skill_api.models.request import QueryRequest
 from square_skill_api.models.prediction import QueryOutput
 
-from square_skill_helpers import DataAPI, ModelAPI
+
+from square_model_client import SQuAREModelClient
+from square_datastore_client import SQuAREDatastoreClient
 
 logger = logging.getLogger(__name__)
 
-model_api = ModelAPI()
-data_api = DataAPI()
+square_model_client = SQuAREModelClient()
+square_datastore_client = SQuAREDatastoreClient()
 ```
 
 ### Predict Function

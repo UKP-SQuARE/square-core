@@ -35,16 +35,7 @@
             </select>
         </div>
       </div>
-      <div class="row">
-        <div class="col-md-6 mt-3">
-          <label for="description" class="form-label">Description</label>
-            <input v-model="skill.description" type="text" class="form-control" id="description" placeholder="Description">
-        </div>
-        <div class="col-md-6 mt-3">
-          <label for="maxResultsSkill" class="form-label">Minimum multiple choice options</label>
-            <input v-model="skill.skill_settings.requires_multiple_choices" type="number" class="form-control" id="maxResultsSkill" required>
-        </div>
-      </div>
+      
       <div class="row">
         <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
@@ -89,6 +80,13 @@
         </div>
       </div>
       <div class="row">
+        <div class="col mt-3">
+          <label for="datasets" class="form-label">Skill Datasets</label>
+          <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false" placeholder="Select a dataset"></multiselect>
+          <small class="text-muted">Select the dataset on which the Skill was trained.</small>
+        </div>
+      </div>
+      <div class="row">
         <div class="col mt-4">
           <h3>Provide example questions</h3>
           <p class="mb-1">These examples will be featured alongside your skill.</p>
@@ -115,26 +113,48 @@
               :id="`context${index}`"
               placeholder="Context" />
         </div>
+
+        <div v-if="skill.skill_type=='multiple-choice'" class="col-md mt-2">
+          <label for="choices_loop" class="form-label">Write at least 2 answer choices.</label>
+          <div class="row g-0" v-for="(choice, choice_idx) in list_answer_choices[index]" :key="choice_idx" id="choices_loop">
+            <div class="col-sm">
+              <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="basic-addon1">{{choice_idx+1}}</span>
+                <input v-model="list_answer_choices[index][choice_idx]" type="text" class="form-control form-control-sm">
+              </div>
+            </div>
+          </div>
+          <!-- button to add one more element to list_choices -->
+          <div class="form-inline">
+            <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice(index)">Add Choice</button>
+            <!-- button to remove one element of list_choices -->
+            <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice(index)">Remove Choice</button>
+          </div>
+        </div>
       </div>
     </Card>
   </form>
 </template>
 
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
 <script>
 import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
-import { getSkill, getSkillTypes } from '@/api'
+import Multiselect from 'vue-multiselect'
+import { getSkill, getSkillTypes, getDataSets } from '@/api'
 
 export default Vue.component('edit-skill', {
   data() {
     return {
       skillTypes: [],
+      dataSets: [],
       skill: {
         name: '',
         skill_type: '',
+        data_sets: [],
         description: '',
         skill_settings: {
           requires_context: false,
@@ -155,13 +175,15 @@ export default Vue.component('edit-skill', {
       failure: false,
       stringifiedJSON: '',
       validJSON: true,
-      numberSkillExamples: 3
+      numberSkillExamples: 3,
+      list_answer_choices: [["", ""], ["", ""], ["", ""]]
     }
   },
   components: {
     Alert,
     Card,
-    Status
+    Status,
+    Multiselect
   },
   computed: {
     /**
@@ -200,6 +222,12 @@ export default Vue.component('edit-skill', {
     },
     updateSkill() {
       this.success = false
+      // if skill type is multiple-choice, add the list_answer_choices to the skill_input_examples
+      if (this.skill.skill_type == 'multiple-choice') {
+        for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
+          this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
+        }
+      }
       this.$store
           .dispatch('updateSkill', { skill: this.skill })
           .then(() => {
@@ -212,6 +240,12 @@ export default Vue.component('edit-skill', {
           })
     },
     createSkill() {
+      // if skill type is multiple-choice, add the list_answer_choices to the skill_input_examples
+      if (this.skill.skill_type == 'multiple-choice') {
+        for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
+          this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
+        }
+      }
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
@@ -229,6 +263,16 @@ export default Vue.component('edit-skill', {
     SetSkillURL() {
       if(this.skill.skill_type=='span-extraction') {
         this.skill.skill_settings.requires_context ? this.skill.url = 'http://extractive-qa' : this.skill.url = 'http://open-extractive-qa'
+      }
+    },
+    addChoice(index) {
+      this.list_answer_choices[index].push("")
+    },
+    removeChoice(index) {
+      if (this.list_answer_choices[index].length > 2) {
+        this.list_answer_choices[index].pop()
+      } else {
+        alert("You must have at least 2 choices.")
       }
     }
   },
@@ -252,6 +296,9 @@ export default Vue.component('edit-skill', {
         case 'categorical':
           this.skill.url = 'http://multiple-choice-qa'
           break
+        case 'information-retrieval':
+          this.skill.url = 'http://information-retrieval'
+          break
         default:
           // 
           break
@@ -262,6 +309,10 @@ export default Vue.component('edit-skill', {
     getSkillTypes(this.$store.getters.authenticationHeader())
         .then((response) => {
           this.skillTypes = response.data
+        })
+    getDataSets(this.$store.getters.authenticationHeader())
+        .then((response) => {
+          this.dataSets = response.data
         })
     if (!this.isCreateSkill) {
       getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
@@ -275,6 +326,22 @@ export default Vue.component('edit-skill', {
             // Trigger setter
             this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
+            if (this.skill.skill_input_examples[0].choices !== null){
+              // for each skill_input_example, add the choices to the list_answer_choices
+              for (let i = 0; i < this.skill.skill_input_examples.length; i++) {
+                this.list_answer_choices[i] = this.skill.skill_input_examples[i]['choices']
+              }
+              if (this.list_answer_choices.length < this.numberSkillExamples) {
+                for (let i = this.list_answer_choices.length; i < this.numberSkillExamples; i++) {
+                  this.list_answer_choices.push(["", ""])
+                }
+              }
+            }
+            // for the transition period between old format of answer choices and the new one
+            if (this.skill.skill_input_examples[0].choices == null && this.skill.skill_type == 'multiple-choice') {
+              this.list_answer_choices = [["", ""], ["", ""], ["", ""]]
+            }
+            
           })
     } else {
       this.addInputExampleFields()

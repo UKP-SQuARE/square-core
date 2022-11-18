@@ -38,7 +38,7 @@
                   <button id="attention_btn" v-on:click="postReq('attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_attention">
                     <span v-show="waiting_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Attention
                   </button>
-                  <button id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
+                  <button v-if="scaledAttentionAvailable" id="scaled_attention_btn" v-on:click="postReq('scaled_attention')" type="button" class="btn btn-outline-primary" :disabled="waiting_scaled_attention">
                     <span v-show="waiting_scaled_attention" class="spinner-border spinner-border-sm" role="status"/>&nbsp;Scaled Attention
                   </button>
                   <button id="simple_grads_btn" v-on:click="postReq('simple_grads')" type="button" class="btn btn-outline-primary" :disabled="waiting_simple_grads">
@@ -69,8 +69,8 @@
             <div v-if="show_saliency_map">
               <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.currentResults" :key="index">
                 <div class="col-12">
-                  <h4>{{ skillResult.skill.name }}</h4>
                   <hr/>
+                  <h4>{{ skillResult.skill.name }}</h4>
                 </div>
 
                 <div v-if="show_saliency_map"> <!-- show question -->
@@ -151,6 +151,13 @@ export default Vue.component("explain-output",{
       // remove None from skills list when send query
       return this.$store.state.skillOptions['qa'].selectedSkills.filter(skill => skill !== 'None')
     },
+    scaledAttentionAvailable() {
+      if (this.$store.state.currentResults[0].skill.skill_type === 'multiple-choice') {
+        return false
+      } else {
+        return true
+      }
+    },
   },
   methods:{
     postReq(method) {
@@ -179,6 +186,7 @@ export default Vue.component("explain-output",{
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
         inputContext: context,
+        choices: this.$store.state.currentChoices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,

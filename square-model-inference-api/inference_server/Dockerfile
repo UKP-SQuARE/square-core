@@ -1,6 +1,7 @@
-FROM python:3.7.6-slim-buster as base
+FROM python:3.10.8-slim-buster as base
 
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
 
 # required to install packages from github
 RUN apt-get -y update && apt-get -y install git rabbitmq-server
@@ -27,10 +28,12 @@ RUN pip install -r requirements2.txt
 # run the tests
 FROM base as test
 
+COPY requirements.dev.txt ./
+RUN pip install -r requirements.dev.txt
+
 COPY ./tests/pre_test_setup_for_docker_caching.py ./tests/pre_test_setup_for_docker_caching.py
 RUN python ./tests/pre_test_setup_for_docker_caching.py
 COPY . ./
-RUN pip install pytest pytest-cov pytest-asyncio pytest-env
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
