@@ -32,8 +32,11 @@
                   <input type="radio"  v-model="chosenSkillType" value="abstractive" class="btn-check" name="btnradio" id="btnradio4" autocomplete="off">
                   <label class="btn btn-outline-primary" for="btnradio4">Abstractive</label>
 
-                  <input type="radio"  v-model="chosenSkillType" value="" class="btn-check" name="btnradio" id="btnradio5" autocomplete="off">
-                  <label class="btn btn-outline-primary" for="btnradio5">All</label>
+                  <input type="radio"  v-model="chosenSkillType" value="information-retrieval" class="btn-check" name="btnradio" id="btnradio5" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio5">IR</label>
+
+                  <input type="radio"  v-model="chosenSkillType" value="" class="btn-check" name="btnradio" id="btnradio6" autocomplete="off">
+                  <label class="btn btn-outline-primary" for="btnradio6">All</label>
                   
                 </div>
                 
