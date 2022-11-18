@@ -8,6 +8,12 @@
         <li class="nav-item"><a href="https://www.tu-darmstadt.de/datenschutzerklaerung.en.jsp" class="nav-link px-2 text-muted">Privacy Policy</a></li>
         <li class="nav-item"><a href="https://www.informatik.tu-darmstadt.de/ukp/ukp_home/index.en.jsp" class="nav-link px-2 text-muted">UKP Lab</a></li>
         <li class="nav-item">
+          <router-link class="nav-link px-2 text-muted" to="/feedback">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 1 18 18">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
+            </svg> Feedback</router-link>
+        </li>
+        <li class="nav-item">
           <ul class="navbar-nav me-auto">
                 <a class="nav-link px-2 text-muted" href="https://twitter.com/UKP_SQuARE" title="Twitter" target="_blank" width="50">
                   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-twitter" viewBox="0 2 16 16">
@@ -28,6 +34,7 @@
 </template>
 
 <script>
+
 import Vue from 'vue'
 
 export default Vue.component('square-footer', {  
