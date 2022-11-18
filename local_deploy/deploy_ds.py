@@ -138,8 +138,11 @@ def start_faiss_container(
     faiss_container_name: str,
     faiss_container_resource_dir: str,
     expose_port: int,
-    wait_seconds: int = 2,
+    wait_seconds: int = 100,
 ):
+    """Start the Faiss container and wait for it being ready."""
+
+    # Start the container
     try:
         client = docker.from_env()
         container: Container
@@ -159,15 +162,27 @@ def start_faiss_container(
                 f"{os.path.abspath(faiss_container_resource_dir)}:/opt/faiss-instant/resources"
             ],
         )
+        container.start()
     except Exception as e:
         print("Cannot start Faiss container")
         raise e
 
-    # TODO: Add status check instead of waiting for fixed amount of time
+    # Wait for being ready
+    success = False
     for _ in tqdm.trange(
         wait_seconds, desc="Waiting for the Faiss container to be ready"
     ):
-        time.sleep(1)
+        try:
+            container = client.containers.get(faiss_container_name)
+            ip = container.attrs["NetworkSettings"]["Networks"]["square-core_default"]["IPAddress"]
+            response = requests.get(f"http://{ip}:5000/index_list")
+            assert response.json()["index loaded"]
+            success = True
+            break
+        except Exception as e:
+            time.sleep(1)
+    if not success:
+        raise TimeoutError("Try setting longer time waiting for Faiss")
 
 
 def add_index(
@@ -250,7 +265,6 @@ if __name__ == "__main__":
         faiss_container_name="faiss_scifact_tasb",
         faiss_container_resource_dir=faiss_container_resource_dir,
         expose_port=5001,
-        wait_seconds=2,
     )
 
     index_name = "tasb"
