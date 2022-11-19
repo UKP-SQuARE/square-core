@@ -5,7 +5,7 @@
       <div class="accordion" id="accordionExample">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingOne">
-            <button v-on:click="inputMode=!inputMode" id="btn_collapseOne" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            <button v-on:click="changeInputMode()" id="btn_collapseOne" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
               Selected Skills: {{strSelectedSkills}}
             </button>
           </h2>
@@ -19,15 +19,16 @@
       </div>
     </div>
 
-    <div class="row mb-2" v-if="!inputMode">
+    <div class="row mb-2" v-if="!this.$store.state.inputMode">
       <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-        <input type="checkbox" v-model="inputMode" class="btn-check" id="btn-check" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-        <label class="btn btn-danger btn-lg shadow text-white" for="btn-check">Next</label>
+        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Next
+        </button>
       </div>
 
     </div>
     <!-- Input for span-extraction, categorical and abstractive (i.e., not multiple-choice) -->
-    <div class="row" v-if="inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
+    <div class="row" v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -62,7 +63,7 @@
     </div>
 
     <!-- Input for span-extraction open domain or IR -->
-    <div class="row" v-if="inputMode && (!skillSettings.requiresContext && 
+    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && 
                                         (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval'))">
       <!-- Question Input -->
       <div class="col-md-12 me-auto mt-4 mt-md-0">
@@ -81,7 +82,7 @@
     </div>
 
     <!-- Input for multiple choice that requires context-->
-    <div class="row" v-if="inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row" v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -142,7 +143,7 @@
     </div>
 
     <!-- Input for multiple choice that DO NOT require context-->
-    <div class="row" v-if="inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -199,7 +200,7 @@
         </Alert>
       </div>
     </div>
-    <div v-if="inputMode && minSkillsSelected(1)" class="col">
+    <div v-if="this.$store.state.inputMode && minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <div class="d-grid gap-1 d-md-flex justify-content-md-center">
           <button type="submit" class="btn btn-danger btn-lg shadow text-white" :disabled="waiting">
@@ -242,8 +243,7 @@ export default Vue.component('query-skills', {
         requiresMultipleChoices: 0
       },
       feedbackDocuments: [],
-      feedback: false,
-      inputMode: false,
+      feedback: false
     }
   },
   components: {
@@ -324,6 +324,9 @@ export default Vue.component('query-skills', {
         alert("You need at least 2 choices")
       }
       
+    },
+    changeInputMode() {
+      this.$store.commit('changeInputMode')
     },
     askQuestion() {
       // if skill does not require context, set context to null
