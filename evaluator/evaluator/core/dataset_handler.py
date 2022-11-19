@@ -10,6 +10,7 @@ from datasets import (
     load_dataset,
     load_from_disk,
 )
+from evaluator.settings import DatasetHandlerSettings
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class DatasetDoesNotExistError(Exception):
 
 class DatasetHandler:
     def __init__(self) -> None:
-        self.dataset_dir = "/app/datasets/"
+        self.settings = DatasetHandlerSettings()
 
     def get_dataset(self, dataset_name: str) -> Union[Dataset, DatasetDict]:
         """
@@ -43,7 +44,7 @@ class DatasetHandler:
         - If `dataset_name` is a path of a dataset dict directory: a ``datasets.DatasetDict`` with each split.
         """
         try:
-            dataset = load_from_disk(self.dataset_dir + dataset_name)
+            dataset = load_from_disk(self.settings.dataset_dir + dataset_name)
         except FileNotFoundError:
             logger.debug(
                 "Dataset '{dataset}' not found locally. Going to download it.".format(
@@ -69,7 +70,7 @@ class DatasetHandler:
                 dataset=dataset_name
             )
         )
-        os.remove(self.dataset_dir + dataset_name)
+        os.remove(self.settings.dataset_dir + dataset_name)
 
     def download_dataset(self, dataset_name: str) -> Union[Dataset, DatasetDict]:
         """
@@ -88,5 +89,5 @@ class DatasetHandler:
             split=Split.VALIDATION,
             download_mode=DownloadMode.FORCE_REDOWNLOAD,
         )
-        dataset.save_to_disk(self.dataset_dir + dataset_name)
+        dataset.save_to_disk(self.settings.dataset_dir + dataset_name)
         return dataset

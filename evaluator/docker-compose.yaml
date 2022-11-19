@@ -20,6 +20,7 @@ services:
       MONGO_PORT: 27017
       VERIFY_ISSUER: "0"
       SQUARE_PRIVATE_KEY_FILE: /app/private_key.pem
+      DATASET_DIR: /app/datasets/
     depends_on:
     - mongodb
     volumes:
