@@ -2,14 +2,8 @@ import logging
 import os
 from typing import Union
 
-from datasets import (
-    Dataset,
-    DatasetDict,
-    DownloadMode,
-    Split,
-    load_dataset,
-    load_from_disk,
-)
+import datasets
+from datasets import Dataset, DatasetDict, DownloadMode, Split
 from evaluator.settings import DatasetHandlerSettings
 
 logger = logging.getLogger(__name__)
@@ -44,7 +38,7 @@ class DatasetHandler:
         - If `dataset_name` is a path of a dataset dict directory: a ``datasets.DatasetDict`` with each split.
         """
         try:
-            dataset = load_from_disk(self.settings.dataset_dir + dataset_name)
+            dataset = datasets.load_from_disk(self.settings.dataset_dir + dataset_name)
         except FileNotFoundError:
             logger.debug(
                 "Dataset '{dataset}' not found locally. Going to download it.".format(
@@ -58,19 +52,26 @@ class DatasetHandler:
 
         return dataset
 
-    def remove_dataset(self, dataset_name: str):
+    def remove_dataset(self, dataset_name: str) -> bool:
         """
         Deletes the specified dataset from local storage.
 
         Args:
             dataset_name (str): Name of the dataset on huggingface.
+
+        Returns:
+        :bool: True if the dataset-file was removed. False if it did not exist.
         """
         logger.info(
             "Removing dataset '{dataset}' from local storage.".format(
                 dataset=dataset_name
             )
         )
-        os.remove(self.settings.dataset_dir + dataset_name)
+        try:
+            os.remove(self.settings.dataset_dir + dataset_name)
+            return True
+        except FileNotFoundError:
+            return False
 
     def download_dataset(self, dataset_name: str) -> Union[Dataset, DatasetDict]:
         """
@@ -84,7 +85,7 @@ class DatasetHandler:
         - If `dataset_name` is a path of a dataset directory: the dataset requested.
         - If `dataset_name` is a path of a dataset dict directory: a ``datasets.DatasetDict`` with each split.
         """
-        dataset = load_dataset(
+        dataset = datasets.load_dataset(
             dataset_name,
             split=Split.VALIDATION,
             download_mode=DownloadMode.FORCE_REDOWNLOAD,
