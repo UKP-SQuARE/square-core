@@ -7,3 +7,4 @@ pydantic>=1.8.2
 pymongo>=3.12.1
 requests>=2.26.0
 requests-cache
+datasets

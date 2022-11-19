@@ -24,6 +24,7 @@ services:
     - mongodb
     volumes:
       - ./evaluator:/app/evaluator
+      - ./datasets:/app/datasets/
       - ./private_key.pem:/app/private_key.pem
   mongodb:
     image: mongo:5.0.4

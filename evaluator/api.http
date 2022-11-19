@@ -1,6 +1,6 @@
 @hostname = localhost:8000
 @path_prefix = /api
-@token = <ENTER TOKEN>
+@token = eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.p7r4lzB4Z8nUTTu0R7fetrjxiZGY7Lp4_W8sluxqmNZoYEbmSxc3XLe1Foz2G9LYSMj5Xy845xotMwCb8gpQXTrWjYrUR8Sobmsgu0dBYcJKpgOvtT9P86Rd5yB6BV5ydafF6ZCPbx-fezxu5UlSmqYEhlWF7qAUQBt33BIEUDnOem1endchvN4PsnIj-yFIaut1MNd_tunWYuOcA023dubFKpJ3KLkvSVSkRcuEocNai6NG9BMvq4IbNW2aFrqZk2R7STj_K1HTRi0wd-0TeGSdLW5Stm58B310hS5naXfNTIFKqEduMhDXMaqLX-i4eTCB4GWs3rfUNj8aJGhFcLXVQqZnatnLa6xBVnCAbczEcOWS8_a3M8ARZiHddWIU7lLIuneydd4us3SyF6UpqCMFPAx8LZ8GdnBKYIjKDxspJnvpgaXvDTxOQHWM37DEwNhZS_EzZ6PKT_D0AFd8aLP-9x0KqZjZt7iP-uuhX0HR3K_aUUzPQZdg-6ipwfR-LNt8y2kVs341sHA2qPBKN5EQCF2a4NBMJyJKqNISX5Ka2RmPTRm2vyVOKT6Vil3i7TSVIcG7911KwtTt0N4fupBNSsAqDmIZ_h7va8IS11Yi1CXRQpgt-3ChLXj2tqgujYLKLPNeeup7jy82PI0UN32qqyonXE8WU7vhKZL3UDc
 ### GET TOKEN
 # @name get_token
 # @prompt username
@@ -14,13 +14,20 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 
 ### 
 # @name get_public_stuff
-GET {{path_prefix}}/example-noauth HTTP/1.1
+GET {{path_prefix}}/example HTTP/1.1
+Host: {{hostname}}
+
+### 
+# @name dataset_test
+GET {{path_prefix}}/example/bene/news_qa HTTP/1.1
 Host: {{hostname}}
 
 ### 
 # @name get_example
-GET {{path_prefix}}/example HTTP/1.1
+GET {{path_prefix}}/example/1 HTTP/1.1
 Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
 
 ###
 # @name create_example
