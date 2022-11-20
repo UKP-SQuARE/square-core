@@ -35,3 +35,17 @@ POST {{path_prefix}}/example HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
+
+###
+# @name evaluation
+POST {{path_prefix}}/evaluation/{{skill_id}}/{{dataset_id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+###
+# @name evaluation (old)
+POST {{path_prefix}}/evaluation/old/{{skill_id}}/{{dataset_id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
