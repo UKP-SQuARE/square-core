@@ -25,7 +25,7 @@ import jwt
 for k, v in settings.dict().items():
     os.environ[k] = str(v)  # have to set up the ENV before importing MongoDbContainer
 import asyncio
-from tests.utils import start_container, wait_for_up, inside_container
+from tests.utils import get_container_ip, start_container, wait_for_up, inside_container
 
 
 NETWORK = os.environ["NETWORK"]
@@ -146,7 +146,8 @@ def es_container(
         mem_limit="10g",
     )
     es_container.start()
-    host_url = "http://es:9200" if inside_container() else "http://localhost:9200"
+    host_ip = get_container_ip("es")
+    host_url = f"http://{host_ip}:9200"
     wait_for_up(host_url)
     try:
         es_connector = ElasticsearchConnector(host_url)
@@ -208,12 +209,12 @@ def mongo_container() -> Tuple[str, str]:
         },
     )
     mongo_container.start()
-    host_name = "mongo" if inside_container() else "localhost"
-    host_ip = f"http://{host_name}"
+    host_ip = get_container_ip("mongo")
+    host_url = f"http://{host_ip}"
     port = 27017
-    wait_for_up(f"{host_ip}:{port}")
+    wait_for_up(f"{host_url}:{port}")
     try:
-        yield (f"mongodb://test:test@{host_name}", port)
+        yield (f"mongodb://test:test@{host_ip}", port)
     finally:
         mongo_container.stop()
 

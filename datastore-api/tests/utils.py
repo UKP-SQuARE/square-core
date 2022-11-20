@@ -39,9 +39,17 @@ def start_container(
     return container
 
 
+def get_container_ip(name: str) -> str:
+    client = docker.DockerClient()
+    container = client.containers.get(name)
+    ip_add = container.attrs['NetworkSettings']['IPAddress']
+    return ip_add
+
+
 def wait_for_up(url: str, ntries=100) -> None:
     for _ in tqdm.trange(ntries, desc=f"Waiting for {url} up"):
         try:
+            # import ipdb; ipdb.set_trace()
             response = requests.get(url)
             if response.status_code == 200:
                 break
