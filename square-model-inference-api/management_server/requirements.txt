@@ -4,7 +4,7 @@ pydantic==1.8.2                 # models
 requests>=2.26.0                # requests
 docker                          # docker client
 square-auth==0.0.12             # keycloak authentication
-celery==5.1.2                   # queue requests
+celery==5.2.2                   # queue requests
 redis==4.1.4
 pymongo>=3.12.1
 square-elk-json-formatter==0.0.3
