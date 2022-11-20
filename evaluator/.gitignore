@@ -1,3 +1,4 @@
 .coverage
 private_key.pem
-datasets
+datasets/*
+!datasets/.gitkeep
