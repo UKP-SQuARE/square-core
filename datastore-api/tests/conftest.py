@@ -27,9 +27,6 @@ for k, v in settings.dict().items():
 import asyncio
 from tests.utils import get_container_ip, start_container, wait_for_up, inside_container
 
-
-NETWORK = os.environ["NETWORK"]
-assert NETWORK
 file_dir = os.path.dirname(__file__)
 
 
@@ -141,7 +138,7 @@ def es_container(
         image="elasticsearch:7.16.1",
         port_host=9200,
         port_container=9200,
-        network=NETWORK,
+        network=None,
         name="es",
         mem_limit="10g",
     )
@@ -201,7 +198,7 @@ def mongo_container() -> Tuple[str, str]:
         image="mongo:latest",
         port_host=27017,
         port_container=27017,
-        network=NETWORK,
+        network=None,
         name="mongo",
         envs={
             "MONGO_INITDB_ROOT_USERNAME": "test",
