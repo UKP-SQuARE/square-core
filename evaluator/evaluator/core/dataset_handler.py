@@ -13,9 +13,7 @@ class DatasetDoesNotExistError(Exception):
     """Raised when a dataset is requested which does not exist either locally or on huggingface."""
 
     def __init__(self, dataset: str) -> None:
-        msg = "The requested dataset '{dataset}' does not exist locally and was not found on huggingface.".format(
-            dataset=dataset
-        )
+        msg = f'The requested dataset "{dataset}" does not exist locally and was not found on huggingface.'
         super().__init__(msg)
 
 
@@ -41,9 +39,7 @@ class DatasetHandler:
             dataset = datasets.load_from_disk(self.settings.dataset_dir + dataset_name)
         except FileNotFoundError:
             logger.debug(
-                "Dataset '{dataset}' not found locally. Going to download it.".format(
-                    dataset=dataset_name
-                )
+                f'Dataset "{dataset_name}" not found locally. Going to download it.'
             )
             try:
                 dataset = self.download_dataset(dataset_name)
@@ -62,11 +58,7 @@ class DatasetHandler:
         Returns:
         :bool: True if the dataset-file was removed. False if it did not exist.
         """
-        logger.info(
-            "Removing dataset '{dataset}' from local storage.".format(
-                dataset=dataset_name
-            )
-        )
+        logger.info(f'Removing dataset "{dataset_name}" from local storage.')
         try:
             os.remove(self.settings.dataset_dir + dataset_name)
             return True
