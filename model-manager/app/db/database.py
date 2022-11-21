@@ -18,7 +18,7 @@ class MongoClass:
         get mongo settings and initialize db
         """
         mongo_settings = MongoSettings()
-        logger.info(mongo_settings.connection_url)
+        # logger.info(mongo_settings.connection_url)  # private
         self.client = MongoClient(mongo_settings.connection_url)
         self.db = self.client.model_management  # database
         self.models = self.db.models  # collection

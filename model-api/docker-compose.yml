@@ -74,7 +74,7 @@ services:
 #      - ./management_server/redis/redis.conf:/etc/redis/redis.conf
 
   maintaining_worker:
-#    image: ukpsquare/square-model-management:latest
+#    image: ukpsquare/square-model-management-v2:latest
 #    build: ./management_server
     build:
       context: ../model-manager
@@ -90,7 +90,7 @@ services:
       - ../model-manager/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
+      - MODEL_API_IMAGE=ukpsquare/square-model-api
       - MONGO_INITDB_ROOT_USERNAME=root
       - VERIFY_SSL=0
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
@@ -105,7 +105,7 @@ services:
       - redis
 
   maintaining:
-#    image: ukpsquare/square-model-management:latest
+#    image: ukpsquare/square-model-management-v2:latest
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     container_name: maintaining
 #    build: ./management_server
@@ -126,10 +126,10 @@ services:
       -  ../model-manager/.env
     environment:
       - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - MODEL_API_IMAGE=ukpsquare/square-model-api-v2:latest
+      - MODEL_API_IMAGE=ukpsquare/square-model-api
       - VERIFY_SSL=0
       - WEB_CONCURRENCY=1
-      - ONNX_VOLUME=square-model-inference-api_onnx-models
+      - ONNX_VOLUME=model-api_onnx-models
       - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
       - REALM=square
       - CLIENT_ID=models
@@ -149,7 +149,7 @@ services:
 # --------- Example config for transformer model server ---------#
 ##################################################################
   main_model:
-#    image: ukpsquare/square-model-api-v1:latest
+#    image: ukpsquare/square-model-api-transformer:latest
     build:
       context: ./inference_api
       dockerfile: ./dockerfiles/transformer/Dockerfile

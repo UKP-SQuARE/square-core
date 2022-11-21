@@ -203,6 +203,7 @@ async def remove_model(request: Request, identifier: str, hf_username: str = Non
     logger.info(identifier)
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
+        logger.info("The model is already saved in the database.")
         raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
     # check if the user deployed this model
     if await mongo_client.check_user_id(request, identifier):
@@ -381,7 +382,7 @@ async def start_from_db(token: str = Depends(client_credentials)):
             identifier = model["IDENTIFIER"]
             env = model
             del env["_id"]
-            del env["container"]
+            del env["CONTAINER"]
             res = tasks.deploy_task.delay(env, allow_overwrite=True)
             logger.info(res.id)
             deployed.append(identifier)

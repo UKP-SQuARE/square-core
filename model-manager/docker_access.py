@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 docker_client = docker.from_env()
 
-MODEL_API_IMAGE = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api-v2:latest")
-ONNX_VOLUME = os.getenv("ONNX_VOLUME", "square-model-inference-api_onnx-models")
-CONFIG_VOLUME = os.getenv("CONFIG_VOLUME", "square-model-inference-api_model_configs")
+
+ONNX_VOLUME = os.getenv("ONNX_VOLUME", "model-api_onnx-models")
+CONFIG_VOLUME = os.getenv("CONFIG_VOLUME", "model-api_model_configs")
 MODELS_API_PATH = "models"  # For management server e.g. /api/models/deployed-models to list models etc.
 USER = os.getenv("USERNAME", "user")
 PASSWORD = os.getenv("PASSWORD", "user")
@@ -65,7 +65,7 @@ def start_new_model_container(identifier: str, uid: str, env):
     # in order to obtain necessary information like the network id
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
-    logger.info("Refernce Container: {}".format(reference_container))
+    logger.info("Reference Container: {}".format(reference_container))
     network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
 
     path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
@@ -86,28 +86,37 @@ def start_new_model_container(identifier: str, uid: str, env):
     env["REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD", "secret")
     env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
 
+    model_api_base_image = os.getenv("MODEL_API_IMAGE", "ukpsquare/square-model-api")
+    image_tag = os.getenv("MODEL_API_IMAGE_TAG", "latest")
+
+    image = ""
+    # select the image based on the model type
     if env["MODEL_TYPE"] in ["transformer","adapter"]:
-        MODEL_API_IMAGE="ukpsquare/square-model-api-transformer:latest"
+        image = f"{model_api_base_image}-transformer:{image_tag}"
     if env["MODEL_TYPE"] in ["sentence-transformer"]:
-        MODEL_API_IMAGE = "ukpsquare/square-model-api-sentence-transformer:latest"
+        image = f"{model_api_base_image}-sentence-transformer:{image_tag}"
     if env["MODEL_TYPE"] in ["graph-transformer"]:
-        MODEL_API_IMAGE = "ukpsquare/square-model-api-graph-transformer:latest"
+        image = f"{model_api_base_image}-graph-transformer:{image_tag}"
     if env["MODEL_TYPE"] in ["onnx"]:
-        MODEL_API_IMAGE = "ukpsquare/square-model-api-onnx:latest"
+        image = f"{model_api_base_image}-onnx:{image_tag}"
+
+    logger.info("Starting container with image: {}".format(image))
 
 
     try:
         logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
-            MODEL_API_IMAGE,
+            image,
             command=f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info",
             name=worker_name,
             detach=True,
             environment=env,
             network=network.name,
             volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
-            mounts=[Mount(target=env["CONFIG_PATH"], source=CONFIG_VOLUME,),
-                    Mount(target="/onnx_models", source=ONNX_VOLUME,)],
+            mounts=[
+                Mount(target=env["CONFIG_PATH"], source=CONFIG_VOLUME,),
+                # Mount(target="/onnx_models", source=ONNX_VOLUME,)   # shouldn't be necessary for new ONNX version
+            ],
         )
         logger.info(f"Worker container {container}")
         network.reload()

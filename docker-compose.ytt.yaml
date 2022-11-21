@@ -67,8 +67,8 @@ VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-MODEL_API_IMAGE: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
-ONNX_VOLUME: square-model-inference-api_onnx-models
+MODEL_API_IMAGE: #@ "ukpsquare/square-model-api"
+ONNX_VOLUME: model-api_onnx-models
 REALM: #@ data.values.realm
 CLIENT_ID: models
 REDIS_USER: default
@@ -269,7 +269,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: model-api_onnx-models
       REALM: #@ data.values.realm
       CLIENT_ID: models
       REDIS_USER: default
@@ -303,7 +303,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: model-api_onnx-models
       REALM: #@ data.values.realm
       CLIENT_ID: models
       CONFIG_PATH: /model_configs

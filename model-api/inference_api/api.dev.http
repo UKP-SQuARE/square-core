@@ -50,23 +50,23 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
-# @name bert_qa
-POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "input": [
-  ["Who stars in The Matrix?",
-     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
-  ],
-  "is_preprocessed": false,
-  "preprocessing_kwargs": {},
-  "model_kwargs": {},
-  "task_kwargs": {},
-  "attack_kwargs":{"method":"hotflip", "saliency_method": "attention", "max_flips":5},
-  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
-}
+## @name bert_qa
+#POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#  ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "attack_kwargs":{"method":"hotflip", "saliency_method": "attention", "max_flips":5},
+#  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
+#}
 
 ###
 
@@ -197,7 +197,75 @@ Content-Type: application/json
 #  "adapter_name": "AdapterHub/roberta-base-pf-boolq"
 #}
 
+###
+
 ## @name task_output
-#GET {{domain_dev}}/api/main/task_result/{id}
+#GET {{domain_dev}}/api/main/task_result/117c8c92-757f-4637-9cf7-2e00df2f87a8
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
+
+
+###
+
+## @name deploy_model
+#POST {{domain_dev}}/api/models/deploy
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "identifier": "roberta-base",
+#  "model_name": "roberta-base",
+#  "model_type": "transformer",
+#  "disable_gpu": true,
+#  "batch_size": 32,
+#  "max_input": 1024,
+#  "model_class": "from_config",
+#  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+#  "return_plaintext_arrays": false
+#}
+
+###
+
+## @name test_deployed_model
+#POST {{domain_dev}}/api/main/deepset/roberta-base-squad2/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#  ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+###
+
+## @name remove_model
+#DELETE {{domain_dev}}/api/models/remove/deepset/roberta-base-squad2
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name list_models
+#GET {{domain_dev}}/api/models/deployed-models
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name deploy_from_db
+#POST {{domain_dev}}/api/models/db/deploy
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name update_db
+#PUT {{domain_dev}}/api/models/db/update
+#Authorization: Bearer {{auth_token}}
