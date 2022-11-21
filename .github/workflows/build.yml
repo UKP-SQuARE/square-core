@@ -57,9 +57,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: skills/${{ matrix.skills[0] }}.Dockerfile
-          key: skill-${{ matrix.skills[0] }}-dockerfile-${{ github.sha }}
+          key: skill-${{ matrix.skills[0] }}-dockerfile-v2-${{ github.sha }}
           restore-keys: |
-            skill-${{ matrix.skills[0] }}-dockerfile-
+            skill-${{ matrix.skills[0] }}-dockerfile-v2-
     
   build:
     runs-on: ubuntu-latest
@@ -151,7 +151,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: skills/${{ matrix.dockerfile }}
-          key: ${{ matrix.service }}-dockerfile-${{ github.sha }}
+          key: ${{ matrix.service }}-dockerfile-v2-${{ github.sha }}
 
       - name: Print Dockerfile
         run: |
