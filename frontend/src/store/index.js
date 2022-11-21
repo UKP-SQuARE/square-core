@@ -36,6 +36,7 @@ export default new Vuex.Store({
     },
     loadingExplainability: false,
     attackResults: [],
+    inputMode: false,
   },
   mutations: {
     setAnsweredQuestion(state, payload) {
@@ -65,6 +66,9 @@ export default new Vuex.Store({
     },
     setLoadingExplainability(state, payload) {
       state.loadingExplainability = payload.value
+    },
+    changeInputMode(state) {
+      state.inputMode = !state.inputMode
     }
   },
   /**
