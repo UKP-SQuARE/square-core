@@ -26,7 +26,7 @@ jobs:
           "skill-qa-gnn",
         ]
         include:
-          - build-args: []
+          - build-args: ""
           - service: datastore
             context: ./datastore-api
           - service: docs
@@ -41,28 +41,28 @@ jobs:
             context: ./skill-manager
           - service: skill-boolq
             context: ./skills
-            build-args: ["skill=boolq"]
+            build-args: "skill=boolq"
           - service: skill-commonsense-qa
             context: ./skills
-            build-args: ["skill=commonsense-qa"]
+            build-args: "skill=commonsense-qa"
           - service: skill-extractive-qa
             context: ./skills
-            build-args: ["skill=extractive-qa"]
+            build-args: "skill=extractive-qa"
           - service: skill-generative-qa
             context: ./skills
-            build-args: ["skill=generative-qa"]
+            build-args: "skill=generative-qa"
           - service: skill-information-retrieval
             context: ./skills
-            build-args: ["skill=information-retrieval"]
+            build-args: "skill=information-retrieval"
           - service: skill-multiple-choice-qa
             context: ./skills
-            build-args: ["skill=multiple-choice-qa"]
+            build-args: "skill=multiple-choice-qa"
           - service: skill-open-extractive-qa
             context: ./skills
-            build-args: ["skill=open-extractive-qa"]
+            build-args: "skill=open-extractive-qa"
           - service: skill-qa-gnn
             context: ./skills
-            build-args: ["skill=qa-gnn"]
+            build-args: "skill=qa-gnn"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
