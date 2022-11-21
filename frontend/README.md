@@ -1,4 +1,4 @@
-# :rocket: Overview: square-frontend
+# :rocket: Overview: frontend
 An user interface so that user ask questions, register their skills and perform skill training.
 
 This project is build with the [Vue Framework](https://vuejs.org/v2/guide/index.html).

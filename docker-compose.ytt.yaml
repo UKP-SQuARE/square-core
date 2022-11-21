@@ -156,8 +156,8 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build: ./square-frontend
-    image: #@ "ukpsquare/square-frontend:" + data.values.tag
+    build: ./frontend
+    image: #@ "ukpsquare/frontend:" + data.values.tag
     restart: always
     expose:
       - 80
