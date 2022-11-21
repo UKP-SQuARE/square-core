@@ -96,7 +96,9 @@ jobs:
           target: build
           build-args: ${{ matrix.build-args }}
           push: ${{github.ref == 'refs/heads/master'}}
-          tags: ukpsquare/${{ matrix.service }}:${{ github.sha }}
+          tags: |
+            ukpsquare/${{ matrix.service }}:${{ github.sha }}
+            ukpsquare/${{ matrix.service }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
