@@ -153,6 +153,12 @@ jobs:
           path: skills/${{ matrix.dockerfile }}
           key: ${{ matrix.service }}-dockerfile-${{ github.sha }}
 
+      - name: Print Dockerfile
+        run: |
+          echo ${{ matrix.context }}
+          echo ${{ matrix.dockerfile }}
+          cat ${{ matrix.context }}/${{ matrix.dockerfile }}
+
       - name: Build deployable image
         uses: docker/build-push-action@v3
         with:
