@@ -57,9 +57,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: skills/${{ matrix.skills[0] }}.Dockerfile
-          key: ${{ matrix.skills[0] }}-dockerfile-${{ github.sha }}
+          key: skill-${{ matrix.skills[0] }}-dockerfile-${{ github.sha }}
           restore-keys: |
-            ${{ matrix.skills[0] }}-dockerfile-
+            skill-${{ matrix.skills[0] }}-dockerfile-
     
   build:
     runs-on: ubuntu-latest
@@ -147,7 +147,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Restore Skill Dockerfile from Cache
-        if: ${{ matrix.service != 'skill-manager' &&  startsWith( 'skill-', matrix.service ) }}
+        if: ${{ matrix.service }} != 'skill-manager' &&  startsWith( 'skill-', ${{ matrix.service }} )
         uses: actions/cache@v3
         with:
           path: skills/${{ matrix.dockerfile }}
