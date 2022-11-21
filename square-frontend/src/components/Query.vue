@@ -1,12 +1,88 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
   <form v-on:submit.prevent="askQuestion">
-    <div class="row">
-      <!-- Skill input -->
-      <div class="col-md-4 ms-auto">
-        <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="border-danger" />
+    <div class="row mt-4 mt-md-0 mb-4">
+      <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button v-on:click="changeInputMode()" id="btn_collapseOne" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              Selected Skills: {{strSelectedSkills}}
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body">
+              <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="" />
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <div class="row mb-2" v-if="!this.$store.state.inputMode">
+      <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Next
+        </button>
       </div>
 
+    </div>
+    <!-- Input for span-extraction, categorical and abstractive (i.e., not multiple-choice) -->
+    <div class="row" v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
+      <!-- Question Input -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
+              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span role="button" v-for="(example, index) in currentExamples" :key="index"
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Context -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-warning rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="context" class="form-label">3. Provide context</label>
+            <textarea 
+                v-model="inputContext"
+                class="form-control mb-2"
+                style="resize: none; height: calc(38px * 7);"
+                id="context"
+                :placeholder="contextPlaceholder"
+                required />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input for span-extraction open domain or IR -->
+    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && 
+                                        (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval'))">
+      <!-- Question Input -->
+      <div class="col-md-12 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
+              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span role="button" v-for="(example, index) in currentExamples" :key="index"
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input for multiple choice that requires context-->
+    <div class="row" v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -17,38 +93,33 @@
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
-              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query
-              }}</span>
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Context and Answer Choices -->
-      <div class="col-md-4 me-auto mt-4 mt-md-0" v-if="skillSettings.requiresContext || skillSettings.skillType == 'multiple-choice'">
+      <!-- Context -->
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
-            <!-- Context Input -->
-            <div class="row" v-if="skillSettings.requiresContext">
-              <label for="context" class="form-label">3. Provide context</label>
-              <textarea 
-                  v-if="skillSettings.skillType == 'multiple-choice'"
-                  v-model="inputContext"
-                  class="form-control form-control-lg mb-2"
-                  id="context"
-                  :placeholder="contextPlaceholder"
-                  required />
-              <textarea 
-                  v-if="skillSettings.skillType != 'multiple-choice'"
-                  v-model="inputContext"
-                  class="form-control form-control-lg mb-2"
-                  style="resize: none; height: calc(38px * 6);"
-                  id="context"
-                  :placeholder="contextPlaceholder"
-                  required />
-            </div>
+            <label for="context" class="form-label">3. Provide context</label>
+            <textarea 
+                v-if="skillSettings.skillType == 'multiple-choice'"
+                v-model="inputContext"
+                class="form-control mb-2"
+                style="resize: none; height: calc(38px * 7);"
+                id="context"
+                :placeholder="contextPlaceholder"
+                required />
+          </div>
+        </div>
+      </div>
 
-            <!-- Answer Choices -->
-            <div class="row" v-if="skillSettings.skillType == 'multiple-choice'">
+      <!-- Answer Choices -->
+      <div class="col-md-4 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-danger rounded shadow h-100 p-3">
+          <div class="w-100">
+            <div class="row">
               <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
@@ -68,10 +139,55 @@
           </div>
         </div>
       </div>
-      
-      
 
     </div>
+
+    <!-- Input for multiple choice that DO NOT require context-->
+    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+      <!-- Question Input -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-success rounded shadow h-100 p-3">
+          <div class="w-100">
+            <label for="question" class="form-label">2. Enter you question</label>
+            <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
+              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              :disabled="!minSkillsSelected(1)" />
+            <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+            <span role="button" v-for="(example, index) in currentExamples" :key="index"
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Answer Choices -->
+      <div class="col-md-6 me-auto mt-4 mt-md-0">
+        <div class="bg-light border border-danger rounded shadow h-100 p-3">
+          <div class="w-100">
+            <div class="row">
+              <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
+              <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
+                <div class="col-sm">
+                  <div class="input-group input-group-sm mb-3">
+                    <span class="input-group-text" id="basic-addon1">{{index+1}}</span>
+                    <input v-model="list_choices[index]" type="text" class="form-control form-control-sm">
+                  </div>
+                </div>
+              </div>
+              <!-- button to add one more element to list_choices -->
+              <div class="form-inline">
+                <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice">Add Choice</button>
+                <!-- button to remove one element of list_choices -->
+                <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove Choice</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+      
     <div v-if="failure" class="row">
       <div class="col-md-4 mx-auto mt-4">
         <Alert class="bg-warning" :dismissible="true">An error occurred
@@ -84,7 +200,7 @@
         </Alert>
       </div>
     </div>
-    <div v-if="minSkillsSelected(1)" class="col">
+    <div v-if="this.$store.state.inputMode && minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <div class="d-grid gap-1 d-md-flex justify-content-md-center">
           <button type="submit" class="btn btn-danger btn-lg shadow text-white" :disabled="waiting">
@@ -127,7 +243,7 @@ export default Vue.component('query-skills', {
         requiresMultipleChoices: 0
       },
       feedbackDocuments: [],
-      feedback: false,
+      feedback: false
     }
   },
   components: {
@@ -137,6 +253,13 @@ export default Vue.component('query-skills', {
   computed: {
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
+    },
+    strSelectedSkills() {
+      let availableSkills = this.$store.state.availableSkills;
+      // filter available skills to only include selected skills
+      availableSkills = availableSkills.filter(skill => this.selectedSkills.includes(skill.id));
+      // return a string of the selected skills
+      return availableSkills.map(skill => skill.name).join(', ');
     },
     currentQuestion: {
       get: function () {
@@ -202,6 +325,9 @@ export default Vue.component('query-skills', {
       }
       
     },
+    changeInputMode() {
+      this.$store.commit('changeInputMode')
+    },
     askQuestion() {
       // if skill does not require context, set context to null
       if (!this.skillSettings.requiresContext) {
@@ -240,6 +366,7 @@ export default Vue.component('query-skills', {
       this.$store.dispatch('query', {
         question: this.inputQuestion,
         inputContext: this.inputContext,
+        choices: this.list_choices,
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.options.maxResultsPerSkill,
