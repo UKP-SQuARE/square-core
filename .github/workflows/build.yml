@@ -90,7 +90,7 @@ jobs:
           - service: docs
             context: ./docs
           - service: frontend
-            context: ./square-frontend
+            context: ./frontend
           - service: model-management
             context: ./square-model-inference-api/management_server
           - service: model-inference
