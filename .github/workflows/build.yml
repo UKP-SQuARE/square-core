@@ -83,8 +83,8 @@ jobs:
           "skill-open-extractive-qa",
           "skill-qa-gnn",
         ]
-        dockerfile: ["Dockerfile"]
         include:
+          - dockerfile: Dockerfile
           - service: datastore
             context: ./datastore-api
           - service: docs
