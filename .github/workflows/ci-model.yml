@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  model-api:
+  model-inference:
     runs-on: ubuntu-latest
 
     steps:
