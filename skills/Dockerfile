@@ -1,4 +1,4 @@
-FROM python:3.10.8-slim-buster as base
+FROM python:3.10.8-slim-buster as build
 
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
@@ -12,7 +12,8 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY main.py main.py
-COPY ./%%SKILL%%/skill.py skill.py 
+ARG skill
+COPY ./$skill/skill.py skill.py 
 COPY logging.conf logging.conf
 
 EXPOSE 80

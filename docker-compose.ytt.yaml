@@ -6,7 +6,7 @@
 #@ end
 
 #@ def skill_build(skill):
-#@ return {"context": "./skills", "dockerfile": "./" + skill.name + ".Dockerfile"}
+#@ return {"context": "./skills", "args": { "skill": skill.name}}
 #@ end
 
 #@ def skill_environment(skill):
@@ -156,8 +156,8 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build: ./square-frontend
-    image: #@ "ukpsquare/square-frontend:" + data.values.tag
+    build: ./frontend
+    image: #@ "ukpsquare/frontend:" + data.values.tag
     restart: always
     expose:
       - 80
