@@ -14,13 +14,20 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 
 ### 
 # @name get_public_stuff
-GET {{path_prefix}}/example-noauth HTTP/1.1
+GET {{path_prefix}}/example HTTP/1.1
+Host: {{hostname}}
+
+### 
+# @name dataset_test
+GET {{path_prefix}}/example/bene/quartz HTTP/1.1
 Host: {{hostname}}
 
 ### 
 # @name get_example
-GET {{path_prefix}}/example HTTP/1.1
+GET {{path_prefix}}/example/1 HTTP/1.1
 Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
 
 ###
 # @name create_example

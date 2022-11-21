@@ -4,7 +4,39 @@
 
 ## Project Structure
 
-*To be done*
+```
+├───evaluator
+│   ├───core
+│   │   ├───dataset_handler.py              # Handler for retrieval of datasets
+│   ├───mongo
+│   │   ├───mongo_client.py                 # Wrapper class for (dis-)connecting to mongoDB
+│   │   ├───mongo_model.py                  # Utility interface for loading data from and to mongoDB
+│   │   ├───py_object_id.py                 # Utility class for mongoDB ID
+│   ├───routers
+│   │   ├───api.py                          # Main router for all routes with `/api` prefix
+│   ├───settings
+│   │   ├───keycloak_settings.py            # Settings class for Keycloak, loads .env variables
+│   │   ├───dataset_handler_settings.py     # Settings class for the dataset handler 
+│   │   ├───mongo_settings.py               # Settings class for MongoDB, loads .env variables
+│   ├───auth_utils.py                       # Class for managaing Clients in Keycloak
+│   ├───keycloak_api.py                     # Class for managaing Clients in Keycloak
+│   ├───main.py                             # main file creatng the `app` object
+│   ├───models.py                           # input and output of endpoints
+├───tests
+│   ├───test_dataset_handler.py             # Tests for dataset-handler
+├───.env.template                           # env file template
+├───.local.env                              # env file for local deployment
+├───.pre-commit-config.yaml                 # pre-commit config           
+├───api.http                                # rest client api
+├───docker-compose.yaml                     # docker-compose for local deployment
+├───Dockerfile                              # image definition
+├───logging.conf                            # logging configuration
+├───Makefile                                # Makefile
+├───pytest.ini                              # pytest config
+├───README.md                               # this file
+├───requirements.dev.txt                    # dependencies for development
+├───requirements.txt                        # dependencies
+```
 
 ## Local Setup
 Create a virtual environment and install the dependencies and development dependencies:

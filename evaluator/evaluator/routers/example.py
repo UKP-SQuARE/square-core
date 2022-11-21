@@ -7,12 +7,25 @@ from square_auth.utils import is_local_deployment
 
 from evaluator import mongo_client
 from evaluator.auth_utils import get_example_if_authorized
+from evaluator.core import DatasetHandler
 from evaluator.keycloak_api import KeycloakAPI
 from evaluator.models import Example
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/example")
 auth = Auth()
+
+
+@router.get(
+    "/bene/{dataset_name:path}",
+    status_code=200,
+)
+async def bene(
+    request: Request,
+    dataset_name: str = None,
+    dataset_handler: DatasetHandler = Depends(DatasetHandler),
+):
+    dataset_handler.get_dataset(dataset_name)
 
 
 @router.get(
