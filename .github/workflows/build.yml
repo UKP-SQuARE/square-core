@@ -147,7 +147,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Restore Skill Dockerfile from Cache
-        if: ${{ matrix.service != 'skill-manager' &&  startsWith('skill-', matrix.service) }}
+        if: ${{ matrix.service != 'skill-manager' &&  startsWith(matrix.service, 'skill-') }}
         uses: actions/cache@v3
         with:
           path: skills/${{ matrix.dockerfile }}
