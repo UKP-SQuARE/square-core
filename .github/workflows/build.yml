@@ -160,7 +160,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           target: build
-          push: true
+          push: ${{github.ref == 'refs/heads/master'}}
           tags: ukpsquare/${{ matrix.service }}:${{ needs.setup.outputs.tag }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
