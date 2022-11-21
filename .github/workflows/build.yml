@@ -5,65 +5,9 @@ on:
     branches: [ master, cicd ]
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Initialize Variables
-        id: vars
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          echo ::set-output name=tag::${TAG}
-    outputs:
-      tag: ${{ steps.vars.outputs.tag }}
-
-  skill-matrix-setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Convert config.yaml to json
-        uses: fabasoad/yaml-json-xml-converter-action@v1.0.13
-        id: yaml2json
-        with:
-          path: config.yaml
-          from: yaml
-          to: json
-      - name: Print yaml2json result
-        run: echo "${{ steps.yaml2json.outputs.data }}"
-      - name: Set output
-        id: matrix
-        run: |
-          echo "::set-output name=skills::$(jq -c '[.skills[] | [.name]]' <<< '${{ steps.yaml2json.outputs.data }}')"
-          # [["skill-name", "port"], ...]
-    outputs:
-      skills: ${{ steps.matrix.outputs.skills }}
-  
-  skill-dockerfiles:
-    runs-on: ubuntu-latest
-    needs: [skill-matrix-setup]
-    strategy:
-      matrix: 
-        skills: ${{ fromJson(needs.skill-matrix-setup.outputs.skills) }}
-    steps:
-      - name: Print Skills
-        run: echo "skill=${{ matrix.skills[0] }}"
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Create Dockerfile
-        run: cd skills && bash make_dockerfile.sh ${{ matrix.skills[0] }}
-      - name: Cache Dockerfile
-        uses: actions/cache@v3
-        with:
-          path: skills/${{ matrix.skills[0] }}.Dockerfile
-          key: skill-${{ matrix.skills[0] }}-dockerfile-v2-${{ github.sha }}
-          restore-keys: |
-            skill-${{ matrix.skills[0] }}-dockerfile-v2-
-    
   build:
     runs-on: ubuntu-latest
-    needs: [setup, skill-dockerfiles]
+    needs: [setup]
     strategy:
       max-parallel: 4
       matrix:
@@ -84,7 +28,6 @@ jobs:
           "skill-qa-gnn",
         ]
         include:
-          - dockerfile: Dockerfile
           - service: datastore
             context: ./datastore-api
           - service: docs
@@ -99,28 +42,20 @@ jobs:
             context: ./skill-manager
           - service: skill-boolq
             context: ./skills
-            dockerfile: boolq.Dockerfile
           - service: skill-commonsense-qa
             context: ./skills
-            dockerfile: commonsense-qa.Dockerfile
           - service: skill-extractive-qa
             context: ./skills
-            dockerfile: extractive-qa.Dockerfile
           - service: skill-generative-qa
             context: ./skills
-            dockerfile: generative-qa.Dockerfile
           - service: skill-information-retrieval
             context: ./skills
-            dockerfile: information-retrieval.Dockerfile
           - service: skill-multiple-choice-qa
             context: ./skills
-            dockerfile: multiple-choice-qa.Dockerfile
           - service: skill-open-extractive-qa
             context: ./skills
-            dockerfile: open-extractive-qa.Dockerfile
           - service: skill-qa-gnn
             context: ./skills
-            dockerfile: qa-gnn.Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -146,28 +81,14 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.service }}-
             ${{ runner.os }}-buildx-
 
-      - name: Restore Skill Dockerfile from Cache
-        if: ${{ matrix.service != 'skill-manager' &&  startsWith(matrix.service, 'skill-') }}
-        uses: actions/cache@v3
-        with:
-          path: skills/${{ matrix.dockerfile }}
-          key: ${{ matrix.service }}-dockerfile-v2-${{ github.sha }}
-
-      - name: Print Dockerfile
-        run: |
-          echo ${{ matrix.context }}
-          echo ${{ matrix.dockerfile }}
-          cat ${{ matrix.context }}/${{ matrix.dockerfile }}
-
       - name: Build deployable image
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
-          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
-          tags: ukpsquare/${{ matrix.service }}:${{ needs.setup.outputs.tag }}
+          tags: ukpsquare/${{ matrix.service }}:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 

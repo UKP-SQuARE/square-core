@@ -12,7 +12,8 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY main.py main.py
-COPY ./%%SKILL%%/skill.py skill.py 
+ARG skill
+COPY ./$skill/skill.py skill.py 
 COPY logging.conf logging.conf
 
 EXPOSE 80

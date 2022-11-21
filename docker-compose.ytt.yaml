@@ -6,7 +6,7 @@
 #@ end
 
 #@ def skill_build(skill):
-#@ return {"context": "./skills", "dockerfile": "./" + skill.name + ".Dockerfile"}
+#@ return {"context": "./skills", "args": { "skill": skill.name}}
 #@ end
 
 #@ def skill_environment(skill):
