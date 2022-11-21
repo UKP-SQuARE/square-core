@@ -111,7 +111,7 @@ jobs:
         id: extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.tag }}-test
+          image: model-management:${{ github.sha }}
           path: /app/test-reports
 
       - uses: actions/upload-artifact@v2
