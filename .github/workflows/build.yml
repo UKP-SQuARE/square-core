@@ -1,0 +1,174 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Initialize Variables
+        id: vars
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          echo ::set-output name=tag::${TAG}
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+
+  skill-matrix-setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Convert config.yaml to json
+        uses: fabasoad/yaml-json-xml-converter-action@v1.0.13
+        id: yaml2json
+        with:
+          path: config.yaml
+          from: yaml
+          to: json
+      - name: Print yaml2json result
+        run: echo "${{ steps.yaml2json.outputs.data }}"
+      - name: Set output
+        id: matrix
+        run: |
+          echo "::set-output name=skills::$(jq -c '[.skills[] | [.name]]' <<< '${{ steps.yaml2json.outputs.data }}')"
+          # [["skill-name", "port"], ...]
+    outputs:
+      skills: ${{ steps.matrix.outputs.skills }}
+  
+  skill-dockerfiles:
+    runs-on: ubuntu-latest
+    needs: [skill-matrix-setup]
+    strategy:
+      matrix: 
+        skills: ${{ fromJson(needs.skill-matrix-setup.outputs.skills) }}
+    steps:
+      - name: Print Skills
+        run: echo "skill=${{ matrix.skills[0] }}"
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Create Dockerfile
+        run: cd skills && bash make_dockerfile.sh ${{ matrix.skills[0] }}
+      - name: Cache Dockerfile
+        uses: actions/cache@v3
+        with:
+          path: skills/${{ matrix.skills[0] }}.Dockerfile
+          key: ${{ matrix.skills[0] }}-dockerfile-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.skills[0] }}-dockerfile-
+    
+  build:
+    runs-on: ubuntu-latest
+    needs: [setup, skill-dockerfiles]
+    strategy:
+      max-parallel: 4
+      matrix:
+        service: [
+          "datastore", 
+          "docs", 
+          "frontend", 
+          "model-management", 
+          "model-inference", 
+          "skill-manager", 
+          "skill-boolq",
+          "skill-commonsense-qa",
+          "skill-extractive-qa",
+          "skill-generative-qa",
+          "skill-information-retrieval",
+          "skill-multiple-choice-qa",
+          "skill-open-extractive-qa",
+          "skill-qa-gnn",
+        ]
+        dockerfile: ["Dockerfile"]
+        include:
+          - service: datastore
+            context: ./datastore-api
+          - service: docs
+            context: ./docs
+          - service: frontend
+            context: ./square-frontend
+          - service: model-management
+            context: ./square-model-inference-api/management_server
+          - service: model-inference
+            context: ./square-model-inference-api/inference_server
+          - service: skill-manager
+            context: ./skill-manager
+          - service: skill-boolq
+            context: ./skills
+            dockerfile: boolq.Dockerfile
+          - service: skill-commonsense-qa
+            context: ./skills
+            dockerfile: commonsense-qa.Dockerfile
+          - service: skill-extractive-qa
+            context: ./skills
+            dockerfile: extractive-qa.Dockerfile
+          - service: skill-generative-qa
+            context: ./skills
+            dockerfile: generative-qa.Dockerfile
+          - service: skill-information-retrieval
+            context: ./skills
+            dockerfile: information-retrieval.Dockerfile
+          - service: skill-multiple-choice-qa
+            context: ./skills
+            dockerfile: multiple-choice-qa.Dockerfile
+          - service: skill-open-extractive-qa
+            context: ./skills
+            dockerfile: open-extractive-qa.Dockerfile
+          - service: skill-qa-gnn
+            context: ./skills
+            dockerfile: qa-gnn.Dockerfile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.service }-
+            ${{ runner.os }}-buildx-
+
+      - name: Restore Skill Dockerfile from Cache
+        if: ${{ matrix.service != 'skill-manager' &&  startsWith( 'skill-', matrix.service ) }}
+        uses: actions/cache@v3
+        with:
+          path: skills/${{ matrix.dockerfile }}
+          key: ${{ matrix.service }}-dockerfile-${{ github.sha }}
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v3
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
+          target: build
+          push: true
+          tags: ukpsquare/${{ matrix.service }}:${{ needs.setup.outputs.tag }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
