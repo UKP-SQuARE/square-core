@@ -19,7 +19,11 @@ from transformers import AutoTokenizer, AutoModel
 from .transformer import Transformer
 
 from optimum.onnxruntime import ORTModelForFeatureExtraction as ORTModelForFeatureExtraction_model
-from optimum.onnxruntime import  ORTModelForQuestionAnswering
+from optimum.onnxruntime import  (
+    ORTModelForQuestionAnswering,
+    ORTModelForSequenceClassification,
+    ORTModelForTokenClassification,
+)
 
 
 from transformers.modeling_outputs import (
@@ -36,8 +40,6 @@ class ORTModelForFeatureExtraction(ORTModelForFeatureExtraction_model):
      Rewrite this class to enable it.
      https://huggingface.co/docs/transformers/main_classes/output
      https://github.com/huggingface/optimum/blob/v1.4.1/optimum/onnxruntime/modeling_ort.py#L434
-
-
     '''
 
     def forward(
@@ -86,8 +88,8 @@ class Onnx(Transformer):
         self.tokenizer = AutoTokenizer.from_pretrained(model_config.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.session = onnxruntime.InferenceSession(model_config.model_path)
-        self._load_model(AutoModel,model_config.model_name,model_config.disable_gpu)
+        # self.session = onnxruntime.InferenceSession(model_config.model_path)
+        # self._load_model(AutoModel,model_config.model_name,model_config.disable_gpu)
         # # check whether a decoder model is available
         # self.is_encoder_decoder = (
         #     model_config.decoder_path is not None and model_config.decoder_path != ""
@@ -98,43 +100,39 @@ class Onnx(Transformer):
         #         model_config.decoder_path
         #     )
 
-    def _predict(
-        self, request: PredictionRequest, output_features=False, features=None
-    ) -> Union[dict, Tuple[dict, dict]]:
-        """
-        Inference on the input.
-
-        Args:
-
-             request: the request with the input and optional kwargs
-             output_features: return the features of the input. Necessary if, e.g., attention mask is needed for post-processing.
-
-        Returns:
-                The model outputs and optionally the input features
-        """
-        all_predictions = []
-        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get(
-            "padding", True
-        )
-        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get(
-            "truncation", True
-        )
-        if features is None:
-            features = self.tokenizer(
-                request.input, return_tensors="pt", **request.preprocessing_kwargs
-            )
-        embedding_model = ORTModelForFeatureExtraction(self.session)
-        final_prediction = embedding_model(**features)
-
-
-
-
-
-
-        if output_features:
-            return final_prediction, features
-        return final_prediction
-
+    # def _predict(
+    #     self, request: PredictionRequest, output_features=False, features=None
+    # ) -> Union[dict, Tuple[dict, dict]]:
+    #     """
+    #     Inference on the input.
+    #
+    #     Args:
+    #
+    #          request: the request with the input and optional kwargs
+    #          output_features: return the features of the input. Necessary if, e.g., attention mask is needed for post-processing.
+    #
+    #     Returns:
+    #             The model outputs and optionally the input features
+    #     """
+    #     all_predictions = []
+    #     request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get(
+    #         "padding", True
+    #     )
+    #     request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get(
+    #         "truncation", True
+    #     )
+    #     if features is None:
+    #         features = self.tokenizer(
+    #             request.input, return_tensors="pt", **request.preprocessing_kwargs
+    #         )
+    #     embedding_model = ORTModelForFeatureExtraction(self.session)
+    #     final_prediction = embedding_model(**features)
+    #
+    #
+    #     if output_features:
+    #         return final_prediction, features
+    #     return final_prediction
+    #
 
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
         """
@@ -157,8 +155,8 @@ class Onnx(Transformer):
         features = self.tokenizer(
             request.input, return_tensors="pt", **request.preprocessing_kwargs
         )
-        # embedding_model = ORTModelForFeatureExtraction.from_pretrained(model_config.model_path)
-        embedding_model = ORTModelForFeatureExtraction(self.session)
+        embedding_model = ORTModelForFeatureExtraction.from_pretrained(model_config.model_path)
+        # embedding_model = ORTModelForFeatureExtraction(self.session)
         predictions = embedding_model(**features)
 
         if embedding_mode == "pooler":
@@ -279,8 +277,8 @@ class Onnx(Transformer):
 
         print("******QA Task*******")
         print(f"request:{request}")
-        #model_qa = ORTModelForQuestionAnswering.from_pretrained(model_config.model_path)
-        model_qa = ORTModelForQuestionAnswering(self.session)
+        qa_model= ORTModelForQuestionAnswering.from_pretrained(model_config.model_path)
+        # model_qa = ORTModelForQuestionAnswering(self.session)
 
         # self.model = model_qa
 
@@ -290,8 +288,11 @@ class Onnx(Transformer):
             request.input, return_tensors="pt", **request.preprocessing_kwargs
         )
         # predictions, features = self._predict(request, output_features=True)
+        # print(f"predictions from _predict():{predictions}")
 
-        predictions = model_qa(**features)
+        predictions = qa_model(**features)
+        print(f"predictions from qa_model:{predictions}")
+        # predictions['attentions'] = torch.ones([1,1,12,16,16])
         print(f"prediction:{predictions}")
         print(f"features:{features}")
 
@@ -302,110 +303,110 @@ class Onnx(Transformer):
                 "indices": [],
             },  # for hotflip, input_reduction and topk
         }
-        for idx, (start, end, (_, context)) in enumerate(
-                zip(predictions["start_logits"], predictions["end_logits"], request.input)
-        ):
-            start = start.numpy()
-            end = end.numpy()
-            # Ensure padded tokens & question tokens cannot
-            # belong to the set of candidate answers.
-            question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
-            # Unmask CLS token for 'no answer'
-            question_tokens[0] = 1
-            undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
-
-            # Generate mask
-            undesired_tokens_mask = undesired_tokens == 0.0
-
-            # Make sure non-context indexes in the tensor cannot
-            # contribute to the softmax
-            start = np.where(undesired_tokens_mask, -10000.0, start)
-            end = np.where(undesired_tokens_mask, -10000.0, end)
-
-            start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
-            end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
-
-            # Get score for 'no answer' then mask for decoding step (CLS token
-            no_answer_score = (start[0] * end[0]).item()
-            start[0] = end[0] = 0.0
-
-            starts, ends, scores = decode(
-                start,
-                end,
-                request.task_kwargs.get("topk", 1),
-                request.task_kwargs.get("max_answer_len", 128),
-                undesired_tokens,
-            )
-            enc = features[idx]
-            self.original_ans_start = enc.token_to_word(starts[0])
-            self.original_ans_end = enc.token_to_word(ends[0])
-            answers = [
-                {
-                    "score": score.item(),
-                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0],
-                    "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
-                    "answer": context[
-                              enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0]: enc.word_to_chars(
-                                  enc.token_to_word(e), sequence_index=1
-                              )[1]
-                              ],
-                }
-                for s, e, score in zip(starts, ends, scores)
-            ]
-            if request.task_kwargs.get("show_null_answers", True):
-                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
-            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
-            task_outputs["answers"].append(answers)
-
-            # word attributions
-            if request.explain_kwargs or request.attack_kwargs:
-                start_idx = torch.argmax(predictions["start_logits"])
-                end_idx = torch.argmax(predictions["end_logits"])
-                answer_start = torch.tensor([start_idx])
-                answer_end = torch.tensor([end_idx])
-
-                grad_kwargs = {
-                    "start_positions": answer_start.to(self.model.device),
-                    "end_positions": answer_end.to(self.model.device),
-                }
-                attributions = self._interpret(
-                    request=request,
-                    prediction=predictions,
-                    method=request.explain_kwargs["method"]
-                    if request.explain_kwargs
-                    else request.attack_kwargs["saliency_method"],
-                    **grad_kwargs,
-                )
-                # new added section start
-                # to extract the name of the attack method
-                attack_method = None
-                if request.attack_kwargs:
-                    for k, v in request.attack_kwargs.items():
-                        if k == "method":
-                            attack_method = v
-                # new added section end
-                word_imp = self.process_outputs(
-                    attributions=attributions,
-                    top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
-                    mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
-                    task="question_answering",
-                    # new added paramter in process_ourput method
-                    attack_method=attack_method,
-                )
-                # print(word_imp)
-                task_outputs["attributions"] = word_imp
-
-            if (
-                    not request.attack_kwargs
-                    and not request.explain_kwargs
-                    and not request.model_kwargs.get("output_attentions", False)
-            ):
-                # predictions.pop("attentions", None)
-                pass
-
-            if request.attack_kwargs:
-                new_predictions = self._model_attacks(request, task_outputs)
-                return new_predictions
+        # for idx, (start, end, (_, context)) in enumerate(
+        #         zip(predictions["start_logits"], predictions["end_logits"], request.input)
+        # ):
+        #     start = start.numpy()
+        #     end = end.numpy()
+        #     # Ensure padded tokens & question tokens cannot
+        #     # belong to the set of candidate answers.
+        #     question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
+        #     # Unmask CLS token for 'no answer'
+        #     question_tokens[0] = 1
+        #     undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
+        #
+        #     # Generate mask
+        #     undesired_tokens_mask = undesired_tokens == 0.0
+        #
+        #     # Make sure non-context indexes in the tensor cannot
+        #     # contribute to the softmax
+        #     start = np.where(undesired_tokens_mask, -10000.0, start)
+        #     end = np.where(undesired_tokens_mask, -10000.0, end)
+        #
+        #     start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
+        #     end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
+        #
+        #     # Get score for 'no answer' then mask for decoding step (CLS token
+        #     no_answer_score = (start[0] * end[0]).item()
+        #     start[0] = end[0] = 0.0
+        #
+        #     starts, ends, scores = decode(
+        #         start,
+        #         end,
+        #         request.task_kwargs.get("topk", 1),
+        #         request.task_kwargs.get("max_answer_len", 128),
+        #         undesired_tokens,
+        #     )
+        #     enc = features[idx]
+        #     self.original_ans_start = enc.token_to_word(starts[0])
+        #     self.original_ans_end = enc.token_to_word(ends[0])
+        #     answers = [
+        #         {
+        #             "score": score.item(),
+        #             "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0],
+        #             "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
+        #             "answer": context[
+        #                       enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0]: enc.word_to_chars(
+        #                           enc.token_to_word(e), sequence_index=1
+        #                       )[1]
+        #                       ],
+        #         }
+        #         for s, e, score in zip(starts, ends, scores)
+        #     ]
+        #     if request.task_kwargs.get("show_null_answers", True):
+        #         answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
+        #     answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
+        #     task_outputs["answers"].append(answers)
+        #
+        #     # word attributions
+        #     if request.explain_kwargs or request.attack_kwargs:
+        #         start_idx = torch.argmax(predictions["start_logits"])
+        #         end_idx = torch.argmax(predictions["end_logits"])
+        #         answer_start = torch.tensor([start_idx])
+        #         answer_end = torch.tensor([end_idx])
+        #
+        #         grad_kwargs = {
+        #             "start_positions": answer_start.to(self.model.device),
+        #             "end_positions": answer_end.to(self.model.device),
+        #         }
+        #         attributions = self._interpret(
+        #             request=request,
+        #             prediction=predictions,
+        #             method=request.explain_kwargs["method"]
+        #             if request.explain_kwargs
+        #             else request.attack_kwargs["saliency_method"],
+        #             **grad_kwargs,
+        #         )
+        #         # new added section start
+        #         # to extract the name of the attack method
+        #         attack_method = None
+        #         if request.attack_kwargs:
+        #             for k, v in request.attack_kwargs.items():
+        #                 if k == "method":
+        #                     attack_method = v
+        #         # new added section end
+        #         word_imp = self.process_outputs(
+        #             attributions=attributions,
+        #             top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
+        #             mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+        #             task="question_answering",
+        #             # new added paramter in process_ourput method
+        #             attack_method=attack_method,
+        #         )
+        #         # print(word_imp)
+        #         task_outputs["attributions"] = word_imp
+        #
+        #     if (
+        #             not request.attack_kwargs
+        #             and not request.explain_kwargs
+        #             and not request.model_kwargs.get("output_attentions", False)
+        #     ):
+        #         # predictions.pop("attentions", None)
+        #         pass
+        #
+        #     if request.attack_kwargs:
+        #         new_predictions = self._model_attacks(request, task_outputs)
+        #         return new_predictions
 
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
@@ -419,7 +420,15 @@ class Onnx(Transformer):
         Returns:
                  The prediction output containing the predicted labels
         """
-        predictions = self._predict(request)
+        # predictions = self._predict(request)
+
+        features = self.tokenizer(
+            request.input, return_tensors="pt", **request.preprocessing_kwargs
+        )
+        seq_model=ORTModelForSequenceClassification.from_pretrained(model_config.model_path)
+
+        predictions=seq_model(**features)
+
         task_outputs = {}
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
@@ -446,7 +455,14 @@ class Onnx(Transformer):
         Returns:
                  the classification output containing the labels
         """
-        predictions, features = self._predict(request, output_features=True)
+        features = self.tokenizer(
+            request.input, return_tensors="pt", **request.preprocessing_kwargs
+        )
+        tok_model=ORTModelForTokenClassification.from_pretrained(model_config.model_path)
+        print(f"features of TOK:{features}")
+
+        predictions=tok_model(**features)
+        # predictions, features = self._predict(request, output_features=True)
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
         task_outputs = {
