@@ -3,13 +3,20 @@ name: Build
 on:
   push:
     branches: [ master, cicd ]
-  workflow_run:
-    workflows: [ "Deploy" ]
-    types:
-      - requested
-  release:
-    types: [ published ]
-
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - 'test'
+          - 'prod'
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'master'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -94,8 +101,8 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.service }}-
             ${{ runner.os }}-buildx-
 
-      - name: Sets env vars for release
-        if: github.event_name == 'release'
+      - name: Sets env vars for prod
+        if: github.event.inputs.environment == 'prod'
         run: |
           echo "LATEST_TAG=ukpsquare/${{matrix.service}}:latest" >> $LATEST_TAG
 
@@ -106,7 +113,7 @@ jobs:
           context: ${{ matrix.context }}
           target: build
           build-args: ${{ matrix.build-args }}
-          push: ${{github.ref == 'refs/heads/master' || github.event.action == 'workflow_run' || github.event.action == 'release' }}
+          push: true
           tags: |
             ukpsquare/${{ matrix.service }}:${{ github.sha }}
             ${{ env.LATEST_TAG }}
@@ -120,9 +127,15 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-  build-complete:
+  deploy:
+    if: github.event.action == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: echo
-        run: echo "Build complete."
+      - name: Trigger Deployment on ${{ github.event.inputs.environment }}
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+          data: '{"branch": "${{ github.event.inputs.branch }}", "sha": "${{ github.sha }}"}'
+          verify_ssl: false
