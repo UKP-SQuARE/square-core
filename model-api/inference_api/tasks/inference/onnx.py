@@ -23,6 +23,7 @@ from optimum.onnxruntime import  (
     ORTModelForQuestionAnswering,
     ORTModelForSequenceClassification,
     ORTModelForTokenClassification,
+    ORTModelForSeq2SeqLM
 )
 
 
@@ -91,9 +92,9 @@ class Onnx(Transformer):
         # self.session = onnxruntime.InferenceSession(model_config.model_path)
         # self._load_model(AutoModel,model_config.model_name,model_config.disable_gpu)
         # # check whether a decoder model is available
-        # self.is_encoder_decoder = (
-        #     model_config.decoder_path is not None and model_config.decoder_path != ""
-        # )
+        self.is_encoder_decoder = (
+            model_config.decoder_path is not None and model_config.decoder_path != ""
+        )
         # if self.is_encoder_decoder:
         #     # if available load the decoder model in a onnx session
         #     self.decoder_session = onnxruntime.InferenceSession(
@@ -494,28 +495,41 @@ class Onnx(Transformer):
         max_length = request.task_kwargs.get("max_length", 20)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
+        features = self.tokenizer(
+            request.input, return_tensors="pt", **request.preprocessing_kwargs
+        )
+        gen_model = ORTModelForSeq2SeqLM.from_pretrained(model_config.model_path)
+
         for prompt in request.input:
             # if num_beams is specified beam search is executed otherwise greedy search
             if "num_beams" in request.task_kwargs:
-                input_ids, scores = self._beam_search(request, prompt, max_length)
+                print("*****Beam Search*****")
+                print(f"task_kwargs:{request.task_kwargs}")
+                outputs = gen_model.generate(features.input_ids, num_beams=request.task_kwargs["num_beams"])
+                generated_texts = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                # input_ids, scores = self._beam_search(request, prompt, max_length)
             else:
-                input_ids, scores = self._greedy_generation(request, prompt, max_length)
+                print("*****Greedy Search*****")
 
-            generated_texts = [
-                self.tokenizer.decode(
-                    seq,
-                    skip_special_tokens=True,
-                    clean_up_tokenization_spaces=request.task_kwargs.get(
-                        "clean_up_tokenization_spaces", False
-                    ),
-                )
-                for seq in input_ids
-            ]
+                outputs = gen_model.generate(features.input_ids, do_sample=True, max_length=max_length)
+                generated_texts = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                # input_ids, scores = self._greedy_generation(request, prompt, max_length)
+
+            # generated_texts = [
+            #     self.tokenizer.decode(
+            #         seq,
+            #         skip_special_tokens=True,
+            #         clean_up_tokenization_spaces=request.task_kwargs.get(
+            #             "clean_up_tokenization_spaces", False
+            #         ),
+            #     )
+            #     for seq in input_ids
+            # ]
             task_outputs["generated_texts"].append(generated_texts)
 
             res = {
-                "sequence": input_ids,
-                "scores": scores,
+                "sequence": features.input_ids,
+                # "scores": scores,
             }
             for key in res.keys():
                 model_outputs[key].append(res[key])
@@ -527,270 +541,270 @@ class Onnx(Transformer):
             model_outputs=model_outputs, **task_outputs
         )
 
-    def _greedy_generation(self, request, prompt, max_length):
-        """
-        Performs greedy generation for the prompts
+    # def _greedy_generation(self, request, prompt, max_length):
+    #     """
+    #     Performs greedy generation for the prompts
+    #
+    #     Args:
+    #          request: the inference request
+    #          prompt: the prompt for the generation
+    #          max_length: the maximum length of the generated sequence
+    #     Returns:
+    #          the ids of the generated sequence and the score
+    #     """
+    #     cur_len = 0
+    #     eos_token_id = (
+    #         self.tokenizer.eos_token_id
+    #         if self.tokenizer.eos_token_id is not None
+    #         else self.tokenizer.pad_token_id
+    #     )
+    #     request.preprocessing_kwargs["padding"] = False
+    #     features = self.tokenizer(
+    #         prompt, return_tensors="pt", **request.preprocessing_kwargs
+    #     )
+    #     input_ids = features["input_ids"]
+    #     generated_ids = [self.get_bos_token()] if self.is_encoder_decoder else []
+    #     unfinished_sequences = input_ids.new(input_ids.shape[0]).fill_(1)
+    #     scores = ()
+    #     # greedy generation (adapted from transformers/generation_utils.py)
+    #     while cur_len < max_length:
+    #         input_data = self._prepare_input(features, generated_ids)
+    #         predictions = self._predict(request, features=input_data)
+    #
+    #         next_token_logits = predictions["logits"][:, -1, :]
+    #         scores += (next_token_logits,)
+    #
+    #         # argmax
+    #         next_tokens = torch.argmax(next_token_logits, dim=-1)
+    #         # update generated ids, model inputs, and length for next step
+    #         generated_ids.append(next_tokens[:, None].item())
+    #         cur_len = cur_len + 1
+    #
+    #         if eos_token_id is not None:
+    #             unfinished_sequences = unfinished_sequences.mul(
+    #                 (next_tokens != eos_token_id).long()
+    #             )
+    #             # stop when each sentence is finished, or if we exceed the maximum length
+    #         if unfinished_sequences.max() == 0:
+    #             break
+    #     return [generated_ids], scores
+    #
+    # def _prepare_input(self, encoder_features, generated_sequence):
+    #     """
+    #     Prepares the input for the _predict method. If the model is an encoder decoder model the
+    #     generated sequence is the decoder input.
+    #
+    #     Args:
+    #          encoder_features: the features of the prompt
+    #          generated_sequence: the generated ids
+    #
+    #     Returns:
+    #          the features for the model
+    #     """
+    #     model_input = encoder_features.copy()
+    #     # if it is a encoder decoder model the generated sequence is passed to the decoder
+    #     # otherwise the generated sequence is appended to the input_ids
+    #     if self.is_encoder_decoder:
+    #         model_input["decoder_input_ids"] = np.array(
+    #             [generated_sequence], dtype=np.int64
+    #         )
+    #         model_input["decoder_attention_mask"] = np.array(
+    #             [[1] * len(generated_sequence)], dtype=np.int64
+    #         )
+    #
+    #     elif generated_sequence:
+    #         model_input["input_ids"] = torch.cat(
+    #             (
+    #                 encoder_features["input_ids"],
+    #                 torch.tensor(generated_sequence).unsqueeze(dim=0),
+    #             ),
+    #             dim=1,
+    #         )
+    #         model_input["attention_mask"] = torch.ones(
+    #             model_input["input_ids"].shape, dtype=torch.int64
+    #         )
+    #
+    #     return model_input
+    #
+    # def _beam_search(self, request, prompt, max_length):
+    #     """
+    #     Performs beam search for the given prompt
+    #
+    #     Args:
+    #          request: the inference request
+    #          prompt: the generation prompt
+    #          max_length: the maximum length of the generated sequence
+    #
+    #     Returns:
+    #          the generated sequence(s)
+    #     """
+    #     request.preprocessing_kwargs["padding"] = False
+    #     features = self.tokenizer(
+    #         prompt, return_tensors="pt", **request.preprocessing_kwargs
+    #     )
+    #     # get the generation arguments
+    #     num_beams = request.task_kwargs.pop("num_beams")
+    #     no_repeat_ngram_size = request.task_kwargs.pop("no_repeat_ngram_size", 0)
+    #     do_sample = request.task_kwargs.pop("do_sample", False)
+    #     top_p = request.task_kwargs.pop("top_p", None)
+    #     top_k = request.task_kwargs.pop("top_k", None)
+    #     num_return_sequences = request.task_kwargs.pop("num_return_sequences", 1)
+    #     return_sequences = []
+    #     for i in range(num_return_sequences):
+    #         sequences = [
+    #             ([self.get_bos_token()] if self.is_encoder_decoder else [], 0.0)
+    #         ]
+    #         cur_len = 0
+    #         while cur_len < max_length:
+    #             candidates = []
+    #             for seq in sequences:
+    #                 model_input = self._prepare_input(features, seq[0])
+    #                 predictions = self._predict(request, False, model_input)
+    #
+    #                 next_token_logits = predictions["logits"][:, -1, :]
+    #                 next_token_scores = F.softmax(next_token_logits, dim=1)
+    #                 if do_sample:
+    #                     next_token_scores = self._preprocess_logits(
+    #                         next_token_scores,
+    #                         top_k=top_k,
+    #                         top_p=top_p,
+    #                         min_tokens_to_keep=2 * num_beams,
+    #                     )
+    #
+    #                 if no_repeat_ngram_size > 0:
+    #                     banned_batch_tokens = calc_banned_ngram_tokens(
+    #                         torch.tensor([seq[0]]), 1, no_repeat_ngram_size, cur_len
+    #                     )
+    #                     for i, banned_tokens in enumerate(banned_batch_tokens):
+    #                         next_token_scores[i, banned_tokens] = -float("inf")
+    #
+    #                 if do_sample:
+    #                     # draw the next token based on the probabilities
+    #                     probs = nn.functional.softmax(next_token_scores, dim=-1)
+    #
+    #                     next_tokens = torch.multinomial(
+    #                         probs, num_samples=2 * num_beams
+    #                     )
+    #                     next_token_prob = torch.gather(
+    #                         next_token_scores, -1, next_tokens
+    #                     )
+    #
+    #                     _, _indices = torch.sort(
+    #                         next_token_prob, descending=True, dim=1
+    #                     )
+    #                     next_tokens_idx = torch.gather(next_tokens, -1, _indices)
+    #
+    #                 else:
+    #                     # take the most likely tokens as the next tokens
+    #                     next_token_prob, next_tokens_idx = torch.topk(
+    #                         next_token_scores, num_beams, dim=-1
+    #                     )
+    #                 candidates += [
+    #                     (seq[0] + [token_id], seq[1] + np.log(score))
+    #                     for token_id, score in zip(
+    #                         next_tokens_idx.squeeze().tolist(),
+    #                         next_token_prob.squeeze().tolist(),
+    #                     )
+    #                 ]
+    #             # select the candidates with the highest scores as beams for the generation of the next token
+    #             sequences = sorted(candidates, key=lambda x: x[1], reverse=True)[
+    #                 :num_beams
+    #             ]
+    #             cur_len += 1
+    #
+    #         return_sequences.append(sequences[0])
+    #
+    #     return (
+    #         [torch.tensor(s[0]) for s in return_sequences],
+    #         [s[1] for s in return_sequences],
+    #     )
+    #
+    # def get_bos_token(self):
+    #     """
+    #     Depending on the model the beginning of sentence token id can be different or not provided.
+    #
+    #     Returns:
+    #          beginning of sentence token id
+    #     """
+    #     if self.tokenizer.bos_token_id is not None:
+    #         return self.tokenizer.bos_token_id
+    #     # if no bos token is available use the padding token
+    #     else:
+    #         return self.tokenizer.pad_token_id
+    #
+    # def _preprocess_logits(
+    #     self,
+    #     scores,
+    #     top_k=None,
+    #     top_p=None,
+    #     min_tokens_to_keep=1,
+    #     filter_value=-float("Inf"),
+    # ):
+    #     """
+    #     Sets the scores for all tokens that are not in top_p and top_k to the filter value (default = -inf).
+    #     Adapted from huggingface/transformers/generation_logits_process.py
+    #
+    #     Args:
+    #          scores:the initial scores for each token
+    #          top_k: the top_k threshold
+    #          top_p: the top_p threshold
+    #          min_tokens_to_keep: the min_number_of_tokens_to_keep
+    #          filter_value: the value to replace the scores with
+    #
+    #     Returns:
+    #          the processed scores
+    #     """
+    #     if top_k is not None and top_k != 0:
+    #         top_k = min(max(top_k, min_tokens_to_keep), scores.size(-1))  # Safety check
+    #         # Remove all tokens with a probability less than the last token of the top-k
+    #         indices_to_remove = scores < torch.topk(scores, top_k)[0][..., -1, None]
+    #         scores = scores.masked_fill(indices_to_remove, filter_value)
+    #     if top_p is not None and top_p < 1.0:
+    #         sorted_logits, sorted_indices = torch.sort(scores, descending=True)
+    #         cumulative_probs = sorted_logits.softmax(dim=-1).cumsum(dim=-1)
+    #
+    #         # Remove tokens with cumulative top_p above the threshold (token with 0 are kept)
+    #         sorted_indices_to_remove = cumulative_probs > top_p
+    #         if min_tokens_to_keep > 1:
+    #             # Keep at least min_tokens_to_keep (set to min_tokens_to_keep-1 because we add the first one below)
+    #             sorted_indices_to_remove[..., : min_tokens_to_keep - 1] = 0
+    #         # Shift the indices to the right to keep also the first token above the threshold
+    #         sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
+    #             ..., :-1
+    #         ].clone()
+    #         sorted_indices_to_remove[..., 0] = 0
+    #
+    #         # scatter sorted tensors to original indexing
+    #         indices_to_remove = sorted_indices_to_remove.scatter(
+    #             1, sorted_indices, sorted_indices_to_remove
+    #         )
+    #         scores = scores.masked_fill(indices_to_remove, filter_value)
+    #
+    #     return scores
 
-        Args:
-             request: the inference request
-             prompt: the prompt for the generation
-             max_length: the maximum length of the generated sequence
-        Returns:
-             the ids of the generated sequence and the score
-        """
-        cur_len = 0
-        eos_token_id = (
-            self.tokenizer.eos_token_id
-            if self.tokenizer.eos_token_id is not None
-            else self.tokenizer.pad_token_id
-        )
-        request.preprocessing_kwargs["padding"] = False
-        features = self.tokenizer(
-            prompt, return_tensors="pt", **request.preprocessing_kwargs
-        )
-        input_ids = features["input_ids"]
-        generated_ids = [self.get_bos_token()] if self.is_encoder_decoder else []
-        unfinished_sequences = input_ids.new(input_ids.shape[0]).fill_(1)
-        scores = ()
-        # greedy generation (adapted from transformers/generation_utils.py)
-        while cur_len < max_length:
-            input_data = self._prepare_input(features, generated_ids)
-            predictions = self._predict(request, features=input_data)
-
-            next_token_logits = predictions["logits"][:, -1, :]
-            scores += (next_token_logits,)
-
-            # argmax
-            next_tokens = torch.argmax(next_token_logits, dim=-1)
-            # update generated ids, model inputs, and length for next step
-            generated_ids.append(next_tokens[:, None].item())
-            cur_len = cur_len + 1
-
-            if eos_token_id is not None:
-                unfinished_sequences = unfinished_sequences.mul(
-                    (next_tokens != eos_token_id).long()
-                )
-                # stop when each sentence is finished, or if we exceed the maximum length
-            if unfinished_sequences.max() == 0:
-                break
-        return [generated_ids], scores
-
-    def _prepare_input(self, encoder_features, generated_sequence):
-        """
-        Prepares the input for the _predict method. If the model is an encoder decoder model the
-        generated sequence is the decoder input.
-
-        Args:
-             encoder_features: the features of the prompt
-             generated_sequence: the generated ids
-
-        Returns:
-             the features for the model
-        """
-        model_input = encoder_features.copy()
-        # if it is a encoder decoder model the generated sequence is passed to the decoder
-        # otherwise the generated sequence is appended to the input_ids
-        if self.is_encoder_decoder:
-            model_input["decoder_input_ids"] = np.array(
-                [generated_sequence], dtype=np.int64
-            )
-            model_input["decoder_attention_mask"] = np.array(
-                [[1] * len(generated_sequence)], dtype=np.int64
-            )
-
-        elif generated_sequence:
-            model_input["input_ids"] = torch.cat(
-                (
-                    encoder_features["input_ids"],
-                    torch.tensor(generated_sequence).unsqueeze(dim=0),
-                ),
-                dim=1,
-            )
-            model_input["attention_mask"] = torch.ones(
-                model_input["input_ids"].shape, dtype=torch.int64
-            )
-
-        return model_input
-
-    def _beam_search(self, request, prompt, max_length):
-        """
-        Performs beam search for the given prompt
-
-        Args:
-             request: the inference request
-             prompt: the generation prompt
-             max_length: the maximum length of the generated sequence
-
-        Returns:
-             the generated sequence(s)
-        """
-        request.preprocessing_kwargs["padding"] = False
-        features = self.tokenizer(
-            prompt, return_tensors="pt", **request.preprocessing_kwargs
-        )
-        # get the generation arguments
-        num_beams = request.task_kwargs.pop("num_beams")
-        no_repeat_ngram_size = request.task_kwargs.pop("no_repeat_ngram_size", 0)
-        do_sample = request.task_kwargs.pop("do_sample", False)
-        top_p = request.task_kwargs.pop("top_p", None)
-        top_k = request.task_kwargs.pop("top_k", None)
-        num_return_sequences = request.task_kwargs.pop("num_return_sequences", 1)
-        return_sequences = []
-        for i in range(num_return_sequences):
-            sequences = [
-                ([self.get_bos_token()] if self.is_encoder_decoder else [], 0.0)
-            ]
-            cur_len = 0
-            while cur_len < max_length:
-                candidates = []
-                for seq in sequences:
-                    model_input = self._prepare_input(features, seq[0])
-                    predictions = self._predict(request, False, model_input)
-
-                    next_token_logits = predictions["logits"][:, -1, :]
-                    next_token_scores = F.softmax(next_token_logits, dim=1)
-                    if do_sample:
-                        next_token_scores = self._preprocess_logits(
-                            next_token_scores,
-                            top_k=top_k,
-                            top_p=top_p,
-                            min_tokens_to_keep=2 * num_beams,
-                        )
-
-                    if no_repeat_ngram_size > 0:
-                        banned_batch_tokens = calc_banned_ngram_tokens(
-                            torch.tensor([seq[0]]), 1, no_repeat_ngram_size, cur_len
-                        )
-                        for i, banned_tokens in enumerate(banned_batch_tokens):
-                            next_token_scores[i, banned_tokens] = -float("inf")
-
-                    if do_sample:
-                        # draw the next token based on the probabilities
-                        probs = nn.functional.softmax(next_token_scores, dim=-1)
-
-                        next_tokens = torch.multinomial(
-                            probs, num_samples=2 * num_beams
-                        )
-                        next_token_prob = torch.gather(
-                            next_token_scores, -1, next_tokens
-                        )
-
-                        _, _indices = torch.sort(
-                            next_token_prob, descending=True, dim=1
-                        )
-                        next_tokens_idx = torch.gather(next_tokens, -1, _indices)
-
-                    else:
-                        # take the most likely tokens as the next tokens
-                        next_token_prob, next_tokens_idx = torch.topk(
-                            next_token_scores, num_beams, dim=-1
-                        )
-                    candidates += [
-                        (seq[0] + [token_id], seq[1] + np.log(score))
-                        for token_id, score in zip(
-                            next_tokens_idx.squeeze().tolist(),
-                            next_token_prob.squeeze().tolist(),
-                        )
-                    ]
-                # select the candidates with the highest scores as beams for the generation of the next token
-                sequences = sorted(candidates, key=lambda x: x[1], reverse=True)[
-                    :num_beams
-                ]
-                cur_len += 1
-
-            return_sequences.append(sequences[0])
-
-        return (
-            [torch.tensor(s[0]) for s in return_sequences],
-            [s[1] for s in return_sequences],
-        )
-
-    def get_bos_token(self):
-        """
-        Depending on the model the beginning of sentence token id can be different or not provided.
-
-        Returns:
-             beginning of sentence token id
-        """
-        if self.tokenizer.bos_token_id is not None:
-            return self.tokenizer.bos_token_id
-        # if no bos token is available use the padding token
-        else:
-            return self.tokenizer.pad_token_id
-
-    def _preprocess_logits(
-        self,
-        scores,
-        top_k=None,
-        top_p=None,
-        min_tokens_to_keep=1,
-        filter_value=-float("Inf"),
-    ):
-        """
-        Sets the scores for all tokens that are not in top_p and top_k to the filter value (default = -inf).
-        Adapted from huggingface/transformers/generation_logits_process.py
-
-        Args:
-             scores:the initial scores for each token
-             top_k: the top_k threshold
-             top_p: the top_p threshold
-             min_tokens_to_keep: the min_number_of_tokens_to_keep
-             filter_value: the value to replace the scores with
-
-        Returns:
-             the processed scores
-        """
-        if top_k is not None and top_k != 0:
-            top_k = min(max(top_k, min_tokens_to_keep), scores.size(-1))  # Safety check
-            # Remove all tokens with a probability less than the last token of the top-k
-            indices_to_remove = scores < torch.topk(scores, top_k)[0][..., -1, None]
-            scores = scores.masked_fill(indices_to_remove, filter_value)
-        if top_p is not None and top_p < 1.0:
-            sorted_logits, sorted_indices = torch.sort(scores, descending=True)
-            cumulative_probs = sorted_logits.softmax(dim=-1).cumsum(dim=-1)
-
-            # Remove tokens with cumulative top_p above the threshold (token with 0 are kept)
-            sorted_indices_to_remove = cumulative_probs > top_p
-            if min_tokens_to_keep > 1:
-                # Keep at least min_tokens_to_keep (set to min_tokens_to_keep-1 because we add the first one below)
-                sorted_indices_to_remove[..., : min_tokens_to_keep - 1] = 0
-            # Shift the indices to the right to keep also the first token above the threshold
-            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
-                ..., :-1
-            ].clone()
-            sorted_indices_to_remove[..., 0] = 0
-
-            # scatter sorted tensors to original indexing
-            indices_to_remove = sorted_indices_to_remove.scatter(
-                1, sorted_indices, sorted_indices_to_remove
-            )
-            scores = scores.masked_fill(indices_to_remove, filter_value)
-
-        return scores
-
-
-def calc_banned_ngram_tokens(
-    prev_input_ids, num_hypos: int, no_repeat_ngram_size: int, cur_len: int
-) -> None:
-    """Copied from fairseq for no_repeat_ngram in beam_search"""
-    if cur_len + 1 < no_repeat_ngram_size:
-        # return no banned tokens if we haven't generated no_repeat_ngram_size tokens yet
-        return [[] for _ in range(num_hypos)]
-    generated_ngrams = [{} for _ in range(num_hypos)]
-    for idx in range(num_hypos):
-        gen_tokens = prev_input_ids[idx].tolist()
-        generated_ngram = generated_ngrams[idx]
-        for ngram in zip(*[gen_tokens[i:] for i in range(no_repeat_ngram_size)]):
-            prev_ngram_tuple = tuple(ngram[:-1])
-            generated_ngram[prev_ngram_tuple] = generated_ngram.get(
-                prev_ngram_tuple, []
-            ) + [ngram[-1]]
-
-    def _get_generated_ngrams(hypo_idx):
-        # Before decoding the next token, prevent decoding of ngrams that have already appeared
-        start_idx = cur_len + 1 - no_repeat_ngram_size
-        ngram_idx = tuple(prev_input_ids[hypo_idx, start_idx:cur_len].tolist())
-        return generated_ngrams[hypo_idx].get(ngram_idx, [])
-
-    banned_tokens = [_get_generated_ngrams(hypo_idx) for hypo_idx in range(num_hypos)]
-    return banned_tokens
+#
+# def calc_banned_ngram_tokens(
+#     prev_input_ids, num_hypos: int, no_repeat_ngram_size: int, cur_len: int
+# ) -> None:
+#     """Copied from fairseq for no_repeat_ngram in beam_search"""
+#     if cur_len + 1 < no_repeat_ngram_size:
+#         # return no banned tokens if we haven't generated no_repeat_ngram_size tokens yet
+#         return [[] for _ in range(num_hypos)]
+#     generated_ngrams = [{} for _ in range(num_hypos)]
+#     for idx in range(num_hypos):
+#         gen_tokens = prev_input_ids[idx].tolist()
+#         generated_ngram = generated_ngrams[idx]
+#         for ngram in zip(*[gen_tokens[i:] for i in range(no_repeat_ngram_size)]):
+#             prev_ngram_tuple = tuple(ngram[:-1])
+#             generated_ngram[prev_ngram_tuple] = generated_ngram.get(
+#                 prev_ngram_tuple, []
+#             ) + [ngram[-1]]
+#
+#     def _get_generated_ngrams(hypo_idx):
+#         # Before decoding the next token, prevent decoding of ngrams that have already appeared
+#         start_idx = cur_len + 1 - no_repeat_ngram_size
+#         ngram_idx = tuple(prev_input_ids[hypo_idx, start_idx:cur_len].tolist())
+#         return generated_ngrams[hypo_idx].get(ngram_idx, [])
+#
+#     banned_tokens = [_get_generated_ngrams(hypo_idx) for hypo_idx in range(num_hypos)]
+#     return banned_tokens
