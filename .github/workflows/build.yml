@@ -120,9 +120,9 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-  build-done:
+  build-complete:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Mark end of build.
-        run: echo "Build done."
+      - name: echo
+        run: echo "Build complete."
