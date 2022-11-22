@@ -3,6 +3,10 @@ name: Build
 on:
   push:
     branches: [ master, cicd ]
+  workflow_run:
+    workflows: [ "Deploy" ]
+    types:
+      - requested
 
 jobs:
   build:
