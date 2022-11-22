@@ -14,6 +14,8 @@
 │   │   ├───py_object_id.py                 # Utility class for mongoDB ID
 │   ├───routers
 │   │   ├───api.py                          # Main router for all routes with `/api` prefix
+│   │   ├───evaluator.py                    # Router for all routes with `/evaluator` prefix and implementation of the  evaluator functionality
+│   │   ├───predictor.py                    # Router for all routes with `/predictor` prefix and implementation of the  predictor functionality
 │   ├───settings
 │   │   ├───keycloak_settings.py            # Settings class for Keycloak, loads .env variables
 │   │   ├───dataset_handler_settings.py     # Settings class for the dataset handler 
