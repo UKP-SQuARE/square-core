@@ -94,10 +94,13 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.service }}-
             ${{ runner.os }}-buildx-
 
+      - name: Sets env vars for release
+        if: github.event_name == 'release'
+        run: |
+          echo "LATEST_TAG=ukpsquare/${{matrix.service}}:latest" >> $LATEST_TAG
+
       - name: Build deployable image
         uses: docker/build-push-action@v3
-        env:
-          LATEST_TAG: ${{ github.event.action == 'release' &&  'ukpsquare/' matrix.service ':latest' || '' }}
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
