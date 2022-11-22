@@ -96,15 +96,17 @@ jobs:
 
       - name: Build deployable image
         uses: docker/build-push-action@v3
+        env:
+          LATEST_TAG: ${{ github.event.action == 'release' &&  ukpsquare/${{ matrix.service }} + ':latest' || '' }}
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
           target: build
           build-args: ${{ matrix.build-args }}
-          push: ${{github.ref == 'refs/heads/master'}}
+          push: ${{github.ref == 'refs/heads/master' || github.event.action == 'workflow_run' || github.event.action == 'release' }}
           tags: |
             ukpsquare/${{ matrix.service }}:${{ github.sha }}
-            ukpsquare/${{ matrix.service }}:latest
+            ${{ env.LATEST_TAG }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
