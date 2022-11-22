@@ -97,7 +97,7 @@ jobs:
       - name: Build deployable image
         uses: docker/build-push-action@v3
         env:
-          LATEST_TAG: ${{ github.event.action == 'release' &&  ukpsquare/${{ matrix.service }} + ':latest' || '' }}
+          LATEST_TAG: ${{ github.event.action == 'release' &&  'ukpsquare/' + matrix.service + ':latest' || '' }}
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
