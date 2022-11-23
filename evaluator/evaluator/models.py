@@ -29,17 +29,25 @@ class ReferenceAnswer(BaseModel):
     text: List[str] = Field(...)
 
 
-class Prediction(BaseModel):
+class PredictionAnswer(BaseModel):
     text: str = Field(...)
     no_answer_probability: float = Field(...)
 
 
-class DataPoint(BaseModel):
+class Prediction(BaseModel):
     id: str = Field(...)
     context: str = Field(...)
     question: str = Field(...)
     reference_answers: Optional[ReferenceAnswer] = Field(...)
-    prediction: Optional[Prediction] = Field(...)
+    prediction: Optional[PredictionAnswer] = Field(...)
+
+
+class Metric(BaseModel):
+    metric_last_updated_at: datetime = Field(...)
+    metric_calculation_time: float = Field(
+        ..., description="Calculation time in seconds"
+    )
+    results: dict = Field(...)
 
 
 class DatasetResult(MongoModel):
@@ -50,9 +58,12 @@ class DatasetResult(MongoModel):
         ..., description="Identifier of the skill that generated the prediction."
     )
     dataset_name: str = Field(..., description="Name of the dataset")
-    dataset_last_updated_at: datetime = Field()
-    data_points: List[DataPoint] = Field(
-        ...,
-        description="Both the reference data and the prediction for each datapoint of the dataset",
+    predictions_last_updated_at: datetime = Field()
+    predictions_calculation_time: float = Field(
+        ..., description="Calculation time in seconds"
     )
-    metrics: Optional[dict] = Field(...)
+    predictions: List[Prediction] = Field(
+        ...,
+        description="Both the reference data and the prediction for each entry of the dataset",
+    )
+    metrics: Optional[dict[str, Metric]] = Field(...)
