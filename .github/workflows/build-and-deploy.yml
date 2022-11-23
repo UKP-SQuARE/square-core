@@ -141,5 +141,5 @@ jobs:
         env:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
-          data: '{"branch": "${{ github.event.inputs.branch }}", "sha": "${{ github.sha }}"}'
+          data: "{'branch': '${{ github.event.inputs.branch }}', 'sha': '${{ github.sha }}'}"
           verify_ssl: false
