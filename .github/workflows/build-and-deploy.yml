@@ -1,4 +1,4 @@
-name: Build
+name: Build and Deploy
 
 on:
   push:
@@ -101,10 +101,13 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.service }}-
             ${{ runner.os }}-buildx-
 
-      - name: Sets env vars for prod
-        if: github.event.inputs.environment == 'prod'
-        run: |
-          echo "LATEST_TAG=ukpsquare/${{matrix.service}}:latest" >> $LATEST_TAG
+      - name: Add latest tag if deploying to prod
+        uses: haya14busa/action-cond@v1
+        id: latest_tag_str
+        with:
+          cond: ${{ github.event.inputs.environment == 'prod' }}
+          if_true: "ukpsquare/${{matrix.service}}:latest"
+          if_false: ""
 
       - name: Build deployable image
         uses: docker/build-push-action@v3
@@ -116,7 +119,7 @@ jobs:
           push: true
           tags: |
             ukpsquare/${{ matrix.service }}:${{ github.sha }}
-            ${{ env.LATEST_TAG }}
+            ${{ steps.latest_tag_str.outputs.value }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
