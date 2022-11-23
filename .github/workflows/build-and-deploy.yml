@@ -134,6 +134,7 @@ jobs:
     needs: build
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
     steps:
       - name: Trigger Deployment on ${{ github.event.inputs.environment }}
         uses: distributhor/workflow-webhook@v2
