@@ -168,7 +168,7 @@ services:
       - #@ template.replace(traefik_tls("frontend"))
       - #@ template.replace(frontend_traefik_redirect())
 
-  documentation:
+  docs:
     image: #@ "ukpsquare/docs:" + data.values.tag
     build: ./docs
     volumes:
@@ -177,8 +177,8 @@ services:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.documentation.rule=PathPrefix(`/docs/`)"
-      - #@ template.replace(traefik_tls("documentation"))
+      - "traefik.http.routers.docs.rule=PathPrefix(`/docs/`)"
+      - #@ template.replace(traefik_tls("docs"))
 
   skill-manager:
     image: #@ "ukpsquare/skill-manager:" + data.values.tag
