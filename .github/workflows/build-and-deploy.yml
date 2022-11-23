@@ -131,8 +131,8 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   deploy:
-    if: github.event.action == 'workflow_dispatch'
     needs: build
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Deployment on ${{ github.event.inputs.environment }}
