@@ -2,11 +2,11 @@
 #@ load("@ytt:template", "template")
 ---
 #@ def skill_image_name(skill):
-#@ return "ukpsquare/skills-" + skill.name + ":" + data.values.tag
+#@ return "ukpsquare/skill-" + skill.name + ":" + data.values.tag
 #@ end
 
 #@ def skill_build(skill):
-#@ return {"context": "./skills", "dockerfile": "./" + skill.name + ".Dockerfile"}
+#@ return {"context": "./skills", "args": { "skill": skill.name}}
 #@ end
 
 #@ def skill_environment(skill):
@@ -67,7 +67,7 @@ VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-MODEL_API_IMAGE: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
+MODEL_API_IMAGE: #@ "ukpsquare/model-inference:" + data.values.tag
 ONNX_VOLUME: square-model-inference-api_onnx-models
 REALM: #@ data.values.realm
 MONGO_HOST: mongodb
@@ -156,8 +156,8 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build: ./square-frontend
-    image: #@ "ukpsquare/square-frontend:" + data.values.tag
+    build: ./frontend
+    image: #@ "ukpsquare/frontend:" + data.values.tag
     restart: always
     expose:
       - 80
@@ -168,8 +168,8 @@ services:
       - #@ template.replace(traefik_tls("frontend"))
       - #@ template.replace(frontend_traefik_redirect())
 
-  documentation:
-    image: #@ "ukpsquare/square-docs:" + data.values.tag
+  docs:
+    image: #@ "ukpsquare/docs:" + data.values.tag
     build: ./docs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -177,8 +177,8 @@ services:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.documentation.rule=PathPrefix(`/docs/`)"
-      - #@ template.replace(traefik_tls("documentation"))
+      - "traefik.http.routers.docs.rule=PathPrefix(`/docs/`)"
+      - #@ template.replace(traefik_tls("docs"))
 
   skill-manager:
     image: #@ "ukpsquare/skill-manager:" + data.values.tag
@@ -242,7 +242,7 @@ services:
     command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
   maintaining_worker:
-    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-management:" + data.values.tag
     build:
       context: ./square-model-inference-api/management_server
       target: build
@@ -260,7 +260,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: square-model-inference-api_onnx-models
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
@@ -272,7 +272,7 @@ services:
       - redis
 
   maintaining:
-    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-management:" + data.values.tag
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     build: 
       context: ./square-model-inference-api/management_server
@@ -291,7 +291,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: square-model-inference-api_onnx-models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -306,7 +306,7 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
 
   main_model:
-    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-inference:" + data.values.tag
     build:
       context: ./square-model-inference-api/inference_server
       target: build
@@ -337,7 +337,7 @@ services:
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
   dpr_worker:
-    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-inference:" + data.values.tag
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -352,7 +352,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -363,7 +363,7 @@ services:
       - redis
 
   bert_worker:
-    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-inference:" + data.values.tag
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -378,7 +378,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -389,7 +389,7 @@ services:
       - redis
 
   roberta_worker:
-    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-inference:" + data.values.tag
     command: celery -A tasks worker -Q roberta-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -404,7 +404,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -415,7 +415,7 @@ services:
       - redis
 
   qagnn_worker:
-    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-inference:" + data.values.tag
     build:
       context: ./square-model-inference-api/inference_server
       target: build
@@ -434,7 +434,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -446,7 +446,7 @@ services:
 
   datastore_api:
     privileged: true
-    image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
+    image: #@ "ukpsquare/datastore:" + data.values.tag
     build: 
       context: ./datastore-api
       target: build

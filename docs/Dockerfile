@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # production stage
-FROM nginx:stable-alpine as production-stage
+FROM nginx:stable-alpine as build
 COPY --from=docs-build-stage /square-docs/build /www/data/docs
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
