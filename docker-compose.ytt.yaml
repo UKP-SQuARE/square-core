@@ -254,11 +254,11 @@ services:
     command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
   maintaining_worker:
-    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-manager:" + data.values.tag
     build:
       context: ./model-manager
       target: build
-    command: celery -A tasks worker --loglevel=info
+    command: celery -A model_manager.tasks worker --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
@@ -287,8 +287,8 @@ services:
       - redishost
 
   maintaining:
-    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
-    command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
+    image: #@ "ukpsquare/model-manager:" + data.values.tag
+    command: uvicorn model_manager.main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     build: 
       context: ./model-manager
       target: build
@@ -320,14 +320,15 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
 
   main_model:
-    image: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
     build:
-      context: ./model-api
+      context: ./model-inference
       target: build
+      dockerfile: model-inference/dockerfiles/base_model/Dockerfile
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
-      - ./model-api/inference_api/model_configs/.env.dpr
-      - ./model-api/inference_api/.env
+      - ./model-inference/model_configs/.env.dpr
+      - ./model-inference/model_inference/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -353,15 +354,19 @@ services:
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
   dpr_worker:
-    image: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
-    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      dockerfile: model-inference/dockerfiles/transformer/Dockerfile
+    command: celery -A model_inference.tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
     env_file:
-      - ./model-api/inference_api/model_configs/.env.dpr
-      - ./model-api/inference_api/.env
+      - ./model-inference/model_configs/.env.dpr
+      - ./model-inference/model_inference/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -383,15 +388,19 @@ services:
       - redishost
 
   bert_worker:
-    image: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
-    command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      dockerfile: model-inference/dockerfiles/transformer/Dockerfile
+    command: celery -A model_inference.tasks worker -Q bert-base-uncased --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
     env_file:
-      - ./model-api/inference_api/.env.bert_adapter
-      - ./model-api/inference_api/.env
+      - ./model-inference/model_configs/.env.bert_adapter
+      - ./model-inference/model_inference/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -413,15 +422,19 @@ services:
       - redishost
 
   roberta_worker:
-    image: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
-    command: celery -A tasks worker -Q roberta-base --loglevel=info
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      dockerfile: model-inference/dockerfiles/transformer/Dockerfile
+    command: celery -A model_inference.tasks worker -Q roberta-base --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
     env_file:
-      - ./model-api/inference_api/.env.roberta_adapter
-      - ./model-api/inference_api/.env
+      - ./model-inference/model_configs/.env.roberta_adapter
+      - ./model-inference/model_inference/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -443,19 +456,20 @@ services:
       - redishost
 
   qagnn_worker:
-    image: #@ "ukpsquare/square-model-api-graph-transformer:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-graph-transformer:" + data.values.tag
     build:
-      context: ./model-api/inference_api/dockerfiles/graph_transformer
+      context: ./model-inference
+      dockerfile: ./model-inference/model_inference/dockerfiles/graph_transformer/Dockerfile
       target: build
-    command: celery -A tasks worker -Q qagnn --loglevel=info
+    command: celery -A model_inference.tasks worker -Q qagnn --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
       - model_storage:/model_storage
     env_file:
-      - ./model-api/inference_api/.env.qagnn
-      - ./model-api/inference_api/.env
+      - ./model-inference/model_configs/.env.qagnn
+      - ./model-inference/model_inference/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
