@@ -1,14 +1,13 @@
 ## This is the dockerfile template for onnx based model
-FROM ukpsquare/square-model-api-base-model:latest as base
+FROM ukpsquare/square-model-api-base-model:latest as build
 
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
-ENV MODEL onnx
 
-WORKDIR /inference_api
+WORKDIR /app
 
-COPY ./dockerfiles/$MODEL/requirements.txt ./
-RUN pip install -r requirements.txt
+COPY ./dockerfiles/onnx/requirements.txt ./requirements.onnx.txt
+RUN pip install -r requirements.onnx.txt
 
 
 ## Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
@@ -39,13 +38,3 @@ RUN pip install -r requirements.txt
 #    --cov-report=xml:test-reports/coverage.xml \
 #    --cov-report=html:test-reports/coverage.html; \
 #    echo $? > test-reports/pytest.existcode
-
-# Deployment stage
-FROM base as build
-
-COPY ./app ./app
-COPY main.py main.py
-COPY logging.conf logging.conf
-COPY ./tasks tasks
-
-EXPOSE 8000

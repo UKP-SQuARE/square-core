@@ -13,3 +13,4 @@ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0
 git+https://github.com/UKP-SQuARE/elk-json-formatter@v0.0.2    # ELK logger
 filelock==3.4.2
 httpx
+nltk
