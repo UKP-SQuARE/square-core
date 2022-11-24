@@ -27,9 +27,10 @@ EXPOSE 9001
 # run the tests
 FROM base as test
 
+COPY ./requirements.dev.txt ./requirements.dev.txt
+RUN pip install -r requirements.dev.txt
+
 COPY ./tests tests
-COPY . ./
-RUN pip install pytest pytest-cov pytest-asyncio
 RUN mkdir test-reports
 RUN PYTHONPATH=./ pytest \
     --junitxml=test-reports/junit.xml \
