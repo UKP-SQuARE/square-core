@@ -44,8 +44,8 @@
             </div>
           </div>
           <div class="container" style="height: 20em; overflow-y: scroll;">
-            <div class="row row-cols" >
-              <div class="col col-sm-4 mb-2" v-for="(skill, index) in filteredSkills" :key="skill.id">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3" >
+              <div class="col mb-2" v-for="(skill, index) in filteredSkills" :key="skill.id">
                 <div class="d-flex flex-wrap align-content-center w-100 h-100">
                   <input class="btn-check" type="checkbox"
                       v-on:input="selectSkill(skill.id, index)"
