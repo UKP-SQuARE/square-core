@@ -17,11 +17,11 @@
               </div> <!-- end search col -->
               
               <div class="col-sm text-end">
-                <label for="btn_group_task">Filter by task: </label>
+                <label for="btn_group_task">Filter by task: &nbsp;</label>
                 <div class="btn-group btn-group-sm flex-wrap" id="btn_group_task" role="group" aria-label="Filter by task">
 
                   <input type="radio" v-model="chosenSkillType" value="span-extraction" class="btn-check" name="btnradio" id="extractive_btn" autocomplete="off">
-                  <label class="btn btn-outline-primary ms-2" for="extractive_btn">Extractive</label>
+                  <label class="btn btn-outline-primary" for="extractive_btn">Extractive</label>
 
                   <input type="radio"  v-model="chosenSkillType" value="multiple-choice" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
                   <label class="btn btn-outline-primary" for="btnradio2">Multiple Choice</label>
