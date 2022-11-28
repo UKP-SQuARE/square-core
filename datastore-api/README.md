@@ -17,6 +17,7 @@ We now have a [tutorial&exercises](https://docs.google.com/document/d/1r-CeFB7jK
 
 For access to the Datastore API for adding new datastores, please refer to [this notebook](https://colab.research.google.com/drive/1siJPwcl-UcvBYY-JhQIzS7i5obxo51hN?usp=sharing) as an example.
 
+This setup part of this README will be deprecated. Please refer to https://github.com/UKP-SQuARE/square-core/tree/local-deploy-minimal for local deployment.
 ## Quick (production) setup
 
 1. Open the [docker-compose.yml](docker-compose.yml). Find the service declaration for `datastore_api` and uncomment it. In the `environment` section, optionally set an API key and the connection to the Model API.
