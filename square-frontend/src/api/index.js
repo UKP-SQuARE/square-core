@@ -8,6 +8,7 @@ import axios from 'axios'
  * URLs to the SQuARE backend servers
  */
 const SKILL_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
+const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`
 /**
  * Get a list of available skill types.
  * @param {Object} headers optional authentication header
@@ -21,7 +22,7 @@ export function getSkillTypes(headers) {
  * @param {Object} headers optional authentication header
  */
  export function getDataSets(headers) {
-    return axios.get(`${SKILL_URL}/data-sets`, { headers: headers })
+    return axios.get(`${EVALUATOR_URL}/dataset`, { headers: headers })
 }
 
 /**

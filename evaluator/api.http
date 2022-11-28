@@ -1,0 +1,35 @@
+@hostname = localhost:8081
+@path_prefix = /api
+@token = eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.kQiTLd8Ph3Lqlhic8N7zosApBGyY2ZiiH1vCNeYcOuUMpXtxZgm8UFkFb9QgThnqWzr7dbN9d8VwiTcP8p1n4JpaQqqIacv_4mYUrOHQO5i87OF-nCfqukgSJn4lwUqGywftErLr2bZfl_zVoKMb7xMM4V-UYUOdiXLsbuc-L4idpk1-BbzZMqnOk4A6ELLGugeL1G083ojG56QfppInp1dcR1wsLzFovz2NJr2gv5rZA8fNCc1zp6Ir8WnAILyd_e1iuuh1gMPIU_SCTysmOANc0yj3K-qrs3alrtXMJowC--Nd0h5NTke0LCFk2oNjt1EqGMogYEhFAmLKuThw9ijFxgdt7-cj-mmypFrqnD0bXq-X5CYY-ED0LN9fLde2qXL0DK-MPhpMWd7yRdzWSTjOmGMFTOBLcOP723y95zJkydTJSCpx0X9LI8LlDeMvtAdAQ1eSThpIRVT_kHssUWi-kZsGbuMNLY8JmrLxGd4KEQ1vG9T5XawdDn_U8Uu7l5yBA080m4cykdbc5D_FvMr_8m83eQ88NdByYnyYfz6dKmnXOYs2bw1MC2-PHAR5m5ddhzhJbJgSs1L_CeKD3qdZIEhORJF779FtgSi2GFbZ_Qs5lUW1CqsczaU9W4s3dzgfFquQB2ABGW42ewO2oD1lUF9XIRhC6iC_P7YdKwM
+### GET TOKEN
+# @name get_token
+# @prompt username
+# @prompt password
+POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+Host: {{hostname}}
+content-type: application/x-www-form-urlencoded
+
+client_id=square-api&grant_type=password&username={{username}}&password={{password}}
+
+
+### 
+# @name get_public_stuff
+GET {{path_prefix}}/example-noauth HTTP/1.1
+Host: {{hostname}}
+
+### 
+# @name get_example
+GET {{path_prefix}}/example HTTP/1.1
+Host: {{hostname}}
+
+### 
+# @name get_dataset
+GET {{path_prefix}}/dataset HTTP/1.1
+Host: {{hostname}}
+
+###
+# @name create_example
+POST {{path_prefix}}/example HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json

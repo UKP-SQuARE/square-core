@@ -135,15 +135,6 @@ def test_skill_types(client):
     assert isinstance(skill_types, list), type(skill_types)
 
 
-def test_data_sets(client):
-
-    response = client.get("/api/data-sets")
-    assert response.status_code == 200
-
-    data_sets = response.json()
-    assert isinstance(data_sets, list), type(data_sets)
-
-
 @pytest.mark.asyncio
 async def test_create_skill(pers_client: TestClient, skill_factory, token_factory):
 
