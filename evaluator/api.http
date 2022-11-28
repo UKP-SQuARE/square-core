@@ -22,14 +22,11 @@ Host: {{hostname}}
 GET {{path_prefix}}/example HTTP/1.1
 Host: {{hostname}}
 
-<<<<<<< HEAD
 ### 
 # @name get_dataset
 GET {{path_prefix}}/dataset HTTP/1.1
 Host: {{hostname}}
 
-=======
->>>>>>> ddf42a32ef466b2d6a458e22f49c2da4f5acc50b
 ###
 # @name create_example
 POST {{path_prefix}}/example HTTP/1.1
