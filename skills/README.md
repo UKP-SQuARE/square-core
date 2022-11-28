@@ -7,34 +7,36 @@ For a list of available skills, see 👉 [Publicly Available Skills](#publicly-a
 
 ## Add New Skills
 ### The Predict Function
-To create a new skill, only a predict function needs to be implemented. For facilitating this, we provide two packages: [SQuARE-skill-helpers*](https://github.com/UKP-SQuARE/square-skill-helpers) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The skill-helpers package facilitates the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
+To create a new skill, only a predict function needs to be implemented. For facilitating this, we provide three packages: [square-datastore-client](https://github.com/UKP-SQuARE/square-datastore-client), [square-model-client](https://github.com/UKP-SQuARE/square-model-client) and [SQuARE-skill-api](https://github.com/UKP-SQuARE/square-skill-api). The client packages facilitate the interaction with other SQuARE services, such as Datastores and Models. The skill-api package wraps the final predict function creating an API that can be accessed by SQuARE. Further, it provides dataclasses (pydantic) for input and output of the predict function.
 
 As mentioned above mainly a predict function, defining the pipeline needs to be implemented. 
 First, install the required packages:
 ```bash
-pip install git+https://github.com/UKP-SQuARE/square-skill-helpers.git@v0.0.6
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.18  
+pip install square-datastore-client
+pip install square-model-client
+pip install square-skill-api
 ```
 Next, we can implement the `predict` function:
 ```python3
 
 # import utility classes from `square_skill_api` and `square_skill_helpers`
 from square_skill_api.models import QueryOutput, QueryRequest
-from square_skill_helpers import ModelAPI, DataAPI
+from square_model_client import SQuAREModelClient
+from square_datastore_client import SQuAREDatastoreClient
 
-# create instances of the DataAPI and ModelAPI for interacting 
+# create instances of the SQuAREDatastoreClient and SQuAREModelClient for interacting 
 # with SQuAREs Datastores and Models
-data_api = DataAPI()
-model_api = ModelAPI()
+square_datastore_client = SQuAREDatastoreClient()
+square_model_client = SQuAREModelClient()
 
 # this is the standard input that will be given to every predict function. 
 # See the details in the `square_skill_api` package for all available inputs.
 async def predict(request: QueryRequest) -> QueryOutput:
 
     # Call the Datastores using the `data_api` object
-    data = await data_api(datastore_name="nq", index_name="dpr", query=request.query)
-    context = [d["document"]["text"] for d in data]
-    context_score = [d["score"] for d in data]
+    data_response = await square_datastore_client(datastore_name="nq", index_name="dpr", query=request.query)
+    context = [d["document"]["text"] for d in data_response]
+    context_score = [d["score"] for d in data_response]
 
     # prepare the request to the Model API. For details, see Model API docs 
     model_request = {
@@ -44,7 +46,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     }
 
     # Call Model using the `model_api` object
-    model_api_output = await model_api(
+    model_response = await square_model_client(
         model_name="bert-base-uncased", 
         pipeline="question-answering", 
         model_request=model_request
@@ -53,7 +55,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     # return an QueryOutput object created using the 
     # question-answering constructor
     return QueryOutput.from_question_answering(
-        model_api_output=model_api_output,
+        model_api_output=model_response,
         context=context,
         context_score=context_score
     )

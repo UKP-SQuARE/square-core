@@ -5,3 +5,4 @@ pytest-cov>=3.0.0
 pytest-mock>=3.7.0
 docker>=6.0.0
 ipdb
+httpx

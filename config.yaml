@@ -20,6 +20,8 @@ skills:
     author: ukp
   - name: qa-gnn
     author: ukp
+  - name: information-retrieval
+    author: ukp
 
 web_concurrency: 2
 
