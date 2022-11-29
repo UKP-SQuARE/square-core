@@ -1,4 +1,4 @@
-# :rocket: Overview: square-frontend
+# :rocket: Overview: frontend
 An user interface so that user ask questions, register their skills and perform skill training.
 
 This project is build with the [Vue Framework](https://vuejs.org/v2/guide/index.html).
@@ -77,62 +77,15 @@ __Train page__ (URL: /#/train/:id)
 * page to upload training data for a skill  
 * retrain skill
 
-## :triangular_flag_on_post: Screenshot of the demo
-:bell:<figure>
-  <figcaption><b>Homepage</b></figcaption><img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/home.PNG"> 
-</figure>
 
-:bell:<figure>
-     <figcaption><b>Register</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/userRegistration.PNG">
-</figure>
 
-:bell:<figure>
-     <figcaption><b>Login</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/login.PNG">
-</figure>
+### :computer: How to Deploy the Frontend on your Local 
 
-:bell:<figure>
-     <figcaption><b>Skills page</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/skills.PNG">
-</figure>
-:bell:<figure>
-     <figcaption><b>Train page</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/train_skill.PNG">
-</figure>
-:bell:<figure>
-     <figcaption><b>Create new skill</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/newskill.PNG">
-</figure>
-:bell:<figure>
-     <figcaption><b>Confirm Registration</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/emailConfirmation.PNG">
-</figure>
-:bell:<figure>
-     <figcaption><b>Forgot Password</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
-</figure>
-:bell:<figure>
-     <figcaption><b>Email Confirmation</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
-</figure>
-:bell:<figure>
-     <figcaption><b>Reset Password</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/resetEmailRequest.PNG">
-</figure>
+If you want to deploy only the frontend locally, you can do this:
 
-:bell:<figure>
-     <figcaption><b>Reset Password</b></figcaption>
-  <img
-  src="https://github.com/UKPLab/square-core/blob/master/doc/reset%20email.PNG">
-</figure>
+1. Clone https://github.com/UKP-SQuARE/square-core/
+2. cd frontend
+3. npm install
+4. npm run serve
+
+Now, you should be able to run the frontend of square on your local. The backend will still be working because it will access square.ukp-lab.de to perform all the API calls. The file .env.development tells the UI where is the backend, so you can change the values of those environment variables to localhost if you are deploying the full SQuARE on your local.

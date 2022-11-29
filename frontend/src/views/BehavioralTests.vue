@@ -137,7 +137,7 @@ import ExplainDetail from '../components/modals/ExplainDetail'
 import mixin from '../components/results/mixin'
 import { getSkill } from '../api'
 
-export default Vue.component('explainability-page', {
+export default Vue.component('behavioral-tests', {
   mixins: [mixin],
   data() {
     return {
@@ -180,6 +180,7 @@ export default Vue.component('explainability-page', {
     },
     showCheckList() {
       this.waiting = true
+      this.currentSkills = []
       let currentTests = []
       this.selectedSkills.forEach((skillId, index) => {
         if (skillId in this.checklistData) {

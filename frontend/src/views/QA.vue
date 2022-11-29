@@ -5,7 +5,7 @@
       QAGNN is intrinsically slower than the other skills. On average, it takes 20s to run. Please be patient.
     </div>
     <Query />
-    <Results v-if="isShowingResults" />
+    <Results v-if="isShowingResults && this.$store.state.inputMode" />
     <div v-else class="row">
       <div class="col-md-8 mx-auto mt-4 text-center">
         <div class="bg-light border rounded shadow p-5 text-center">

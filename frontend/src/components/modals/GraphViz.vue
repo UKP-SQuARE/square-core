@@ -10,7 +10,7 @@
           <div class="container">
             <div class="text-center">
               <h1>Q: {{this.$store.state.currentQuestion}} </h1>
-              <h4>Choices: {{this.choices}}</h4>
+              <h4>Choices: {{choices}} </h4>
             </div>
             
             <div class="row">
@@ -104,15 +104,13 @@ import tippy from 'tippy.js';
 export default {
   name: "DataFlow",
   data() {
-    // split this.$store.state.currentContext by \n
-    var context = this.$store.state.currentContext.split("\n");
-    var strContext = "1)";
+    var choices = "1)";
     // for each element in context, add a 1) space, 2) a comma, 3) a space
-    for (var i = 0; i < context.length; i++) {
-      strContext += " " + context[i] + ", " + (i+2).toString() + ")";
+    for (var i = 0; i < this.$store.state.currentChoices.length; i++) {
+      choices += " " + this.$store.state.currentChoices[i] + ", " + (i+2).toString() + ")";
     }
     // remove the last comma and number)
-    strContext = strContext.slice(0, -4);
+    choices = choices.slice(0, -4);
 
     return {
       loading: false,
@@ -125,7 +123,7 @@ export default {
       layoutName: "breadthfirst",
       showEdgeLabelsFlag: false,
       id2tip: {},
-      choices: strContext,
+      choices: choices,
     };
   },
   mounted() {
