@@ -52,7 +52,7 @@ const config = {
           },
            {
            routePath: "/api/models-inference/",
-           specUrl: "https://square.ukp-lab.de/api/facebook-dpr-question_encoder-single-nq-base/openapi.json",
+           specUrl: "https://square.ukp-lab.de/api/main/openapi.json",
           },
            {
            routePath: "/api/models-management/",

@@ -1,7 +1,7 @@
 import json
 
-import requests
 import pytest
+import requests
 from _pytest.monkeypatch import MonkeyPatch
 from keycloak import KeycloakAdmin
 from keycloak.exceptions import KeycloakGetError

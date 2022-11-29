@@ -17,6 +17,8 @@ REALM=${2:-"square"}
 KEYCLOAK_PASSWORD=${3:-$(generate_password)}
 POSTGRES_PASSWORD=${4:-$(generate_password)}
 MONGO_PASSWORD=${5:-$(generate_password)}
+RABBITMQ_PASSWORD=${6:-$(generate_password)}
+REDIS_PASSWORD=${7:-$(generate_password)}
 
 keycloak_get_admin_token () {
 	# returns an admin token from the master realm
@@ -224,9 +226,22 @@ if [ -f ./mongodb/.env ]; then
 	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./mongodb/.env)"    
 else
 	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./mongodb/.env.template > ./mongodb/.env
-	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./datastore-api/.env.template > ./datastore-api/.env
-	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./skill-manager/.env.template > ./skill-manager/.env
-	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./square-model-inference-api/management_server/.env.template > ./square-model-inference-api/management_server/.env
+fi
+
+if [ -f ./rabbitmq/.env ]; then
+	echo "./rabbitmq/.env already exists. Skipping."
+	eval "$(grep ^RABBITMQ_DEFAULT_PASS= ./rabbitmq/.env)"    
+else
+	sed -e "s/%%RABBITMQ_DEFAULT_PASS%%/$RABBITMQ_DEFAULT_PASS/g" ./rabbitmq/.env.template > ./rabbitmq/.env
+fi
+
+if [ -f ./redis/.env ]; then
+	echo "./redis/.env already exists. Skipping."
+	eval "$(grep ^REDIS_PASSWORD= ./redis/.env)"    
+else
+	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./redis/.env.template > ./redis/.env
+	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./.env.template > ./.env
+
 fi
 
 # get all servies that need to be registered as clients keycloak
@@ -251,15 +266,14 @@ docker-compose up -d traefik db keycloak
 echo "Setting up Authorizaton."
 while [ $(curl -s -k -L -o /dev/null -w "%{http_code}" "https://$SQUARE_URL/auth") -ne "200" ]; do
 	echo "Waiting for Keycloak to be ready."
-	sleep 8
+	sleep 4
 done
 
 keycloak_create_realm
 
 # create the skill-manager client that is able to create other clients
 SKILL_MANAGER_SECRET=$(keycloak_create_client_registration_client)
-sed -e "s/%%CLIENT_SECRET%%/$SKILL_MANAGER_SECRET/g" ./skill-manager/.env > ./skill-manager/.env.tmp
-mv ./skill-manager/.env.tmp ./skill-manager/.env
+sed -e "s/%%CLIENT_SECRET%%/$SKILL_MANAGER_SECRET/g" ./skill-manager/.env.template > ./skill-manager/.env
 
 # create clients in keycloak and save client secret
 for CLIENT_ID in ${CLIENTS[@]}; do

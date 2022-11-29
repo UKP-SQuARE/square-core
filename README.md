@@ -15,7 +15,10 @@
         <img alt="Repo" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
     </a>
     <a href="https://arxiv.org/abs/2203.13693">
-        <img alt="Paper" src="https://img.shields.io/badge/arXiv-2203.13693-b31b1b.svg">
+        <img alt="SQuARE v1" src="https://img.shields.io/badge/arXiv-SQuAREv1%202203.13693-b31b1b.svg">
+    </a>
+    <a href="https://arxiv.org/abs/2208.09316">
+        <img alt="SQuARE v2" src="https://img.shields.io/badge/arXiv-SQuAREv2%202208.09316-b31b1b.svg">
     </a>
 </p>
 
@@ -114,22 +117,25 @@ For a whole (open QA) skill pipeline, it requires 6 steps:
 }
 ``` -->
 
-The main contributors of this repository are:
-- [Tim Baumgärtner](https://github.com/timbmg), [Kexin Wang](https://github.com/kwang2049), [Rachneet Singh Sachdeva](https://github.com/Rachneet), [
-Max Eichler](https://github.com/maexe), [Gregor Geigle](https://github.com/gregor-ge), [Clifton Poth](https://github.com/calpt), [Hannah Sterz](https://github.com/hSterz)
+The current main contributors of this repository are:
+- [Tim Baumgärtner](https://github.com/timbmg), [Kexin Wang](https://github.com/kwang2049), [Rachneet Singh Sachdeva](https://github.com/Rachneet), [Haritz Puerto](https://github.com/HaritzPuerto), [Hao Zhang](https://github.com/HaoZ-Work), [Sewin Tariverdian](https://github.com/SevenDaysDA)
 
-Contact person: [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmstadt.de) (Skills and general questions), [Kexin Wang](mailto:kexin.wang.2049@gmail.com) (Datastores), [Rachneet Singh Sachdeva](mailto:sachdeva@ukp.informatik.tu-darmstadt.de) (Models)
+Contact person: [Haritz Puerto](mailto:puerto@ukp.informatik.tu-darmstadt.de) (UI and general questions), [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmstadt.de) (Skills), [Kexin Wang](mailto:kexin.wang.2049@gmail.com) (Datastores), [Rachneet Singh Sachdeva](mailto:sachdeva@ukp.informatik.tu-darmstadt.de) (Models), 
+
+Previous contributors:
+- [Max Eichler](https://github.com/maexe), [Gregor Geigle](https://github.com/gregor-ge), [Clifton Poth](https://github.com/calpt), [Hannah Sterz](https://github.com/hSterz)
 
 [https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
 
 Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
 
 ## Citation
+If you find our work useful, please consider citing our ACL and AACL papers.
 
-[ACL 2022 Demo Track](https://aclanthology.org/2022.acl-demo.2/).      
-```
+[SQuARE v1@ACL 2022 Demo Track](https://aclanthology.org/2022.acl-demo.2/).      
+```bibtex
 @inproceedings{baumgartner-etal-2022-ukp,
-    title = "{UKP}-{SQUARE}: An Online Platform for Question Answering Research",
+    title = "{UKP}-{SQ}u{ARE}: An Online Platform for Question Answering Research",
     author = {Baumg{\"a}rtner, Tim  and
       Wang, Kexin  and
       Sachdeva, Rachneet  and
@@ -151,6 +157,17 @@ Don't hesitate to send us an e-mail or report an issue, if something is broken (
     url = "https://aclanthology.org/2022.acl-demo.2",
     doi = "10.18653/v1/2022.acl-demo.2",
     pages = "9--22",
+}
+
+```
+[SQuARE v2@AACL 2022 Demo Track](https://arxiv.org/abs/2208.09316).      
+
+```bibtex
+@article{Sachdeva2022UKPSQuARE,
+  title={{UKP}-{SQ}u{ARE} v2 Explainability and Adversarial Attacks for Trustworthy QA},
+  author={Rachneet Sachdeva and Haritz Puerto and Tim Baumgartner and Sewin Tariverdian and Hao Zhang and Kexin Wang and Hossain Shaikh Saadi and Leonardo F. R. Ribeiro and Iryna Gurevych},
+  journal={arXiv preprint arXiv:2203.13693},
+  year={2022}
 }
 
 ```

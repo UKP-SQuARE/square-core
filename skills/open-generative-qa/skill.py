@@ -1,13 +1,13 @@
 import logging
 
 from square_skill_api.models import QueryOutput, QueryRequest
-
-from square_skill_helpers import ModelAPI, DataAPI
+from square_model_client import SQuAREModelClient
+from square_datastore_client import SQuAREDatastoreClient
 
 logger = logging.getLogger(__name__)
 
-model_api = ModelAPI()
-data_api = DataAPI()
+square_model_client = SQuAREModelClient()
+square_datastore_client = SQuAREDatastoreClient()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -20,14 +20,14 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     explain_kwargs = request.explain_kwargs or {}
 
-    data = await data_api(
+    data_response = await square_datastore_client(
         datastore_name=request.skill_args["datastore"],
         index_name=request.skill_args.get("index", ""),
         query=query,
     )
-    logger.info(f"Data API output:\n{data}")
-    context = [d["document"]["text"] for d in data]
-    context_score = [d["score"] for d in data]
+    logger.info(f"Data response:\n{data_response}")
+    context = [d["document"]["text"] for d in data_response]
+    context_score = [d["score"] for d in data_response]
 
     # prepared_input = [[query, c] for c in context]
     # model_request = {
@@ -57,13 +57,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
 
-    model_api_output = await model_api(
+    model_response = await square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="generation",
         model_request=model_request,
     )
-    logger.info(f"Model API output:\n{model_api_output}")
+    logger.info(f"Model response:\n{model_response}")
 
     return QueryOutput.from_generation(
-        model_api_output=model_api_output, context=context
+        model_api_output=model_response, context=context
     )

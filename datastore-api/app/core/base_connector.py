@@ -206,13 +206,14 @@ class BaseConnector(ABC):
     # --- Search ---
 
     @abstractmethod
-    async def search(self, datastore_name: str, query: str, n_hits=10) -> List[QueryResult]:
+    async def search(self, datastore_name: str, query: str, feedback_documents: List[str] = None, n_hits=10) -> List[QueryResult]:
         """Searches for documents.
 
         Args:
             datastore_name (str): Name of the datastore.
             query (str): Query to search for.
             n_hits (int): Number of hits to return.
+            feedback_documents (List[str]): List of relevant feedback documents
         """
         pass
 

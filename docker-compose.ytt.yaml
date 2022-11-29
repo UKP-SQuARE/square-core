@@ -2,11 +2,11 @@
 #@ load("@ytt:template", "template")
 ---
 #@ def skill_image_name(skill):
-#@ return "ukpsquare/skills-" + skill.name + ":" + data.values.tag
+#@ return "ukpsquare/skill-" + skill.name + ":" + data.values.tag
 #@ end
 
 #@ def skill_build(skill):
-#@ return {"context": "./skills", "dockerfile": "./" + skill.name + ".Dockerfile"}
+#@ return {"context": "./skills", "args": { "skill": skill.name}}
 #@ end
 
 #@ def skill_environment(skill):
@@ -67,13 +67,11 @@ VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
 VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+
 MODEL_API_IMAGE: #@ "ukpsquare/square-model-api"
 ONNX_VOLUME: model-api_onnx-models
+
 REALM: #@ data.values.realm
-CLIENT_ID: models
-REDIS_USER: default
-RABBITMQ_DEFAULT_USER: ukp
-MONGO_INITDB_ROOT_USERNAME: root
 MONGO_HOST: mongodb
 MONGO_PORT: 27017
 #@ end
@@ -110,6 +108,10 @@ services:
       #! Middleware redirect from HTTP to HTTPS
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=auth
+      - traefik.http.middlewares.auth.basicauth.users=admin:${SQUARE_ADMIN_PASSWORD}
     ports:
       - "80:80" 
       - "443:443"
@@ -121,7 +123,6 @@ services:
   keycloak:
     image: jboss/keycloak:16.1.1
     environment:
-      KEYCLOAK_USER: admin
       DB_VENDOR: postgres
       DB_ADDR: db
       DB_PORT: 5432
@@ -149,7 +150,6 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: square
       POSTGRES_DB: square
     env_file:
       - ./postgres/.env
@@ -158,8 +158,8 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build: ./square-frontend
-    image: #@ "ukpsquare/square-frontend:" + data.values.tag
+    build: ./frontend
+    image: #@ "ukpsquare/frontend:" + data.values.tag
     restart: always
     expose:
       - 80
@@ -170,8 +170,8 @@ services:
       - #@ template.replace(traefik_tls("frontend"))
       - #@ template.replace(frontend_traefik_redirect())
 
-  documentation:
-    image: #@ "ukpsquare/square-docs:" + data.values.tag
+  docs:
+    image: #@ "ukpsquare/docs:" + data.values.tag
     build: ./docs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -179,10 +179,10 @@ services:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.documentation.rule=PathPrefix(`/docs/`)"
-      - #@ template.replace(traefik_tls("documentation"))
+      - "traefik.http.routers.docs.rule=PathPrefix(`/docs/`)"
+      - #@ template.replace(traefik_tls("docs"))
 
-  skill_manager:
+  skill-manager:
     image: #@ "ukpsquare/skill-manager:" + data.values.tag
     build: 
       context: ./skill-manager
@@ -192,25 +192,23 @@ services:
     expose:
       - 8000
     env_file:
-      - ./skill-manager/.env
       - ./mongodb/.env
       - ./redis/.env
+      - ./skill-manager/.env
     environment:
+      API_PREFIX: skill-manager
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       REALM: #@ data.values.realm
-      CLIENT_ID: skill-manager
-      MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-      REDIS_USER: default
-      REDIS_HOST: redishost
+      REDIS_HOST: redis
       REDIS_PORT: 6379
     depends_on:
       - mongodb
-      - redishost
+      - redis
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("skill-manager"))
@@ -224,10 +222,6 @@ services:
       - mongo-dumps:/dumps
     expose:
       - 27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_HOST: mongodb
-      MONGO_PORT: 27017
     env_file:
       - ./mongodb/.env
 
@@ -237,24 +231,20 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
-    environment:
-      RABBITMQ_DEFAULT_USER: ukp
     env_file:
-      - ./model-manager/.env
+      - ./rabbitmq/.env
 
-  redishost:
-    hostname: redishost
+  redis:
     image: redis:latest
     ports:
-      - '6379:6379'
-    environment:
-      REDIS_USER: default
+      - 6379:6379
     env_file:
       - .env
+      - ./redis/.env
     command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
   maintaining_worker:
-    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-management:" + data.values.tag
     build:
       context: ./model-manager
       target: build
@@ -263,6 +253,9 @@ services:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
+      - ./mongodb/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
       - ./model-manager/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
@@ -271,23 +264,16 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       ONNX_VOLUME: model-api_onnx-models
       REALM: #@ data.values.realm
-      CLIENT_ID: models
-      REDIS_USER: default
-      RABBITMQ_DEFAULT_USER: ukp
-      MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
       CONFIG_VOLUME: square-core_model_configs
-    links:
-      - rabbit
-      - redishost
     depends_on:
       - maintaining
       - rabbit
-      - redishost
+      - redis
 
   maintaining:
-    image: #@ "ukpsquare/square-model-management-v2:" + data.values.tag
+    image: #@ "ukpsquare/model-management:" + data.values.tag
     command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     build: 
       context: ./model-manager
@@ -297,6 +283,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
+      - ./mongodb/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
       - ./model-manager/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
@@ -305,12 +294,9 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       ONNX_VOLUME: model-api_onnx-models
       REALM: #@ data.values.realm
-      CLIENT_ID: models
       CONFIG_PATH: /model_configs
-      MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
-      REDIS_USER: default
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -327,7 +313,8 @@ services:
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./model-api/inference_api/model_configs/.env.dpr
-      - ./model-api/inference_api/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -335,8 +322,6 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       CONFIG_PATH: /model_configs
       QUEUE: facebook-dpr-question_encoder-single-nq-base
-      REDIS_USER: default
-      RABBITMQ_DEFAULT_USER: ukp
       CONFIG_VOLUME: square-core_model_configs
     volumes:
       - ./.cache/:/etc/huggingface/.cache/
@@ -361,7 +346,8 @@ services:
       - model_configs:/model_configs
     env_file:
       - ./model-api/inference_api/model_configs/.env.dpr
-      - ./model-api/inference_api/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -369,18 +355,12 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
-      CLIENT_ID: models
       CONFIG_PATH: /model_configs
       QUEUE: facebook-dpr-question_encoder-single-nq-base
-      REDIS_USER: default
-      RABBITMQ_DEFAULT_USER: ukp
-    links:
-      - rabbit
-      - redishost
     depends_on:
       - maintaining
       - rabbit
-      - redishost
+      - redis
 
   bert_worker:
     image: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
@@ -391,7 +371,8 @@ services:
       - model_configs:/model_configs
     env_file:
       - ./model-api/inference_api/.env.bert_adapter
-      - ./model-api/inference_api/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -399,18 +380,12 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
-      CLIENT_ID: models
       CONFIG_PATH: /model_configs
       QUEUE: bert-base-uncased
-      REDIS_USER: default
-      RABBITMQ_DEFAULT_USER: ukp
-    links:
-      - rabbit
-      - redishost
     depends_on:
       - maintaining
       - rabbit
-      - redishost
+      - redis
 
   roberta_worker:
     image: #@ "ukpsquare/square-model-api-transformer:" + data.values.tag
@@ -421,7 +396,8 @@ services:
       - model_configs:/model_configs
     env_file:
       - ./model-api/inference_api/.env.roberta_adapter
-      - ./model-api/inference_api/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -429,21 +405,16 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
-      CLIENT_ID: models
       CONFIG_PATH: /model_configs
       QUEUE: roberta-base
-      REDIS_USER: default
-      RABBITMQ_DEFAULT_USER: ukp
-    links:
-      - rabbit
-      - redishost
     depends_on:
       - maintaining
       - rabbit
-      - redishost
+      - redis
 
   qagnn_worker:
     image: #@ "ukpsquare/square-model-api-graph-transformer:" + data.values.tag
+
     build:
       context: ./model-api/inference_api/dockerfiles/graph_transformer
       target: build
@@ -455,7 +426,8 @@ services:
       - model_storage:/model_storage
     env_file:
       - ./model-api/inference_api/.env.qagnn
-      - ./model-api/inference_api/.env
+      - ./rabbitmq/.env
+      - ./redis/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -463,22 +435,16 @@ services:
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
-      CLIENT_ID: models
       CONFIG_PATH: /model_configs
       QUEUE: qagnn
-      REDIS_USER: default
-      RABBITMQ_DEFAULT_USER: ukp
-    links:
-      - rabbit
-      - redishost
     depends_on:
       - maintaining
       - rabbit
-      - redishost
+      - redis
 
   datastore_api:
     privileged: true
-    image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
+    image: #@ "ukpsquare/datastore:" + data.values.tag
     build: 
       context: ./datastore-api
       target: build
@@ -488,6 +454,7 @@ services:
     ports:
       - "7000:7000"
     env_file:
+      - ./mongodb/.env
       - ./datastore-api/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
@@ -495,10 +462,8 @@ services:
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       ES_URL: http://datastore_es:9200
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-      CLIENT_ID: datastores-to-internal-services
-      REALM: square
+      REALM: #@ data.values.realm
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-      MONGO_INITDB_ROOT_USERNAME: root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
     labels:
@@ -511,7 +476,6 @@ services:
 
   datastore_es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
-    container_name: datastore_es01
     environment:
       - discovery.type=single-node
     volumes:
@@ -545,6 +509,21 @@ services:
     env_file: #@ skill_env_file(skill)
     environment: #@ skill_environment(skill)
   #@ end
+
+  dozzle:
+    image: amir20/dozzle:v4.0.1
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOZZLE_NO_ANALYTICS: "true"
+      DOZZLE_LEVEL: DEBUG
+      DOZZLE_BASE: /admin/logs
+    labels:
+      - traefik.enable=true
+      - #@ template.replace(traefik_tls("dozzle"))
+      - traefik.http.routers.dozzle.rule=PathPrefix(`/admin/logs`)
+      - traefik.http.routers.dozzle.middlewares=auth
 
 volumes:
   traefik-public-certificates:
