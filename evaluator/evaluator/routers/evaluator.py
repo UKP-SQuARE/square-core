@@ -6,10 +6,12 @@ from bson import ObjectId
 from evaluate import load
 from fastapi import APIRouter, Depends, Request
 from fastapi.exceptions import HTTPException
+from pydantic import ValidationError
 from square_auth.auth import Auth
 
 from evaluator import mongo_client
-from evaluator.models import DatasetResult, Metric
+from evaluator.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
+from evaluator.models import Metric, MetricResult, PredictionResult
 from evaluator.routers import client_credentials
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ async def evaluate(
     skill_id: str,
     dataset_name: str,
     metric_name: str,
+    dataset_handler: DatasetHandler = Depends(DatasetHandler),
     _token: str = Depends(client_credentials),
     _token_payload: Dict = Depends(auth),
 ):
@@ -33,25 +36,26 @@ async def evaluate(
         f"start evaluation with parameters: skill_id={skill_id}; dataset_name={dataset_name}; metric_name={metric_name}"
     )
 
-    if metric_name != "squad_v2":
+    # ToDo: Add support for other metrics
+    if metric_name != "squad":
         logger.debug("Unsupported metric name!")
-        raise HTTPException(
-            400, "Sorry, we currently only support the metric 'squad_v2'!"
-        )
+        raise HTTPException(400, "Sorry, we currently only support the metric 'squad'!")
 
     object_identifier = {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
 
+    # Load the metric from HuggingFace
     try:
         metric = load(metric_name)
     except FileNotFoundError:
         logger.debug(f"Metric with name='{metric_name}' not found!")
         raise HTTPException(404, f"Metric with name='{metric_name}' not found!")
 
+    # Load the predictions for the given `skill_id` and `dataset_name` from MongoDB
     try:
-        loaded_data = DatasetResult.from_mongo(
+        prediction_result = PredictionResult.from_mongo(
             mongo_client.client.evaluator.results.find_one(object_identifier)
         ).dict()
-        logger.debug(f"Data loaded: {loaded_data}")
+        logger.debug(f"Prediction loaded: {prediction_result}")
     except AttributeError:
         logger.debug(
             f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
@@ -61,46 +65,73 @@ async def evaluate(
             f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!",
         )
 
-    references = [
-        {
-            "answers": {
-                "text": d["reference_answers"]["text"],
-                "answer_start": d["reference_answers"]["answer_start"],
-            },
-            "id": d["id"],
-        }
-        for d in loaded_data["predictions"]
-    ]
-    logger.debug(f"Parsed references: {references}")
+    # Load the dataset from DatasetHandler
+    try:
+        dataset = dataset_handler.get_dataset(dataset_name)
+        logger.debug(f"Dataset loaded")
+    except DatasetDoesNotExistError:
+        logger.debug("Dataset does not exist!")
+        raise HTTPException(400, "Dataset does not exist!")
 
+    # We need to parse the predictions into metric format
     predictions = [
         {
-            "prediction_text": d["prediction"]["text"],
-            "no_answer_probability": d["prediction"]["no_answer_probability"],
-            "id": d["id"],
+            "id": pr["id"],
+            "prediction_text": pr["output"],
         }
-        for d in loaded_data["predictions"]
+        for pr in prediction_result["predictions"]
     ]
     logger.debug(f"Parsed predictions: {predictions}")
 
+    # Convert all prediction ids into set
+    prediction_ids = set([x["id"] for x in predictions])
+
+    # We need to parse the references into metric format
+    references = [
+        {"answers": d["answers"], "id": d["id"]}
+        for d in dataset
+        if d["id"] in prediction_ids
+    ]
+
+    # Execute metric
     start_time = datetime.datetime.now()
     m = metric.compute(predictions=predictions, references=references)
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
-
     logger.debug(f"Metric in {calculation_time} seconds calculated: {m}")
 
-    new_metrics = loaded_data["metrics"]
-    new_metrics[metric_name] = Metric(
-        metric_last_updated_at=datetime.datetime.now(),
-        metric_calculation_time=calculation_time,
+    metric_result_identifier = {"prediction_result": prediction_result["id"]}
+    try:
+        metric_result: MetricResult = (
+            MetricResult()
+            .from_mongo(
+                mongo_client.client.evaluator.results.find_one(metric_result_identifier)
+            )
+            .dict()
+        )
+
+        logger.debug(f"Metric result loaded: {metric_result}")
+
+    except (AttributeError, ValidationError):
+        logger.debug("ATTRIBUZTE ERROR")
+        metric_result = MetricResult(
+            prediction_result_id=prediction_result["id"], metrics={}
+        ).dict()
+
+    metric_result["calculation_time"] = calculation_time
+    metric_result["last_updated_at"] = datetime.datetime.now()
+
+    metric = Metric(
+        last_updated_at=datetime.datetime.now(),
+        calculation_time=calculation_time,
         results=m,
-    ).dict()
+    )
+    new_metrics = metric_result["metrics"]
+    new_metrics[metric_name] = metric.dict()
 
-    mongo_client.client.evaluator.results.update_one(
-        object_identifier,
-        {"$set": {"metrics": new_metrics}},
+    logger.debug(f"New Metric Result: {metric_result}")
+
+    mongo_client.client.evaluator.results.replace_one(
+        metric_result_identifier, metric_result, upsert=True
     )
 
-    return DatasetResult.from_mongo(
-        mongo_client.client.evaluator.results.find_one(object_identifier)
-    )
+    return metric_result

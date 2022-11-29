@@ -12,12 +12,7 @@ from square_auth.auth import Auth
 from evaluator import mongo_client
 from evaluator.core import DatasetHandler
 from evaluator.core.dataset_handler import DatasetDoesNotExistError
-from evaluator.models import (
-    DatasetResult,
-    Prediction,
-    PredictionAnswer,
-    ReferenceAnswer,
-)
+from evaluator.models import Prediction, PredictionResult
 from evaluator.routers import client_credentials
 
 logger = logging.getLogger(__name__)
@@ -72,39 +67,29 @@ async def predict(
         predictions.append(
             Prediction(
                 id=reference_data["id"],
-                context=reference_data["context"],
-                question=reference_data["question"],
-                reference_answers=ReferenceAnswer(
-                    text=reference_data["answers"]["text"],
-                    answer_start=reference_data["answers"]["answer_start"],
-                ),
-                prediction=PredictionAnswer(
-                    text=prediction_response["prediction_output"]["output"],
-                    no_answer_probability=1
-                    - prediction_response["prediction_output"]["output_score"],
-                ),
+                output=prediction_response["prediction_output"]["output"],
+                output_score=prediction_response["prediction_output"]["output_score"],
             )
         )
 
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
     logger.debug(f"Prediction finished in {calculation_time} seconds: {predictions}")
 
-    dataset_result = DatasetResult(
+    prediction_result = PredictionResult(
         skill_id=ObjectId(skill_id),
         dataset_name=dataset_name,
-        predictions_last_updated_at=datetime.datetime.now(),
-        predictions_calculation_time=calculation_time,
+        last_updated_at=datetime.datetime.now(),
+        calculation_time=calculation_time,
         predictions=predictions,
-        metrics={},
     )
 
     mongo_client.client.evaluator.results.replace_one(
         {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name},
-        dataset_result.dict(),
+        prediction_result.dict(),
         upsert=True,
     )
 
     logger.info(f"Data saved in database")
 
     response.status_code = 201
-    return dataset_result
+    return prediction_result
