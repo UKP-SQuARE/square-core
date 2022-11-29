@@ -84,7 +84,6 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
 #  "task_kwargs": {},
-#  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
 #  "adapter_name": "AdapterHub/roberta-base-pf-squad"
 #}
 
@@ -193,16 +192,8 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
 #  "task_kwargs": {},
-#  "attack_kwargs":{"method":"sub_span", "saliency_method": "simple_grads", "max_tokens":15},
 #  "adapter_name": "AdapterHub/roberta-base-pf-boolq"
 #}
-
-###
-
-## @name task_output
-#GET {{domain_dev}}/api/main/task_result/117c8c92-757f-4637-9cf7-2e00df2f87a8
-#Authorization: Bearer {{auth_token}}
-#Content-Type: application/json
 
 
 ###
@@ -246,7 +237,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name remove_model
-#DELETE {{domain_dev}}/api/models/remove/deepset/roberta-base-squad2
+#DELETE {{domain_dev}}/api/models/remove/roberta-base-3
 #Authorization: Bearer {{auth_token}}
 
 
@@ -268,4 +259,63 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ## @name update_db
 #PUT {{domain_dev}}/api/models/db/update
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+# @name deploy_model
+POST {{domain_dev}}/api/models/deploy
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "identifier": "tweac_16",
+  "model_name": "UKP-SQuARE/tweac_16",
+  "model_type": "transformer",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 512,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "from_config",
+  "return_plaintext_arrays": false
+}
+
+
+###
+
+## @name tweac
+#POST {{domain_dev}}/api/main/UKP-SQuARE/tweac_16/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input":
+#  ["do iran and afghanistan speak the same language?"],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+
+###
+
+## @name task_output
+#GET {{domain_dev}}/api/main/task_result/4fb39516-cd0c-44c2-bc77-ca321a7a06b2
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+
+
+###
+
+## @name get_model_health
+#GET {{domain_dev}}/api/models/deployed-model-workers
+#Authorization: Bearer {{auth_token}}
+
+###
+
+## @name get_model_stats
+#GET {{domain_dev}}/api/main/bert-base-uncased/stats
 #Authorization: Bearer {{auth_token}}

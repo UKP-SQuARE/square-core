@@ -457,7 +457,6 @@ class Transformer(Model):
         elif method == "attention":
             attn = prediction["attentions"][-1]
             weights = attn[:, :, 0, :].mean(1)
-            # print("weights: ", weights.cpu().detach().numpy())
             # grads["grad_input_1"] = weights.cpu().detach().numpy()
             for value in range(len(weights)):
                 input_key = "grad_input_" + str(value)
@@ -469,7 +468,6 @@ class Transformer(Model):
             handles: List = self._register_forward_hooks_attn(attentions_list)
             try:
                 grads = self.get_gradients(request, method, **kwargs)
-                # print(grads["grad_input_1"][:, :, 0, :].mean(1))
             finally:
                 for handle in handles:
                     handle.remove()
@@ -833,7 +831,6 @@ class Transformer(Model):
                     # new added paramter in process_ourput method
                     attack_method=attack_method,
                 )
-                # print(word_imp)
                 task_outputs["attributions"] = word_imp
 
             if (
@@ -907,7 +904,6 @@ class Transformer(Model):
             predictions.model_outputs.pop("attentions", None)
             predictions.contexts = contexts
             predictions.adversarial["indices"] = indices
-        # logger.info(predictions)
         return predictions
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:

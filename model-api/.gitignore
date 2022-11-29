@@ -143,3 +143,6 @@ inference_api/tasks/inference/transformer_legacy.py
 
 # test data envs
 inference_api/http-client.env.json
+
+inference_api/model_configs/.env.tweac
+inference_api/tasks/inference/models_playground.py

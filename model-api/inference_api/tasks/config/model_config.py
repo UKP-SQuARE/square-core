@@ -82,9 +82,10 @@ class ModelConfig(Mapping):
             transformers_cache=self.transformers_cache,
         )
 
-    def update(self):
-        with open(f"{CONFIG_PATH}/{IDENTIFIER}.json", "r") as f:
+    def update(self, identifier: str=IDENTIFIER):
+        with open(f"{CONFIG_PATH}/{identifier}.json", "r") as f:
             config = json.load(f)
+
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
         self.model_path = config["model_path"]
@@ -171,6 +172,5 @@ def set_test_config(
 
 if os.getenv("TEST", 0) == "1":
     TEST_MODEL_PATH = os.getenv("TEST_MODEL_PATH", "./model4test")
-
     set_test_config(TEST_MODEL_PATH, True, 8, "adapter", 512)
     model_config.save(IDENTIFIER)

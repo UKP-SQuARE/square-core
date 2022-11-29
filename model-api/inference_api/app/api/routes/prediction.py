@@ -168,7 +168,7 @@ async def statistics(identifier: str, hf_username: str = None) -> ModelStatistic
     Returns the statistics of the model
     :return: the ModelStatistics for the model
     """
-    logger.info("Getting statistics for ")
+    logger.info(f"Getting statistics for {identifier}")
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
     return get_statistics(identifier)
@@ -210,6 +210,6 @@ def get_statistics(identifier):
     """
     logger.info("Reloading config")
     model_config = ModelConfig.load_from_file(identifier)
-    model_config.update()
+    model_config.update(identifier)
     logger.info(model_config)
     return model_config.to_statistics()
