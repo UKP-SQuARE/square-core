@@ -4,6 +4,7 @@ from typing import Union
 
 import datasets
 from datasets import Dataset, DatasetDict, DownloadMode, Split
+from evaluator.core.dataset_formatter import DatasetFormatter
 from evaluator.settings import DatasetHandlerSettings
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class DatasetDoesNotExistError(Exception):
 class DatasetHandler:
     def __init__(self) -> None:
         self.settings = DatasetHandlerSettings()
+        self.dataset_formatter = DatasetFormatter()
 
     def get_dataset(self, dataset_name: str) -> Union[Dataset, DatasetDict]:
         """
@@ -84,3 +86,6 @@ class DatasetHandler:
         )
         dataset.save_to_disk(self.settings.dataset_dir + dataset_name)
         return dataset
+
+    def to_generic_format(self, dataset, dataset_metadata, sample_ids=None):
+        return self.dataset_formatter.format(dataset, dataset_metadata, sample_ids)

@@ -12,14 +12,14 @@ from square_skill_api.models import PredictionOutput
 
 from evaluator import mongo_client
 from evaluator.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
+from evaluator.core.metric_formatters import Formatter, MetricFormattingError
 from evaluator.models import (
     ExtractiveDatasetSample,
-    ExtractiveDatasetSampleAnswer,
     Metric,
     MetricResult,
+    MultipleChoiceDatasetSample,
     PredictionResult,
 )
-from evaluator.prediction_formatters import PredictionFormatter
 from evaluator.routers import client_credentials
 
 logger = logging.getLogger(__name__)
@@ -43,11 +43,6 @@ async def evaluate(
     logger.debug(
         f"start evaluation with parameters: skill_id={skill_id}; dataset_name={dataset_name}; metric_name={metric_name}"
     )
-
-    # ToDo: Add support for other metrics
-    # if metric_name != "squad":
-    #    logger.error("Unsupported metric name!")
-    #    raise HTTPException(400, "Sorry, we currently only support the metric 'squad'!")
 
     object_identifier = {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
 
@@ -78,23 +73,36 @@ async def evaluate(
         raise HTTPException(400, "Dataset does not exist!")
 
     # map predictions into correct format (from skill output format to metric format)
-    predictions, sample_ids = PredictionFormatter().format(
+    predictions, sample_ids = Formatter().format_predictions(
         metric_name, prediction_result.predictions
     )
-    logger.debug(f"Predictions formatted for metric: {predictions}")
-    logger.debug(f"Sample-IDs: {sample_ids}")
 
-    references = format_references(metric_name, dataset_metadata, dataset, sample_ids)
-    # We need to parse the references into metric format
-    """references = [
-        {"answers": sample["answers"], "id": sample["id"]}
-        for sample in dataset
-        if sample["id"] in sample_ids
-    ]"""
+    # map the dataset into a generic format
+    references = dataset_handler.to_generic_format(
+        dataset, dataset_metadata, sample_ids
+    )
+    # map references into correct format (from generic dataset format to metric format)
+    try:
+        references = Formatter().format_references(metric_name, references)
+    except MetricFormattingError as e:
+        logger.error(f"{e}")
+        raise HTTPException(
+            500,
+            f"The dataset '{dataset_name}' cannot be evaluated on metric '{metric_name}'.",
+        )
+
+    logger.debug(f"predictions: {predictions}")
+    logger.debug(f"references: {references}")
 
     # Execute metric
     start_time = datetime.datetime.now()
-    m = metric.compute(predictions=predictions, references=references)
+    try:
+        m = metric.compute(predictions=predictions, references=references)
+    except ValueError as e:
+        msg = f"Could not evaluate metric '{metric_name}' on dataset '{dataset_name}': {e}"
+        logger.error(msg)
+        raise HTTPException(400, msg)
+
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
 
     metric_result_identifier = {"prediction_result_id": prediction_result.id}
@@ -123,68 +131,7 @@ async def evaluate(
         metric_result_identifier, metric_result.mongo(), upsert=True
     )
 
-
-def format_references(metric_name, dataset_metadata, dataset, sample_ids):
-    if dataset_metadata["skill-type"] not in ["extractive-qa", "multiple-choice"]:
-        skill_type = dataset_metadata["skill-type"]
-        raise HTTPException(
-            400, f"Evaluation of '{skill_type}' datasets is currently not supported."
-        )
-
-    if dataset_metadata["skill-type"] == "extractive-qa":
-        dataset = map_extractive_dataset(dataset_metadata, dataset)
-    elif dataset_metadata["skill-type"] == "multiple-choice":
-        dataset = dataset.map(quail_map)
-
-    return [
-        dataset[0],
-        dataset[1],
-        dataset[2],
-        dataset[3],
-        dataset[4],
-        dataset[5],
-        dataset[6],
-        dataset[7],
-    ]
-
-
-def map_extractive_dataset(dataset_metadata, dataset):
-    samples = []
-    for sample in dataset:
-        attrs = dataset_metadata["mapping"]["answer-text-column"].split(".")
-        answer_texts = sample[attrs[0]]
-        if len(attrs) > 1:
-            answer_texts = sample[attrs[0]][attrs[1]]
-
-        try:
-            attrs = dataset_metadata["mapping"]["answer-start-column"].split(".")
-            answer_starts = sample[attrs[0]]
-            if len(attrs) > 1:
-                answer_starts = sample[attrs[0]][attrs[1]]
-        except KeyError:
-            answer_starts = False
-
-        formatted_answers = []
-        for answer_index, _ in enumerate(answer_texts):
-            if not answer_starts:
-                start = sample[dataset_metadata["mapping"]["context-column"]].index(
-                    answer_texts[answer_index]
-                )
-            else:
-                start = answer_starts[answer_index]
-            a = ExtractiveDatasetSampleAnswer(
-                text=answer_texts[answer_index], answer_start=start
-            )
-            formatted_answers.append(a)
-
-        d = ExtractiveDatasetSample(
-            id=sample[dataset_metadata["mapping"]["id-column"]],
-            answers=formatted_answers,
-        )
-
-        logger.debug(f"Formatted extractive-qa sample {d.dict()}")
-        samples.append(d.dict())
-    return samples
+    return metric
 
 
 def get_dataset_metadata(dataset_name):
@@ -197,21 +144,45 @@ def get_dataset_metadata(dataset_name):
                 "question-column": "question",
                 "context-column": "context",
                 "answer-text-column": "answers.text",
-                "answer-start-column": "answers.answer_start",
             },
         }
     elif dataset_name == "quoref":
         return {
             "name": "quoref",
             "skill-type": "extractive-qa",
+            "metric": "squad",
             "mapping": {
                 "id-column": "id",
                 "question-column": "question",
                 "context-column": "context",
                 "answer-text-column": "answers.text",
-                "answer-start-column": "answers.answer_start",
+            },
+        }
+    elif dataset_name == "commonsense_qa":
+        return {
+            "name": "commonsense_qa",
+            "skill-type": "multiple-choice",
+            "metric": "accuracy",
+            "mapping": {
+                "id-column": "id",
+                "question-column": "question",
+                "choices-columns": ["choices.text"],
+                "choices-key-mapping-column": "choices.label",
+                "answer-index-column": "answerKey",
+            },
+        }
+    elif dataset_name == "cosmos_qa":
+        return {
+            "name": "cosmos_qa",
+            "skill-type": "multiple-choice",
+            "mapping": {
+                "id-column": "id",
+                "question-column": "question",
+                "choices-columns": ["answer0", "answer1", "answer2", "answer3"],
+                "choices-key-mapping-column": None,
+                "answer-index-column": "label",
             },
         }
     else:
-        logger.error("Unsupported dataset!!!!!")
-        raise HTTPException(400, "Unsupported dataset!!!!!")
+        logger.error("Unsupported dataset!")
+        raise HTTPException(400, "Unsupported dataset!")

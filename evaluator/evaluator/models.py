@@ -68,15 +68,20 @@ class MetricResult(MongoModel):
     metrics: dict = Field(..., description="Dictionary of all Metric objects")
 
 
-class ExtractiveDatasetSampleAnswer(BaseModel):
-    text: str = Field(
-        ..., description="The reference text that should be predicted by the model."
-    )
-    answer_start: float = Field(
-        ..., description="Start index of the text in the context."
-    )
-
-
 class ExtractiveDatasetSample(BaseModel):
     id: str = Field(..., description="ID of the sample in the dataset.")
-    answers: List[ExtractiveDatasetSampleAnswer] = Field(...)
+    question: str = Field(..., description="Question of the sample.")
+    context: str = Field(
+        ..., description="Context that contains the answer to the question."
+    )
+    answers: List[str] = Field(...)
+
+
+class MultipleChoiceDatasetSample(BaseModel):
+    id: str = Field(..., description="ID of the sample in the dataset.")
+    question: str = Field(..., description="Question of the sample.")
+    choices: List[str] = Field(...)
+    answer_index: int = Field(
+        ...,
+        description="Index of the choice-entry in choices that represents the correct answer.",
+    )
