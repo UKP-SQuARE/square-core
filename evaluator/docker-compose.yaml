@@ -7,6 +7,8 @@ services:
     command: uvicorn evaluator.main:app --reload --host 0.0.0.0 --port 8081 --log-config logging.conf
     expose:
     - 8081
+    ports:
+      - 8081:8081
     env_file:
     - .local.env
     environment:
