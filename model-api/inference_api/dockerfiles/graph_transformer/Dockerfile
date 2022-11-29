@@ -7,7 +7,7 @@ WORKDIR /inference_api
 
 COPY ./dockerfiles/graph_transformer/requirements.txt ./
 RUN pip install -r requirements.txt
-RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.11.0+cpu.html
+RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
 
 FROM base as test
 
