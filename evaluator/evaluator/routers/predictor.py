@@ -83,7 +83,7 @@ async def predict(
         predictions=predictions,
     )
 
-    mongo_client.client.evaluator.results.replace_one(
+    mongo_client.client.evaluator.predictions.replace_one(
         {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name},
         prediction_result.dict(),
         upsert=True,

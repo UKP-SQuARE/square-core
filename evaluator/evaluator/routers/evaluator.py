@@ -38,7 +38,7 @@ async def evaluate(
 
     # ToDo: Add support for other metrics
     if metric_name != "squad":
-        logger.debug("Unsupported metric name!")
+        logger.error("Unsupported metric name!")
         raise HTTPException(400, "Sorry, we currently only support the metric 'squad'!")
 
     object_identifier = {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
@@ -47,41 +47,35 @@ async def evaluate(
     try:
         metric = load(metric_name)
     except FileNotFoundError:
-        logger.debug(f"Metric with name='{metric_name}' not found!")
+        logger.error(f"Metric with name='{metric_name}' not found!")
         raise HTTPException(404, f"Metric with name='{metric_name}' not found!")
 
     # Load the predictions for the given `skill_id` and `dataset_name` from MongoDB
     try:
         prediction_result = PredictionResult.from_mongo(
-            mongo_client.client.evaluator.results.find_one(object_identifier)
-        ).dict()
+            mongo_client.client.evaluator.predictions.find_one(object_identifier)
+        )
         logger.debug(f"Prediction loaded: {prediction_result}")
     except AttributeError:
-        logger.debug(
-            f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
-        )
-        raise HTTPException(
-            404,
-            f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!",
-        )
+        msg = f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
+        logger.error(msg)
+        raise HTTPException(404, msg)
 
     # Load the dataset from DatasetHandler
     try:
         dataset = dataset_handler.get_dataset(dataset_name)
-        logger.debug(f"Dataset loaded")
     except DatasetDoesNotExistError:
-        logger.debug("Dataset does not exist!")
+        logger.error("Dataset does not exist!")
         raise HTTPException(400, "Dataset does not exist!")
 
     # We need to parse the predictions into metric format
     predictions = [
         {
-            "id": pr["id"],
-            "prediction_text": pr["output"],
+            "id": pr.id,
+            "prediction_text": pr.output,
         }
-        for pr in prediction_result["predictions"]
+        for pr in prediction_result.predictions
     ]
-    logger.debug(f"Parsed predictions: {predictions}")
 
     # Convert all prediction ids into set
     prediction_ids = set([x["id"] for x in predictions])
@@ -97,41 +91,31 @@ async def evaluate(
     start_time = datetime.datetime.now()
     m = metric.compute(predictions=predictions, references=references)
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
-    logger.debug(f"Metric in {calculation_time} seconds calculated: {m}")
 
-    metric_result_identifier = {"prediction_result": prediction_result["id"]}
-    try:
-        metric_result: MetricResult = (
-            MetricResult()
-            .from_mongo(
-                mongo_client.client.evaluator.results.find_one(metric_result_identifier)
-            )
-            .dict()
-        )
-
-        logger.debug(f"Metric result loaded: {metric_result}")
-
-    except (AttributeError, ValidationError):
-        logger.debug("ATTRIBUZTE ERROR")
+    metric_result_identifier = {"prediction_result_id": prediction_result.id}
+    metric_result = MetricResult.from_mongo(
+        mongo_client.client.evaluator.results.find_one(metric_result_identifier)
+    )
+    if metric_result is None:
+        logger.debug(f"No metric result found. Creating new one.")
         metric_result = MetricResult(
-            prediction_result_id=prediction_result["id"], metrics={}
-        ).dict()
-
-    metric_result["calculation_time"] = calculation_time
-    metric_result["last_updated_at"] = datetime.datetime.now()
+            prediction_result_id=prediction_result.id, metrics={}
+        )
+    else:
+        logger.debug(f"Existing metric result loaded: {metric_result}")
 
     metric = Metric(
         last_updated_at=datetime.datetime.now(),
         calculation_time=calculation_time,
         results=m,
     )
-    new_metrics = metric_result["metrics"]
-    new_metrics[metric_name] = metric.dict()
+    new_metrics = metric_result.metrics
+    new_metrics[metric_name] = metric
 
-    logger.debug(f"New Metric Result: {metric_result}")
+    logger.info(f"New Metric Result: {metric_result}")
 
     mongo_client.client.evaluator.results.replace_one(
-        metric_result_identifier, metric_result, upsert=True
+        metric_result_identifier, metric_result.mongo(), upsert=True
     )
 
     return metric_result
