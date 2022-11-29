@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+from .core.bing import BingMiddleware
 from .core.config import settings
 # from .core.auth import verify_api_key  # deprecated
 from .routers import api
@@ -20,6 +21,7 @@ def get_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(BingMiddleware)
 
     app.include_router(api.router, prefix=settings.API_PREFIX)
 

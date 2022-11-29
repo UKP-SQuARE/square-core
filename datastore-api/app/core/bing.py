@@ -3,14 +3,18 @@ import requests
 from trafilatura import fetch_url, extract
 from trafilatura.settings import use_config
 from ..models.query import QueryResult
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class BingSearch:
     """Wraps access to the Bing Search API."""
 
+    datastore_name = "bing_search"
+
     def __init__(self):
-        #TODO: make sure to set the environment variable BING_SEARCH_KEY in your .env file
-        self.subscription_key = os.environ.get("BING_SEARCH_KEY")
+        # TODO: make sure to set the environment variable BING_SEARCH_KEY in your .env file
+        self.subscription_key = "e7f1863c98084549951c5c80ee702d72"
         self.search_url = "https://api.bing.microsoft.com/v7.0/search"
         self.headers = {"Ocp-Apim-Subscription-Key": self.subscription_key}
 
@@ -27,7 +31,8 @@ class BingSearch:
         search_results = response.json()
         results = []
         new_config = use_config()
-        new_config.set('DEFAULT', 'EXTRACTION_TIMEOUT', "5") # 5 seconds timeout
+        # setting this to anything but zero will raise an exception during testing
+        new_config.set('DEFAULT', 'EXTRACTION_TIMEOUT', "0")
         for i, result in enumerate(search_results["webPages"]["value"]):
             doc = fetch_url(result["url"])
             text = extract(doc, include_comments=False, include_formatting=False,
@@ -42,3 +47,21 @@ class BingSearch:
                 id=result["url"]
             ))
         return results
+
+
+class BingMiddleware(BaseHTTPMiddleware):
+
+    def __init__(self, app) -> None:
+        super().__init__(app)
+
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        allowed_paths = [
+            {'verb': 'GET', 'path': f'/datastores/{BingSearch.datastore_name}/search'},
+            {'verb': 'GET', 'path': f'/datastores/{BingSearch.datastore_name}'},
+        ]
+        if path.startswith(f"/datastores/{BingSearch.datastore_name}") \
+        and not any([path == p['path'] and request.method == p['verb'] for p in allowed_paths]):
+            return Response(status_code=404, content="This operation is not supported for the Bing Search datastore.")
+
+        return await call_next(request)
