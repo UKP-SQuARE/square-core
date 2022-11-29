@@ -3,11 +3,11 @@ from typing import List
 
 from fastapi import APIRouter
 
-from skill_manager.models import DataSet
+from evaluator.models import DataSet
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/data-sets")
+router = APIRouter(prefix="/dataset")
 
 
 @router.get(
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/data-sets")
 )
 async def get_data_sets():
     """Returns a list of supported data sets."""
-    data_sets = [data_set.value for data_set in DataSet]
+    datasets = [dataset.value for dataset in DataSet]
 
-    logger.debug("get_data_sets {data_sets}".format(data_sets=data_sets))
-    return data_sets
+    logger.debug("get_data_sets {datasets}".format(datasets=datasets))
+    return datasets

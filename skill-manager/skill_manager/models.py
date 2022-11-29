@@ -19,26 +19,6 @@ class SkillType(str, Enum):
     information_retrieval = "information-retrieval"
 
 
-class DataSet(str, Enum):
-    """Enum for different data sets."""
-
-    CommonSenseQA = "CommonSenseQA"
-    CosmosQA = "CosmosQA"
-    DROP = "DROP"
-    HotpotQA = "HotpotQA"
-    MultiRC = "MultiRC"
-    NarrativeQA = "NarrativeQA"
-    NewsQA = "NewsQA"
-    OpenBioASQ = "OpenBioASQ"
-    QuAIL = "QuAIL"
-    QuaRTz = "QuaRTz"
-    Quoref = "Quoref"
-    RACE = "RACE"
-    SQuAD = "SQuAD"
-    Social_IQA = "Social-IQA"
-    BoolQ = "BoolQ"
-
-
 class SkillSettings(BaseModel):
     """Input Settings for the Skill."""
 

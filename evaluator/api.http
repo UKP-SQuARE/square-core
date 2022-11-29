@@ -1,4 +1,4 @@
-@hostname = localhost:8000
+@hostname = localhost:8081
 @path_prefix = /api
 @token = <ENTER TOKEN>
 ### GET TOKEN
@@ -28,6 +28,11 @@ GET {{path_prefix}}/example/1 HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
+
+### 
+# @name get_dataset
+GET {{path_prefix}}/dataset HTTP/1.1
+Host: {{hostname}}
 
 ###
 # @name create_example
