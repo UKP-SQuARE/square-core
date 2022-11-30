@@ -14,9 +14,9 @@ router = APIRouter(prefix="/dataset")
     "",
     response_model=List[str],
 )
-async def get_data_sets():
+async def get_datasets():
     """Returns a list of supported data sets."""
     datasets = [dataset.value for dataset in DataSet]
 
-    logger.debug("get_data_sets {datasets}".format(datasets=datasets))
+    logger.debug("get_datasets {datasets}".format(datasets=datasets))
     return datasets

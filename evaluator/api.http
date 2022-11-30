@@ -30,7 +30,7 @@ Authorization: Bearer {{token}}
 content-type: application/json
 
 ### 
-# @name get_dataset
+# @name get_datasets
 GET {{path_prefix}}/dataset HTTP/1.1
 Host: {{hostname}}
 
