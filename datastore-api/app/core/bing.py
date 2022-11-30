@@ -5,7 +5,7 @@ from trafilatura.settings import use_config
 from ..models.query import QueryResult
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-
+import asyncio
 
 class BingSearch:
     """Wraps access to the Bing Search API."""
@@ -33,10 +33,21 @@ class BingSearch:
         new_config = use_config()
         # setting this to anything but zero will raise an exception during testing
         new_config.set('DEFAULT', 'EXTRACTION_TIMEOUT', "0")
-        for i, result in enumerate(search_results["webPages"]["value"]):
-            doc = fetch_url(result["url"])
-            text = extract(doc, include_comments=False, include_formatting=False,
-                           no_fallback=True, include_tables=False, config=new_config)
+        urls = [result['url'] for i, result in enumerate(search_results["webPages"]["value"])]
+        async def get_text(url: str):
+            '''
+            Wrap the fetch() and extract() as an async function to speed up
+
+            '''
+            doc = await fetch_url(url)
+            text = await extract(doc, include_comments=False, include_formatting=False,
+                                 no_fallback=True, include_tables=False, config=new_config)
+            return text
+
+        texts = [get_text(url) for url in urls]
+
+
+        for i, (text, result) in enumerate(zip(texts, search_results["webPages"]["value"])):
             results.append(QueryResult(
                 document={
                     "id": result["url"],
@@ -46,6 +57,8 @@ class BingSearch:
                 score=(count - i) / count,
                 id=result["url"]
             ))
+
+
         return results
 
 
