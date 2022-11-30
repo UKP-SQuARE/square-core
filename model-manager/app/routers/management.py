@@ -8,6 +8,7 @@ import os
 import uuid
 from typing import List
 import docker
+import traceback
 
 import requests
 from celery.result import AsyncResult
@@ -364,16 +365,23 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
 
 
 @router.post("/db/deploy")
-async def start_from_db(token: str = Depends(client_credentials)):
+@router.post("/db/deploy/{hf_username}/{identifier}")
+async def start_from_db(identifier: str=None, hf_username: str=None, token: str = Depends(client_credentials)):
     """
     deploy models from the database
     """
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
     configs = await mongo_client.get_models_db()
-    deployed = []
-    task_ids = []
+    if identifier:
+        configs = [config for config in configs if config["IDENTIFIER"] == identifier]
+
+    deployed: list = []
+    task_ids: list = []
+
     for model in configs:
         response = requests.get(
-            url=f'{settings.API_URL}/api/{model["IDENTIFIER"]}/health/heartbeat',
+            url=f'{settings.API_URL}/api/main/{model["IDENTIFIER"]}/health/heartbeat',
             headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
