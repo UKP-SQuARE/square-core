@@ -45,7 +45,7 @@ jobs:
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/base_model/Dockerfile
+          file: ./model-inference/model_inference/dockerfiles/base_model/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
