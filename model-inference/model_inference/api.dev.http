@@ -11,21 +11,21 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
-## @name dpr
-#POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
-#Authorization: Bearer {{auth_token}}
-#Content-Type: application/json
-#
-#{
-#  "input": [
-#    "Do aliens exist?"
-#  ],
-#  "is_preprocessed": false,
-#  "preprocessing_kwargs": {},
-#  "model_kwargs": {},
-#  "task_kwargs": {},
-#  "adapter_name": ""
-#}
+# @name dpr
+POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "input": [
+    "Do aliens exist?"
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {},
+  "task_kwargs": {},
+  "adapter_name": ""
+}
 
 
 ###
