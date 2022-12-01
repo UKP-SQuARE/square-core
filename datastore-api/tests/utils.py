@@ -1,6 +1,7 @@
 import os
 import time
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
+from unittest.mock import MagicMock
 import docker
 from docker.models.containers import Container
 import requests
@@ -42,7 +43,7 @@ def start_container(
 def get_container_ip(name: str) -> str:
     client = docker.DockerClient()
     container = client.containers.get(name)
-    ip_add = container.attrs['NetworkSettings']['IPAddress']
+    ip_add = container.attrs["NetworkSettings"]["IPAddress"]
     return ip_add
 
 
@@ -56,10 +57,21 @@ def wait_for_up(url: str, ntries=100) -> None:
         except:
             time.sleep(1)
 
+
 def inside_container() -> bool:
     """
     Returns true if we are running inside a container.
 
     https://github.com/docker/docker/blob/a9fa38b1edf30b23cae3eade0be48b3d4b1de14b/daemon/initlayer/setup_unix.go#L25
     """
-    return os.path.exists('/.dockerenv')
+    return os.path.exists("/.dockerenv")
+
+
+def async_mock_callable(return_value: Any) -> MagicMock:
+
+    class AsyncMockCallable(MagicMock):
+
+        async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+            return return_value
+    
+    return AsyncMockCallable
