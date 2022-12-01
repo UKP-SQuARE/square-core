@@ -55,6 +55,8 @@ async def evaluate(
         prediction_result = PredictionResult.from_mongo(
             mongo_client.client.evaluator.predictions.find_one(object_identifier)
         )
+        if prediction_result is None:
+            raise AttributeError
         logger.debug(f"Prediction loaded: {prediction_result}")
     except AttributeError:
         msg = f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
