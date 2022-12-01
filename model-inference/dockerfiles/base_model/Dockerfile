@@ -24,6 +24,6 @@ COPY ./model_inference ./model_inference
 # We want to have a tasks module in the root of the package
 # for the sake of the celery workers
 COPY ./model_inference/tasks tasks
-COPY ./model_inference/logging.conf logging.conf
+COPY logging.conf logging.conf
 
 EXPOSE 8000
