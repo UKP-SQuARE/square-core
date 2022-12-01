@@ -1,7 +1,7 @@
 import logging
 
-from square_skill_api import get_app
 from skill import predict
+from square_skill_api import get_app
 
 logger = logging.getLogger(__name__)
 
