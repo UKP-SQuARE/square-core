@@ -1,5 +1,9 @@
+import os
+
 import pytest
-from model_manager.main import get_app, auth
+import torch
+from model_inference.main import auth, get_app
+
 
 @pytest.fixture(scope="session")
 def test_app():

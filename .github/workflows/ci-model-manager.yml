@@ -24,7 +24,7 @@ jobs:
         id: prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-management-v2"
+          IMAGE="ukpsquare/model-manager"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 

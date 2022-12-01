@@ -4,17 +4,17 @@ on:
   push:
     branches: [ master, model-api-v3 ]
     paths:
-      - "model-api/**"
+      - "model-inference/**"
       - ".github/**"
   pull_request:
     branches: [ master ]
     paths:
-      - "model-api/**"
+      - "model-inference/**"
       - ".github/**"
   workflow_dispatch:
 
 jobs:
-  model-api-base-model:
+  model-inference-base-model:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         id: base-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-api-base-model"
+          IMAGE="ukpsquare/model-inference-base-model"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
@@ -44,8 +44,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/base_model/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/base_model/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
@@ -57,7 +57,7 @@ jobs:
           docker image rm -f $(docker images -q)
 
 ################################# MODEL IMAGES ##################################
-  model-api-transformer:
+  model-inference-transformer:
     runs-on: ubuntu-latest
 
     steps:
@@ -66,7 +66,7 @@ jobs:
         id: transformer-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-api-transformer"
+          IMAGE="ukpsquare/model-inference-transformer"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
@@ -79,8 +79,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/transformer/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
@@ -115,8 +115,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/transformer/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
@@ -128,7 +128,7 @@ jobs:
           docker rm -f $(docker ps -a -q)
           docker image rm -f $(docker images -q)
 
-  model-api-sentence-transformer:
+  model-inference-sentence-transformer:
     runs-on: ubuntu-latest
 
     steps:
@@ -138,7 +138,7 @@ jobs:
         id: sentence-transformer-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-api-sentence-transformer"
+          IMAGE="ukpsquare/model-inference-sentence-transformer"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
@@ -147,12 +147,12 @@ jobs:
         with:
           install: true
 
-      - name: Build  sentence-transformers test image
+      - name: Build sentence-transformers test image
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
@@ -186,8 +186,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/sentence_transformer/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
@@ -198,7 +198,7 @@ jobs:
           docker rm -f $(docker ps -a -q)
           docker image rm -f $(docker images -q)
 
-  model-api-onnx:
+  model-inference-onnx:
     runs-on: ubuntu-latest
 
     steps:
@@ -208,7 +208,7 @@ jobs:
         id: onnx-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-api-onnx"
+          IMAGE="ukpsquare/model-inference-onnx"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
@@ -222,8 +222,8 @@ jobs:
 #        uses: docker/build-push-action@v3
 #        with:
 #          builder: ${{ steps.onnx-buildx.outputs.name }}
-#          context: ./model-api/inference_api
-#          file: ./model-api/inference_api/dockerfiles/onnx/Dockerfile
+#          context: ./model-inference/model_inference
+#          file: ./model-inference/dockerfiles/onnx/Dockerfile
 #          target: test
 #          load: true
 #          tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}-test
@@ -257,8 +257,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.onnx-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/onnx/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/onnx/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}, ${{ steps.onnx-prep.outputs.image }}:latest
@@ -269,7 +269,7 @@ jobs:
           docker rm -f $(docker ps -a -q)
           docker image rm -f $(docker images -q)
 
-  model-api-graph-transformer:
+  model-inference-graph-transformer:
     runs-on: ubuntu-latest
 
     steps:
@@ -279,7 +279,7 @@ jobs:
         id: graph-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/square-model-api-graph-transformer"
+          IMAGE="ukpsquare/model-inference-graph-transformer"
           echo "image=${IMAGE}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
@@ -292,8 +292,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/graph_transformer/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
@@ -328,8 +328,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
-          context: ./model-api/inference_api
-          file: ./model-api/inference_api/dockerfiles/graph_transformer/Dockerfile
+          context: ./model-inference/model_inference
+          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}, ${{ steps.graph-prep.outputs.image }}:latest

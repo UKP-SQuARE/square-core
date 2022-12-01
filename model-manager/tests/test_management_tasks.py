@@ -3,7 +3,7 @@ from time import sleep
 from unittest.mock import patch, MagicMock
 import docker
 
-from tasks.tasks import remove_model_task, remove_worker
+from model_manager.tasks.tasks import remove_model_task, remove_worker
 client = docker.from_env()
 
 class AsyncMock(MagicMock):
