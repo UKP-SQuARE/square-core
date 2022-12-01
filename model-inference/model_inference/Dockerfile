@@ -44,7 +44,7 @@ FROM base as build
 
 COPY main.py main.py
 COPY ../app square_model_inference
-COPY ../logging.conf logging.conf
+COPY logging.conf logging.conf
 
 COPY tasks tasks
 
