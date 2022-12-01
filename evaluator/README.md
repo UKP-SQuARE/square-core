@@ -66,7 +66,7 @@ You can see the logs of the skill manager by running:
 ```bash
 make logs
 ```
-You should now be able to interact with the skill manager using the [api.http](./api.http) file, through curl, or via the auto-generated ui at [localhost:8000/docs](http://localhost:8000/docs).
+You should now be able to interact with the skill manager using the [api.http](./api.http) file, through curl, or via the auto-generated ui at [localhost:8081/docs](http://localhost:8081/docs).
 
 Note, we run `unvicorn` with the `--reload` flag. Whenever you modify your code locally, it will restart the webserver to reflect the latest changes.
 
