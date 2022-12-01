@@ -11,6 +11,19 @@ class DatasetFormatter:
         self.supported_skill_types = ["extractive-qa", "multiple-choice"]
 
     def format(self, dataset, dataset_metadata, sample_ids=None):
+        """
+        Formats the given dataset into an universal (per skill-type) format.
+
+        Args:
+            dataset_name (str): Name of the dataset on huggingface.
+            dataset_metadata (dict): Metadata about the dataset.
+            sample_ids (List[str]): Optional list of sample-ids. When specified, only samples with the respective ids will be returned.
+                                    Otherwise all samples in the dataset will be returned.
+                                    The returned samples will be in the same order as the passed sample-ids.
+
+        Returns: List of samples in the dataset in an universal format depending on the datasets skill-type.
+        """
+
         if dataset_metadata["skill-type"] not in self.supported_skill_types:
             skill_type = dataset_metadata["skill-type"]
             raise ValueError(
@@ -22,51 +35,82 @@ class DatasetFormatter:
         elif dataset_metadata["skill-type"] == "multiple-choice":
             dataset = self.__map_multiple_choice_dataset(dataset_metadata, dataset)
 
-        # only get the correct samples (in the correct order) (TODO: optimize)
         if sample_ids is not None:
-            samples = []
-            for sample_id in sample_ids:
-                for sample in dataset:
-                    if sample["id"] == sample_id:
-                        samples.append(sample)
-                        break
-            logger.debug(f"SAMPLES: {len(samples)}")
+            samples = self.__get_samples_subset(dataset, sample_ids)
         else:
             samples = dataset
         return samples
 
-    def __extract(self, row, field_name):
+    def __get_value(self, obj, field_name):
+        """
+        Extracts the value of the given field name from the given object.
+
+        Returns: The value of specified field on the object. False if the field does not exist.
+        """
+        value = obj
         try:
-            field_names = field_name.split(".")
-            candidate = row[field_names[0]]
-            if len(field_names) > 1:  # nested
-                candidate = row[field_names[0]][field_names[1]]
+            for field_name in field_name.split("."):
+                value = value[field_name]
         except KeyError:
-            candidate = False
-        return candidate
+            value = False
+        return value
+
+    def __get_samples_subset(self, dataset, sample_ids):
+        """
+        Retrieves only the specified subset of samples from the given dataset.
+
+        Args:
+            dataset (List[]): Dataset in generic format.
+            sample_ids (List[str]): Metadata about the dataset.
+            sample_ids (List[str]): A list of sample-ids. Only samples with the respective ids will be returned.
+                                    The returned samples will be in the same order as the passed sample-ids.
+
+        Returns: List of samples from the dataset that are included in sample_ids.
+        """
+        subset = []
+        for sample_id in sample_ids:
+            for sample in dataset:
+                if sample["id"] == sample_id:
+                    subset.append(sample)
+                    break
+        return subset
 
     def __map_extractive_dataset(self, dataset_metadata, dataset):
-        extractive_qa_dataset = []
-        for sample in dataset:
-            # get a list of answer-texts and a list of answer-starts
-            answer_texts = self.__extract(
-                sample, dataset_metadata["mapping"]["answer-text-column"]
-            )
-            extractive_qa_dataset.append(
-                ExtractiveDatasetSample(
-                    id=sample[dataset_metadata["mapping"]["id-column"]],
-                    question=sample[dataset_metadata["mapping"]["question-column"]],
-                    context=sample[dataset_metadata["mapping"]["context-column"]],
-                    answers=answer_texts,
-                ).dict()
-            )
-        logger.debug(
-            f"Formatted extractive-qa samples {extractive_qa_dataset[0]}, {extractive_qa_dataset[1]}, {extractive_qa_dataset[2]}"
-        )
+        """
+        Takes an extractive-qa dataset and maps it to a list consisting of ExtractiveDatasetSample.
+
+        Args:
+            dataset_metadata (dict): Metadata about the dataset.
+            dataset: A multiple-choice dataset.
+
+        Returns:
+        :List[ExtractiveDatasetSample]: List of samples in ExtractiveDatasetSample format.
+        """
+        extractive_qa_dataset = [
+            ExtractiveDatasetSample(
+                id=sample[dataset_metadata["mapping"]["id-column"]],
+                question=sample[dataset_metadata["mapping"]["question-column"]],
+                context=sample[dataset_metadata["mapping"]["context-column"]],
+                answers=self.__get_value(
+                    sample, dataset_metadata["mapping"]["answer-text-column"]
+                ),
+            ).dict()
+            for sample in dataset
+        ]
         return extractive_qa_dataset
 
     def __map_multiple_choice_dataset(self, dataset_metadata, dataset):
-        multiple_choice_qa_dataset = []
+        """
+        Takes a multiple-choice dataset and maps it to a list consisting of MultipleChoiceDatasetSample.
+
+        Args:
+            dataset_metadata (dict): Metadata about the dataset.
+            dataset: A multiple-choice dataset.
+
+        Returns:
+        :List[MultipleChoiceDatasetSample]: List of samples in MultipleChoiceDatasetSample format.
+        """
+        multiple_choice_dataset = []
         for sample in dataset:
             choices = self.__get_choices_as_list(sample, dataset_metadata)
             multiple_choice_qa_dataset.append(
@@ -79,10 +123,7 @@ class DatasetFormatter:
                     ),
                 ).dict()
             )
-        logger.debug(
-            f"Formatted extractive-qa samples {multiple_choice_qa_dataset[0]}, {multiple_choice_qa_dataset[1]}, {multiple_choice_qa_dataset[2]}"
-        )
-        return multiple_choice_qa_dataset
+        return multiple_choice_dataset
 
     def __get_choices_as_list(self, sample, dataset_metadata) -> List[str]:
         """
@@ -93,7 +134,7 @@ class DatasetFormatter:
             dataset_metadata (dict): Metadata about the dataset that the sample is from.
 
         Returns:
-        :int: List of answer-choices.
+        :List[str]: List of answer-choices.
         """
 
         choices = []
@@ -101,7 +142,7 @@ class DatasetFormatter:
 
         if len(choices_column_names) == 1:
             # there is one column containing a dict, with one dict-entry containing a list of choices
-            choices = self.__extract(sample, choices_column_names[0])
+            choices = self.__get_value(sample, choices_column_names[0])
         elif len(choices_column_names) > 1:
             # there is one separate column per choice
             choices = [sample[column_name] for column_name in choices_column_names]
@@ -123,14 +164,14 @@ class DatasetFormatter:
         Returns:
         :int: Index of the choice that is the correct answer.
         """
-        answer_key = self.__extract(
+        answer_key = self.__get_value(
             sample, dataset_metadata["mapping"]["answer-index-column"]
         )
         if dataset_metadata["mapping"]["choices-key-mapping-column"] is None:
             # there is no key-mapping specified, so we assume numeric keys
             answer_keys = range(0, len(choices), 1)
         else:
-            answer_keys = self.__extract(
+            answer_keys = self.__get_value(
                 sample, dataset_metadata["mapping"]["choices-key-mapping-column"]
             )
         # get the position of the answer-key from the key-mapping

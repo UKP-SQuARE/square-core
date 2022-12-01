@@ -88,4 +88,16 @@ class DatasetHandler:
         return dataset
 
     def to_generic_format(self, dataset, dataset_metadata, sample_ids=None):
+        """
+        Formats the given dataset into an universal (per skill-type) format.
+
+        Args:
+            dataset_name (str): Name of the dataset on huggingface.
+            dataset_metadata (dict): Metadata about the dataset.
+            sample_ids (List[str]): Optional list of sample-ids. When specified, only samples with the respective ids will be returned.
+                                    Otherwise all samples in the dataset will be returned.
+                                    The returned samples will be in the same order as the passed sample-ids.
+
+        Returns: List of samples in the dataset in an universal format depending on the datasets skill-type.
+        """
         return self.dataset_formatter.format(dataset, dataset_metadata, sample_ids)
