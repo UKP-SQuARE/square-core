@@ -12,7 +12,7 @@ class DatasetFormatter:
 
     def format(self, dataset, dataset_metadata, sample_ids=None):
         """
-        Formats the given dataset into an universal (per skill-type) format.
+        Formats the given dataset into a generic (per skill-type) format.
 
         Args:
             dataset_name (str): Name of the dataset on huggingface.
@@ -113,7 +113,7 @@ class DatasetFormatter:
         multiple_choice_dataset = []
         for sample in dataset:
             choices = self.__get_choices_as_list(sample, dataset_metadata)
-            multiple_choice_qa_dataset.append(
+            multiple_choice_dataset.append(
                 MultipleChoiceDatasetSample(
                     id=sample[dataset_metadata["mapping"]["id-column"]],
                     question=sample[dataset_metadata["mapping"]["question-column"]],
