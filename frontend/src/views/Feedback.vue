@@ -12,7 +12,7 @@
             <h2 class="display-5">Share Your Thoughts</h2>
             <p class="lead fs-2">Do you have <span class="text-primary">thoughts</span> or <span class="text-primary">ideas</span>? Please send us an email!</p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
-              <a href="mailto:puerto@ukp.informatik.tu-darmstadt.de?subject=SQuARE Feedback" class="btn btn-outline-primary btn-lg px-4">Contact us</a>
+              <a href="mailto:haritz.puerto@tu-darmstadt.de?subject=SQuARE Feedback" class="btn btn-outline-primary btn-lg px-4">Contact us</a>
             </div>
           </div>
         </div>
