@@ -54,10 +54,14 @@ async def evaluate(
         raise HTTPException(404, f"Metric with name='{metric_name}' not found!")
 
     # Load the predictions for the given `skill_id` and `dataset_name` from MongoDB
-    prediction_result = PredictionResult.from_mongo(
-        mongo_client.client.evaluator.predictions.find_one(object_identifier)
-    )
-    if prediction_result is None:
+    try:
+        prediction_result = PredictionResult.from_mongo(
+            mongo_client.client.evaluator.predictions.find_one(object_identifier)
+        )
+        if prediction_result is None:
+            raise AttributeError
+        logger.debug(f"Prediction loaded: {prediction_result}")
+    except AttributeError:
         msg = f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
         logger.error(msg)
         raise HTTPException(404, msg)

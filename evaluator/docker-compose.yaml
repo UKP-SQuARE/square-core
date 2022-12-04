@@ -4,11 +4,11 @@ services:
     build:
       context: .
       target: build
-    command: uvicorn evaluator.main:app --reload --host 0.0.0.0 --port 8000 --log-config logging.conf
-    ports:
-    - 8000:8000
+    command: uvicorn evaluator.main:app --reload --host 0.0.0.0 --port 8081 --log-config logging.conf
     expose:
-    - 8000
+    - 8081
+    ports:
+      - 8081:8081
     env_file:
     - .local.env
     environment:

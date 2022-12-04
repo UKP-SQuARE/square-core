@@ -27,6 +27,6 @@ COPY tests tests
 COPY pytest.ini pytest.ini
 
 FROM base as build
-EXPOSE 8000
+EXPOSE 8081
 
-CMD ["uvicorn", "evaluator.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "logging.conf"]
+CMD ["uvicorn", "evaluator.main:app", "--host", "0.0.0.0", "--port", "8081", "--log-config", "logging.conf"]
