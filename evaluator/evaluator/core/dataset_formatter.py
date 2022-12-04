@@ -15,7 +15,7 @@ class DatasetFormatter:
         Formats the given dataset into a generic (per skill-type) format.
 
         Args:
-            dataset_name (str): Name of the dataset on huggingface.
+            dataset (:class:`Dataset` or :class:`DatasetDict`:): Dataset from huggingface.
             dataset_metadata (dict): Metadata about the dataset.
             sample_ids (List[str]): Optional list of sample-ids. When specified, only samples with the respective ids will be returned.
                                     Otherwise all samples in the dataset will be returned.
@@ -31,14 +31,13 @@ class DatasetFormatter:
             )
 
         if dataset_metadata["skill-type"] == "extractive-qa":
-            dataset = self.__map_extractive_dataset(dataset_metadata, dataset)
+            samples = self.__map_extractive_dataset(dataset, dataset_metadata)
         elif dataset_metadata["skill-type"] == "multiple-choice":
-            dataset = self.__map_multiple_choice_dataset(dataset_metadata, dataset)
+            samples = self.__map_multiple_choice_dataset(dataset, dataset_metadata)
 
         if sample_ids is not None:
-            samples = self.__get_samples_subset(dataset, sample_ids)
-        else:
-            samples = dataset
+            samples = self.__get_samples_subset(samples, sample_ids)
+
         return samples
 
     def __get_value(self, obj, field_name):
@@ -55,33 +54,32 @@ class DatasetFormatter:
             value = False
         return value
 
-    def __get_samples_subset(self, dataset, sample_ids):
+    def __get_samples_subset(self, samples, sample_ids):
         """
         Retrieves only the specified subset of samples from the given dataset.
 
         Args:
-            dataset (List[]): Dataset in generic format.
-            sample_ids (List[str]): Metadata about the dataset.
+            samples (List[]): List of samples in generic dataset-format.
             sample_ids (List[str]): A list of sample-ids. Only samples with the respective ids will be returned.
                                     The returned samples will be in the same order as the passed sample-ids.
 
-        Returns: List of samples from the dataset that are included in sample_ids.
+        Returns: List of samples from the passed samples that are included in sample_ids.
         """
         subset = []
         for sample_id in sample_ids:
-            for sample in dataset:
+            for sample in samples:
                 if sample["id"] == sample_id:
                     subset.append(sample)
                     break
         return subset
 
-    def __map_extractive_dataset(self, dataset_metadata, dataset):
+    def __map_extractive_dataset(self, dataset, dataset_metadata):
         """
         Takes an extractive-qa dataset and maps it to a list consisting of ExtractiveDatasetSample.
 
         Args:
+            dataset (:class:`Dataset` or :class:`DatasetDict`:): Extractive-qa dataset from huggingface.
             dataset_metadata (dict): Metadata about the dataset.
-            dataset: A multiple-choice dataset.
 
         Returns:
         :List[ExtractiveDatasetSample]: List of samples in ExtractiveDatasetSample format.
@@ -99,13 +97,13 @@ class DatasetFormatter:
         ]
         return extractive_qa_dataset
 
-    def __map_multiple_choice_dataset(self, dataset_metadata, dataset):
+    def __map_multiple_choice_dataset(self, dataset, dataset_metadata):
         """
         Takes a multiple-choice dataset and maps it to a list consisting of MultipleChoiceDatasetSample.
 
         Args:
+            dataset (:class:`Dataset` or :class:`DatasetDict`:): Multiple-choice dataset from huggingface.
             dataset_metadata (dict): Metadata about the dataset.
-            dataset: A multiple-choice dataset.
 
         Returns:
         :List[MultipleChoiceDatasetSample]: List of samples in MultipleChoiceDatasetSample format.
@@ -147,7 +145,7 @@ class DatasetFormatter:
             # there is one separate column per choice
             choices = [sample[column_name] for column_name in choices_column_names]
         else:
-            raise HTTPException(400, "Cannot map choices of multiple-choice dataset")
+            raise ValueError("Cannot map choices of multiple-choice dataset")
 
         return choices
 

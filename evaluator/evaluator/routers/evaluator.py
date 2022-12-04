@@ -78,21 +78,23 @@ async def evaluate(
     )
 
     # map the dataset into a generic format
-    references = dataset_handler.to_generic_format(
-        dataset, dataset_metadata, sample_ids
-    )
+    try:
+        references = dataset_handler.to_generic_format(
+            dataset, dataset_metadata, sample_ids
+        )
+    except ValueError as e:
+        logger.error(f"{e}")
+        raise HTTPException(400, f"{e}")
+
     # map references into correct format (from generic dataset format to metric format)
     try:
         references = Formatter().format_references(metric_name, references)
     except MetricFormattingError as e:
         logger.error(f"{e}")
         raise HTTPException(
-            500,
+            400,
             f"The dataset '{dataset_name}' cannot be evaluated on metric '{metric_name}'.",
         )
-
-    logger.debug(f"predictions: {predictions}")
-    logger.debug(f"references: {references}")
 
     # Execute metric
     start_time = datetime.datetime.now()
