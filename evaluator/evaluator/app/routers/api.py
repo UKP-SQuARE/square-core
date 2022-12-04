@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from evaluator.routers.dataset import router as dataset_router
+from evaluator.app.routers.dataset import router as dataset_router
 
 router = APIRouter()
 

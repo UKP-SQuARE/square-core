@@ -1,9 +1,12 @@
 import logging
 from typing import List
 
+from celery.result import AsyncResult
 from fastapi import APIRouter
 
-from evaluator.models import DataSet
+from evaluator.app.models import DataSet
+from evaluator.tasks import tasks
+from evaluator.tasks.celery import app as celery_app
 
 logger = logging.getLogger(__name__)
 
@@ -22,22 +25,9 @@ async def get_datasets():
     return datasets
 
 
-import time
-
-from celery.result import AsyncResult
-
-from evaluator.celery import app as celery_app
-
-
-@celery_app.task
-def test_something():
-    time.sleep(15)
-    return "This is the result of the test task"
-
-
 @router.get("/start-task", name="")
 async def start_test_task():
-    res = test_something.delay()
+    res = tasks.test_something.delay()
     return res.id
 
 

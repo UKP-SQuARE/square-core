@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
 
-from evaluator.mongo.mongo_model import MongoModel
-from evaluator.mongo.py_object_id import PyObjectId
+from evaluator.app.mongo.mongo_model import MongoModel
+from evaluator.app.mongo.py_object_id import PyObjectId
 
 
 class DataSet(str, Enum):

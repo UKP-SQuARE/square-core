@@ -14,10 +14,10 @@ redis_password = os.getenv("REDIS_PASSWORD", "secret")
 redis_host = os.getenv("REDIS_HOST", "redis")
 
 app = Celery(
-    "tasks",
+    "evaluator.tasks",
     backend=f"redis://{redis_user}:{redis_password}@{redis_host}:6379",
     broker=f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//",
-    include=["tasks.tasks"],
+    include=["evaluator.tasks.tasks"],
     result_extended=True,
 )
 
