@@ -138,11 +138,11 @@ venv/
 test.py
 
 # api envs
-inference_server/*.json
-inference_api/tasks/inference/transformer_legacy.py
+model_inference/*.json
+model_inference/tasks/inference/transformer_legacy.py
 
 # test data envs
-inference_api/http-client.env.json
+model_inference/http-client.env.json
 
-inference_api/model_configs/.env.tweac
-inference_api/tasks/inference/models_playground.py
+model_inference/model_configs/.env.tweac
+model_inference/tasks/inference/models_playground.py
