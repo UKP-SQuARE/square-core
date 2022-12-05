@@ -15,3 +15,17 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 # @name get_datasets
 GET {{path_prefix}}/dataset HTTP/1.1
 Host: {{hostname}}
+
+###
+# @name predictor
+POST {{path_prefix}}/predict/{{skill_id}}/{{dataset_id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+###
+# @name evaluator
+POST {{path_prefix}}/evaluate/{{skill_id}}/{{dataset_id}}/{{metric_name}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json

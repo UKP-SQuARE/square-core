@@ -5,6 +5,8 @@ from typing import Union
 import datasets
 from datasets import Dataset, DatasetDict, DownloadMode, Split
 from evaluator.app.settings import DatasetHandlerSettings
+from evaluator.core.dataset_formatter import DatasetFormatter
+from evaluator.settings import DatasetHandlerSettings
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class DatasetDoesNotExistError(Exception):
 class DatasetHandler:
     def __init__(self) -> None:
         self.settings = DatasetHandlerSettings()
+        self.dataset_formatter = DatasetFormatter()
 
     def get_dataset(self, dataset_name: str) -> Union[Dataset, DatasetDict]:
         """
@@ -79,8 +82,23 @@ class DatasetHandler:
         """
         dataset = datasets.load_dataset(
             dataset_name,
-            split=Split.VALIDATION,
+            split="validation[:8]",
             download_mode=DownloadMode.FORCE_REDOWNLOAD,
         )
         dataset.save_to_disk(self.settings.dataset_dir + dataset_name)
         return dataset
+
+    def to_generic_format(self, dataset, dataset_metadata, sample_ids=None):
+        """
+        Formats the given dataset into an universal (per skill-type) format.
+
+        Args:
+            dataset_name (str): Name of the dataset on huggingface.
+            dataset_metadata (dict): Metadata about the dataset.
+            sample_ids (List[str]): Optional list of sample-ids. When specified, only samples with the respective ids will be returned.
+                                    Otherwise all samples in the dataset will be returned.
+                                    The returned samples will be in the same order as the passed sample-ids.
+
+        Returns: List of samples in the dataset in an universal format depending on the datasets skill-type.
+        """
+        return self.dataset_formatter.format(dataset, dataset_metadata, sample_ids)
