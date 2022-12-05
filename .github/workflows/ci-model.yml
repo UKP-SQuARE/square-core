@@ -45,7 +45,7 @@ jobs:
         with:
           builder: ${{ steps.base-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model-inference/model_inference/dockerfiles/base_model/Dockerfile
+          file: ./model-inference/dockerfiles/base_model/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
@@ -80,7 +80,7 @@ jobs:
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/transformer/Dockerfile
+          file: ./model-inference/dockerfiles/transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
@@ -116,7 +116,7 @@ jobs:
         with:
           builder: ${{ steps.transformer-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/transformer/Dockerfile
+          file: ./moded-inference/dockerfiles/transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
@@ -152,7 +152,7 @@ jobs:
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/sentence_transformer/Dockerfile
+          file: ./mode-_inference/dockerfiles/sentence_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
@@ -187,7 +187,7 @@ jobs:
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/sentence_transformer/Dockerfile
+          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
@@ -258,7 +258,7 @@ jobs:
         with:
           builder: ${{ steps.onnx-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/onnx/Dockerfile
+          file: ./model-inference/dockerfiles/onnx/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}, ${{ steps.onnx-prep.outputs.image }}:latest
@@ -293,7 +293,7 @@ jobs:
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/graph_transformer/Dockerfile
+          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
@@ -329,7 +329,7 @@ jobs:
         with:
           builder: ${{ steps.graph-buildx.outputs.name }}
           context: ./model-inference
-          file: ./model_inference/dockerfiles/graph_transformer/Dockerfile
+          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
           target: build
           push: ${{github.ref == 'refs/heads/master'}}
           tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}, ${{ steps.graph-prep.outputs.image }}:latest
