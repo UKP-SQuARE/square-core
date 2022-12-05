@@ -16,6 +16,8 @@ FROM base as test
 COPY ./requirements.dev.txt ./requirements.dev.txt
 RUN pip install -r requirements.dev.txt
 RUN mkdir test-reports
+RUN ls
+RUN pwd
 
 # copy test files
 COPY tests/pre_test_setup_for_docker_caching.py tests/pre_test_setup_for_docker_caching.py
