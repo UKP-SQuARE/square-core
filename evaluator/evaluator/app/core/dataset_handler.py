@@ -92,7 +92,7 @@ class DatasetHandler:
         Formats the given dataset into an universal (per skill-type) format.
 
         Args:
-            dataset_name (str): Name of the dataset on huggingface.
+            dataset (:class:`Dataset` or :class:`DatasetDict`:): Dataset from huggingface.
             dataset_metadata (dict): Metadata about the dataset.
             sample_ids (List[str]): Optional list of sample-ids. When specified, only samples with the respective ids will be returned.
                                     Otherwise all samples in the dataset will be returned.
