@@ -545,6 +545,10 @@ class Transformer(Model):
         elif embedding_mode == "token":
             emb = hidden_state
             task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
+
+        if request.task_kwargs.get("normalize", False):
+            print("*****Normalize the embedding*****")
+            emb = torch.nn.functional.normalize(emb)
         predictions["embeddings"] = emb
         return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
 

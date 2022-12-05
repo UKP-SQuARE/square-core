@@ -72,7 +72,8 @@ class PredictionRequest(BaseModel):
         "'generation':<br>"
         "- 'clean_up_tokenization_spaces': See parameter in Huggingface tokenizer.decode(). Default False<br>"
         "- See Huggingface model.generate() for all possible parameters that can be used. "
-        "Note, 'model_kwargs' and 'task_kwargs' are merged for generation.",
+         "Note, 'model_kwargs' and 'task_kwargs' are merged for generation.<br>"
+        "'normalize',boolen, 'True' for using normalized embedding, default 'False' ",
     )
     explain_kwargs: dict = Field(
         default={},
