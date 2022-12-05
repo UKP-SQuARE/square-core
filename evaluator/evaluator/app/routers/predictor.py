@@ -12,7 +12,7 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
-from evaluator.app.models import Prediction, PredictionResult
+from evaluator.app.models import Prediction, PredictionResult, get_dataset_metadata
 from evaluator.app.routers import client_credentials
 from evaluator.app.routers.evaluator import get_dataset_metadata
 

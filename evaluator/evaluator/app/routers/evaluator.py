@@ -19,6 +19,7 @@ from evaluator.app.models import (
     MetricResult,
     MultipleChoiceDatasetSample,
     PredictionResult,
+    get_dataset_metadata,
 )
 from evaluator.app.routers import client_credentials
 
