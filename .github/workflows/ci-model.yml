@@ -90,7 +90,7 @@ jobs:
         uses: shrink/actions-docker-extract@v1
         with:
           image: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
-          path: /inference_api/test-reports
+          path: /test-reports
 
 
       - uses: actions/upload-artifact@v3
@@ -152,7 +152,7 @@ jobs:
         with:
           builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
           context: ./model-inference
-          file: ./mode-_inference/dockerfiles/sentence_transformer/Dockerfile
+          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
           target: test
           load: true
           tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
@@ -162,7 +162,7 @@ jobs:
         uses: shrink/actions-docker-extract@v1
         with:
           image: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
-          path: /inference_api/test-reports
+          path: /test-reports
 
       - uses: actions/upload-artifact@v3
         with:
@@ -233,7 +233,7 @@ jobs:
 #        uses: shrink/actions-docker-extract@v1
 #        with:
 #          image: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}-test
-#          path: /inference_api/test-reports
+#          path: /test-reports
 #
 #      - uses: actions/upload-artifact@v3
 #        with:
@@ -304,7 +304,7 @@ jobs:
         uses: shrink/actions-docker-extract@v1
         with:
           image: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
-          path: /inference_api/test-reports
+          path: /test-reports
 
       - uses: actions/upload-artifact@v3
         with:
