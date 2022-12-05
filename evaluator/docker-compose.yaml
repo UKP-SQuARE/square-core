@@ -1,0 +1,41 @@
+services:
+  evaluator:
+    image: ukpsquare/evaluator:latest
+    build:
+      context: .
+      target: build
+    command: uvicorn evaluator.main:app --reload --host 0.0.0.0 --port 8081 --log-config logging.conf
+    expose:
+    - 8081
+    ports:
+      - 8081:8081
+    env_file:
+    - .local.env
+    environment:
+      API_PREFIX: ""
+      WEB_CONCURRENCY: "1"
+      KEYCLOAK_BASE_URL: ""
+      MODEL_API_URL: ""
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      VERIFY_ISSUER: "0"
+      SQUARE_PRIVATE_KEY_FILE: /app/private_key.pem
+      DATASET_DIR: /app/datasets/
+    depends_on:
+    - mongodb
+    volumes:
+      - ./evaluator:/app/evaluator
+      - ./datasets:/app/datasets/
+      - ./private_key.pem:/app/private_key.pem
+  mongodb:
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+    - mongo-data:/data/db
+    expose:
+    - 27017
+    env_file:
+    - .local.env
+
+volumes:
+  mongo-data:
