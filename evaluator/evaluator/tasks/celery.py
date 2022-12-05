@@ -17,7 +17,11 @@ app = Celery(
     "evaluator.tasks",
     backend=f"redis://{redis_user}:{redis_password}@{redis_host}:6379",
     broker=f"amqp://{rabbitmq_user}:{rabbitmq_password}@rabbit:5672//",
-    include=["evaluator.tasks.tasks"],
+    include=[
+        "evaluator.tasks.tasks",
+        "evaluator.tasks.predict_task",
+        "evaluator.tasks.evaluate_task",
+    ],
     result_extended=True,
 )
 

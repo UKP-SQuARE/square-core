@@ -22,6 +22,7 @@ from evaluator.app.models import (
     get_dataset_metadata,
 )
 from evaluator.app.routers import client_credentials
+from evaluator.tasks import evaluate_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/evaluator")
@@ -77,119 +78,9 @@ async def evaluate(
         logger.error("Dataset does not exist!")
         raise HTTPException(400, "Dataset does not exist!")
 
-    # map predictions into correct format (from skill output format to metric format)
-    predictions, sample_ids = Formatter().format_predictions(
-        metric_name, prediction_result.predictions
+    task_id = f"evaluate-{skill_id}-{dataset_name}-{metric_name}"
+
+    task = evaluate_task.evaluate.apply_async(
+        args=(skill_id, dataset_name, metric_name), task_id=task_id
     )
-
-    # map the dataset into a generic format
-    try:
-        references = dataset_handler.to_generic_format(
-            dataset, dataset_metadata, sample_ids
-        )
-    except ValueError as e:
-        logger.error(f"{e}")
-        raise HTTPException(400, f"{e}")
-
-    # map references into correct format (from generic dataset format to metric format)
-    try:
-        references = Formatter().format_references(metric_name, references)
-    except MetricFormattingError as e:
-        logger.error(f"{e}")
-        raise HTTPException(
-            400,
-            f"The dataset '{dataset_name}' cannot be evaluated on metric '{metric_name}'.",
-        )
-
-    # Execute metric
-    start_time = datetime.datetime.now()
-    try:
-        m = metric.compute(predictions=predictions, references=references)
-    except ValueError as e:
-        msg = f"Could not evaluate metric '{metric_name}' on dataset '{dataset_name}': {e}"
-        logger.error(msg)
-        raise HTTPException(400, msg)
-
-    calculation_time = (datetime.datetime.now() - start_time).total_seconds()
-
-    metric_result_identifier = {"prediction_result_id": prediction_result.id}
-    metric_result = MetricResult.from_mongo(
-        mongo_client.client.evaluator.results.find_one(metric_result_identifier)
-    )
-    if metric_result is None:
-        logger.debug(f"No metric result found. Creating new one.")
-        metric_result = MetricResult(
-            prediction_result_id=prediction_result.id, metrics={}
-        )
-    else:
-        logger.debug(f"Existing metric result loaded: {metric_result}")
-
-    metric = Metric(
-        last_updated_at=datetime.datetime.now(),
-        calculation_time=calculation_time,
-        results=m,
-    )
-    new_metrics = metric_result.metrics
-    new_metrics[metric_name] = metric
-
-    logger.info(f"New Metric Result: {metric_result}")
-
-    mongo_client.client.evaluator.results.replace_one(
-        metric_result_identifier, metric_result.mongo(), upsert=True
-    )
-
-    return metric
-
-
-def get_dataset_metadata(dataset_name):
-    if dataset_name == "squad":
-        return {
-            "name": "squad",
-            "skill-type": "extractive-qa",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "context-column": "context",
-                "answer-text-column": "answers.text",
-            },
-        }
-    elif dataset_name == "quoref":
-        return {
-            "name": "quoref",
-            "skill-type": "extractive-qa",
-            "metric": "squad",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "context-column": "context",
-                "answer-text-column": "answers.text",
-            },
-        }
-    elif dataset_name == "commonsense_qa":
-        return {
-            "name": "commonsense_qa",
-            "skill-type": "multiple-choice",
-            "metric": "accuracy",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "choices-columns": ["choices.text"],
-                "choices-key-mapping-column": "choices.label",
-                "answer-index-column": "answerKey",
-            },
-        }
-    elif dataset_name == "cosmos_qa":
-        return {
-            "name": "cosmos_qa",
-            "skill-type": "multiple-choice",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "choices-columns": ["answer0", "answer1", "answer2", "answer3"],
-                "choices-key-mapping-column": None,
-                "answer-index-column": "label",
-            },
-        }
-    else:
-        logger.error("Unsupported dataset!")
-        raise HTTPException(400, "Unsupported dataset!")
+    return task.id

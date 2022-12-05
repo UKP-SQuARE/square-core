@@ -5,6 +5,7 @@ from typing import Dict, List
 
 import requests
 from bson import ObjectId
+from celery.result import AsyncResult
 from fastapi import APIRouter, Depends, Request
 from fastapi.exceptions import HTTPException
 from square_auth.auth import Auth
@@ -14,7 +15,7 @@ from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
 from evaluator.app.models import Prediction, PredictionResult, get_dataset_metadata
 from evaluator.app.routers import client_credentials
-from evaluator.app.routers.evaluator import get_dataset_metadata
+from evaluator.tasks import predict_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/predictor")
@@ -23,7 +24,7 @@ auth = Auth()
 
 @router.post(
     "/{skill_id}/{dataset_name}",
-    status_code=201,
+    status_code=202,
 )
 async def predict(
     request: Request,
@@ -52,70 +53,9 @@ async def predict(
         logger.error(f"{e}")
         raise HTTPException(400, f"{e}")
 
-    headers = {"Authorization": f"Bearer {token}"}
-    if request.headers.get("Cache-Control"):
-        headers["Cache-Control"] = request.headers.get("Cache-Control")
+    task_id = f"predict-{skill_id}-{dataset_name}"
 
-    predictions: List[Prediction] = []
-    start_time = datetime.datetime.now()
-
-    for i in range(8):
-        reference_data = dataset[i]
-
-        if dataset_metadata["skill-type"] == "extractive-qa":
-            # 62c1ae1b536b1bb18ff91ce3 # squad
-            query_request = {
-                "query": reference_data["question"],
-                "skill_args": {"context": reference_data["context"]},
-                "num_results": 1,
-            }
-        elif dataset_metadata["skill-type"] == "multiple-choice":
-            # 62c1ae19536b1bb18ff91cde # commonsense_qa
-            query_request = {
-                "query": reference_data["question"],
-                "skill_args": {"choices": reference_data["choices"]},
-                "num_results": 1,
-            }
-        else:
-            skill_type = dataset_metadata["skill-type"]
-            raise HTTPException(
-                400,
-                f"Predictions on '{skill_type}' datasets is currently not supported.",
-            )
-
-        response = requests.post(
-            f"https://square.ukp-lab.de/api/skill-manager/skill/{skill_id}/query",
-            headers=headers,
-            data=json.dumps(query_request),
-        )
-        prediction_response = response.json()["predictions"][0]
-
-        predictions.append(
-            Prediction(
-                id=reference_data["id"],
-                output=prediction_response["prediction_output"]["output"],
-                output_score=prediction_response["prediction_output"]["output_score"],
-            )
-        )
-
-    calculation_time = (datetime.datetime.now() - start_time).total_seconds()
-    logger.debug(f"Prediction finished in {calculation_time} seconds: {predictions}")
-
-    prediction_result = PredictionResult(
-        skill_id=ObjectId(skill_id),
-        dataset_name=dataset_name,
-        last_updated_at=datetime.datetime.now(),
-        calculation_time=calculation_time,
-        predictions=predictions,
+    task = predict_task.predict.apply_async(
+        args=(skill_id, dataset_name, token), task_id=task_id
     )
-
-    mongo_client.client.evaluator.predictions.replace_one(
-        {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name},
-        prediction_result.dict(),
-        upsert=True,
-    )
-
-    logger.info(f"Data saved in database")
-
-    response.status_code = 201
-    return prediction_result
+    return task.id
