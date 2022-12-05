@@ -10,17 +10,17 @@ from pydantic import ValidationError
 from square_auth.auth import Auth
 from square_skill_api.models import PredictionOutput
 
-from evaluator import mongo_client
-from evaluator.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
-from evaluator.core.metric_formatters import Formatter, MetricFormattingError
-from evaluator.models import (
+from evaluator.app import mongo_client
+from evaluator.app.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
+from evaluator.app.core.metric_formatters import Formatter, MetricFormattingError
+from evaluator.app.models import (
     ExtractiveDatasetSample,
     Metric,
     MetricResult,
     MultipleChoiceDatasetSample,
     PredictionResult,
 )
-from evaluator.routers import client_credentials
+from evaluator.app.routers import client_credentials
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/evaluator")

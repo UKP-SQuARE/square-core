@@ -9,12 +9,12 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.exceptions import HTTPException
 from square_auth.auth import Auth
 
-from evaluator import mongo_client
-from evaluator.core import DatasetHandler
-from evaluator.core.dataset_handler import DatasetDoesNotExistError
-from evaluator.models import Prediction, PredictionResult
-from evaluator.routers import client_credentials
-from evaluator.routers.evaluator import get_dataset_metadata
+from evaluator.app import mongo_client
+from evaluator.app.core import DatasetHandler
+from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
+from evaluator.app.models import Prediction, PredictionResult
+from evaluator.app.routers import client_credentials
+from evaluator.app.routers.evaluator import get_dataset_metadata
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/predictor")
