@@ -27,7 +27,7 @@ jobs:
 #          "docs",
 #          "frontend",
           "model-management", 
-          "model-inference", 
+#          "model-inference",
 #          "skill-manager",
 #          "skill-boolq",
 #          "skill-commonsense-qa",
