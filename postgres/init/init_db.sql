@@ -1,3 +1,2 @@
 CREATE DATABASE keycloak;
-CREATE USER square WITH PASSWORD 'LobljQejJwOgwXklxvekeEiyReBNEvpj';
 GRANT ALL PRIVILEGES ON DATABASE keycloak TO square;
