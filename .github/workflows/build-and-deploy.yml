@@ -49,7 +49,9 @@ jobs:
           - service: model-management
             context: ./model-manager
           - service: model-inference
-            context: ./model-inference/dockerfiles/base_model
+            context: ./model-inference
+            file: ./model-inference/dockerfiles/base_model/Dockerfile
+
 #          - service: skill-manager
 #            context: ./skill-manager
 #          - service: skill-boolq
