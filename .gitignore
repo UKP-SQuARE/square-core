@@ -41,5 +41,4 @@ private_key.pem
 scifact.zip
 scifact
 
-local_deploy/encode_query.py
 local_deploy/encode_query_aio.py
