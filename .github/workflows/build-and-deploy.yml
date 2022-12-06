@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ master, cicd ]
+    branches: [ master, cicd, model-api-v3 ]
   workflow_dispatch:
     inputs:
       environment:
@@ -16,66 +16,66 @@ on:
       branch:
         description: 'Branch to deploy'
         required: true
-        default: 'master'
+        default: 'model-api-v3'
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         service: [
-          "datastore", 
-          "docs", 
-          "frontend", 
+#          "datastore",
+#          "docs",
+#          "frontend",
           "model-management", 
           "model-inference", 
-          "skill-manager", 
-          "skill-boolq",
-          "skill-commonsense-qa",
-          "skill-extractive-qa",
-          "skill-generative-qa",
-          "skill-information-retrieval",
-          "skill-multiple-choice-qa",
-          "skill-open-extractive-qa",
-          "skill-qa-gnn",
+#          "skill-manager",
+#          "skill-boolq",
+#          "skill-commonsense-qa",
+#          "skill-extractive-qa",
+#          "skill-generative-qa",
+#          "skill-information-retrieval",
+#          "skill-multiple-choice-qa",
+#          "skill-open-extractive-qa",
+#          "skill-qa-gnn",
         ]
         include:
           - build-args: ""
-          - service: datastore
-            context: ./datastore-api
-          - service: docs
-            context: ./docs
-          - service: frontend
-            context: ./frontend
+#          - service: datastore
+#            context: ./datastore-api
+#          - service: docs
+#            context: ./docs
+#          - service: frontend
+#            context: ./frontend
           - service: model-management
             context: ./square-model-inference-api/management_server
           - service: model-inference
             context: ./square-model-inference-api/inference_server
-          - service: skill-manager
-            context: ./skill-manager
-          - service: skill-boolq
-            context: ./skills
-            build-args: "skill=boolq"
-          - service: skill-commonsense-qa
-            context: ./skills
-            build-args: "skill=commonsense-qa"
-          - service: skill-extractive-qa
-            context: ./skills
-            build-args: "skill=extractive-qa"
-          - service: skill-generative-qa
-            context: ./skills
-            build-args: "skill=generative-qa"
-          - service: skill-information-retrieval
-            context: ./skills
-            build-args: "skill=information-retrieval"
-          - service: skill-multiple-choice-qa
-            context: ./skills
-            build-args: "skill=multiple-choice-qa"
-          - service: skill-open-extractive-qa
-            context: ./skills
-            build-args: "skill=open-extractive-qa"
-          - service: skill-qa-gnn
-            context: ./skills
-            build-args: "skill=qa-gnn"
+#          - service: skill-manager
+#            context: ./skill-manager
+#          - service: skill-boolq
+#            context: ./skills
+#            build-args: "skill=boolq"
+#          - service: skill-commonsense-qa
+#            context: ./skills
+#            build-args: "skill=commonsense-qa"
+#          - service: skill-extractive-qa
+#            context: ./skills
+#            build-args: "skill=extractive-qa"
+#          - service: skill-generative-qa
+#            context: ./skills
+#            build-args: "skill=generative-qa"
+#          - service: skill-information-retrieval
+#            context: ./skills
+#            build-args: "skill=information-retrieval"
+#          - service: skill-multiple-choice-qa
+#            context: ./skills
+#            build-args: "skill=multiple-choice-qa"
+#          - service: skill-open-extractive-qa
+#            context: ./skills
+#            build-args: "skill=open-extractive-qa"
+#          - service: skill-qa-gnn
+#            context: ./skills
+#            build-args: "skill=qa-gnn"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
