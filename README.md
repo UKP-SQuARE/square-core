@@ -1,20 +1,98 @@
-# Local Deployment of Minimal SQuARE
+<p align="center">
+    <br>
+    <img src="images/logo.png" width="400"/>
+    <br>
+<p>
+<p align="center">
+    <!-- Going to also have licens, release version, paper doi, twitter, etc. here -->
+    <a href="https://square.ukp-lab.de/">
+        <img alt="Website" src="https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fsquare.ukp-lab.de%2F">
+    </a>
+    <a href="https://square.ukp-lab.de/docs/">
+        <img alt="Docs" src="https://img.shields.io/badge/docs-available-brightgreen">
+    </a>
+    <a href="https://github.com/UKP-SQuARE/square-core">
+        <img alt="Repo" src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103">
+    </a>
+    <a href="https://arxiv.org/abs/2203.13693">
+        <img alt="SQuARE v1" src="https://img.shields.io/badge/arXiv-SQuAREv1%202203.13693-b31b1b.svg">
+    </a>
+    <a href="https://arxiv.org/abs/2208.09316">
+        <img alt="SQuARE v2" src="https://img.shields.io/badge/arXiv-SQuAREv2%202208.09316-b31b1b.svg">
+    </a>
+</p>
 
-This branch hosts a minimal version of SQuARE for the convenience of local deployment.
 
-To get started, please run:
+<h3 align="center">
+    <p>Flexible and Extensible Question Answering Platform</p>
+</h3>
+
+<!-- Introduction of SQuARE -->
+SQuARE is a flexible and extensible Question Answering (QA) platform to enable users to easily implement, manage and share their custom QA pipelines (aka Skills in SQuARE).
+
+Two ways are supported to use SQuARE:
+1. 🌐 Get access to the existing QA Skills (and even deploy your Skill!) via our [demo page](https://square.ukp-lab.de/);
+2. 💾 Or clone and install SQuARE to host services on a local machine.
+
+## Why SQuARE?
+
+Recent advances in NLP and information retrieval have given rise to a diverse set of question answering tasks that are of different formats (e.g., extractive, abstractive), require different model architectures (e.g., generative, discriminative) and setups (e.g., with or without retrieval). Despite having a large number of powerful, specialized QA pipelines (a.k.a., Skills) that consider a single domain, model or setup, there exists no framework where users can easily explore and compare such pipelines and can extend them according to their needs. 
+
+To address this issue, we present SQuARE, an extensible online QA platform for researchers which allows users to query and analyze a large collection of modern Skills via a user-friendly web interface and integrated behavioural tests. In addition, QA researchers can develop, manage and share their custom Skills using our microservices that support a wide range of models (Transformers, Adapters, ONNX), datastores and retrieval techniques (e.g., sparse and dense).
+
+Find out more about the project on [UKPs Website](https://www.informatik.tu-darmstadt.de/ukp/research_ukp/ukp_research_projects/ukp_project_square/ukp_project_square_details.en.jsp).  
+
+## Get Started
+👉 If you want to use the SQuARE public service online, you can refer to [Online Service](#Online-Service) for using the existing skills and refer to 
+[Add New Skills](#Add-New-Skills) for adding new skills.
+
+👉 If you want to deploy SQuARE locally yourself, please refer to [Local Installation](#Local-Installation).
+
+👉 For illustration of the architecture, please refer to [Architecture](#Architecture).
+
+👉 And welcome to [contact us](#Contact).
+
+## Online Service
+Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The existing skills include span-extraction, abstractive, multi-choice QA with contexts or without contexts (open QA based on retrieval).
+<details open>
+    <summary>Screenshot</summary>
+    <p align="center">
+        <br>
+        <img src="images/demo-page.png" width="800"/>
+        <br>
+    <p>
+</details>
+
+## Add New Skills
+To add new skills, please see the [skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills#add-new-skills) section.
+
+## Local Installation
+### Requirements
+To run UKP-SQuARE locally, you need the following software:
+* [docker](https://docs.docker.com/get-docker/)
+* [docker-compose](https://docs.docker.com/compose/install/#install-compose)
+* [ytt](https://carvel.dev/ytt/)
+* [jq](https://stedolan.github.io/jq/download/)
+
+### Install
+Next change the `environment` to `local` and `os` to your operating system in the [config.yaml](https://github.com/UKP-SQuARE/square-core/tree/master/config.yaml).   
+Now, modify your `/etc/hosts` to contain:
 ```
-pip install -r local_deploy/requirements.txt
-bash install-local.sh
+127.0.0.1   square.ukp-lab.localhost
+```  
+For installation we provide a script that takes care of the entire setup for you. After installing the previous [requirements](#requirements), simply run:
+```bash
+bash install.sh
 ```
-to generate a `docker-compose.yaml` file (and a authentication token for local deployment in `./local_deploy`)
-
-And then:
+### Run 
+Finally, you can run the full system with docker-compose. Before doing so, you might want to reduce the number of models running depending on your resources. To do so, remove the respective services from the docker-compose.
 ```bash
 docker-compose up -d
-cd local_deploy
-python deploy_ds.py  # Tested with Python 3.7.13 
 ```
+Check with `docker-compose logs -f` if all systems have started successfully. Once they are up and running go to [square.ukp-lab.localhost](https://square.ukp-lab.localhost).
+👉 Accept that the browser cannot verify the certificate.
+### Add Skills
+Add Skills according to the [Add New Skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills/README.md#add-new-skills) section. Note that, for open-domain skills the datastore need to created first.
 
 ## Architecture
 For a whole (open QA) skill pipeline, it requires 6 steps:
