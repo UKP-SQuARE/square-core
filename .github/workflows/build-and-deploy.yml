@@ -49,7 +49,7 @@ jobs:
           - service: model-management
             context: ./model-manager
           - service: model-inference
-            context: ./model-inference/dockerfiles
+            context: ./model-inference/dockerfiles/base_model
 #          - service: skill-manager
 #            context: ./skill-manager
 #          - service: skill-boolq
