@@ -127,6 +127,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           target: build
           build-args: ${{ matrix.build-args }}
           push: true
