@@ -1,8 +1,8 @@
 import logging
 
-from square_skill_api.models import QueryOutput, QueryRequest
-from square_model_client import SQuAREModelClient
 from square_datastore_client import SQuAREDatastoreClient
+from square_model_client import SQuAREModelClient
+from square_skill_api.models import QueryOutput, QueryRequest
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,4 @@ async def predict(request: QueryRequest) -> QueryOutput:
     )
     logger.info(f"Model response:\n{model_response}")
 
-    return QueryOutput.from_generation(
-        model_api_output=model_response, context=context
-    )
+    return QueryOutput.from_generation(model_api_output=model_response, context=context)

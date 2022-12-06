@@ -12,3 +12,4 @@ pytest-env==0.6.2
 spacy>=3.0.0,<4.0.0
 square-elk-json-formatter==0.0.3
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz#egg=en_core_web_sm
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability

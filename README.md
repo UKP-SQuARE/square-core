@@ -16,17 +16,96 @@ cd local_deploy
 python deploy_ds.py  # Tested with Python 3.7.13 
 ```
 
-This will start the minimal SQUARE service and run the example script `local_deploy/deploy_ds.py` to 
-- Download example corpus scifact;
-- Upload the corpus (to the ES in SQUARE);
-- Do BM25 search;
-- Embed and index the corpus with DPR (GPU 1min, CPU 30min);
-- Start a Faiss container to load the built dense index;
-- Do dense search.
+## Architecture
+For a whole (open QA) skill pipeline, it requires 6 steps:
+1. First a user selects a Skill and issues a query via the user interface;
+2. The selected QA Skill forwards the query to the respective Datastore for document retrieval;
+3. The Datastore gets the query embedding from the Models, uses it for semantic document retrieval and returns the top documents to the Skill;
+4. The Skill sends the query and retrieved documents to the reader model for answer extraction;
+5. Finally, the answers are shown to the user;
+6. Optionally, the user can view the results of the predefined behavioural tests for the Skill. 
+<p align="center">
+        <br>
+        <img src="images/architecture.png" width="800"/>
+        <br>
+    <p>
 
-One can also get access to the [SWAGGER UI](https://swagger.io/tools/swagger-ui/) page for the interactive API. To do so, one can do 
-```bash
-cd local_deploy
-python get_token.py
+## Contact
+
+<!-- If you find this repository helpful, feel free to cite our publication [UKP-SQUARE: An Online Platform for Question Answering Research]():
+
 ```
-to get the token for authorization. Thereafter, just open http://localhost:7000/docs# and type in the token by clicking on "Authorize". Then you are ready to go.
+@inproceedings{
+}
+``` -->
+
+The current main contributors of this repository are:
+- [Tim Baumgärtner](https://github.com/timbmg), [Kexin Wang](https://github.com/kwang2049), [Rachneet Singh Sachdeva](https://github.com/Rachneet), [Haritz Puerto](https://github.com/HaritzPuerto), [Hao Zhang](https://github.com/HaoZ-Work), [Sewin Tariverdian](https://github.com/SevenDaysDA)
+
+Contact person: [Haritz Puerto](mailto:puerto@ukp.informatik.tu-darmstadt.de) (UI and general questions), [Tim Baumgärtner](mailto:baumgaertner@ukp.informatik.tu-darmstadt.de) (Skills), [Kexin Wang](mailto:kexin.wang.2049@gmail.com) (Datastores), [Rachneet Singh Sachdeva](mailto:sachdeva@ukp.informatik.tu-darmstadt.de) (Models), 
+
+Previous contributors:
+- [Max Eichler](https://github.com/maexe), [Gregor Geigle](https://github.com/gregor-ge), [Clifton Poth](https://github.com/calpt), [Hannah Sterz](https://github.com/hSterz)
+
+[https://www.ukp.tu-darmstadt.de/](https://www.ukp.tu-darmstadt.de/)
+
+Don't hesitate to send us an e-mail or report an issue, if something is broken (and it shouldn't be) or if you have further questions.
+
+## Citation
+If you find our work useful, please consider citing our ACL and AACL papers.
+
+[SQuARE v1@ACL 2022 Demo Track](https://aclanthology.org/2022.acl-demo.2/).      
+```bibtex
+@inproceedings{baumgartner-etal-2022-ukp,
+    title = "{UKP}-{SQ}u{ARE}: An Online Platform for Question Answering Research",
+    author = {Baumg{\"a}rtner, Tim  and
+      Wang, Kexin  and
+      Sachdeva, Rachneet  and
+      Geigle, Gregor  and
+      Eichler, Max  and
+      Poth, Clifton  and
+      Sterz, Hannah  and
+      Puerto, Haritz  and
+      Ribeiro, Leonardo F. R.  and
+      Pfeiffer, Jonas  and
+      Reimers, Nils  and
+      {\c{S}}ahin, G{\"o}zde  and
+      Gurevych, Iryna},
+    booktitle = "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics: System Demonstrations",
+    month = may,
+    year = "2022",
+    address = "Dublin, Ireland",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.acl-demo.2",
+    doi = "10.18653/v1/2022.acl-demo.2",
+    pages = "9--22",
+}
+
+```
+[SQuARE v2@AACL 2022 Demo Track](https://aclanthology.org/2022.aacl-demo.4/).      
+
+```bibtex
+@inproceedings{sachdeva-etal-2022-ukp,
+    title = "{UKP}-{SQ}u{ARE} v2: Explainability and Adversarial Attacks for Trustworthy {QA}",
+    author = {Sachdeva, Rachneet  and
+      Puerto, Haritz  and
+      Baumg{\"a}rtner, Tim  and
+      Tariverdian, Sewin  and
+      Zhang, Hao  and
+      Wang, Kexin  and
+      Saadi, Hossain Shaikh  and
+      Ribeiro, Leonardo F. R.  and
+      Gurevych, Iryna},
+    booktitle = "Proceedings of the 2nd Conference of the Asia-Pacific Chapter of the Association for Computational Linguistics and the 12th International Joint Conference on Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2022",
+    address = "Taipei, Taiwan",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.aacl-demo.4",
+    pages = "28--38",
+}
+
+
+```
+        
+> This repository contains experimental software and is published for the sole purpose of giving additional background details on the respective publication. We are not held responsible for errors, false, or offensive content generated by the deployed models.

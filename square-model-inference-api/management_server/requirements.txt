@@ -9,3 +9,4 @@ redis==4.1.4
 pymongo>=3.12.1
 square-elk-json-formatter==0.0.3
 importlib-metadata<5.0 # https://github.com/celery/celery/issues/7783
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability

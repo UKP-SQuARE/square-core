@@ -28,13 +28,17 @@ def add_prefix_to_openapi():
     if app.openapi_schema:
         return app.openapi_schema
 
-    prefix = os.getenv("API_PREFIX", "skill-manager")
     openapi_schema = get_openapi(
         title="Skill-Manager API",
         version="0.0.1",
         description="API reference for skill-manager.",
         routes=app.routes,
     )
+    prefix = os.getenv("API_PREFIX", "skill-manager")
+
+    if prefix == "":
+        return openapi_schema
+
     replaced_keys = {}
     for api_route in openapi_schema["paths"].keys():
         api_route_prefix = api_route.split("/")

@@ -40,7 +40,8 @@ class SkillInputExample(BaseModel):
         description="Additional input to the skill, for example background knowledge."
     )
     choices: Optional[List[str]] = Field(
-        None, description="List of choices (answer candidates) for multiple-choice skills."
+        None,
+        description="List of choices (answer candidates) for multiple-choice skills.",
     )
 
 
@@ -55,7 +56,9 @@ class Skill(MongoModel):
     skill_type: SkillType
     skill_settings: SkillSettings
     user_id: str = Field(..., description="Username of the skill author.")
-    created_at: Optional[datetime] = Field(None, description="Timestamp of skill creation.")
+    created_at: Optional[datetime] = Field(
+        None, description="Timestamp of skill creation."
+    )
     skill_input_examples: Optional[List[SkillInputExample]]
     description: Optional[str] = Field(
         None,
@@ -74,6 +77,10 @@ class Skill(MongoModel):
     )
     client_secret: Optional[str] = Field(
         None, description="The cleint secret of the skill stored in Keycloak."
+    )
+    data_sets: Optional[List[str]] = Field(
+        [],
+        description="This list contains all datasets with which the skill was trained",
     )
 
     @validator("url")
@@ -115,6 +122,7 @@ class Skill(MongoModel):
                         "context": "At the water's edge, Moonwatcher and his band stop. They carry their bone clubs and bone knives. Led by One-ear, the Others half-heartly resume the battle-chant. But they are suddenly confrunted with a vision that cuts the sound from their throats, and strikes terror into their hearts.",
                     }
                 ],
+                "data_sets": ["HotpotQA", "SQuAD"],
             }
         }
 
@@ -140,3 +148,7 @@ class Prediction(MongoModel):
     )
     user_id: str = Field(..., description="User that issued the query.")
     predictions: List[SkillPrediction]
+    data_sets: List[str] = Field(
+        [],
+        description="All datasets with which the skill was trained",
+    )

@@ -1,0 +1,148 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ master, cicd ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - 'test'
+          - 'prod'
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'master'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [
+          "datastore", 
+          "docs", 
+          "frontend", 
+          "model-management", 
+          "model-inference", 
+          "skill-manager", 
+          "skill-boolq",
+          "skill-commonsense-qa",
+          "skill-extractive-qa",
+          "skill-generative-qa",
+          "skill-information-retrieval",
+          "skill-multiple-choice-qa",
+          "skill-open-extractive-qa",
+          "skill-qa-gnn",
+          "evaluator",
+        ]
+        include:
+          - build-args: ""
+          - service: datastore
+            context: ./datastore-api
+          - service: docs
+            context: ./docs
+          - service: frontend
+            context: ./frontend
+          - service: model-management
+            context: ./square-model-inference-api/management_server
+          - service: model-inference
+            context: ./square-model-inference-api/inference_server
+          - service: skill-manager
+            context: ./skill-manager
+          - service: skill-boolq
+            context: ./skills
+            build-args: "skill=boolq"
+          - service: skill-commonsense-qa
+            context: ./skills
+            build-args: "skill=commonsense-qa"
+          - service: skill-extractive-qa
+            context: ./skills
+            build-args: "skill=extractive-qa"
+          - service: skill-generative-qa
+            context: ./skills
+            build-args: "skill=generative-qa"
+          - service: skill-information-retrieval
+            context: ./skills
+            build-args: "skill=information-retrieval"
+          - service: skill-multiple-choice-qa
+            context: ./skills
+            build-args: "skill=multiple-choice-qa"
+          - service: skill-open-extractive-qa
+            context: ./skills
+            build-args: "skill=open-extractive-qa"
+          - service: skill-qa-gnn
+            context: ./skills
+            build-args: "skill=qa-gnn"
+          - service: evaluator
+            context: ./evaluator
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.service }}-
+            ${{ runner.os }}-buildx-
+
+      - name: Add latest tag if deploying to prod
+        uses: haya14busa/action-cond@v1
+        id: latest_tag_str
+        with:
+          cond: ${{ github.event.inputs.environment == 'prod' }}
+          if_true: "ukpsquare/${{matrix.service}}:latest"
+          if_false: ""
+
+      - name: Build deployable image
+        uses: docker/build-push-action@v3
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ${{ matrix.context }}
+          target: build
+          build-args: ${{ matrix.build-args }}
+          push: true
+          tags: |
+            ukpsquare/${{ matrix.service }}:${{ github.sha }}
+            ${{ steps.latest_tag_str.outputs.value }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      #  Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+  deploy:
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Trigger Deployment on ${{ github.event.inputs.environment }}
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+          data: '{"branch": "${{ github.event.inputs.branch }}", "sha": "${{ github.sha }}"}'
+          verify_ssl: false

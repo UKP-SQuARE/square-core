@@ -1,5 +1,6 @@
-@hostname = square.ukp-lab.de
-
+@hostname = localhost:8000
+@path_prefix = /api
+@token = <ENTER TOKEN>
 ### GET TOKEN
 # @name get_token
 # @prompt username
@@ -10,41 +11,74 @@ content-type: application/x-www-form-urlencoded
 
 client_id=square-api&grant_type=password&username={{username}}&password={{password}}
 
+
 ### 
 # @name get_skill_manager_heartbeat
-GET /api/skill-manager/health/heartbeat HTTP/1.1
+GET {{path_prefix}}/health/heartbeat HTTP/1.1
+Host: {{hostname}}
+
+### 
+# @name get_skill_types
+GET {{path_prefix}}/skill-types HTTP/1.1
 Host: {{hostname}}
 
 ### 
 # @name get_skill_heartbeat
 # @prompt skill_url
-GET /api/skill-manager/health/skill-heartbeat?skill_url={{skill_url}} HTTP/1.1
+GET {{path_prefix}}/health/skill-heartbeat?skill_url={{skill_url}} HTTP/1.1
 Host: {{hostname}}
 content-type: application/x-www-form-urlencoded
 
 ###
 # @name get_all_public_skills
-GET /api/skill-manager/skill HTTP/1.1
+GET {{path_prefix}}/skill HTTP/1.1
 Host: {{hostname}}
 
 ###
 # @name get_all_user_skills
-@token =  {{get_token.response.body.access_token}}
-GET /api/skill-manager/skill HTTP/1.1
+# @token =  {{get_token.response.body.access_token}}
+GET {{path_prefix}}/skill HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name get_skill_by_id
 # @prompt id {skill_id}
-GET /api/skill-manager/skill/{{id}} HTTP/1.1
+GET {{path_prefix}}/skill/{{id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
+# @name create_skill
+POST {{path_prefix}}/skill HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "name":"test-skill",
+  "skill_type":"span-extraction",
+  "description":"",
+  "skill_settings": {
+    "requires_context": false,
+    "requires_multiple_choices":0
+  },
+  "url":"http://open-extractive-qa",
+  "default_skill_args": {
+  },
+  "user_id":"LOCAL_SQUARE_USER",
+  "published":false,
+  "skill_input_examples": [
+    {"query":"","context":""},
+    {"query":"","context":""},
+    {"query":"","context":""}
+  ]
+  }
+
+###
 # @name update_skill_by_id
 # @prompt id {skill_id}
-PUT /api/skill-manager/skill/{{id}} HTTP/1.1
+PUT {{path_prefix}}/skill/{{id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
@@ -56,39 +90,29 @@ content-type: application/json
 ###
 # @name delete_skill_by_id
 # @prompt id {skill_id}
-DELETE /api/skill-manager/skill/{{id}} HTTP/1.1
+DELETE {{path_prefix}}/skill/{{id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
-###
-# @name create_skill
-POST /api/skill-manager/skill HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-
-{
-    ""
-}
 
 ###
 # @name publish_skill_by_id
 # @prompt id {skill_id}
-POST /api/skill-manager/skill/{{id}}/publish HTTP/1.1
+POST {{path_prefix}}/skill/{{id}}/publish HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name unpublish_skill_by_id
 # @prompt id {skill_id}
-POST /api/skill-manager/skill/{{id}}/unpublish HTTP/1.1
+POST {{path_prefix}}/skill/{{id}}/unpublish HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name query_skill_by_id
 # @prompt id {skill_id}
-POST /api/skill-manager/skill/{{id}}/query HTTP/1.1
+POST {{path_prefix}}/skill/{{id}}/query HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
@@ -101,121 +125,3 @@ content-type: application/json
   "explain_kwargs": {}
 }
 
-###
-# @name query_skill_squad_dpr
-POST /api/skill-manager/skill/62c1ae1f536b1bb18ff91ced/query HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-Cache-Control: no-cache
-{
-  "query": "When was the UN founded?",
-  "skill_args": {"context": "The UN officially came into existence 24 October 1945, upon ratification of the Charter by the five permanent members of the Security Council—France, the Republic of China, the Soviet Union, the UK and the US—and by a majority of the other 46 signatories."},
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {}
-}
-
-###
-# @name query_skill_squad_bm25
-POST /api/skill-manager/skill/62c2a1f93f28686f3c9d9363/query HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-Cache-Control: no-cache
-
-{
-  "query": "When was the UN founded?",
-  "skill_args": {
-    "context": "Immediately behind the basilica is the Grotto, a Marian place of prayer and reflection. It is a replica of the grotto at Lourdes, France where the Virgin Mary reputedly appeared to Saint Bernadette Soubirous in 1858.",
-    "show_null_answers": false
-  },
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {
-    "method": "attention",
-    "top_k": 10,
-    "mode": "all"
-  }
-}
-
-###
-# @name query_bert_socialiqa_skill_with_adversarial
-@token =  {{get_token.response.body.access_token}}
-POST /api/skill-manager/skill/62c1ae23536b1bb18ff91cfa/query HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-Cache-Control: no-cache
-
-{
-  "query": "What will Kendall want to do next?",
-  "skill_args": {"context": "Cameron decided to have a very barbecue and gathered her friends together.\n like attending\n like staying home\n a good friend to have"},
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {},
-  "adversarial_kwargs": {
-    "method": "topk_tokens",
-    "saliency_methods": "attention",
-    "max_tokens": 3
-  }
-}
-###
-# @name query_bert_squad11_skill
-  "skill_args": {"context": "Cameron decided to have a barbecue and gathered her friends together.\n like attending\n like staying home\n a good friend to have"},
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {},
-  "attack_kwargs": {
-    "method": "topk_tokens",
-    "saliency_method": "attention",
-    "max_tokens": 3
-  }
-}
-
-###
-# @name query_bert_socialiqa_skill_with_explainability
-@token =  {{get_token.response.body.access_token}}
-POST /api/skill-manager/skill/62c1ae23536b1bb18ff91cfa/query HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-Cache-Control: no-cache
-
-{
-  "query": "What will Kendall want to do next?",
-  "skill_args": {"context": "Cameron decided to have a barbecue and gathered her friends together.\n like attending\n like staying home\n a good friend to have"},
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {
-    "method": "attention",
-    "top_k": 10,
-    "mode": "all"
-  }
-}
-###
-# @name query_bert_squad11_skill_with_adversarial
-@token =  {{get_token.response.body.access_token}}
-POST /api/skill-manager/skill/62c1ae21536b1bb18ff91cf6/query HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-Cache-Control: no-cache
-
-{
-  "query": "How much did Beyonce initially contribute to the foundation?",
-  "skill_args": {"context": "After Hurricane Katrina in 2005, Beyoncé and Rowland founded the Survivor Foundation to provide transitional housing for victims in the Houston area, to which Beyoncé contributed an initial $250,000. The foundation has since expanded to work with other charities in the city, and also provided relief following Hurricane Ike three years later."},
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {},
-  "attack_kwargs": {
-    "method": "topk_tokens",
-    "saliency_method": "attention",
-    "max_tokens": 59
-  }
-}
-
-###
-# @name get_skill_types
-GET /api/skill-manager/skill-types HTTP/1.1
-Host: {{hostname}}

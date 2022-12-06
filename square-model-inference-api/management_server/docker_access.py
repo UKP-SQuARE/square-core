@@ -68,10 +68,10 @@ def start_new_model_container(identifier: str, uid: str, env):
     logger.info("Refernce Container: {}".format(reference_container))
     network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
 
-    path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
-    # in case of windows the next step is necessary
-    path = path.replace("\\", "/")
-    path = os.path.dirname(os.path.dirname(path))
+#     path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
+#     # in case of windows the next step is necessary
+#     path = path.replace("\\", "/")
+#     path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
     worker_name = network.name + "-model-" + identifier.replace("/", "-") + "-worker-" + uid
@@ -95,7 +95,7 @@ def start_new_model_container(identifier: str, uid: str, env):
             detach=True,
             environment=env,
             network=network.name,
-            volumes=[path + "/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
+            volumes=["/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
             mounts=[Mount(target=env["CONFIG_PATH"], source=CONFIG_VOLUME,),
                     Mount(target="/onnx_models", source=ONNX_VOLUME,)],
         )
