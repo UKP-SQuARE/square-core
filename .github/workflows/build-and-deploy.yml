@@ -48,10 +48,21 @@ jobs:
 #            context: ./frontend
           - service: model-management
             context: ./model-manager
-          - service: model-inference
+          - service: model-inference-base-model
             context: ./model-inference
             file: ./model-inference/dockerfiles/base_model/Dockerfile
-
+          - service: model-inference-transformer
+            context: ./model-inference
+            file: ./model-inference/dockerfiles/transformer/Dockerfile
+          - service: model-inference-onnx
+            context: ./model-inference
+            file: ./model-inference/dockerfiles/onnx/Dockerfile
+          - service: model-inference-sentence-transfomer
+            context: ./model-inference
+            file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
+          - service: model-inference-graph-transfomer
+            context: ./model-inference
+            file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
 #          - service: skill-manager
 #            context: ./skill-manager
 #          - service: skill-boolq
@@ -116,7 +127,6 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
-          file: ${{ matrix.file }}
           target: build
           build-args: ${{ matrix.build-args }}
           push: true
