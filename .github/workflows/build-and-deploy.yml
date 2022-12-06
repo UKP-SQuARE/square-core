@@ -47,9 +47,9 @@ jobs:
 #          - service: frontend
 #            context: ./frontend
           - service: model-management
-            context: ./square-model-inference-api/management_server
+            context: ./model-manager
           - service: model-inference
-            context: ./square-model-inference-api/inference_server
+            context: ./model-inference
 #          - service: skill-manager
 #            context: ./skill-manager
 #          - service: skill-boolq
