@@ -1,3 +1,0 @@
-CREATE DATABASE keycloak;
-CREATE user square with password '%%POSTGRES_PASSWORD%%';
-GRANT ALL PRIVILEGES ON DATABASE keycloak TO square;
