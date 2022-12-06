@@ -1,5 +1,5 @@
 ## This is the dockerfile template for transformer based model
-FROM ukpsquare/model-inference-base-model:latest as base
+FROM ukpsquare/model-inference-base-model:latest as build
 
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
@@ -11,13 +11,11 @@ RUN pip install -r requirements.transformer.txt
 
 # Testing stage. We first pre-download any models separately for caching (pre_test_setup_for_docker_caching.py) and then
 # run the tests
-FROM base as test
+FROM build as test
 
 COPY ./requirements.dev.txt ./requirements.dev.txt
 RUN pip install -r requirements.dev.txt
 RUN mkdir test-reports
-RUN ls
-RUN pwd
 
 # copy test files
 COPY tests/pre_test_setup_for_docker_caching.py tests/pre_test_setup_for_docker_caching.py

@@ -34,21 +34,21 @@ jobs:
         with:
           install: true
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Build base deployable image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.base-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/base_model/Dockerfile
-          target: build
-          push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+#
+#      - name: Build base deployable image
+#        uses: docker/build-push-action@v3
+#        with:
+#          builder: ${{ steps.base-buildx.outputs.name }}
+#          context: ./model-inference
+#          file: ./model-inference/dockerfiles/base_model/Dockerfile
+#          target: build
+#          push: ${{github.ref == 'refs/heads/master'}}
+#          tags: ${{ steps.base-prep.outputs.image }}:${{ steps.base-prep.outputs.tag }}, ${{ steps.base-prep.outputs.image }}:latest
 
       - name: remove images
         run: |
@@ -105,21 +105,21 @@ jobs:
           check_name: Transformers Test Report
           fail_on_failure: true
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build transformer deployable image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.transformer-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/transformer/Dockerfile
-          target: build
-          push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
+#      - name: Build transformer deployable image
+#        uses: docker/build-push-action@v3
+#        with:
+#          builder: ${{ steps.transformer-buildx.outputs.name }}
+#          context: ./model-inference
+#          file: ./model-inference/dockerfiles/transformer/Dockerfile
+#          target: build
+#          push: ${{github.ref == 'refs/heads/master'}}
+#          tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}, ${{ steps.transformer-prep.outputs.image }}:latest
 
       - name: remove images
 
@@ -175,22 +175,22 @@ jobs:
           report_paths: ${{ steps.sentence-transformer-extract.outputs.destination }}/test-reports/junit.xml
           check_name: Sentence Transformers Test Report
           fail_on_failure: true
+#
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Build sentence-transformers deployable image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
-          target: build
-          push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
+#      - name: Build sentence-transformers deployable image
+#        uses: docker/build-push-action@v3
+#        with:
+#          builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
+#          context: ./model-inference
+#          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
+#          target: build
+#          push: ${{github.ref == 'refs/heads/master'}}
+#          tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}, ${{ steps.sentence-transformer-prep.outputs.image }}:latest
 
       - name: remove images
         run: |
@@ -198,24 +198,24 @@ jobs:
           docker rm -f $(docker ps -a -q)
           docker image rm -f $(docker images -q)
 
-  model-inference-onnx:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      # onnx
-      - name: Prepare
-        id: onnx-prep
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/model-inference-onnx"
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-      - name: Set up Docker Buildx
-        id: onnx-buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          install: true
+#  model-inference-onnx:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v3
+#      # onnx
+#      - name: Prepare
+#        id: onnx-prep
+#        run: |
+#          TAG=$(echo $GITHUB_SHA | head -c7)
+#          IMAGE="ukpsquare/model-inference-onnx"
+#          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+#          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+#      - name: Set up Docker Buildx
+#        id: onnx-buildx
+#        uses: docker/setup-buildx-action@v2
+#        with:
+#          install: true
 
 #  -------- IGNORE FOR NOW ---------
 #      - name: Build onnx test image
@@ -247,27 +247,27 @@ jobs:
 #          check_name: Model API Test Report
 #          fail_on_failure: true
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build onnx deployable image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.onnx-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/onnx/Dockerfile
-          target: build
-          push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}, ${{ steps.onnx-prep.outputs.image }}:latest
+#      - name: Build onnx deployable image
+#        uses: docker/build-push-action@v3
+#        with:
+#          builder: ${{ steps.onnx-buildx.outputs.name }}
+#          context: ./model-inference
+#          file: ./model-inference/dockerfiles/onnx/Dockerfile
+#          target: build
+#          push: ${{github.ref == 'refs/heads/master'}}
+#          tags: ${{ steps.onnx-prep.outputs.image }}:${{ steps.onnx-prep.outputs.tag }}, ${{ steps.onnx-prep.outputs.image }}:latest
 
-      - name: remove images
-        run: |
-          docker kill $(docker ps -q)
-          docker rm -f $(docker ps -a -q)
-          docker image rm -f $(docker images -q)
+#      - name: remove images
+#        run: |
+#          docker kill $(docker ps -q)
+#          docker rm -f $(docker ps -a -q)
+#          docker image rm -f $(docker images -q)
 
   model-inference-graph-transformer:
     runs-on: ubuntu-latest
@@ -318,18 +318,18 @@ jobs:
           check_name: Graph Transformers Test Report
           fail_on_failure: true
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Build graph deployable image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.graph-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
-          target: build
-          push: ${{github.ref == 'refs/heads/master'}}
-          tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}, ${{ steps.graph-prep.outputs.image }}:latest
+#      - name: Login to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+#
+#      - name: Build graph deployable image
+#        uses: docker/build-push-action@v3
+#        with:
+#          builder: ${{ steps.graph-buildx.outputs.name }}
+#          context: ./model-inference
+#          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
+#          target: build
+#          push: ${{github.ref == 'refs/heads/master'}}
+#          tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}, ${{ steps.graph-prep.outputs.image }}:latest
