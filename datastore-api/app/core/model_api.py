@@ -119,7 +119,7 @@ class ModelAPIClient:
         while attempts < max_attempts:
             attempts += 1
             async with session.get(
-                url=f"{self.square_api_url}/task_result/{task_id}",
+                url=f"{self.square_api_url}/main/task_result/{task_id}",
                 headers={"Authorization": f"Bearer {client_credentials()}"},
                 verify_ssl=self.verify_ssl,
             ) as response:
@@ -160,14 +160,14 @@ class ModelAPIClient:
         my_conn = aiohttp.TCPConnector()
         async with aiohttp.ClientSession(connector=my_conn) as session:
             async with session.post(
-                url=f"{self.square_api_url}/{model_identifier}/{prediction_method}",
+                url=f"{self.square_api_url}/main/{model_identifier}/{prediction_method}",
                 json=input_data,
                 headers={"Authorization": f"Bearer {client_credentials()}"},
                 verify_ssl=self.verify_ssl,
             ) as response:
 
                 result = await response.text()
-                # print(response, flush=True)
+                # print(response.status)
                 if response.status == 200:
                     return await asyncio.ensure_future(
                         self._wait_for_task(

@@ -24,8 +24,9 @@ def _decode_embeddings(encoded_string: str):
 
 def encode_query() -> None:
     response = requests.post(
-        "http://localhost/api/main/msmarco-distilbert-base-tas-b/embedding",
-        # "http://traefik/api/main/msmarco-distilbert-base-tas-b/embedding",
+        # "https://host.docker.internal/api/main/msmarco-distilbert-base-tas-b/embedding",
+        # "http://localhost/api/main/msmarco-distilbert-base-tas-b/embedding",
+        "http://traefik/api/main/msmarco-distilbert-base-tas-b/embedding",
         json={
             "input": ["1 in 5 million in UK have abnormal PrP positivity."],
             "adapter_name": None,
@@ -41,8 +42,9 @@ def encode_query() -> None:
     time.sleep(2)
     task_id = response.json()["task_id"]
     response = requests.get(
-        f"http://localhost/api/main/task_result/{task_id}",
-        # f"http://traefik/api/main/task_result/{task_id}",
+        # f"https://host.docker.internal/api/main/task_result/{task_id}",
+        # f"http://localhost/api/main/task_result/{task_id}",
+        f"http://traefik/api/main/task_result/{task_id}",
         headers={"Authorization": f"Bearer {get_token()}"},
         verify=False,
     )
