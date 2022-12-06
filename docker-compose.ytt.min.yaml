@@ -210,7 +210,7 @@ services:
 
   datastore_api:
     privileged: true
-    #! image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
+    image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
     build: 
       context: ./datastore-api
       target: build
