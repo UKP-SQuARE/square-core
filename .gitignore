@@ -40,3 +40,5 @@ private_key.pem
 
 scifact.zip
 scifact
+
+docker-compose.yaml
