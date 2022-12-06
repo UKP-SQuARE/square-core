@@ -27,7 +27,7 @@ jobs:
 #          "docs",
 #          "frontend",
           "model-management", 
-#          "model-inference",
+          "model-inference",
 #          "skill-manager",
 #          "skill-boolq",
 #          "skill-commonsense-qa",
@@ -48,8 +48,8 @@ jobs:
 #            context: ./frontend
           - service: model-management
             context: ./model-manager
-#          - service: model-inference
-#            context: ./model-inference
+          - service: model-inference
+            context: ./model-inference/dockerfiles
 #          - service: skill-manager
 #            context: ./skill-manager
 #          - service: skill-boolq
