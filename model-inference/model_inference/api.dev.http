@@ -11,21 +11,21 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
-# @name dpr
-POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "input": [
-    "Do aliens exist?"
-  ],
-  "is_preprocessed": false,
-  "preprocessing_kwargs": {},
-  "model_kwargs": {},
-  "task_kwargs": {},
-  "adapter_name": ""
-}
+## @name dpr
+#POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    "Do aliens exist?"
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
 
 
 ###
@@ -303,7 +303,7 @@ Content-Type: application/json
 ###
 
 ## @name task_output
-#GET {{domain_dev}}/api/main/task_result/943985b4-a1ee-4686-a32f-ee4dd052a297
+#GET {{domain_dev}}/api/main/task_result/e2c909ca-ae52-47d5-9b58-830994172114
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 
