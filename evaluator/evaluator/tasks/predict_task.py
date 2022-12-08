@@ -13,6 +13,7 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
+from evaluator.app.core.task_helper import task_id
 from evaluator.app.models import Prediction, PredictionResult, get_dataset_metadata
 from evaluator.app.routers import client_credentials
 from evaluator.tasks import evaluate_task
@@ -122,14 +123,16 @@ def predict(
 
     # Trigger evaluation task with default metric
     try:
-        task_id = f"evaluate-{skill_id}-{dataset_name}-{dataset_metadata['metric']}"
         logger.info("Trigger evaluation task ...")
 
         task = evaluate_task.evaluate.apply_async(
-            args=(skill_id, dataset_name, dataset_metadata["metric"]), task_id=task_id
+            args=(skill_id, dataset_name, dataset_metadata["metric"]),
+            task_id=task_id(
+                "evaluate", skill_id, dataset_name, dataset_metadata["metric"]
+            ),
         )
 
-        logger.info(f"Task with id '{task_id}'")
+        logger.info(f"Task with id '{task.id}'")
 
     except AttributeError:
         logger.info(

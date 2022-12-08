@@ -2,6 +2,7 @@ import datetime
 import logging
 from typing import Dict, List
 
+import requests
 from bson import ObjectId
 from evaluate import load
 from fastapi import APIRouter, Depends, Request
@@ -13,19 +14,24 @@ from square_skill_api.models import PredictionOutput
 from evaluator.app import mongo_client
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
 from evaluator.app.core.metric_formatters import Formatter, MetricFormattingError
+from evaluator.app.core.task_helper import (
+    dataset_exists,
+    metric_exists,
+    skill_exists,
+    task_id,
+)
 from evaluator.app.models import (
     ExtractiveDatasetSample,
     Metric,
     MetricResult,
     MultipleChoiceDatasetSample,
     PredictionResult,
-    get_dataset_metadata,
 )
 from evaluator.app.routers import client_credentials
 from evaluator.tasks import evaluate_task
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/evaluator")
+router = APIRouter(prefix="/evaluate")
 auth = Auth()
 
 
@@ -39,48 +45,51 @@ async def evaluate(
     dataset_name: str,
     metric_name: str,
     dataset_handler: DatasetHandler = Depends(DatasetHandler),
-    _token: str = Depends(client_credentials),
+    token: str = Depends(client_credentials),
     _token_payload: Dict = Depends(auth),
 ):
     logger.debug(
-        f"start evaluation with parameters: skill_id={skill_id}; dataset_name={dataset_name}; metric_name={metric_name}"
+        f"Requested evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' with metric '{metric_name}'"
     )
 
-    object_identifier = {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
+    # check if the skill exists
+    if not skill_exists(skill_id, token):
+        msg = f"Skill '{skill_id}' does not exist or you do not have access."
+        logger.error(msg)
+        raise HTTPException(400, msg)
 
-    # Load the metric from HuggingFace
-    try:
-        metric = load(metric_name)
-    except FileNotFoundError:
-        logger.error(f"Metric with name='{metric_name}' not found!")
-        raise HTTPException(404, f"Metric with name='{metric_name}' not found!")
+    # check if the dataset exists
+    if not dataset_exists(dataset_name):
+        msg = f"Dataset '{dataset_name}' does not exist."
+        logger.error(msg)
+        raise HTTPException(400, msg)
 
-    # Load the predictions for the given `skill_id` and `dataset_name` from MongoDB
+    # check if the metric exists
+    if not metric_exists(metric_name):
+        msg = f"Metric '{metric_name}' does not exist."
+        logger.error(msg)
+        raise HTTPException(400, msg)
+
+    # check if predictions exist
     try:
         prediction_result = PredictionResult.from_mongo(
-            mongo_client.client.evaluator.predictions.find_one(object_identifier)
+            mongo_client.client.evaluator.predictions.find_one(
+                {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
+            )
         )
         if prediction_result is None:
             raise AttributeError
-        logger.debug(f"Prediction loaded: {prediction_result}")
     except AttributeError:
-        msg = f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
+        msg = f"No predictions found for skill '{skill_id}' on dataset '{dataset_name}'. Make sure to run the prediction first before evaluating."
         logger.error(msg)
         raise HTTPException(404, msg)
-    logger.debug(f"Prediction loaded: {prediction_result}")
-
-    # Load dataset metadata (TODO)
-    dataset_metadata = get_dataset_metadata(dataset_name)
-    # Load the dataset from DatasetHandler
-    try:
-        dataset = dataset_handler.get_dataset(dataset_name)
-    except DatasetDoesNotExistError:
-        logger.error("Dataset does not exist!")
-        raise HTTPException(400, "Dataset does not exist!")
-
-    task_id = f"evaluate-{skill_id}-{dataset_name}-{metric_name}"
 
     task = evaluate_task.evaluate.apply_async(
-        args=(skill_id, dataset_name, metric_name), task_id=task_id
+        args=(skill_id, dataset_name, metric_name),
+        task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
     )
+    logger.debug(
+        f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"
+    )
+
     return task.id
