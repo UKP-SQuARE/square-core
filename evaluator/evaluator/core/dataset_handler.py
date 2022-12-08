@@ -81,7 +81,7 @@ class DatasetHandler:
         """
         dataset = datasets.load_dataset(
             dataset_name,
-            split="validation[:8]",
+            split=Split.VALIDATION,
             download_mode=DownloadMode.FORCE_REDOWNLOAD,
         )
         dataset.save_to_disk(self.settings.dataset_dir + dataset_name)
