@@ -1,3 +1,11 @@
+"""
+An example script to deploy a datastore including:
+- uploading a corpus (SciFact), 
+- doing BM25 search, 
+- embedding and indexing the corpus with dense retrievers
+- and doing dense retrieval.
+"""
+
 import json
 import os
 import shutil
