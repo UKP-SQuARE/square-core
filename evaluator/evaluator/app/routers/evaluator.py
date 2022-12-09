@@ -48,7 +48,7 @@ async def evaluate(
     token: str = Depends(client_credentials),
     _token_payload: Dict = Depends(auth),
 ):
-    logger.debug(
+    logger.info(
         f"Requested evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' with metric '{metric_name}'"
     )
 
@@ -88,7 +88,7 @@ async def evaluate(
         args=(skill_id, dataset_name, metric_name),
         task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
     )
-    logger.debug(
+    logger.info(
         f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"
     )
 

@@ -92,6 +92,15 @@ class MultipleChoiceDatasetSample(BaseModel):
     )
 
 
+class TaskResponse(BaseModel):
+    task_id: str = Field(..., description="ID of the task.")
+    state: str = Field(..., description="Current state of the task.")
+    finished: Optional[datetime] = Field(
+        None, description="Date when the task finished processing."
+    )
+    result: Optional[str] = Field(None, description="Result of the task.")
+
+
 # Mocked function. Remove after https://github.com/nclskfm/square-core/issues/7 is implemented.
 def get_dataset_metadata(dataset_name):
     if dataset_name == "squad":
