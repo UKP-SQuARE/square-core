@@ -19,3 +19,6 @@ class SharedVariables:
 
     token: str = build_token()
     datastore_url: str = "http://localhost:7000"
+    model_url: str = (
+        "https://traefik/api" if within_container() else "https://localhost/api"
+    )

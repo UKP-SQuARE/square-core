@@ -1,3 +1,8 @@
+"""
+An example script to call model API (to embed queries in this case). 
+This script can be run both in the host machine or in a container from the SQuARE docker network.
+"""
+
 import ast
 import asyncio
 import base64
@@ -39,7 +44,7 @@ async def _wait_for_task(
             attempts to poll the results. If this is None
             self.poll_intervall is used. Defaults to None.
     """
-    square_api_url = "https://traefik/api"
+    square_api_url = SharedVariables.model_url
     verify_ssl = False
 
     if max_attempts is None:
@@ -65,7 +70,7 @@ async def _wait_for_task(
 
 
 async def encode_query():
-    square_api_url = "https://traefik/api"
+    square_api_url = SharedVariables.model_url
     model_identifier = "msmarco-distilbert-base-tas-b"
     prediction_method = "embedding"
     input_data = {
