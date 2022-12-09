@@ -13,26 +13,11 @@ import time
 from typing import List
 import requests
 from faiss_instant.encode_and_index import run as encode_and_index
-from square_auth.client_credentials import ClientCredentials
 import docker
 from docker.models.containers import Container
 from beir.util import download_and_unzip
+from utils import SharedVariables
 import tqdm
-
-
-def build_token() -> str:
-    os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
-    client_credentials = ClientCredentials(
-        keycloak_base_url="",
-        buffer=60,
-    )
-    return client_credentials()
-
-
-class SharedVariables:
-
-    token: str = build_token()
-    datastore_url: str = "http://localhost:7000"
 
 
 def get_datastores() -> dict:
