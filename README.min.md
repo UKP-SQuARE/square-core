@@ -27,6 +27,6 @@ This will start the minimal SQUARE service and run the example script `local_dep
 One can also get access to the [SWAGGER UI](https://swagger.io/tools/swagger-ui/) page for the interactive API. To do so, one can do 
 ```bash
 cd local_deploy
-python get_token.py
+python get_token.py  # Or run `square_token` from command line
 ```
 to get the token for authorization. Thereafter, just open http://localhost:7000/docs# and type in the token by clicking on "Authorize". Then you are ready to go.
