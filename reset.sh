@@ -1,12 +1,8 @@
 # Restore everything back:
 if [ -f "./docker-compose.yaml" ]; then
-	docker-compose down
+	docker-compose down -v
 fi
 rm .env ./**/.env
-for docker_volume in "square-core_traefik-public-certificates" "square-core_model_configs" "square-core_onnx_models" "square-core_mongo-data" "square-core_db-data" "square-core_datastore-api-es" "square-core_mongo-dumps" "square-core_square-redis-data"
-do
-	docker volume rm $docker_volume
-done
 
 # Set mode to local:
 sed -i -e "s/environment: prod/environment: local/g" ./config.yaml
