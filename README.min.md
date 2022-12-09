@@ -24,7 +24,7 @@ python deploy_ds.py  # Tested with Python 3.7.13
 > - Start a Faiss container to load the built dense index;
 > - Do dense search.
 
-One can also get access to the [SWAGGER UI](https://swagger.io/tools/swagger-ui/) page for the interactive API. To do so, one can do 
+One can also get access to the [SWAGGER UI](https://swagger.io/tools/swagger-ui/) page for the interactive API of Datastores. To do so, one can do 
 ```bash
 cd local_deploy
 python get_token.py  # Or run `square_token` from command line
