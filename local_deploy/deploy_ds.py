@@ -12,7 +12,8 @@ from beir.util import download_and_unzip
 import tqdm
 
 
-def get_token() -> str:
+def build_token() -> str:
+    os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
     client_credentials = ClientCredentials(
         keycloak_base_url="",
         buffer=60,
@@ -20,10 +21,15 @@ def get_token() -> str:
     return client_credentials()
 
 
+class ClientCredentialsToken:
+
+    token: str = build_token()
+
+
 def get_datastores() -> dict:
     response = requests.get(
         "http://localhost:7000/datastores",
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
     )
     print(response.json())
 
@@ -53,7 +59,7 @@ def download_beir_and_load(dataset_name: str) -> List[dict]:
 def create_datastore(datastore_name: str) -> None:
     response = requests.put(
         f"http://localhost:7000/datastores/{datastore_name}",
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
         json=[{"name": "title", "type": "text"}, {"name": "text", "type": "text"}],
     )
     assert response.status_code in [200, 201], f"Cannot create datastore: {response}"
@@ -64,7 +70,7 @@ def upload_documents(datastore_name: str, docs: List[dict]) -> None:
     for b in tqdm.tqdm(range(0, len(docs), batch_size), desc="Uploading documents"):
         response = requests.post(
             f"http://localhost:7000/datastores/{datastore_name}/documents",
-            headers={"Authorization": f"Bearer {get_token()}"},
+            headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
             json=docs[b : b + batch_size],
         )
         assert response.status_code == 201, f"Cannot upload docs: {response}"
@@ -73,7 +79,7 @@ def upload_documents(datastore_name: str, docs: List[dict]) -> None:
 def get_stats(datastore_name: str) -> dict:
     response = requests.get(
         f"http://localhost:7000/datastores/{datastore_name}/stats",
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
     )
     assert response.status_code == 200, f"Cannot get datastore {dataset_name} stats"
     return response.json()
@@ -82,7 +88,7 @@ def get_stats(datastore_name: str) -> dict:
 def bm25_search(datastore_name: str, query: str, top_k: int) -> dict:
     response = requests.get(
         f"http://localhost:7000/datastores/{datastore_name}/search",
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
         params={"query": query, "top_k": top_k},
     )
     assert response.status_code == 200, f"Cannot do BM25 search: {response}"
@@ -174,7 +180,9 @@ def start_faiss_container(
     ):
         try:
             container = client.containers.get(faiss_container_name)
-            ip = container.attrs["NetworkSettings"]["Networks"]["square-core_default"]["IPAddress"]
+            ip = container.attrs["NetworkSettings"]["Networks"]["square-core_default"][
+                "IPAddress"
+            ]
             response = requests.get(f"http://{ip}:5000/index_list")
             assert response.json()["index loaded"]
             success = True
@@ -205,7 +213,7 @@ def add_index(
             "index_description": "",
             "collection_url": "",
         },
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
     )
     assert response.status_code in [200, 201], f"Cannot add index: {response}"
 
@@ -220,7 +228,7 @@ def dense_search_by_vector(
             "query_vector": query_embedding,
             "top_k": top_k,
         },
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
     )
     assert (
         response.status_code == 200
@@ -236,14 +244,13 @@ def dense_search(datastore_name: str, index_name: str, query: str, top_k: int) -
             "query": query,
             "top_k": top_k,
         },
-        headers={"Authorization": f"Bearer {get_token()}"},
+        headers={"Authorization": f"Bearer {ClientCredentialsToken.token}"},
     )
     assert response.status_code == 200, f"Cannot do dense search: {response}"
     return response.json()
 
 
 if __name__ == "__main__":
-    os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
     dataset_name = "scifact"
     docs = download_beir_and_load(dataset_name=dataset_name)
     create_datastore(datastore_name=dataset_name)
