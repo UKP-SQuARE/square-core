@@ -1,3 +1,5 @@
+"""Utils, e.g. build token and some shared variables."""
+
 import os
 from square_auth.client_credentials import ClientCredentials
 
