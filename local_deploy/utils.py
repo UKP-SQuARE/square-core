@@ -1,16 +1,12 @@
 """Utils, e.g. build token and some shared variables."""
 
 import os
-from square_auth.client_credentials import ClientCredentials
+from square_auth.utils import generate_token
 
 
 def build_token() -> str:
     os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
-    client_credentials = ClientCredentials(
-        keycloak_base_url="",
-        buffer=60,
-    )
-    return client_credentials()
+    return generate_token()
 
 
 def within_container() -> bool:
