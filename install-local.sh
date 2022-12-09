@@ -52,18 +52,7 @@ else
 	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./redis/.env.template > ./redis/.env
 fi
 
-# get all servies that need to be registered as clients keycloak
-# CLIENTS=( "models" "datastores" ) 
-# cd ./skills
-# for SKILL_DIR in ./*; do
-# 	if [[ -d $SKILL_DIR ]]; then
-# 		cp ./.env.template "$SKILL_DIR/.env"
-# 		SKILL=$(echo "$SKILL_DIR" | sed -e "s/\.\///")
-# 		CLIENTS+=( "$SKILL" )
-# 	fi
-# done
-# cd ..
-
+# create .env file for Datastores
 cp ./datastore-api/.env.template ./datastore-api/.env
 
 # bring up services required to setup authentication
