@@ -98,22 +98,9 @@ async def encode_query():
             else:
                 return response
 
-    # task_id = response.json()["task_id"]
-    # response = requests.get(
-    #     f"http://traefik/api/main/task_result/{task_id}",
-    #     headers={"Authorization": f"Bearer {get_token()}"},
-    #     verify=False,
-    # )
-    # print(response)
-    # print(response.json())
-    # emb = _decode_embeddings(response.json()["result"]["model_outputs"]["embeddings"])
-    # print(emb)
-
 
 if __name__ == "__main__":
-    # export SQUARE_PRIVATE_KEY_FILE=${PWD}/local_deploy/private_key.pem; python local_deploy/encode_query_aio.py
     os.environ["SQUARE_PRIVATE_KEY_FILE"] = os.path.join(os.getcwd(), "private_key.pem")
     response = asyncio.run(encode_query())
     print(response)
     print(_decode_embeddings(response["model_outputs"]["embeddings"]))
-    # print(response.status)
