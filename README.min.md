@@ -16,13 +16,13 @@ cd local_deploy
 python deploy_ds.py  # Tested with Python 3.7.13 
 ```
 
-This will start the minimal SQUARE service and run the example script `local_deploy/deploy_ds.py` to 
-- Download example corpus scifact;
-- Upload the corpus (to the ES in SQUARE);
-- Do BM25 search;
-- Embed and index the corpus with DPR (GPU 1min, CPU 30min);
-- Start a Faiss container to load the built dense index;
-- Do dense search.
+> This will start the minimal SQUARE service and run the example script `local_deploy/deploy_ds.py` to 
+> - Download example corpus scifact;
+> - Upload the corpus (to the ES in SQUARE);
+> - Do BM25 search;
+> - Embed and index the corpus with DPR (GPU 1min, CPU 30min);
+> - Start a Faiss container to load the built dense index;
+> - Do dense search.
 
 One can also get access to the [SWAGGER UI](https://swagger.io/tools/swagger-ui/) page for the interactive API. To do so, one can do 
 ```bash
