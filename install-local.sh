@@ -67,7 +67,7 @@ fi
 cp ./datastore-api/.env.template ./datastore-api/.env
 
 # bring up services required to setup authentication
-ytt -f docker-compose.ytt.min.yaml -f config.yaml > docker-compose.yaml
+ytt -f docker-compose.ytt.min.yaml -f config.yaml --data-value environment=local > docker-compose.yaml
 sleep 1
 echo "Pulling Images. This might take a while. Meanwhile grab a coffe c[_]. "
 COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose pull

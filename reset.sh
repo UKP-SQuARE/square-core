@@ -4,9 +4,6 @@ if [ -f "./docker-compose.yaml" ]; then
 fi
 rm .env ./**/.env
 
-# Set mode to local:
-sed -i -e "s/environment: prod/environment: local/g" ./config.yaml
-
 # Generate local-deployment key
 mkdir -p local_deploy
 export SQUARE_PRIVATE_KEY_FILE="${PWD}/local_deploy/private_key.pem"
