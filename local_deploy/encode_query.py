@@ -81,12 +81,9 @@ async def encode_query():
         "verify_ssl": verify_ssl,
     }
 
-    print("=============", flush=True)
     my_conn = aiohttp.TCPConnector()
     async with aiohttp.ClientSession(connector=my_conn) as session:
-        print("=============", flush=True)
         async with session.post(**kwargs) as response:
-            print("=============", flush=True)
             result = await response.text()
             if response.status == 200:
                 return await asyncio.ensure_future(
