@@ -7,7 +7,7 @@ If in container, please run `pip install square-model-client` before run this sc
 
 import os
 import asyncio
-from utils import SharedVariables
+from config import settings
 from square_model_client import SQuAREModelClient
 
 
@@ -34,8 +34,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    os.environ["SQUARE_API_URL"] = SharedVariables.model_url
-
     # Note, the SQuAREModelCLient is usually called within an endpoint that is async.
     # In that case, the following line is not needed.
     loop = asyncio.get_event_loop()

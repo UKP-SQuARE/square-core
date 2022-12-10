@@ -12,8 +12,8 @@ to generate a `docker-compose.yaml` file (and a authentication token for local d
 And then:
 ```bash
 docker-compose up -d
-cd local_deploy
-python deploy_ds.py  # Tested with Python 3.7.13 
+python local_deploy/embed_query.py  # An example of calling model API to embed a query
+python local_deploy/deploy_ds.py  # An example of deploying a new datastore
 ```
 
 > This will start the minimal SQUARE service and run the example script `local_deploy/deploy_ds.py` to 
