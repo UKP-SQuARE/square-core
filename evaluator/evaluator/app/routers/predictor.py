@@ -35,7 +35,7 @@ async def predict(
     token: str = Depends(client_credentials),
     _token_payload: Dict = Depends(auth),
 ):
-    logger.debug(
+    logger.info(
         f"Requested prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
     )
 
@@ -55,7 +55,7 @@ async def predict(
         args=(skill_id, dataset_name, token),
         task_id=task_id("predict", skill_id, dataset_name),
     )
-    logger.debug(
+    logger.info(
         f"Created prediction-task for skill '{skill_id}' on dataset '{dataset_name}'. Task-ID: '{task.id}'"
     )
 

@@ -27,50 +27,40 @@ logger = get_task_logger(__name__)
 def predict(
     skill_id: str,
     dataset_name: str,
-    # dataset_handler: DatasetHandler = Depends(DatasetHandler),
     token: str = Depends(client_credentials),
 ):
     logger.info(
-        f"start predictions with parameters: skill_id={skill_id}; dataset_name={dataset_name}"
+        f"Started prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
     )
     # get dataset metadata
     dataset_metadata = get_dataset_metadata(dataset_name)
-
-    dataset_handler = DatasetHandler()
-
     # get the dataset
+    dataset_handler = DatasetHandler()
     try:
         dataset = dataset_handler.get_dataset(dataset_name)
     except DatasetDoesNotExistError:
         logger.error("Dataset does not exist!")
         raise DatasetDoesNotExistError(dataset_name)
-    logger.info(f"Dataset loaded: {dataset}")
-
     # format the dataset into universal format for its skill-type
     try:
         dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
     except ValueError as e:
         logger.error(f"{e}")
-
         raise ValueError(f"{e}")
 
     headers = {"Authorization": f"Bearer {token}"}
-
     predictions: List[Prediction] = []
     start_time = datetime.datetime.now()
-
     for i in range(8):
         reference_data = dataset[i]
 
         if dataset_metadata["skill-type"] == "extractive-qa":
-            # 62c1ae1b536b1bb18ff91ce3 # squad
             query_request = {
                 "query": reference_data["question"],
                 "skill_args": {"context": reference_data["context"]},
                 "num_results": 1,
             }
         elif dataset_metadata["skill-type"] == "multiple-choice":
-            # 62c1ae19536b1bb18ff91cde # commonsense_qa
             query_request = {
                 "query": reference_data["question"],
                 "skill_args": {"choices": reference_data["choices"]},
@@ -79,7 +69,7 @@ def predict(
         else:
             skill_type = dataset_metadata["skill-type"]
             raise ValueError(
-                f"Predictions on '{skill_type}' datasets is currently not supported."
+                f"Predictions on '{skill_type}' datasets are currently not supported."
             )
 
         response = requests.post(
@@ -98,7 +88,7 @@ def predict(
         )
 
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
-    logger.info(f"Prediction finished in {calculation_time} seconds: {predictions}")
+    logger.info(f"Prediction finished after {calculation_time} seconds")
 
     prediction_result = PredictionResult(
         skill_id=ObjectId(skill_id),
@@ -109,9 +99,7 @@ def predict(
     )
 
     if hasattr(mongo_client, "client") == False:
-        logger.info("Lets connect to the mongo client...")
         mongo_client.connect()
-    logger.info(f"mongo_client.client = {mongo_client.client}")
 
     mongo_client.client.evaluator.predictions.replace_one(
         {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name},
@@ -119,22 +107,24 @@ def predict(
         upsert=True,
     )
 
-    logger.info(f"Data saved in database")
-
     # Trigger evaluation task with default metric
     try:
-        logger.info("Trigger evaluation task ...")
-
+        metric_name = dataset_metadata["metric"]
         task = evaluate_task.evaluate.apply_async(
-            args=(skill_id, dataset_name, dataset_metadata["metric"]),
-            task_id=task_id(
-                "evaluate", skill_id, dataset_name, dataset_metadata["metric"]
-            ),
+            args=(skill_id, dataset_name, metric_name),
+            task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
         )
-
-        logger.info(f"Task with id '{task.id}'")
-
-    except AttributeError:
         logger.info(
-            f"Attribute error: Dataset metadata does not have 'metric': {dataset_metadata}"
+            f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"
         )
+    except AttributeError:
+        logger.warn(
+            f"Not creating evaluation-task, because dataset metadata does not have a default 'metric' specified: {dataset_metadata}"
+        )
+
+    prediction_result = prediction_result.dict()
+    prediction_result["skill_id"] = skill_id
+    prediction_result["predictions"] = (
+        "List[" + str(len(prediction_result["predictions"])) + "]"
+    )
+    return prediction_result
