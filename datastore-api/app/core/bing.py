@@ -1,11 +1,13 @@
-import os
-import requests
-from trafilatura import fetch_url, extract
-from trafilatura.settings import use_config
 from ..models.query import QueryResult
+import requests
+from trafilatura import extract
+from trafilatura.downloads import add_to_compressed_dict, buffered_downloads, load_download_buffer
+from trafilatura.settings import use_config
+import concurrent.futures
+from typing import Tuple, Dict
+from collections import defaultdict
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-import asyncio
 
 class BingSearch:
     """Wraps access to the Bing Search API."""
@@ -18,49 +20,77 @@ class BingSearch:
         self.search_url = "https://api.bing.microsoft.com/v7.0/search"
         self.headers = {"Ocp-Apim-Subscription-Key": self.subscription_key}
 
-    async def search(self, query, count=10):
+    def __process_html(self, doc: Tuple[str, str]) -> Dict[str, str]:
+        """
+        Extracts text from html using trafilatura.
+        doc: Tuple[str, str] = (url, html)
+        """
+
+        # set configuration for trafilatura
+        new_config = use_config()
+        new_config.set('DEFAULT', 'EXTRACTION_TIMEOUT', "0") # must be zero
+        
+        # provide error message in case the website was fetched but no text was extracted
+        text = "Website fetch failed."
+        if type(doc[1]) == type('') and doc[1] != "":
+            text = extract(doc[1], include_comments=False, include_formatting=False, no_fallback=True, include_tables=False, config=new_config)
+
+        return {doc[0]: text}
+
+
+    async def search(self, query: str, count=10):
+        """Searches Bing for the given query and returns a list of QueryResults."""
+
         if count > 50:
             count = 50
         elif count < 1:
             count = 1
-        params = {"q": query, "textDecorations": True,
-                  "textFormat": "HTML", "count": count}
-        response = requests.get(
-            self.search_url, headers=self.headers, params=params)
+
+        # call Bing API to get urls 
+        params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count}
+        response = requests.get(self.search_url, headers=self.headers, params=params)
         response.raise_for_status()
         search_results = response.json()
-        results = []
-        new_config = use_config()
-        # setting this to anything but zero will raise an exception during testing
-        new_config.set('DEFAULT', 'EXTRACTION_TIMEOUT', "0")
-        urls = [result['url'] for i, result in enumerate(search_results["webPages"]["value"])]
-        async def get_text(url: str):
-            '''
-            Wrap the fetch() and extract() as an async function to speed up
-
-            '''
-            doc = await fetch_url(url)
-            text = await extract(doc, include_comments=False, include_formatting=False,
-                                 no_fallback=True, include_tables=False, config=new_config)
-            return text
-
-        texts = [get_text(url) for url in urls]
 
 
-        for i, (text, result) in enumerate(zip(texts, search_results["webPages"]["value"])):
+        # create a dictionary of urls and their search results
+        values_dict = {} # values_dict[url] = search result
+        [values_dict.update({result['url']: result}) for result in search_results["webPages"]["value"]]
+
+
+        # download the html for each url in parallel
+        threads = count
+        backoff_dict = dict()
+        dl_dict = add_to_compressed_dict(values_dict.keys()) # values_dict.keys() = urls
+        docs = dict() # docs[url] = html
+        while dl_dict:
+            buffer, threads, dl_dict, backoff_dict = load_download_buffer(dl_dict, backoff_dict)
+            for url, html in buffered_downloads(buffer, threads):
+                docs.update({url: html})
+
+
+        # extract text from html in parallel
+        # provide error message again in case the a website url was not used at all
+        texts = defaultdict(lambda: "Website fetch failed.") # texts[url] = text
+        with concurrent.futures.ThreadPoolExecutor() as executor: 
+            futures = [executor.submit(self.__process_html, doc) for doc in docs.items()]
+            [texts.update(future.result()) for future in futures]
+
+
+        # create a list of QueryResults
+        results = [] # list of QueryResults
+        for i, (url, values) in enumerate(values_dict.items()): 
             results.append(QueryResult(
                 document={
-                    "id": result["url"],
-                    "title": result["name"],
-                    "text": text,
+                    "id": url,
+                    "title": values["name"],
+                    "text": texts[url],
                 },
-                score=(count - i) / count,
-                id=result["url"]
+                score = (len(texts) - i) / len(texts),
+                id= url
             ))
 
-
         return results
-
 
 class BingMiddleware(BaseHTTPMiddleware):
 
