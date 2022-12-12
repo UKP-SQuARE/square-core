@@ -6,6 +6,8 @@ from ..models.datastore import DatastoreRequest, DatastoreField
 from .config import settings
 import requests
 import time
+from fastapi import Request
+import jwt
 
 import logging
 
@@ -25,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 async def startup_event_handler():
     # wait until the elasticsearch docker container is ready
-    # TODO: make sure this works also during testing
     wait_for_up(settings.ES_URL)
 
     # datastore_name is bing_search
@@ -36,8 +37,6 @@ async def startup_event_handler():
                   DatastoreField(name="text", type="text")]
     )
     binding_item_type = 'datastore'
-    # default user_id
-    user_id = 'LOCAL_SQUARE_USER'
     conn: ElasticsearchConnector = get_storage_connector()
     mongo: MongoClient = get_mongo_client()
     try:
@@ -50,8 +49,18 @@ async def startup_event_handler():
             schema = fields.to_datastore(datastore_name)
             success = await conn.add_datastore(schema)
             if success:
-                # None is in place of request since it is not available at this point
-                await mongo.new_binding(None, datastore_name, binding_item_type, user_id)
+                
+                # create a token with the default user_id
+                token = jwt.encode({"preferred_username": "LOCAL_SQUARE_USER"}, "secret", algorithm="HS256")
+                # create a mock scope
+                socpe =  {
+                    'type': 'http',
+                    'headers': [(b'authorization', b'Bearer ' + token.encode('utf-8'))], 
+                }
+                # create a mock request
+                request = Request(scope=socpe)
+
+                await mongo.new_binding(request, datastore_name, binding_item_type)
                 logger.info(f"Created datastore {datastore_name}")
             else:
                 logger.error(f"Failed to create datastore {datastore_name}")

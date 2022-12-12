@@ -37,11 +37,8 @@ class MongoClient:
         user_id = await self._decode_user_id(request)
         return self._binding_exists(user_id, item_value, item_type)
 
-    async def new_binding(self, request: Request, item_value: str, item_type: str, default_user_id=None):
-        if default_user_id is not None:
-            user_id = default_user_id
-        else:
-            user_id = await self._decode_user_id(request)
+    async def new_binding(self, request: Request, item_value: str, item_type: str):
+        user_id = await self._decode_user_id(request)
         if self._binding_exists(user_id, item_value, item_type):
             item_key = self.item_keys[item_type]
             error_msg = f'Attempt to override an existing binding (user_id: {user_id}, {item_key}: {item_value})'

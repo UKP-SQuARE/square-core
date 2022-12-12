@@ -35,7 +35,7 @@ async def search(
     credential_token=Depends(client_credentials),
     bing_search=Depends(get_bing_search_client)
 ):
-    if datastore_name == "bing_search":
+    if datastore_name == bing_search.datastore_name:
         try:
             return await bing_search.search(query, top_k)
         except ValueError as e:
