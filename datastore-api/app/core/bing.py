@@ -1,7 +1,6 @@
 from ..models.query import QueryResult
 import requests
 from trafilatura import extract
-from trafilatura.downloads import add_to_compressed_dict, buffered_downloads, load_download_buffer
 from trafilatura.settings import use_config
 import concurrent.futures
 from typing import Tuple, Dict, List
@@ -12,8 +11,6 @@ import aiohttp
 import asyncio
 
 import logging
-import time
-
 logger = logging.getLogger(__name__)
 
 class BingSearch:
