@@ -4,10 +4,17 @@ from trafilatura import extract
 from trafilatura.downloads import add_to_compressed_dict, buffered_downloads, load_download_buffer
 from trafilatura.settings import use_config
 import concurrent.futures
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 from collections import defaultdict
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+import aiohttp
+import asyncio
+
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 class BingSearch:
     """Wraps access to the Bing Search API."""
@@ -24,6 +31,7 @@ class BingSearch:
         """
         Extracts text from html using trafilatura.
         doc: Tuple[str, str] = (url, html)
+        returns: Dict[str, str] = {url: text}
         """
 
         # set configuration for trafilatura
@@ -34,8 +42,32 @@ class BingSearch:
         text = "Website fetch failed."
         if type(doc[1]) == type('') and doc[1] != "":
             text = extract(doc[1], include_comments=False, include_formatting=False, no_fallback=True, include_tables=False, config=new_config)
+            text = text.replace("\n", " ") # remove newlines
 
         return {doc[0]: text}
+
+    async def __web_scrape_task(self, url: str) -> Dict[str, str]:
+        """
+        Downloads the html for the given url.
+        params: url: str
+        returns: Dict[str, str] = {url: html}
+        """
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                content = await resp.text()
+                return {url: content}
+
+
+    async def __download_pages(self, urls: List[str]) -> List[Dict[str, str]]:
+        """
+        Downloads the html for the given urls in parallel.
+        params: urls: List[str]
+        returns: List[Dict[str, str]] = [{url: html}]
+        """
+        tasks = []
+        for url in urls:
+            tasks.append(self.__web_scrape_task(url))
+        return await asyncio.gather(*tasks)
 
 
     async def search(self, query: str, count=10):
@@ -52,22 +84,14 @@ class BingSearch:
         response.raise_for_status()
         search_results = response.json()
 
-
         # create a dictionary of urls and their search results
         values_dict = {} # values_dict[url] = search result
         [values_dict.update({result['url']: result}) for result in search_results["webPages"]["value"]]
 
-
-        # download the html for each url in parallel
-        threads = count
-        backoff_dict = dict()
-        dl_dict = add_to_compressed_dict(values_dict.keys()) # values_dict.keys() = urls
+        # download html in parallel
         docs = dict() # docs[url] = html
-        while dl_dict:
-            buffer, threads, dl_dict, backoff_dict = load_download_buffer(dl_dict, backoff_dict)
-            for url, html in buffered_downloads(buffer, threads):
-                docs.update({url: html})
-
+        dicts = await self.__download_pages(values_dict.keys())
+        [docs.update(d) for d in dicts]
 
         # extract text from html in parallel
         # provide error message again in case the a website url was not used at all
@@ -84,7 +108,7 @@ class BingSearch:
                 document={
                     "id": url,
                     "title": values["name"],
-                    "text": texts[url],
+                    "text": texts[url]
                 },
                 score = (len(texts) - i) / len(texts),
                 id= url
