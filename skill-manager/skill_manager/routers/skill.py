@@ -72,6 +72,40 @@ async def get_skills(request: Request):
     )
     return skills
 
+@router.get(
+    "/dataset/{dataset}",
+    response_model=List[Skill],
+)
+async def get_skills_by_dataset(request: Request, dataset: str = None):
+    """Returns all the skills that were trained on the given dataset."""
+    mongo_query = {"published": True}
+    if has_auth_header(request):
+        payload = await get_payload_from_token(request)
+        user_id = payload["username"]
+        # make a mongo query to get all the skills that the user has access to and are published and trained on the given dataset
+        mongo_query = {
+            "$and": [
+                {"data_sets": dataset},
+                {
+                    "$or": [
+                        mongo_query,
+                        # {"user_id": user_id}, # this user id is not the one that logged in
+                    ]
+                },
+            ]
+        }
+
+    logger.debug("Skill query: {query}".format(query=json.dumps(mongo_query)))
+    skills = mongo_client.client.skill_manager.skills.find(mongo_query)
+    skills = [Skill.from_mongo(s) for s in skills]
+
+    logger.debug(
+        "get_skills: {skills}".format(
+            skills=", ".join(["{}:{}".format(s.name, str(s.id)) for s in skills])
+        )
+    )
+    return skills
+
 
 @router.post(
     "",
