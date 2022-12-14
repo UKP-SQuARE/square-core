@@ -20,8 +20,8 @@ Authorization: Bearer {{token}}
 
 ###
 # @name remove_model
+# @prompt model_name {model_name}
 @token =  {{get_token.response.body.access_token}}
-@prompt model_name
 DELETE /api/models/remove/{{model_name}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
