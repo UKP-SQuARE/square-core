@@ -66,3 +66,6 @@ content-type: application/json
 {
   "input": ["Do aliens exist?"]
 }
+
+###
+//"model_kwargs": {"return_all_scores": true}
