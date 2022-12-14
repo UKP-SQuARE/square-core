@@ -52,3 +52,17 @@ content-type: application/json
   "model_class": "from_config",
   "return_plaintext_arrays": false
 }
+
+
+###
+# @name query_model
+# @prompt model_name {model_name}
+@token =  {{get_token.response.body.access_token}}
+POST /api/main/{{model_name}}/sequence-classification HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "input": ["Do aliens exist?"]
+}
