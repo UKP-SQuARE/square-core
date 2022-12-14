@@ -36,7 +36,6 @@ async def create_dataset(
     token_payload: Dict = Depends(auth),
     validate: bool = False,
 ):
-
     logger.debug(
         f"post dataset: dataset_name= {dataset_name}; skill_type = {skill_type}; metric = {metric}"
     )
@@ -45,11 +44,7 @@ async def create_dataset(
     logger.debug(f"dataset_item : {metadata}")
 
     # validate item
-    if (
-        dataset_name == metadata["name"]
-        and skill_type == metadata["skill-type"]
-        and metric == metadata["metric"]
-    ):
+    if skill_type == metadata["skill-type"] and metric == metadata["metric"]:
         validate = True
         logger.info(f"dataset_name {metadata['name']}")
 
@@ -59,11 +54,19 @@ async def create_dataset(
         mapping = metadata["mapping"]
         mapping["id-column"] = metadata["mapping"]["id-column"]
         mapping["question-column"] = metadata["mapping"]["question-column"]
-        mapping["choices-columns"] = metadata["mapping"]["choices-columns"]
-        mapping["choices-key-mapping-column"] = metadata["mapping"][
-            "choices-key-mapping-column"
-        ]
-        mapping["answer-index-column"] = metadata["mapping"]["answer-index-column"]
+
+        if metadata["name"] == "quoref":
+            mapping["context-column"] = metadata["mapping"]["context-column"]
+            mapping["answer-text-column"] = metadata["mapping"]["answer-text-column"]
+
+        elif metadata["name"] == "commonsense_qa":
+            mapping["choices-columns"] = metadata["mapping"]["choices-columns"]
+            mapping["choices-key-mapping-column"] = metadata["mapping"][
+                "choices-key-mapping-column"
+            ]
+            mapping["answer-index-column"] = metadata["mapping"]["answer-index-column"]
+        else:
+            logger.debug(f"undefined dataset_name={dataset_name}")
 
     else:
         logger.debug(f"Dataset doest not exist!")
@@ -82,7 +85,26 @@ async def create_dataset(
         )
 
         if dataset_name_exist is None:
-
+            if str(dataset_ob.dataset_name) == str("commonsense_qa"):
+                dataset_mapping = {
+                    "dataset_name": dataset_ob.dataset_name,
+                    "skill-type": dataset_ob.skill_type,
+                    "metric": dataset_ob.metric,
+                    "mapping": {
+                        "id-column": dataset_ob.mapping["id-column"],
+                        "question-column": dataset_ob.mapping["question-column"],
+                        "choices-columns": dataset_ob.mapping["choices-columns"],
+                        "choices-key-mapping-column": dataset_ob.mapping[
+                            "choices-key-mapping-column"
+                        ],
+                        "answer-index-column": dataset_ob.mapping[
+                            "answer-index-column"
+                        ],
+                    },
+                }
+                mongo_client.client.evaluator.datasets.insert_one(dataset_mapping)
+                return dataset_mapping
+        elif str(dataset_ob.dataset_name) == str("quoref"):
             dataset_mapping = {
                 "dataset_name": dataset_ob.dataset_name,
                 "skill-type": dataset_ob.skill_type,
@@ -90,23 +112,16 @@ async def create_dataset(
                 "mapping": {
                     "id-column": dataset_ob.mapping["id-column"],
                     "question-column": dataset_ob.mapping["question-column"],
-                    "choices-columns": dataset_ob.mapping["choices-columns"],
-                    "choices-key-mapping-column": dataset_ob.mapping[
-                        "choices-key-mapping-column"
-                    ],
-                    "answer-index-column": dataset_ob.mapping["answer-index-column"],
+                    "context-column": dataset_ob.mapping["context-column"],
+                    "answer-text-column": dataset_ob.mapping["answer-text-column"],
                 },
             }
-            logger.debug(
-                f"Save the dataset object on Mongo: dataset_name={dataset_name}, skill_type={skill_type}, "
-                f"metric={metric}, mapping={mapping} "
-            )
-
             mongo_client.client.evaluator.datasets.insert_one(dataset_mapping)
+            return dataset_mapping
         else:
-            logger.debug(
-                f"Dataset_name={dataset_name} exist on the collection datasets!"
-            )
+            return f"{dataset_ob.dataset_name} is not a valid dataset_name"
+    else:
+        return "Dataset exist on collection datasets"
     return metadata
 
 
@@ -129,20 +144,38 @@ async def get_dataset(
             logger.debug(f"Dataset_name exist on datasets collection!")
             for item in db_dataset_name:
 
-                return {
-                    "dataset_name": item["dataset_name"],
-                    "skill-type": item["skill-type"],
-                    "metric": item["metric"],
-                    "mapping": {
-                        "id-column": item["mapping"]["id-column"],
-                        "question-column": item["mapping"]["question-column"],
-                        "choices-columns": item["mapping"]["choices-columns"],
-                        "choices-key-mapping-column": item["mapping"][
-                            "choices-key-mapping-column"
-                        ],
-                        "answer-index-column": item["mapping"]["answer-index-column"],
-                    },
-                }
+                if str(item["dataset_name"]) == str("commonsense_qa"):
+
+                    return {
+                        "dataset_name": item["dataset_name"],
+                        "skill-type": item["skill-type"],
+                        "metric": item["metric"],
+                        "mapping": {
+                            "id-column": item["mapping"]["id-column"],
+                            "question-column": item["mapping"]["question-column"],
+                            "choices-columns": item["mapping"]["choices-columns"],
+                            "choices-key-mapping-column": item["mapping"][
+                                "choices-key-mapping-column"
+                            ],
+                            "answer-index-column": item["mapping"][
+                                "answer-index-column"
+                            ],
+                        },
+                    }
+                elif str(item["dataset_name"]) == str("quoref"):
+                    return {
+                        "dataset_name": item["dataset_name"],
+                        "skill-type": item["skill-type"],
+                        "metric": item["metric"],
+                        "mapping": {
+                            "id-column": item["mapping"]["id-column"],
+                            "question-column": item["mapping"]["question-column"],
+                            "context-column": item["mapping"]["context-column"],
+                            "answer-text-column": item["mapping"]["answer-text-column"],
+                        },
+                    }
+                else:
+                    return f" Undefined dataset_name"
         else:
             return "Dataset_name not exist on the datasets collection!"
 
@@ -151,10 +184,10 @@ async def get_dataset(
 
 
 @router.put(
-    "/{dataset_name}",
+    "/{dataset_name}/{skill_type}/{metric}",
     status_code=200,
 )
-async def put_dataset(dataset_name: str):
+async def put_dataset(dataset_name: str, skill_type: str, metric: str):
     logger.debug("put dataset")
     metadata = get_dataset_metadata(dataset_name=dataset_name)
 
@@ -167,16 +200,18 @@ async def put_dataset(dataset_name: str):
         logger.error(msg)
         raise HTTPException(400)
 
-    if dataset_result is not None:
-        try:
-            mongo_client.client.evaluator.datasets.replace_one(
-                {"dataset_name": metadata["name"]}, upsert=True
-            )
-            logger.debug(f"Dataset_name {dataset_name} is updated from mongodb!")
+    for dataset_item in dataset_result:
+        if dataset_item["dataset_name"] is not None:
+            try:
+                myquery = {"dataset_name": dataset_item["dataset_name"]}
+                new_value = {"$set": {"skill-type": skill_type, "metric": metric}}
+                mongo_client.client.evaluator.datasets.update_one(myquery, new_value)
 
-        except HTTPException:
-            logger.error(msg)
-            raise HTTPException(400, msg)
+                logger.debug(f"Dataset_name {dataset_name} is updated from mongodb!")
+                return f"Dataset_name: {dataset_item['dataset_name']} has be update"
+            except HTTPException:
+                logger.error(msg)
+                raise HTTPException(400, msg)
     return dataset_name
 
 
@@ -189,23 +224,27 @@ async def delete_dataset(dataset_name: str):
 
     # check if dataset_name exist on the database
     try:
-        db_dataset_name = mongo_client.client.evaluator.datasets.find(
+        result_db = mongo_client.client.evaluator.datasets.find(
             {"dataset_name": dataset_name}
         )
-        logger.debug(f"db_dataser_name = {db_dataset_name}")
+        logger.debug(f"db_dataser_name = {result_db}")
     except DatasetDoesNotExistError:
         logger.error(msg)
         raise HTTPException(404, msg)
 
-    if db_dataset_name is not None:
-        try:
+    for item in result_db:
+        if item["dataset_name"] is not None:
 
-            mongo_client.client.evaluator.datasets.delete_one(
-                {"dataset_name": dataset_name}
-            )
-            logger.debug(f"Dataset_name {dataset_name} is deleted from mongodb!")
+            try:
+                mongo_client.client.evaluator.datasets.delete_one(
+                    {"dataset_name": item["dataset_name"]}
+                )
+                logger.debug(
+                    f"Dataset_name {item['dataset_name']} is deleted from mongodb!"
+                )
+            except DatasetDoesNotExistError:
+                logger.error(msg)
+                raise HTTPException(404, msg)
+            return f"dataset_name: {item['dataset_name']} has be deleted!"
 
-        except DatasetDoesNotExistError:
-            logger.error(msg)
-            raise HTTPException(404, msg)
-    return dataset_name
+    return f"dataset_name: {dataset_name} not exist on the Database!"
