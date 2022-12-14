@@ -32,3 +32,23 @@ Authorization: Bearer {{token}}
 # -H 'Content-Type: application/json' \
 # --data-raw '{"identifier": "deepset/minilm-uncased-squad2", "model_name": "deepset/minilm-uncased-squad2", "model_type": "transformer", "model_class": "from_config", "batch_size": 1, "max_input": 512}' \
 # https://square.ukp-lab.de/api/models/deploy  
+
+###
+# @name deploy_model
+@token =  {{get_token.response.body.access_token}}
+POST /api/models/deploy HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "identifier": "tweac_new",
+  "model_name": "UKP-SQuARE/tweac_16",
+  "model_type": "transformer",
+  "disable_gpu": true,
+  "batch_size": 1,
+  "max_input": 512,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "from_config",
+  "return_plaintext_arrays": false
+}
