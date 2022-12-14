@@ -36,10 +36,13 @@ class BingSearch:
         new_config.set('DEFAULT', 'EXTRACTION_TIMEOUT', "0") # must be zero
         
         # provide error message in case the website was fetched but no text was extracted
-        text = "Website fetch failed."
+        text = "Error downloading or processing document."
         if type(doc[1]) == type('') and doc[1] != "":
             text = extract(doc[1], include_comments=False, include_formatting=False, no_fallback=True, include_tables=False, config=new_config)
-            text = text.replace("\n", " ") # remove newlines
+            if type(text) == type(''):
+                text = text.replace("\n", " ")
+            else: 
+                text = "Error downloading or processing document."
 
         return {doc[0]: text}
 
@@ -50,9 +53,14 @@ class BingSearch:
         returns: Dict[str, str] = {url: html}
         """
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                content = await resp.text()
-                return {url: content}
+            timeout = aiohttp.ClientTimeout(total=5)
+            try:
+                async with session.get(url, timeout=timeout) as resp:
+                    content = await resp.text()
+                    return {url: content}
+            except Exception as e:
+                logger.error(f"Error downloading {url}: {e}")
+                return {url: ""}
 
 
     async def __download_pages(self, urls: List[str]) -> List[Dict[str, str]]:
@@ -76,10 +84,16 @@ class BingSearch:
             count = 1
 
         # call Bing API to get urls 
-        params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count}
-        response = requests.get(self.search_url, headers=self.headers, params=params)
-        response.raise_for_status()
-        search_results = response.json()
+        try:
+            params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count}
+            response = requests.get(self.search_url, headers=self.headers, params=params)
+            response.raise_for_status()
+            search_results = response.json()
+        except Exception as e:
+            logger.error(f"Error searching Bing for {query}: {e}")
+            return {
+                "error": f"Error searching Bing for {query}"
+            }
 
         # create a dictionary of urls and their search results
         values_dict = {} # values_dict[url] = search result
