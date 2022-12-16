@@ -64,8 +64,14 @@ Authorization: Bearer {{token}}
 content-type: application/json
 
 {
-  "input": ["Do aliens exist?"]
+  "input": ["Do aliens exist?"],
+  "task_kwargs": {"return_all_scores": true}
 }
 
+
 ###
-//"model_kwargs": {"return_all_scores": true}
+# @prompt task_id
+GET /api/models/task_result/{{task_id}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
