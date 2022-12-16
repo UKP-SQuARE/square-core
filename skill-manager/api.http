@@ -49,6 +49,13 @@ Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
+# @name get_skill_by_dataset
+# @prompt dataset {dataset}
+GET {{path_prefix}}/skill/dataset/{{dataset}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
 # @name create_skill
 POST {{path_prefix}}/skill HTTP/1.1
 Host: {{hostname}}
@@ -56,7 +63,7 @@ Authorization: Bearer {{token}}
 content-type: application/json
 
 {
-  "name":"test-skill",
+  "name":"squad_skill",
   "skill_type":"span-extraction",
   "description":"",
   "skill_settings": {
@@ -67,7 +74,35 @@ content-type: application/json
   "default_skill_args": {
   },
   "user_id":"LOCAL_SQUARE_USER",
-  "published":false,
+  "published":true,
+  "data_sets": ["squad"],
+  "skill_input_examples": [
+    {"query":"","context":""},
+    {"query":"","context":""},
+    {"query":"","context":""}
+  ]
+  }
+
+###
+# @name create_skill_tweac
+POST {{path_prefix}}/skill HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "name":"tweac",
+  "skill_type":"meta-skill",
+  "description":"",
+  "skill_settings": {
+    "requires_context": false,
+    "requires_multiple_choices":0
+  },
+  "url":"http://127.0.0.1:8001",
+  "default_skill_args": {
+  },
+  "user_id":"LOCAL_SQUARE_USER",
+  "published":true,
   "skill_input_examples": [
     {"query":"","context":""},
     {"query":"","context":""},
@@ -124,4 +159,20 @@ content-type: application/json
   "user_id": "",
   "explain_kwargs": {}
 }
+
+
+###
+# @name query_tweac
+POST {{path_prefix}}/skill/638f9f7feab6419900fecdc7/query HTTP/1.1
+Host: {{hostname}}
+content-type: application/json
+
+{
+  "query": "Which NFL team represented the AFC at Super Bowl 50?",
+  "skill_args": {},
+  "skill": {},
+  "user_id": "",
+  "explain_kwargs": {}
+}
+
 
