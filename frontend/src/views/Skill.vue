@@ -92,7 +92,7 @@
           <div class="col-md-6">
             <label for="adapter" class="form-label">Adapter
               <small class="text-muted">(leave empty if not required) 
-                <svg content="If your base model should also use adapters, write the name of the adapter here.
+                <svg content="If your base model should use adapters, write the name of the adapter here.
                  eg: 'AdapterHub/bert-base-uncased-pf-squad' Leave blank if unsure" v-tippy
                  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -100,7 +100,7 @@
                 </svg>
               </small>
             </label>
-            <input type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter">
+            <input type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter" :disabled="skill_args.base_model == ''">
           </div>
       </div>
       <div class="row">       
@@ -116,21 +116,21 @@
                 </svg>
               </small>
             </label>
-            <input type="text" v-model="skill_args.datastore" class="form-control form-control-sm" id="datastore">
+            <input type="text" v-model="skill_args.datastore" class="form-control form-control-sm" id="datastore" :disabled="skill.skill_settings.requires_context">
           </div>
           <div class="col-md-6">
             <label for="index" class="form-label">Index 
               <small class="text-muted">(leave empty if not required) 
                 <svg content="If your Skill is using a datatore and you do not want to use the predefined index (i.e., bm25),
                 write the name of the index here.
-                 eg: 'distilbert' Leave blank if unsure" v-tippy
+                 eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure" v-tippy
                  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                 </svg>
               </small>
             </label>
-            <input type="text" v-model="skill_args.index" class="form-control form-control-sm" id="index">
+            <input type="text" v-model="skill_args.index" class="form-control form-control-sm" id="index" :disabled="skill_args.datastore == ''">
           </div>
       </div>
       <div class="row">       
