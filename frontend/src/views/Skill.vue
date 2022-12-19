@@ -92,7 +92,9 @@
           <div class="col-md-6">
             <label for="adapter" class="form-label">Adapter
               <small class="text-muted">(leave empty if not required) 
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                <svg content="If your base model should also use adapters, write the name of the adapter here.
+                 eg: 'AdapterHub/bert-base-uncased-pf-squad' Leave blank if unsure" v-tippy
+                 xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                 </svg>
@@ -105,7 +107,10 @@
         <div class="col-md-6">
             <label for="datastore" class="form-label">Datastore 
               <small class="text-muted">(leave empty if not required) 
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                <svg content="If your Skill requires the use of a datastore (i.e., a document collection) because
+                it is an open-domain Skill, write the name of the datastore here.
+                 eg: 'bioasq' Leave blank if unsure" v-tippy
+                  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                 </svg>
@@ -116,7 +121,10 @@
           <div class="col-md-6">
             <label for="index" class="form-label">Index 
               <small class="text-muted">(leave empty if not required) 
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                <svg content="If your Skill is using a datatore and you do not want to use the predefined index (i.e., bm25),
+                write the name of the index here.
+                 eg: 'distilbert' Leave blank if unsure" v-tippy
+                 xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                 </svg>
@@ -128,7 +136,8 @@
       <div class="row">       
         <div class="col-md-12">
             <label for="other_args" class="form-label">Others
-              <small class="text-muted">(leave empty if not required) 
+              <small content="Write any other additional argument you may need. The text should be a json document (i.e., {'key': 'value'}) Leave blank if unsure" v-tippy
+                 class="text-muted">(leave empty if not required) 
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
@@ -211,6 +220,9 @@ import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
 import Multiselect from 'vue-multiselect'
 import { getSkill, getSkillTypes, getDataSets } from '@/api'
+
+import VueTippy from "vue-tippy";
+Vue.use(VueTippy);
 
 export default Vue.component('edit-skill', {
   data() {
