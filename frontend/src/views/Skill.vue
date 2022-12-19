@@ -71,14 +71,80 @@
         </div>
       </div>
       <div class="row">
-        <div class="col mt-3">
-          <label for="args" class="form-label">Skill arguments</label>
+        <div class="col mt-4">
+          <h3>Provide the arguments of the Skill</h3>
+        </div>
+      </div>
+      <div class="row">       
+        <div class="col-md-6">
+            <label for="base_model" class="form-label">Base Model
+              <small class="text-muted">(leave empty if not required) 
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+              </small>
+            </label>
+            <input v-if="skill.skill_type != 'information-retrieval'" type="text" v-model="skill_args.base_model" class="form-control form-control-sm" id="base_model" placeholder="UKP-SQuARE/distilroberta-squad">
+            <input v-if="skill.skill_type == 'information-retrieval'" type="text" v-model="skill_args.base_model" class="form-control form-control-sm" id="base_model">
+
+          </div>
+          <div class="col-md-6">
+            <label for="adapter" class="form-label">Adapter
+              <small class="text-muted">(leave empty if not required) 
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+              </small>
+            </label>
+            <input type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter">
+          </div>
+      </div>
+      <div class="row">       
+        <div class="col-md-6">
+            <label for="datastore" class="form-label">Datastore 
+              <small class="text-muted">(leave empty if not required) 
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+              </small>
+            </label>
+            <input type="text" v-model="skill_args.datastore" class="form-control form-control-sm" id="datastore">
+          </div>
+          <div class="col-md-6">
+            <label for="index" class="form-label">Index 
+              <small class="text-muted">(leave empty if not required) 
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+              </small>
+            </label>
+            <input type="text" v-model="skill_args.index" class="form-control form-control-sm" id="index">
+          </div>
+      </div>
+      <div class="row">       
+        <div class="col-md-12">
+            <label for="other_args" class="form-label">Others
+              <small class="text-muted">(leave empty if not required) 
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+              </small>
+            </label>
+            <input type="text" v-model="skill_args.others" class="form-control form-control-sm" id="other_args">
+          </div>
+      </div>
+        
+          <!-- <label for="args" class="form-label">Skill arguments</label>
           <input v-model="skillArguments" type="text" class="form-control" :class="{ 'is-invalid': !validJSON }" id="args" placeholder="Skill argument as JSON">
           <div v-if="!validJSON" class="invalid-feedback">
             JSON is invalid
-          </div>
-        </div>
-      </div>
+          </div> -->
+  
       <div class="row">
         <div class="col mt-3">
           <label for="datasets" class="form-label">Skill Datasets</label>
@@ -166,6 +232,13 @@ export default Vue.component('edit-skill', {
         published: false,
         skill_input_examples: []
       },
+      skill_args: {
+        base_model: '',
+        adapter: '',
+        datastore: '',
+        index: '',
+        others: ''
+      },
       /**
        * The name for the title.
        * We do not use skill.name for this so that the title is only changed when the user updates the skill.
@@ -246,12 +319,41 @@ export default Vue.component('edit-skill', {
           this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
         }
       }
+      // add arguments to skill
+      this.addSkillArgs2Skill()
       this.$store
           .dispatch('createSkill', { skill: this.skill })
           .then(() => this.$router.push('/skills'))
           .catch(() => {
             this.failure = true
           })
+    },
+    addSkillArgs2Skill(){
+      this.skill.default_skill_args = {}
+      if (this.skill_args.base_model != '') {
+        this.skill.default_skill_args = {'base_model': this.skill_args.base_model}
+      }
+      if (this.skill_args.adapter != '') {
+        this.skill.default_skill_args['adapter'] = this.skill_args.adapter
+      }
+      if (this.skill_args.datastore != '') {
+        this.skill.default_skill_args['datastore'] = this.skill_args.datastore
+      }
+      if (this.skill_args.index != '') {
+        this.skill.default_skill_args['index'] = this.skill_args.index
+      }
+      // skill args is a json. add the key value pairs to the skill args
+      if (this.skill_args.others != '') {
+        try {
+          var others = JSON.parse(this.skill_args.others)
+          for (var key in others) {
+            this.skill.default_skill_args[key] = others[key]
+          }
+        } catch (e) {
+          this.validJSON = false
+        }
+      }
+      
     },
     addInputExampleFields() {
       // Dynamically add input fields
@@ -323,8 +425,25 @@ export default Vue.component('edit-skill', {
             }
             this.skill = data
             this.originalName = this.skill.name
-            // Trigger setter
-            this.skillArguments = JSON.stringify(this.skill.default_skill_args)
+            // add skill args to the UI
+            this.skill_args.base_model = this.skill.default_skill_args['base_model']
+            this.skill_args.adapter = this.skill.default_skill_args['adapter']
+            this.skill_args.datastore = this.skill.default_skill_args['datastore']
+            this.skill_args.index = this.skill.default_skill_args['index']
+            // add the rest of the skill args to the others field
+            var others = {}
+            for (var key in this.skill.default_skill_args) {
+              if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index') {
+                others[key] = this.skill.default_skill_args[key]
+              }
+            }
+            // if others is empty, set it to empty string
+            if (Object.keys(others).length === 0) {
+              others = ''
+            } else {
+              this.skill_args.others = JSON.stringify(others)
+            }
+            // this.skillArguments = JSON.stringify(this.skill.default_skill_args)
             this.addInputExampleFields()
             if (this.skill.skill_input_examples[0].choices !== null){
               // for each skill_input_example, add the choices to the list_answer_choices
