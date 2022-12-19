@@ -4,8 +4,8 @@ from typing import Union
 
 import datasets
 from datasets import Dataset, DatasetDict, DownloadMode, Split
-from evaluator.core.dataset_formatter import DatasetFormatter
-from evaluator.settings import DatasetHandlerSettings
+from evaluator.app.core.dataset_formatter import DatasetFormatter
+from evaluator.app.settings import DatasetHandlerSettings
 
 logger = logging.getLogger(__name__)
 

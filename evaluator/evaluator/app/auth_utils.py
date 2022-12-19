@@ -7,7 +7,7 @@ from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from square_auth.auth import Auth
 from starlette.requests import Request
 
-from evaluator import mongo_client
+from evaluator.app import mongo_client
 
 
 def has_auth_header(request: Request) -> bool:
