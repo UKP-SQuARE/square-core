@@ -50,6 +50,7 @@
             </label>
           </div>
         </div>
+        
         <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
             <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox" id="published">
@@ -62,6 +63,7 @@
           </div>
         </div>
       </div>
+
       <div class="row">
         <div class="col mt-3">
           <label for="url" class="form-label">Skill URL</label>
@@ -70,6 +72,15 @@
             <div class="mt-2"><Status :url="skill.url" /></div>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col mt-3">
+          <label for="datasets" class="form-label">Skill Datasets</label>
+          <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false" placeholder="Select a dataset"></multiselect>
+          <small class="text-muted">Select the dataset on which the Skill was trained.</small>
+        </div>
+      </div>
+
       <div class="row">
         <div class="col mt-4">
           <h3>Provide the arguments of the Skill</h3>
@@ -154,13 +165,7 @@
             JSON is invalid
           </div> -->
   
-      <div class="row">
-        <div class="col mt-3">
-          <label for="datasets" class="form-label">Skill Datasets</label>
-          <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false" placeholder="Select a dataset"></multiselect>
-          <small class="text-muted">Select the dataset on which the Skill was trained.</small>
-        </div>
-      </div>
+      
       <div class="row">
         <div class="col mt-4">
           <h3>Provide example questions</h3>
