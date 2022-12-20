@@ -171,11 +171,16 @@ class TestQuery:
                          query_result,
 
     ):
-        requests_mock.real_http = True
-        requests_mock.get(
-            f"/datastores/{bing_search_datastore_name}/search",
+        '''
+        Test if the bing search api is up
 
-        )
+
+        '''
+        # requests_mock.real_http = True
+        # requests_mock.get(
+        #     f"/datastores/{bing_search_datastore_name}/search",
+        #
+        # )
 
         bing_search_return = [query_result]
         with patch.object(BingSearch, "search", new_callable=async_mock_callable(bing_search_return)):
@@ -187,4 +192,38 @@ class TestQuery:
                     },
             )
         assert len(response.json()) == 1
+        assert response.json()[0]["document"] == query_result.document.__root__
+        assert response.json()[0]["score"] ==0
+        assert response.json()[0]["id"] == "222"
         assert response.status_code == 200
+
+    def test_bing_search_max_count(self,requests_mock: Mocker,
+                         client,
+                         bing_search_datastore_name,
+                         query_result,
+
+    ):
+        '''
+        Test if bing search api could have correct length of return
+
+
+        '''
+        # requests_mock.real_http = True
+        # requests_mock.get(
+        #     f"/datastores/{bing_search_datastore_name}/search",
+        #
+        # )
+
+        bing_search_return = [query_result for i in range(50) ]
+        with patch.object(BingSearch, "search", new_callable=async_mock_callable(bing_search_return)):
+            response = client.get(
+                "/datastores/{}/search".format(bing_search_datastore_name),
+                    params={
+                        "query": "who is the president of US?",
+                        "top_k":50
+                    },
+            )
+
+        assert response.status_code == 200
+        assert len(response.json()) <= 50
+
