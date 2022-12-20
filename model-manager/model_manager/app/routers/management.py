@@ -109,7 +109,7 @@ async def list_exp_methods():
     return result
 
 
-@router.get("/deployed-models-health", name="get-deployed-models", response_model=List[GetModelsHealth])
+@router.get("/health", name="get-deployed-models-health", response_model=List[GetModelsHealth])
 async def get_all_models_health():
     '''
     Check all worker's health (worker : inference model container)
@@ -124,7 +124,7 @@ async def get_all_models_health():
     for model in models:
         container_id = mongo_client.get_container_id(model["IDENTIFIER"])
         container_obj = docker_client.containers.get(container_id)
-        if container_obj in docker_client.containers.list():
+        if container_obj.status == "running":
             result.append(
                 GetModelsHealth(
                     identifier=model["IDENTIFIER"],
@@ -138,6 +138,36 @@ async def get_all_models_health():
                     is_alive=False,
                 )
             )
+    return result
+
+@router.get("/{identifier}/health", name="get-certain-model-health", response_model=List[GetModelsHealth])
+async def get_certain_models_health(identifier:str):
+    '''
+    Check certain worker's health (worker : inference model container)
+    Return:
+        result[list]: the health of one certain worker
+    '''
+
+    models = await mongo_client.get_models_db()
+
+    result = []
+    docker_client = docker.from_env()
+    container_id = mongo_client.get_container_id(identifier)
+    container_obj = docker_client.containers.get(container_id)
+    if container_obj.status == "running":
+        result.append(
+            GetModelsHealth(
+                identifier=identifier,
+                is_alive=True,
+            )
+        )
+    else:
+        result.append(
+            GetModelsHealth(
+                identifier=identifier,
+                is_alive=False,
+            )
+        )
     return result
 
 
