@@ -27,6 +27,7 @@ logger = get_task_logger(__name__)
 def predict(
     skill_id: str,
     dataset_name: str,
+    metric_name: str = None,
     token: str = Depends(client_credentials),
 ):
     logger.info(
@@ -107,9 +108,8 @@ def predict(
         upsert=True,
     )
 
-    # Trigger evaluation task with default metric
-    try:
-        metric_name = dataset_metadata["metric"]
+    # trigger evaluation task specified metric
+    if metric_name is not None:
         task = evaluate_task.evaluate.apply_async(
             args=(skill_id, dataset_name, metric_name),
             task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
@@ -117,10 +117,8 @@ def predict(
         logger.info(
             f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"
         )
-    except AttributeError:
-        logger.warn(
-            f"Not creating evaluation-task, because dataset metadata does not have a default 'metric' specified: {dataset_metadata}"
-        )
+    else:
+        logger.info(f"Not creating evaluation-task, because no metric was specified")
 
     prediction_result = prediction_result.dict()
     prediction_result["skill_id"] = skill_id
