@@ -45,7 +45,7 @@
         <div class="col-6 mt-3 d-flex align-items-center">
           <div class="form-check">
             <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context"
-              class="form-check-input" type="checkbox" id="requiresContext" v-on:change="SetSkillURL()">
+              class="form-check-input" type="checkbox" id="requiresContext">
             <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
                 class="bi bi-card-text" viewBox="0 0 16 16">
@@ -427,11 +427,6 @@ export default Vue.component('edit-skill', {
       // In case the default amount is modified later this will adapt for legacy skills
       while (this.skill.skill_input_examples.length < this.numberSkillExamples) {
         this.skill.skill_input_examples.push({ 'query': '', 'context': '' })
-      }
-    },
-    SetSkillURL() {
-      if (this.skill.skill_type == 'span-extraction') {
-        this.skill.skill_settings.requires_context ? this.skill.url = 'http://extractive-qa' : this.skill.url = 'http://open-extractive-qa'
       }
     },
     setSelectIndices() {
