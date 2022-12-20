@@ -359,6 +359,9 @@ export default Vue.component('edit-skill', {
           this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
         }
       }
+      // add arguments to skill
+      this.addSkillArgs2Skill()
+      // update skill
       this.$store
         .dispatch('updateSkill', { skill: this.skill })
         .then(() => {
@@ -379,6 +382,7 @@ export default Vue.component('edit-skill', {
       }
       // add arguments to skill
       this.addSkillArgs2Skill()
+      // create skill
       this.$store
         .dispatch('createSkill', { skill: this.skill })
         .then(() => this.$router.push('/skills'))
@@ -397,9 +401,13 @@ export default Vue.component('edit-skill', {
       if (this.skill_args.datastore != '') {
         this.skill.default_skill_args['datastore'] = this.skill_args.datastore
       }
-      if (this.skill_args.index != '' && this.skill_args.index != 'BM25') {
+      if (this.skill_args.index != '') {
         // BM25 is the default index
-        this.skill.default_skill_args['index'] = this.skill_args.index
+        if (this.skill_args.index == 'BM25') {
+          this.skill.default_skill_args['index'] = ""
+        } else {
+          this.skill.default_skill_args['index'] = this.skill_args.index
+        }
       }
       // skill args is a json. add the key value pairs to the skill args
       if (this.skill_args.others != '') {
@@ -510,7 +518,6 @@ export default Vue.component('edit-skill', {
           this.skill_args.base_model = this.skill.default_skill_args['base_model']
           this.skill_args.adapter = this.skill.default_skill_args['adapter']
           this.skill_args.datastore = this.skill.default_skill_args['datastore']
-          console.log(this.skill.default_skill_args['index'])
           if(this.skill_args.datastore !== '' && this.skill.default_skill_args['index'] == '') {
             this.skill_args.index = 'BM25'
           } else {
