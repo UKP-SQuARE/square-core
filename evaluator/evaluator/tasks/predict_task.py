@@ -14,7 +14,13 @@ from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
 from evaluator.app.core.task_helper import task_id
-from evaluator.app.models import Prediction, PredictionResult, get_dataset_metadata
+from evaluator.app.models import (
+    Evaluation,
+    EvaluationStatus,
+    Prediction,
+    PredictionResult,
+    get_dataset_metadata,
+)
 from evaluator.app.routers import client_credentials
 from evaluator.tasks import evaluate_task
 
@@ -33,6 +39,15 @@ def predict(
     logger.info(
         f"Started prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
     )
+
+    if hasattr(mongo_client, "client") == False:
+        mongo_client.connect()
+
+    evaluation_filter = {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
+    mongo_client.client.evaluator.evaluations.update_many(
+        evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.started}}
+    )
+
     # get dataset metadata
     dataset_metadata = get_dataset_metadata(dataset_name)
     # get the dataset
@@ -41,12 +56,18 @@ def predict(
         dataset = dataset_handler.get_dataset(dataset_name)
     except DatasetDoesNotExistError:
         logger.error("Dataset does not exist!")
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
+        )
         raise DatasetDoesNotExistError(dataset_name)
     # format the dataset into universal format for its skill-type
     try:
         dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
     except ValueError as e:
         logger.error(f"{e}")
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
+        )
         raise ValueError(f"{e}")
 
     headers = {"Authorization": f"Bearer {token}"}
@@ -99,17 +120,21 @@ def predict(
         predictions=predictions,
     )
 
-    if hasattr(mongo_client, "client") == False:
-        mongo_client.connect()
-
     mongo_client.client.evaluator.predictions.replace_one(
         {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name},
         prediction_result.dict(),
         upsert=True,
     )
 
+    mongo_client.client.evaluator.evaluations.update_many(
+        evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.finished}}
+    )
+
     # trigger evaluation task specified metric
     if metric_name is not None:
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.requested}}
+        )
         task = evaluate_task.evaluate.apply_async(
             args=(skill_id, dataset_name, metric_name),
             task_id=task_id("evaluate", skill_id, dataset_name, metric_name),

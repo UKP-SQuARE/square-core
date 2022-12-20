@@ -30,7 +30,9 @@ async def evaluate(
 ):
     user_id = token_payload["username"]
     try:
-        evaluation_handler.evaluate(user_id, token, skill_id, dataset_name, metric_name)
+        return evaluation_handler.evaluate(
+            user_id, token, skill_id, dataset_name, metric_name
+        )
     except Exception as e:
         raise HTTPException(400, f"{e}")
 
@@ -49,7 +51,7 @@ async def evaluate(
 ):
     user_id = token_payload["username"]
     try:
-        evaluation_handler.evaluate(user_id, token, skill_id, dataset_name, None)
+        return evaluation_handler.evaluate(user_id, token, skill_id, dataset_name, None)
     except Exception as e:
         raise HTTPException(400, f"{e}")
 
@@ -69,7 +71,7 @@ async def compute_metric(
 ):
     user_id = token_payload["username"]
     try:
-        evaluation_handler.compute_metric(
+        return evaluation_handler.compute_metric(
             user_id, token, skill_id, dataset_name, metric_name
         )
     except Exception as e:
@@ -90,6 +92,6 @@ async def compute_predictions(
 ):
     user_id = token_payload["username"]
     try:
-        evaluation_handler.do_predictions(user_id, token, skill_id, dataset_name)
+        return evaluation_handler.do_predictions(user_id, token, skill_id, dataset_name)
     except Exception as e:
         raise HTTPException(400, f"{e}")
