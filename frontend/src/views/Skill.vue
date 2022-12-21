@@ -121,20 +121,33 @@
 
         </div>
         <div class="col-md-6">
+          <input class="form-check-input" type="radio" id="adapter_flag" v-model="combine_adapters" value="0" :disabled="skill_args.base_model == ''">
           <label for="adapter" class="form-label">Adapter
-            <small class="text-muted">(leave empty if not required)
-              <svg content="If your base model should use adapters, write the name of the adapter here.
-                 eg: 'AdapterHub/bert-base-uncased-pf-squad' Leave blank if unsure" v-tippy
-                xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle"
-                viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                <path
-                  d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
-              </svg>
-            </small>
           </label>
-          <input type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter"
+          &nbsp;
+          <input class="form-check-input" type="radio" id="combine_adapters_flag" v-model="combine_adapters" value="1" :disabled="skill_args.base_model == ''">
+          <label class="form-check-label" for="combine_adapters_flag">
+            Combine Adapters? <small class="text-muted">(leave empty if not required)
+            <svg content="1) If your base model should use adapters, write the name of the adapter here.
+                 <br/>eg: 'AdapterHub/bert-base-uncased-pf-squad'
+                 <br/>2) (Advanced!) If you want to combine multiple adapters by averaging their weights as in (Friedman et al., EMNLP 2021), select this option and write the list of adapters. (press enter after each adapter). Do not select this if unsure." v-tippy
+              xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle"
+              viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+              <path
+                d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+            </svg>
+            &nbsp;<a href="https://aclanthology.org/2021.emnlp-main.495.pdf">More info</a>
+          </small>
+          </label>
+          <input v-if="combine_adapters == '0'" type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter"
             :disabled="skill_args.base_model == ''">
+          <vue-tags-input v-if="combine_adapters == '1'" class="form-control form-control-sm" id="multiple_adapters_input"
+          style="max-width: unset;"
+          v-model="skill_args.adapter"
+          :tags="skill_args.adapters"
+          @tags-changed="newAdapters => skill_args.adapters = newAdapters"
+          />
         </div>
       </div>
       <div class="row">
@@ -258,15 +271,19 @@
 
 <script>
 import Vue from 'vue'
+
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
-import Multiselect from 'vue-multiselect'
-import { getSkill, getSkillTypes, getDataSets } from '@/api'
+import { getSkill, getSkillTypes, getDataSets, getDatastoreIndices, getDatastores} from '@/api'
 
 import VueTippy from "vue-tippy";
-import { getDatastoreIndices, getDatastores } from '../api'
 Vue.use(VueTippy);
+
+import Multiselect from 'vue-multiselect'
+import VueTagsInput from '@johmun/vue-tags-input';
+
+
 
 export default Vue.component('edit-skill', {
   data() {
@@ -275,6 +292,9 @@ export default Vue.component('edit-skill', {
       dataSets: [],
       datastores: [],
       indices: [],
+      combine_adapters: "0",
+      tag: '',
+      tags: [],
       skill: {
         name: '',
         skill_type: '',
@@ -293,6 +313,7 @@ export default Vue.component('edit-skill', {
       skill_args: {
         base_model: '',
         adapter: '',
+        adapters: [],
         datastore: '',
         index: '',
         others: ''
@@ -314,7 +335,8 @@ export default Vue.component('edit-skill', {
     Alert,
     Card,
     Status,
-    Multiselect
+    Multiselect,
+    VueTagsInput
   },
   computed: {
     /**
@@ -395,8 +417,17 @@ export default Vue.component('edit-skill', {
       if (this.skill_args.base_model != '') {
         this.skill.default_skill_args = { 'base_model': this.skill_args.base_model }
       }
-      if (this.skill_args.adapter != '') {
-        this.skill.default_skill_args['adapter'] = this.skill_args.adapter
+      this.skill.default_skill_args['combine_adapters'] = this.combine_adapters
+      if (this.combine_adapters == "1") {
+        this.skill.default_skill_args['adapters'] = []
+        for (let i = 0; i < this.skill_args.adapters.length; i++) {
+          this.skill.default_skill_args['adapters'].push(this.skill_args.adapters[i]['text'])
+        }
+      } else {
+        if (this.skill_args.adapter != '') {
+          this.skill.default_skill_args['adapter'] = this.skill_args.adapter
+          this.skill.default_skill_args['adapters'] = []
+        }
       }
       if (this.skill_args.datastore != '') {
         this.skill.default_skill_args['datastore'] = this.skill_args.datastore
@@ -511,7 +542,15 @@ export default Vue.component('edit-skill', {
           this.originalName = this.skill.name
           // add skill args to the UI
           this.skill_args.base_model = this.skill.default_skill_args['base_model']
-          this.skill_args.adapter = this.skill.default_skill_args['adapter']
+          this.combine_adapters = this.skill.default_skill_args['combine_adapters']
+          if (this.skill.default_skill_args['combine_adapters'] == "1") {
+            this.skill_args.adapters = []
+            for (let i = 0; i < this.skill.default_skill_args['adapters'].length; i++) {
+              this.skill_args.adapters.push({'text': this.skill.default_skill_args['adapters'][i] })
+            }
+          } else {
+            this.skill_args.adapter = this.skill.default_skill_args['adapter']
+          }
           this.skill_args.datastore = this.skill.default_skill_args['datastore']
           if(this.skill_args.datastore !== '' && this.skill.default_skill_args['index'] == '') {
             this.skill_args.index = 'BM25'
@@ -521,7 +560,7 @@ export default Vue.component('edit-skill', {
           // add the rest of the skill args to the others field
           var others = {}
           for (var key in this.skill.default_skill_args) {
-            if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index') {
+            if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index' && key != 'adapters' && key != 'combine_adapters') {
               others[key] = this.skill.default_skill_args[key]
             }
           }
@@ -557,3 +596,19 @@ export default Vue.component('edit-skill', {
   }
 })
 </script>
+
+<style lang="css">
+  /* style the background and the text color of the input ... */
+
+  .vue-tags-input .ti-input {
+    padding: 0px 0px;
+    border: 0px;
+  }
+  .vue-tags-input .ti-tag {
+    padding: 0px 5px;
+  }
+
+  .vue-tags-input .ti-new-tag-input-wrapper {
+    margin: 0px;
+  }
+</style>

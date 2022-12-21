@@ -8,6 +8,7 @@
     "lint": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service lint"
   },
   "dependencies": {
+    "@johmun/vue-tags-input": "^2.1.0",
     "@popperjs/core": "^2.11.5",
     "axios": "^0.24.0",
     "bootstrap": "^5.1.3",
