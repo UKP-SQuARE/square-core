@@ -1,35 +1,29 @@
-# Skill-Manager
-The Skill-Manager serves as a central service for interacting with the Skills. It provides a RESTful CRUD (Create, Read, Update, Delete) interface for Skills. All skill information is saved in a [mongoDB](https://www.mongodb.com/) instance. Further, it allows interacting with skills by checking their health, querying them, and changing their public/private status.
+# Evaluator
+
+*Short description: To be done*
 
 ## Project Structure
+
 ```
-├───skill_manager
+├───evaluator
 │   ├───core
-│   │   ├───model_management_client.py      # Client for interacting with model management service
-│   │   ├───redis_client.py                 # Client for interacting with Redis
-│   │   ├───session_cache.py                # Skill Query Cache Config
+│   │   ├───dataset_handler.py              # Handler for retrieval of datasets
 │   ├───mongo
 │   │   ├───mongo_client.py                 # Wrapper class for (dis-)connecting to mongoDB
 │   │   ├───mongo_model.py                  # Utility interface for loading data from and to mongoDB
 │   │   ├───py_object_id.py                 # Utility class for mongoDB ID
 │   ├───routers
 │   │   ├───api.py                          # Main router for all routes with `/api` prefix
-│   │   ├───health.py                       # Routes with `/api/health` prefix
-│   │   ├───skill_types.py                  # Routes with `/api/skill-types` prefix
-│   │   ├───skill.py                        # Routes with `/api/skill` prefix
 │   ├───settings
 │   │   ├───keycloak_settings.py            # Settings class for Keycloak, loads .env variables
-│   │   ├───model_management_settings.py    # Settings class for model management client 
-│   │   ├───redis_settings.py               # Settings class for Redis
+│   │   ├───dataset_handler_settings.py     # Settings class for the dataset handler 
 │   │   ├───mongo_settings.py               # Settings class for MongoDB, loads .env variables
 │   ├───auth_utils.py                       # Class for managaing Clients in Keycloak
 │   ├───keycloak_api.py                     # Class for managaing Clients in Keycloak
 │   ├───main.py                             # main file creatng the `app` object
 │   ├───models.py                           # input and output of endpoints
 ├───tests
-│   ├───conftest.py                         # shared test utilities
-│   ├───test_api.py                         # endpoint tests
-│   ├───test_keycloak_api.py                # keycloak api class tests
+│   ├───test_dataset_handler.py             # Tests for dataset-handler
 ├───.env.template                           # env file template
 ├───.local.env                              # env file for local deployment
 ├───.pre-commit-config.yaml                 # pre-commit config           
@@ -46,6 +40,7 @@ The Skill-Manager serves as a central service for interacting with the Skills. I
 
 ## Local Setup
 Create a virtual environment and install the dependencies and development dependencies:
+
 ```bash
 make install
 make install-dev
@@ -69,7 +64,7 @@ You can see the logs of the skill manager by running:
 ```bash
 make logs
 ```
-You should now be able to interact with the skill manager using the [api.http](./api.http) file, through curl, or via the auto-generated ui at [localhost:8000/docs](http://localhost:8000/docs).
+You should now be able to interact with the skill manager using the [api.http](./api.http) file, through curl, or via the auto-generated ui at [localhost:8081/docs](http://localhost:8081/docs).
 
 Note, we run `unvicorn` with the `--reload` flag. Whenever you modify your code locally, it will restart the webserver to reflect the latest changes.
 

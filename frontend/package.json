@@ -24,6 +24,7 @@
     "vue": "^2.6.14",
     "vue-multiselect": "^2.1.6",
     "vue-router": "^3.5.3",
+    "vue-tippy": "^4.16.0",
     "vuex": "^3.6.2"
   },
   "devDependencies": {
