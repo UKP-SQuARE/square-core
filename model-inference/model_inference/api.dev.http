@@ -146,8 +146,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
-#  "task_kwargs": {},
-#  "attack_kwargs":{"method":"sub_span", "saliency_method": "attention", "max_tokens":5},
+#  "task_kwargs": {"return_all_scores": true},
 #  "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
 #}
 
@@ -285,7 +284,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name tweac
-#POST {{domain_dev}}/api/main/UKP-SQuARE/tweac_16/sequence-classification
+#POST {{domain_dev}}/api/main/tweac/sequence-classification
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 #
@@ -295,17 +294,17 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
-#  "task_kwargs": {},
+#  "task_kwargs": {"return_all_scores": true},
 #  "adapter_name": ""
 #}
 
 
 ###
 
-## @name task_output
-#GET {{domain_dev}}/api/main/task_result/e2c909ca-ae52-47d5-9b58-830994172114
-#Authorization: Bearer {{auth_token}}
-#Content-Type: application/json
+# @name task_output
+GET {{domain_dev}}/api/main/task_result/36917e92-3995-4296-b8e9-19a45b0f3732
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
 
 
 ###

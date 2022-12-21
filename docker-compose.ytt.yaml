@@ -214,6 +214,37 @@ services:
       - #@ template.replace(traefik_tls("skill-manager"))
       - #@ template.replace(traefik_prefix("skill-manager"))
 
+  evaluator:
+    image: #@ "ukpsquare/evaluator:" + data.values.tag
+    build: 
+      context: ./evaluator
+      target: build
+    ports:
+      - 8081:8081
+    expose:
+      - 8081
+    env_file:
+      - ./mongodb/.env
+      - ./evaluator/.env
+    environment:
+      API_PREFIX: evaluator
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      REALM: #@ data.values.realm
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MODEL_API_URL: #@ data.values.model_url[data.values.environment]
+      VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+      DATASET_DIR: /app/datasets/
+    depends_on:
+      - mongodb
+    labels:
+      - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("evaluator"))
+      - #@ template.replace(traefik_prefix("evaluator"))
+    volumes:
+      - evaluation-datasets:/app/datasets/
+
   mongodb:
     image: mongo:5.0.4
     restart: always
@@ -568,4 +599,6 @@ volumes:
   model_storage:
     driver: local
   onnx_models:
+    driver: local
+  evaluation-datasets:
     driver: local

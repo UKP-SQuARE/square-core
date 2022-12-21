@@ -83,6 +83,31 @@ If you want to run your Skill directly on SQuARE hardware, you can submit a [pul
 6. Deploy your skill according to the instructions
 7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
 An example repository can also be found at [UKP-SQuARE/cloud-example-azure](https://github.com/UKP-SQuARE/cloud-example-azure)
+
+## Local Setup
+Create a virtual environment and install the dependencies and development dependencies:
+```bash
+make install
+make install-dev
+```
+
+To setup the authentication locally, create a private key and token. The command below will create a file called `private_key.pem` in the root of the project. Furthermore, it will print a token.
+```bash
+make auth
+```
+
+You can run the _local_ skill now with
+```bash
+make run
+```
+Or if you like to run a specific skill run:
+```bash
+make run skill=<skill-name>
+```
+Note: This copies the selected skill.py into a folder called `skill`. This is a little hack to keep prod and dev aligned. As soon as you interrupt uvicorn (e.g. via Keyboard Interrupt), this folder will be deleted.
+
+Go to [localhost:8000/docs]([localhost:8000/docs]) to interact with the Skill API. Note that, this is just for development and other services like the models or datastores require a seperate setup.
+
 ## Publicly Available Skills
  | Name |Retrieval Model |Datastore |Reader Model |Reader Adapter |Type |Code |
  |--- | --- | --- | --- | --- | --- | --- | 

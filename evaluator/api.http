@@ -1,0 +1,17 @@
+@hostname = localhost:8081
+@path_prefix = /api
+@token = <ENTER TOKEN>
+### GET TOKEN
+# @name get_token
+# @prompt username
+# @prompt password
+POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+Host: {{hostname}}
+content-type: application/x-www-form-urlencoded
+
+client_id=square-api&grant_type=password&username={{username}}&password={{password}}
+
+### 
+# @name get_datasets
+GET {{path_prefix}}/dataset HTTP/1.1
+Host: {{hostname}}

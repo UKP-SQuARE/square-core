@@ -1,0 +1,67 @@
+name: "CI Evaluator"
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - "evaluator/**"
+      - ".github/**"
+  pull_request:
+    branches: [ master ]
+    paths:
+      - "evaluator/**"
+      - ".github/**"
+  workflow_dispatch:
+
+jobs:
+  evaluator:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-evaluator-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-evaluator-
+            ${{ runner.os }}-buildx-
+        
+      - name: Build test image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./evaluator
+          target: test
+          load: True
+          push: False
+          tags: evaluator:${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+      
+      - name: Run test image
+        uses: addnab/docker-run-action@v3
+        with:
+          image: evaluator:${{ github.sha }}
+          options: -v /var/run/docker.sock:/var/run/docker.sock -v ${{ github.workspace }}/evaluator/test-reports:/app/test-reports
+          run: |
+            python -m pytest --junitxml=test-reports/junit.xml --cov --cov-report=xml:test-reports/coverage.xml --cov-report=html:test-reports/coverage.html
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: evaluator-test-reports
+          path: ${{ github.workspace }}/evaluator/test-reports
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
