@@ -32,3 +32,18 @@ Authorization: Bearer {{token}}
 # -H 'Content-Type: application/json' \
 # --data-raw '{"identifier": "deepset/minilm-uncased-squad2", "model_name": "deepset/minilm-uncased-squad2", "model_type": "transformer", "model_class": "from_config", "batch_size": 1, "max_input": 512}' \
 # https://square.ukp-lab.de/api/models/deploy  
+
+
+###
+# @name get_datastores
+@token =  {{get_token.response.body.access_token}}
+GET https://square.ukp-lab.de/api/datastores HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+
+###
+# @name get_datastores_indices
+@token =  {{get_token.response.body.access_token}}
+GET https://square.ukp-lab.de/api/datastores/nq/indices HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
