@@ -55,7 +55,10 @@
                 <div class="col text-start">
                   <h4>Datasets</h4>
                   <div v-for="dataset in availableDatasets" :key="dataset" style="display:inline;">
-                    <button type="button" class="btn btn-outline-primary btn-sm">{{ dataset }}</button>
+                    <span role="button" v-on:click="addRemoveDatasetFilter(dataset)" :id="dataset"
+                      class="btn btn-outline-primary btn-sm">
+                      {{ dataset }}
+                    </span>
                   </div>
 
                 </div>
@@ -136,6 +139,7 @@ export default Vue.component('compare-skills', {
       chosenSkillType: null,
       waiting: false,
       availableDatasets: [],
+      selectedDatasets: [],
       options: {
         selectedSkills: []
       }
@@ -144,25 +148,32 @@ export default Vue.component('compare-skills', {
   },
   computed: {
     filteredSkills() {
-      return this.searchText
-        ? this.filteredSkills1.filter((item) => this.searchText
+      let availableSkills = this.$store.state.availableSkills
+      // Apply skill type filter
+      if (this.chosenSkillType) {
+        availableSkills = availableSkills.filter(skill => skill.skill_type == this.chosenSkillType)
+      }
+      // Apply search filter
+      if (this.searchText) {
+        availableSkills = availableSkills.filter((item) => this.searchText
           .toLowerCase()
           .split(" ")
           .every(v => item.name.toLowerCase().includes(v)))
-        : this.filteredSkills1
-    },
-    filteredSkills1() {
-      // if number of None in selectedSkills is 3, then return all skills
-      if (this.options.selectedSkills.filter(skill => skill == 'None').length === 3) {
-        // if chosenSkillType is not empty, then filter by skill type
-        if (this.chosenSkillType) {
-          return this.availableSkills.filter(skill => skill.skill_type == this.chosenSkillType)
-        } else {
-          return this.availableSkills
-        }
-      } else {
-        return this.availableSkillsBasedOnSettings
       }
+      // Apply selected datasets filer
+      if (this.selectedDatasets.length > 0) {
+        // for each selected dataset, filter available skills by dataset_id
+        for (let dataset of this.selectedDatasets) {
+          availableSkills = availableSkills.filter(skill => skill.data_sets.includes(dataset))
+        }
+      }
+      // Apply filter based on selected skills
+      // if at least one skill is selected
+      if (this.options.selectedSkills.filter(skill => skill == 'None').length != 3) {
+        availableSkills = availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
+          && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
+      }
+      return availableSkills
     },
     availableSkills() {
       let availableSkills = this.$store.state.availableSkills
@@ -173,12 +184,7 @@ export default Vue.component('compare-skills', {
         return availableSkills
       }
     },
-    availableSkillsBasedOnSettings() {
 
-      return this.availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
-        && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
-
-    },
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
     },
@@ -215,6 +221,20 @@ export default Vue.component('compare-skills', {
     filterByTask(chosenSkillType) {
       this.skillSettings.skillType = chosenSkillType
       console.log(this.skillSettings.skillType)
+    },
+    addRemoveDatasetFilter(dataset) {
+      if (this.selectedDatasets.includes(dataset)) {
+        // remove dataset from selectedDatasets
+        let index = this.selectedDatasets.indexOf(dataset)
+        this.selectedDatasets.splice(index, 1)
+        // remove active class to dataset button
+        document.getElementById(dataset).classList.remove('active')
+      } else {
+        // add dataset to selectedDatasets
+        this.selectedDatasets.push(dataset)
+        // add active class to dataset button
+        document.getElementById(dataset).classList.add('active')
+      }
     },
     selectSkill(skill_id) {
       if (this.options.selectedSkills.includes(skill_id)) {
