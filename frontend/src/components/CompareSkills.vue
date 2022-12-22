@@ -14,7 +14,7 @@
                   <h4>Tasks</h4>
                   <div v-for="skillType in skillTypes" :key="skillType" style="display:inline;">
                     <span role="button" v-on:click="addRemoveSkillTypeFilter(skillType)" :id="skillType"
-                      class="btn btn-outline-primary btn-sm">
+                      class="btn btn-outline-primary btn-sm mb-1 me-1">
                       {{ skillType }}
                     </span>
                   </div>
@@ -24,8 +24,8 @@
               <div class="row">
                 <div class="col text-start">
                   <h4>Skill Scope</h4>
-                  <button type="button" class="btn btn-outline-primary btn-sm">Single Skill</button>
-                  <button type="button" class="btn btn-outline-primary btn-sm">Multi Skill</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm me-1">Single Skill</button>
+                  <button type="button" class="btn btn-outline-primary btn-sm me-1">Multi Skill</button>
                 </div>
               </div>
 
@@ -34,7 +34,7 @@
                   <h4>Datasets</h4>
                   <div v-for="dataset in availableDatasets" :key="dataset" style="display:inline;">
                     <span role="button" v-on:click="addRemoveDatasetFilter(dataset)" :id="dataset"
-                      class="btn btn-outline-primary btn-sm">
+                      class="btn btn-outline-primary btn-sm  mb-1 me-1">
                       {{ dataset }}
                     </span>
                   </div>
