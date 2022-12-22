@@ -24,8 +24,10 @@
               <div class="row">
                 <div class="col text-start">
                   <h4>Skill Scope</h4>
-                  <button type="button" class="btn btn-outline-primary btn-sm me-1">Single Skill</button>
-                  <button type="button" class="btn btn-outline-primary btn-sm me-1">Multi Skill</button>
+                  <span role="button" v-on:click="addRemoveScopeFilter('single_skill')" class="btn btn-outline-primary btn-sm me-1" id="single_skill">
+                    Single Skill</span>
+                  <span role="button" v-on:click="addRemoveScopeFilter('multi_skill')" class="btn btn-outline-primary btn-sm me-1" id="multi_skill">
+                    Multi Skill</span>
                 </div>
               </div>
 
@@ -114,8 +116,9 @@ export default Vue.component('compare-skills', {
   data() {
     return {
       searchText: '',
-      chosenSkillType: null,
       waiting: false,
+      chosenSkillType: null,
+      selectedSkillScope: null,
       skillTypes: [],
       availableDatasets: [],
       selectedDatasets: [],
@@ -151,6 +154,12 @@ export default Vue.component('compare-skills', {
       if (this.options.selectedSkills.filter(skill => skill == 'None').length != 3) {
         availableSkills = availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
           && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
+      }
+      // Apply filter based on Skill Scope (single vs multi-skill)
+      if (this.selectedSkillScope === 'single_skill') {
+        availableSkills = availableSkills.filter(skill => skill.data_sets.length <= 1)
+      } else if (this.selectedSkillScope === 'multi_skill') {
+        availableSkills = availableSkills.filter(skill => skill.data_sets.length > 1)
       }
       return availableSkills
     },
@@ -225,6 +234,18 @@ export default Vue.component('compare-skills', {
       } else {
         this.chosenSkillType = skillType
         document.getElementById(skillType).classList.add('active')
+      }
+    },
+    addRemoveScopeFilter(scope) {
+      // remove all active classes from scope buttons
+      for (let scope of ['single_skill', 'multi_skill']) {
+        document.getElementById(scope).classList.remove('active')
+      }
+      if (this.selectedSkillScope === scope) {
+        this.selectedSkillScope = null
+      } else {
+        this.selectedSkillScope = scope
+        document.getElementById(scope).classList.add('active')
       }
     },
     selectSkill(skill_id) {
