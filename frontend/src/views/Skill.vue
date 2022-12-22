@@ -121,12 +121,12 @@
 
         </div>
         <div class="col-md-6">
-          <input class="form-check-input" type="radio" id="adapter_flag" v-model="combine_adapters" value="0" :disabled="skill_args.base_model == ''">
+          <input class="form-check-input" type="radio" id="adapter_flag" v-model="average_adapters" value="0" :disabled="skill_args.base_model == ''">
           <label for="adapter" class="form-label">Adapter
           </label>
           &nbsp;
-          <input class="form-check-input" type="radio" id="combine_adapters_flag" v-model="combine_adapters" value="1" :disabled="skill_args.base_model == ''">
-          <label class="form-check-label" for="combine_adapters_flag">
+          <input class="form-check-input" type="radio" id="average_adapters_flag" v-model="average_adapters" value="1" :disabled="skill_args.base_model == ''">
+          <label class="form-check-label" for="average_adapters_flag">
             Combine Adapters? <small class="text-muted">(leave empty if not required)
             <svg content="1) If your base model should use adapters, write the name of the adapter here.
                  <br/>eg: 'AdapterHub/bert-base-uncased-pf-squad'
@@ -140,9 +140,9 @@
             &nbsp;<a href="https://aclanthology.org/2021.emnlp-main.495.pdf">More info</a>
           </small>
           </label>
-          <input v-if="combine_adapters == '0'" type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter"
+          <input v-if="average_adapters == '0'" type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter"
             :disabled="skill_args.base_model == ''">
-          <vue-tags-input v-if="combine_adapters == '1'" class="form-control form-control-sm" id="multiple_adapters_input"
+          <vue-tags-input v-if="average_adapters == '1'" class="form-control form-control-sm" id="multiple_adapters_input"
           style="max-width: unset;"
           v-model="skill_args.adapter"
           :tags="skill_args.adapters"
@@ -292,7 +292,7 @@ export default Vue.component('edit-skill', {
       dataSets: [],
       datastores: [],
       indices: [],
-      combine_adapters: "0",
+      average_adapters: "0",
       tag: '',
       tags: [],
       skill: {
@@ -417,8 +417,8 @@ export default Vue.component('edit-skill', {
       if (this.skill_args.base_model != '') {
         this.skill.default_skill_args = { 'base_model': this.skill_args.base_model }
       }
-      this.skill.default_skill_args['combine_adapters'] = this.combine_adapters
-      if (this.combine_adapters == "1") {
+      this.skill.default_skill_args['average_adapters'] = this.average_adapters
+      if (this.average_adapters == "1") {
         this.skill.default_skill_args['adapters'] = []
         for (let i = 0; i < this.skill_args.adapters.length; i++) {
           this.skill.default_skill_args['adapters'].push(this.skill_args.adapters[i]['text'])
@@ -542,8 +542,8 @@ export default Vue.component('edit-skill', {
           this.originalName = this.skill.name
           // add skill args to the UI
           this.skill_args.base_model = this.skill.default_skill_args['base_model']
-          this.combine_adapters = this.skill.default_skill_args['combine_adapters']
-          if (this.skill.default_skill_args['combine_adapters'] == "1") {
+          this.average_adapters = this.skill.default_skill_args['average_adapters']
+          if (this.skill.default_skill_args['average_adapters'] == "1") {
             this.skill_args.adapters = []
             for (let i = 0; i < this.skill.default_skill_args['adapters'].length; i++) {
               this.skill_args.adapters.push({'text': this.skill.default_skill_args['adapters'][i] })
@@ -560,7 +560,7 @@ export default Vue.component('edit-skill', {
           // add the rest of the skill args to the others field
           var others = {}
           for (var key in this.skill.default_skill_args) {
-            if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index' && key != 'adapters' && key != 'combine_adapters') {
+            if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index' && key != 'adapters' && key != 'average_adapters') {
               others[key] = this.skill.default_skill_args[key]
             }
           }
