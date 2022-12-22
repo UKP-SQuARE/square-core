@@ -11,34 +11,12 @@
               <div class="container text-start"></div>
               <div class="row">
                 <div class="col text-start">
-                  <h4>Task</h4>
-                  <div class="btn-group btn-group-sm flex-wrap" id="btn_group_task" role="group"
-                    aria-label="Filter by task">
-
-                    <input type="radio" v-model="chosenSkillType" value="span-extraction" class="btn-check"
-                      name="btnradio" id="extractive_btn" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="extractive_btn">Extractive</label>
-
-                    <input type="radio" v-model="chosenSkillType" value="multiple-choice" class="btn-check"
-                      name="btnradio" id="btnradio2" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio2">Multiple Choice</label>
-
-                    <input type="radio" v-model="chosenSkillType" value="categorical" class="btn-check" name="btnradio"
-                      id="btnradio3" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio3">Categorical</label>
-
-                    <input type="radio" v-model="chosenSkillType" value="abstractive" class="btn-check" name="btnradio"
-                      id="btnradio4" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio4">Abstractive</label>
-
-                    <input type="radio" v-model="chosenSkillType" value="information-retrieval" class="btn-check"
-                      name="btnradio" id="btnradio5" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio5">IR</label>
-
-                    <input type="radio" v-model="chosenSkillType" value="" class="btn-check" name="btnradio"
-                      id="btnradio6" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio6">All</label>
-
+                  <h4>Tasks</h4>
+                  <div v-for="skillType in skillTypes" :key="skillType" style="display:inline;">
+                    <span role="button" v-on:click="addRemoveSkillTypeFilter(skillType)" :id="skillType"
+                      class="btn btn-outline-primary btn-sm">
+                      {{ skillType }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -129,7 +107,7 @@ import Vue from 'vue'
 import VueTippy from "vue-tippy";
 Vue.use(VueTippy);
 
-import { getDataSets } from '@/api'
+import { getDataSets, getSkillTypes } from '@/api'
 
 export default Vue.component('compare-skills', {
   props: ['selectorTarget', 'skillFilter'],
@@ -138,6 +116,7 @@ export default Vue.component('compare-skills', {
       searchText: '',
       chosenSkillType: null,
       waiting: false,
+      skillTypes: [],
       availableDatasets: [],
       selectedDatasets: [],
       options: {
@@ -236,6 +215,18 @@ export default Vue.component('compare-skills', {
         document.getElementById(dataset).classList.add('active')
       }
     },
+    addRemoveSkillTypeFilter(skillType) {
+      // remove all active classes from skill type buttons
+      for (let type of this.skillTypes) {
+        document.getElementById(type).classList.remove('active')
+      }
+      if (this.chosenSkillType === skillType) {
+        this.chosenSkillType = null
+      } else {
+        this.chosenSkillType = skillType
+        document.getElementById(skillType).classList.add('active')
+      }
+    },
     selectSkill(skill_id) {
       if (this.options.selectedSkills.includes(skill_id)) {
         let index = this.options.selectedSkills.indexOf(skill_id)
@@ -269,7 +260,7 @@ export default Vue.component('compare-skills', {
       }).finally(() => {
         this.waiting = false
       })
-
+    // get available datasets
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
         this.availableDatasets = response.data
@@ -277,6 +268,14 @@ export default Vue.component('compare-skills', {
       .catch((error) => {
         console.log(error)
       })
+    // get skill types
+    getSkillTypes(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        this.skillTypes = response.data
+      })
+      .catch((error) => {
+        console.log(error)
+      })  
   },
 })
 </script>
