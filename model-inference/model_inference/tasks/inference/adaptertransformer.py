@@ -1,5 +1,7 @@
 import logging
 import os
+import torch
+import collections
 
 from model_inference.tasks.config.model_config import model_config
 from model_inference.tasks.models.prediction import PredictionOutput
@@ -90,13 +92,6 @@ class AdapterTransformer(Transformer):
         # Move all freshly loaded adapter weights to the same device as the model
         self.model.to(self.model.device)
 
-    # def _load_single_adapter(self, adapter_name: str):
-    #     if adapter_name not in self.model.config.adapters.adapters:
-    #         logger.info(f"Loading new adapter {adapter_name}")
-    #         self.model.load_adapter(adapter_name, with_head=True, load_as=adapter_name)
-    #     else:
-    #         logger.debug(f"Adapter {adapter_name} is already loaded. Not loading again")
-
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
         # We only have to change the label2id mapping from config.label2id
         # (what super() uses) to the mapping
@@ -125,25 +120,82 @@ class AdapterTransformer(Transformer):
         logger.info(f"sequence classification prediction:\n{prediction.labels}")
         return prediction
 
-    def _prepare_adapter(self, adapter_name):
-        if adapter_name is not None:
-            TEST = os.environ.get("TEST", "0")
-            if TEST == "1":
-                self.model.load_adapter(
-                    adapter_name,
-                    model_name="bert-base-uncased",
-                    load_as=adapter_name,
-                    source=None,
-                )
-            if TEST == "0":
-                self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
+    def _prepare_adapter(self, adapter_name, model_kwargs):
+        """
+        Prepare the adapter for inference by setting it as the active adapter
+        """
+        # check if adapter name is a list of string or sting of adapters and is not empty
+        if adapter_name and isinstance(adapter_name, str):
+            adapter_name = [adapter_name]
 
-        if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
-            raise ValueError(
-                f"Unknown or missing adapter {adapter_name}. "
-                f"Please provider a fully specified adapter name from adapterhub.ml"
+        # check if test stage is set to true
+        if os.environ.get("TEST", 0) == 0:
+            # average adapters
+            if len(adapter_name) > 1 and model_kwargs["average_adapters"]:
+                logger.info(f"averaging adapters")
+                state_dict = {}
+                for name in adapter_name:
+                    self.model.load_adapter(name, load_as=name, source=None)
+                    p_state_dict = self.model.state_dict()
+                    state_dict.update(p_state_dict)
+                avg_dict = self._average_adapter_params(adapter_name, state_dict)
+                logger.info(f"averaging {len(avg_dict)} parameters")
+                state_dict.update(avg_dict)
+
+                missing, unexpected = self.model.load_state_dict(state_dict, strict=False)
+                logger.info(f"{len(missing)} missing, {len(unexpected)} unexpected")
+                logger.info(f"missing: {missing}")
+                logger.info(f"unexpected: {unexpected}")
+                missing = set(missing)
+                missing_new = [
+                    k
+                    for k, p in self.model.named_parameters()
+                    if p.requires_grad and k in missing
+                ]
+                logger.info(f"missing parameters with requires_grad: {missing_new}")
+            else:
+                adapter_name = adapter_name[0]
+                self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
+                # check if the adapter is there in the hub
+                if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
+                    raise ValueError(
+                        f"Unknown or missing adapter {adapter_name}. "
+                        f"Please provider a fully specified adapter name from adapterhub.ml"
+                    )
+        else:
+            model_name = "bert-base-uncased"
+            adapter_name = adapter_name[0]
+            self.model.load_adapter(
+                adapter_name,
+                model_name=model_name,
+                load_as=adapter_name,
+                source=None,
             )
         self.model.set_active_adapters(adapter_name)
+
+    def _average_adapter_params(self, adapter_names, state_dict, proportions=None):
+        """
+        Average multiple adapter weights and return the averaged state_dict
+        """
+        if proportions is None:
+            proportions = {
+                a: torch.tensor(1 / len(adapter_names))
+                for a in adapter_names
+            }
+        param_lst = collections.defaultdict(list)
+        for k, p in state_dict.items():
+            for name in adapter_names:
+                if f"adapters.{name}." in k:
+                    rk = k.replace(f".{name}.", f".adapter.")
+                    param_lst[rk].append(p * proportions[name])
+                if f"heads.{name}." in k:
+                    rk = k.replace(f"heads.{name}.", "head.")
+                    param_lst[rk].append(p * proportions[name])
+        avg_dict = {
+            k: torch.sum(torch.stack(vs, dim=0), dim=0)
+            for k, vs in param_lst.items()
+        }
+        return avg_dict
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         # ensure that the loaded had is a lm head
@@ -162,7 +214,7 @@ class AdapterTransformer(Transformer):
             raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
         if len(request.input) > model_config.max_input_size:
             raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
-        self._prepare_adapter(request.adapter_name)
+        self._prepare_adapter(request.adapter_name, request.model_kwargs)
 
         self.task = task
         if self.task == Task.sequence_classification:

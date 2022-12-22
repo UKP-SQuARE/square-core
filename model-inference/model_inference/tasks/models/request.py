@@ -55,7 +55,9 @@ class PredictionRequest(BaseModel):
         "1. set `output_lm_subgraph` to get the scored LM subgraph"
         "2. set `output_attn_subgraph` to get the scored attention subgraph"
         "3. set `topk_lm_scores` to get the most relevant nodes"
-        "4. set `topk_attn` to get the nodes with most attention",
+        "4. set `topk_attn` to get the nodes with most attention"
+        "For adapter models, the following options are also available:"
+        "1. set `average_adapters` to True to average the adapter weights"
     )
     # task: Task = Field(...)
     task_kwargs: dict = Field(
@@ -96,8 +98,8 @@ class PredictionRequest(BaseModel):
         "- 'include_answer: Whether to remove answer from context while attacking model. "
         "- 'max_reductions': number of words to remove in input reduction <br>",
     )
-    adapter_name: Optional[str] = Field(
-        default="",
+    adapter_name: Optional[Union[str, List[str]]] = Field(
+        ...,
         description="Only necessary for Adapter. "
         "The fully specified name of the to-be-used adapter from adapterhub.ml",
     )
