@@ -157,8 +157,9 @@ def es_container(
         mem_limit="10g",
     )
     es_container.start()
-    # host_ip = get_container_ip("es")
-    host_ip = "localhost"
+    host_ip = get_container_ip("es")
+    # print(f"ip of es :{host_ip}")
+    # host_ip = "localhost"
     host_url = f"http://{host_ip}:9200"
     wait_for_up(host_url)
     try:
@@ -192,7 +193,7 @@ def es_container(
             }
         )
 
-        # add binding 
+        # add binding
         datastore_name = bing_search_datastore.name
         mongo_client = build_mongo_client(*mongo_container)
         mongo_client.user_datastore_bindings.insert_one(
@@ -233,8 +234,9 @@ def mongo_container() -> Tuple[str, str]:
         },
     )
     mongo_container.start()
-    # host_ip = get_container_ip("mongo")
-    host_ip = "localhost"
+    host_ip = get_container_ip("mongo")
+    # print(f"ip of mongo{host_ip}")
+    # host_ip = "localhost"
     host_url = f"http://{host_ip}"
     port = 27017
     wait_for_up(f"{host_url}:{port}")
