@@ -3,6 +3,7 @@ import math
 import string
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple, Union
+import importlib
 
 import numpy as np
 import torch
@@ -59,20 +60,19 @@ class Transformer(Model):
              kwargs: Not used
         """
         self.task = None
-        # new added section start
         self.gradients = None
-        # new added section end
         if model_config.model_class == "from_config":
             config = AutoConfig.from_pretrained(model_config.model_name)
-            model_arch = config.architectures[0]
-            hf_modelling = model_arch.split("For")[-1]
-            for task, hf_model in CLASS_MAPPING.items():
-                if hf_modelling in hf_model.__name__:
-                    model_cls = CLASS_MAPPING[task]
-                    break
-                else:
-                    model_cls = CLASS_MAPPING["base"]
-            CLASS_MAPPING["from_config"] = model_cls
+            if config.architectures:
+                architecture = config.architectures[0]
+                transformers_module = importlib.import_module("transformers")
+                _class = getattr(transformers_module, architecture, None)
+            else:
+                logging.info("No architecture specified in config, using base model")
+                architecture = "base"
+                _class = CLASS_MAPPING[architecture]
+
+            CLASS_MAPPING["from_config"] = _class
         elif model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
         self._load_model(
