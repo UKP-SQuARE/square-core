@@ -7,6 +7,7 @@ import VueRouter from 'vue-router'
 // Use lazy loading to improve page size
 const Home = () => import('../views/Home')
 const QA = () => import('../views/QA')
+const DataStore = () => import('../views/DataStore')
 const BehavioralTests = () => import('../views/BehavioralTests')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
@@ -30,6 +31,11 @@ const routes = [
     path: '/qa',
     name: 'qa',
     component: QA
+  },
+  {
+    path: '/datastore',
+    name: 'datastore',
+    component: DataStore
   },
   {
     path: '/skills',
