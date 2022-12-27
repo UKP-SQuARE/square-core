@@ -98,6 +98,13 @@
       </div>
 
       <div class="row">
+        <div class="col mt-3">
+          <label for="description" class="form-label">Description</label>
+            <input v-model="skill.description" type="text" class="form-control" id="description" placeholder="Description">
+        </div>
+      </div>
+
+      <div class="row">
         <div class="col mt-4">
           <h3>Provide the arguments of the Skill</h3>
         </div>
