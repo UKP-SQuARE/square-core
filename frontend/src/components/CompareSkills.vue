@@ -260,17 +260,33 @@ export default Vue.component('compare-skills', {
       this.$emit('input', this.options, this.skillSettings)
 
     },
-    skillModelType(skill) {
-      // if skill.default_skill_args is not null
-      if (skill.default_skill_args) {
+    skillBaseModel(skill) {
+      // if skill.default_skill_args['base_model'] is not null
+      if (skill.default_skill_args && skill.default_skill_args['base_model']) {
         return skill.default_skill_args['base_model']
       } else {
         return 'N/A'
       }
     },
+    skillAdapter(skill) {
+      // if skill.default_skill_args['adapter'] is not null
+      if (skill.default_skill_args && skill.default_skill_args['adapter']) {
+        return skill.default_skill_args['adapter']
+      } else {
+        return ''
+      }
+    },
     getSkillInfo(skill) {
-      let skillInfo = skill.description + '<br/>'
-      skillInfo += this.boxIcon() + ' HuggingFace\'s ID: ' + this.skillModelType(skill)
+      let skillInfo = ''
+      if (skill.description !== '') {
+        skillInfo += skill.description + '<br/>'
+      }
+
+      skillInfo += this.boxIcon() + ' HuggingFace\'s ID: ' + this.skillBaseModel(skill)
+      
+      if (this.skillAdapter(skill) !== '') {
+        skillInfo += '<br/>' + this.boxIcon() + ' Adapter: ' + this.skillAdapter(skill)
+      }
       return skillInfo
     },
     boxIcon(){
