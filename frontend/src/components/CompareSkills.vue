@@ -23,11 +23,11 @@
 
               <div class="row">
                 <div class="col text-start">
-                  <h4>Skill Scope</h4>
-                  <span role="button" v-on:click="addRemoveScopeFilter('single_skill')" class="btn btn-outline-primary btn-sm me-1" id="single_skill">
-                    Single Skill</span>
-                  <span role="button" v-on:click="addRemoveScopeFilter('multi_skill')" class="btn btn-outline-primary btn-sm me-1" id="multi_skill">
-                    Multi Skill</span>
+                  <h4>Domain</h4>
+                  <span role="button" v-on:click="addRemoveScopeFilter('single_skill')" class="btn btn-outline-primary btn-sm me-1 mb-1" id="single_skill">
+                    Single Domain</span>
+                  <span role="button" v-on:click="addRemoveScopeFilter('multi_skill')" class="btn btn-outline-primary btn-sm me-1 mb-1" id="multi_skill">
+                    Multi Domain</span>
                 </div>
               </div>
 
