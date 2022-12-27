@@ -476,10 +476,8 @@ export default Vue.component('edit-skill', {
       } else {
         alert("You must have at least 2 choices.")
       }
-    }
-  },
-  watch: {
-    'skill.skill_type'() {
+    },
+    setSkillURL(){
       switch (this.skill.skill_type) {
         case 'abstractive':
           this.skill.url = 'http://generative-qa'
@@ -502,9 +500,16 @@ export default Vue.component('edit-skill', {
           this.skill.url = 'http://information-retrieval'
           break
         default:
-          // 
           break
       }
+    }
+  },
+  watch: {
+    'skill.skill_type'() {
+        this.setSkillURL()
+    },
+    'skill.skill_settings.requires_context'(){
+      this.setSkillURL()
     },
     'skill_args.datastore'() {
       this.indices = []
