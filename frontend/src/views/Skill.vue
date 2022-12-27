@@ -144,9 +144,9 @@
             :disabled="skill_args.base_model == ''">
           <vue-tags-input v-if="average_adapters == '1'" class="form-control form-control-sm" id="multiple_adapters_input"
           style="max-width: unset;"
-          v-model="skill_args.adapter"
-          :tags="skill_args.adapters"
-          @tags-changed="newAdapters => skill_args.adapters = newAdapters"
+          v-model="auxAdapter"
+          :tags="skill_args.adapter"
+          @tags-changed="newAdapter => skill_args.adapter = newAdapter"
           />
         </div>
       </div>
@@ -293,8 +293,7 @@ export default Vue.component('edit-skill', {
       datastores: [],
       indices: [],
       average_adapters: "0",
-      tag: '',
-      tags: [],
+      auxAdapter: "",
       skill: {
         name: '',
         skill_type: '',
@@ -313,7 +312,6 @@ export default Vue.component('edit-skill', {
       skill_args: {
         base_model: '',
         adapter: '',
-        adapters: [],
         datastore: '',
         index: '',
         others: ''
@@ -417,16 +415,15 @@ export default Vue.component('edit-skill', {
       if (this.skill_args.base_model != '') {
         this.skill.default_skill_args = { 'base_model': this.skill_args.base_model }
       }
-      this.skill.default_skill_args['average_adapters'] = this.average_adapters
-      if (this.average_adapters == "1") {
-        this.skill.default_skill_args['adapters'] = []
-        for (let i = 0; i < this.skill_args.adapters.length; i++) {
-          this.skill.default_skill_args['adapters'].push(this.skill_args.adapters[i]['text'])
+      this.skill.default_skill_args['average_adapters'] = this.average_adapters == '1'
+      if (this.skill.default_skill_args['average_adapters']) {
+        this.skill.default_skill_args['adapter'] = []
+        for (let i = 0; i < this.skill_args.adapter.length; i++) {
+          this.skill.default_skill_args['adapter'].push(this.skill_args.adapter[i]['text'])
         }
       } else {
         if (this.skill_args.adapter != '') {
           this.skill.default_skill_args['adapter'] = this.skill_args.adapter
-          this.skill.default_skill_args['adapters'] = []
         }
       }
       if (this.skill_args.datastore != '') {
@@ -542,15 +539,20 @@ export default Vue.component('edit-skill', {
           this.originalName = this.skill.name
           // add skill args to the UI
           this.skill_args.base_model = this.skill.default_skill_args['base_model']
-          this.average_adapters = this.skill.default_skill_args['average_adapters']
-          if (this.skill.default_skill_args['average_adapters'] == "1") {
-            this.skill_args.adapters = []
-            for (let i = 0; i < this.skill.default_skill_args['adapters'].length; i++) {
-              this.skill_args.adapters.push({'text': this.skill.default_skill_args['adapters'][i] })
+          // adding adapters
+          if (this.skill.default_skill_args['average_adapters']) {
+            this.average_adapters = '1'
+            this.skill_args.adapter = []
+            for (let i = 0; i < this.skill.default_skill_args['adapter'].length; i++) {
+              this.skill_args.adapter.push({ 'text': this.skill.default_skill_args['adapter'][i] })
             }
           } else {
+            this.average_adapters = '0'
             this.skill_args.adapter = this.skill.default_skill_args['adapter']
           }
+          
+          
+          // adding datastore
           this.skill_args.datastore = this.skill.default_skill_args['datastore']
           if(this.skill_args.datastore !== '' && this.skill.default_skill_args['index'] == '') {
             this.skill_args.index = 'BM25'
@@ -560,7 +562,7 @@ export default Vue.component('edit-skill', {
           // add the rest of the skill args to the others field
           var others = {}
           for (var key in this.skill.default_skill_args) {
-            if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index' && key != 'adapters' && key != 'average_adapters') {
+            if (key != 'base_model' && key != 'adapter' && key != 'datastore' && key != 'index' && key != 'average_adapters') {
               others[key] = this.skill.default_skill_args[key]
             }
           }
