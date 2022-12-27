@@ -27,39 +27,12 @@
       <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
       <Alert v-if="failure" class="alert-danger" dismissible>An error occurred</Alert>
       <div class="row">
-        <div class="col-md-6 mt-3">
+        <div class="col-md-5 mt-3">
           <label for="name" class="form-label">Skill name</label>
           <input v-model="skill.name" type="text" class="form-control" id="name" placeholder="Skill name">
         </div>
-        <div class="col-md-6 mt-3">
-          <label for="skillType" class="form-label">Skill type</label>
-          <select v-model="skill.skill_type" class="form-select" id="skillType">
-            <option v-for="skillType in skillTypes" v-bind:value="skillType" v-bind:key="skillType">
-              {{ skillType }}
-            </option>
-          </select>
-        </div>
-      </div>
 
-      <div class="row">
-        <div class="col-6 mt-3 d-flex align-items-center">
-          <div class="form-check form-switch">
-            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context"
-              class="form-check-input" type="checkbox" role="switch" id="requiresContext">
-            <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
-              <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
-                class="bi bi-card-text" viewBox="0 0 16 16">
-                <path
-                  d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" />
-                <path
-                  d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z" />
-              </svg>
-              &nbsp;Requires context
-            </label>
-          </div>
-        </div>
-
-        <div class="col-6 mt-3 d-flex align-items-center">
+        <div class="col-1 mt-5 d-flex align-items-center">
           <div class="form-check form-switch">
             <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox" role="switch"
               id="published">
@@ -73,28 +46,58 @@
             </label>
           </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div class="col mt-3">
-          <label for="url" class="form-label">Skill URL</label>
-          <input v-model="skill.url" type="url" class="form-control" id="url" placeholder="Skill URL">
-          <small class="text-muted">URL to the hosted skill (<span class="text-info">scheme</span>://<span
-              class="text-info">host</span>:<span class="text-info">port</span>/<span
-              class="text-info">base_path</span>)</small>
-          <div class="mt-2">
-            <Status :url="skill.url" />
+
+        <div class="col-md-4 mt-3">
+          <label for="skillType" class="form-label">Skill type</label>
+          <select v-model="skill.skill_type" class="form-select" id="skillType">
+            <option v-for="skillType in skillTypes" v-bind:value="skillType" v-bind:key="skillType">
+              {{ skillType }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-2 mt-5 d-flex align-items-center">
+          <div class="form-check form-switch">
+            <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context"
+              class="form-check-input" type="checkbox" role="switch" id="requiresContext">
+            
+            <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
+              <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
+                class="bi bi-card-text" viewBox="0 0 16 16">
+                <path
+                  d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" />
+                <path
+                  d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z" />
+              </svg>
+              &nbsp;Requires context
+            </label>
           </div>
         </div>
+
+
       </div>
 
       <div class="row">
-        <div class="col mt-3">
+        <div class="col-6 mt-3">
           <label for="datasets" class="form-label">Skill Datasets</label>
           <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false"
             placeholder="Select a dataset"></multiselect>
           <small class="text-muted">Select the dataset on which the Skill was trained.</small>
         </div>
+
+        
+
+        <div class="col-5 mt-3">
+          <label for="url" class="form-label">Skill URL</label>
+          <input v-model="skill.url" type="url" class="form-control" id="url" placeholder="http://...">
+          <small class="text-muted">URL to the hosted skill (<span class="text-info">scheme</span>://<span
+              class="text-info">host</span>:<span class="text-info">port</span>/<span
+              class="text-info">base_path</span>)</small>
+        </div>
+        <div class="col-1 mt-5">
+            <Status :url="skill.url" />
+          </div>
       </div>
 
       <div class="row">
