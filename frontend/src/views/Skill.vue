@@ -43,9 +43,9 @@
 
       <div class="row">
         <div class="col-6 mt-3 d-flex align-items-center">
-          <div class="form-check">
+          <div class="form-check form-switch">
             <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context"
-              class="form-check-input" type="checkbox" id="requiresContext">
+              class="form-check-input" type="checkbox" role="switch" id="requiresContext">
             <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
                 class="bi bi-card-text" viewBox="0 0 16 16">
@@ -60,8 +60,8 @@
         </div>
 
         <div class="col-6 mt-3 d-flex align-items-center">
-          <div class="form-check">
-            <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox"
+          <div class="form-check form-switch">
+            <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox" role="switch"
               id="published">
             <label class="form-check-label d-inline-flex align-items-center" for="published">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-globe"
