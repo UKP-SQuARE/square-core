@@ -68,7 +68,7 @@
                       :id="skill.id">
                     <label
                       class="btn btn-outline-primary d-flex align-middle align-items-center justify-content-center w-100 h-100"
-                      :for="skill.id" :content=skill.description v-tippy style="--bs-bg-opacity: 1">
+                      :for="skill.id" :content=getSkillInfo(skill) v-tippy style="--bs-bg-opacity: 1">
                       <span class="text-break">{{ skill.name }}
                         <br>
                         <small class="text-muted">
@@ -266,9 +266,18 @@ export default Vue.component('compare-skills', {
       if (skill.default_skill_args) {
         return skill.default_skill_args['base_model']
       } else {
-        return 'Others'
+        return 'N/A'
       }
+    },
+    getSkillInfo(skill) {
+      let skillInfo = skill.description + '<br/>'
+      skillInfo += this.boxIcon() + ' HuggingFace\'s ID: ' + this.skillModelType(skill)
+      return skillInfo
+    },
+    boxIcon(){
+      return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16"> <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z" /></svg>'
     }
+
   },
   beforeMount() {
     this.waiting = true
