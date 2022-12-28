@@ -27,6 +27,7 @@ const sidebars = {
               'overview/use_cases',
               'overview/tutorials',
               'overview/architecture',
+              'overview/local_installation',
               'overview/faq'],
     },
       {
