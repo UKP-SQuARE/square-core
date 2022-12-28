@@ -26,7 +26,7 @@ const sidebars = {
               'overview/get_started',
               'overview/use_cases',
               'overview/tutorials',
-              // 'overview/roadmap',
+              'overview/architecture',
               'overview/faq'],
     },
       {
