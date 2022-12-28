@@ -34,8 +34,8 @@
 
         <div class="col-1 mt-5 d-flex align-items-center">
           <div class="form-check form-switch">
-            <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox" role="switch"
-              id="published">
+            <input v-model="skill.published" v-bind:value="skill.published" class="form-check-input" type="checkbox"
+              role="switch" id="published">
             <label class="form-check-label d-inline-flex align-items-center" for="published">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-globe"
                 viewBox="0 0 16 16">
@@ -61,7 +61,7 @@
           <div class="form-check form-switch">
             <input v-model="skill.skill_settings.requires_context" v-bind:value="skill.skill_settings.requires_context"
               class="form-check-input" type="checkbox" role="switch" id="requiresContext">
-            
+
             <label class="form-check-label d-inline-flex align-items-center" for="requiresContext">
               <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
                 class="bi bi-card-text" viewBox="0 0 16 16">
@@ -86,7 +86,7 @@
           <small class="text-muted">Select the dataset on which the Skill was trained.</small>
         </div>
 
-        
+
 
         <div class="col-5 mt-3">
           <label for="url" class="form-label">Skill URL</label>
@@ -96,14 +96,15 @@
               class="text-info">base_path</span>)</small>
         </div>
         <div class="col-1 mt-5">
-            <Status :url="skill.url" />
-          </div>
+          <Status :url="skill.url" />
+        </div>
       </div>
 
       <div class="row">
         <div class="col mt-3">
           <label for="description" class="form-label">Description</label>
-            <input v-model="skill.description" type="text" class="form-control" id="description" placeholder="Description">
+          <input v-model="skill.description" type="text" class="form-control" id="description"
+            placeholder="Description">
         </div>
       </div>
 
@@ -117,7 +118,7 @@
           <label for="base_model" class="form-label">Base Model
             <small class="text-muted">(leave empty if not required)
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle" viewBox="0 0 16 16">
+                class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path
                   d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -130,34 +131,45 @@
             class="form-control form-control-sm" id="base_model">
 
         </div>
-        <div class="col-md-6">
-          <input class="form-check-input" type="radio" id="adapter_flag" v-model="average_adapters" value="0" :disabled="skill_args.base_model == ''">
-          <label for="adapter" class="form-label">Adapter
+        <div class="col-md-6">          
+          <input class="form-check-input" type="checkbox" id="adapter_flag" v-model="adapter_flag"
+            :disabled="skill_args.base_model == ''">
+          <label for="adapter" class="form-label">
+            &nbsp;Use Adapter
+            <small class="text-muted">
+              <svg
+                content="Check this box if your base model must use adapters, and write the name of the adapter below."
+                v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-info-circle" viewBox="0 0 20 20">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                <path
+                  d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+              </svg>
+              &nbsp;
+            </small>
           </label>
           &nbsp;
-          <input class="form-check-input" type="radio" id="average_adapters_flag" v-model="average_adapters" value="1" :disabled="skill_args.base_model == ''">
+          <input class="form-check-input" type="checkbox" id="average_adapters_flag" v-model="average_adapters" value="1"
+            :disabled="!adapter_flag">
           <label class="form-check-label" for="average_adapters_flag">
-            Combine Adapters? <small class="text-muted">(leave empty if not required)
-            <svg content="1) If your base model should use adapters, write the name of the adapter here.
-                 <br/>eg: 'AdapterHub/bert-base-uncased-pf-squad'
-                 <br/>2) (Advanced!) If you want to combine multiple adapters by averaging their weights as in (Friedman et al., EMNLP 2021), select this option and write the list of adapters. (press enter after each adapter). Do not select this if unsure." v-tippy
-              xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle"
-              viewBox="0 0 16 16">
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-              <path
-                d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
-            </svg>
-            &nbsp;<a href="https://aclanthology.org/2021.emnlp-main.495.pdf">More info</a>
-          </small>
+            &nbsp; Combine Adapters 
+            <small class="text-muted">
+              <svg
+                content="(Advanced!) If you want to combine multiple adapters by averaging their weights as in (Friedman et al., EMNLP 2021), select 'Use Adapter' and 'Combine Adapters' and write the list of adapters below. (press enter after each adapter). Do not select this if unsure."
+                v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-info-circle" viewBox="0 0 20 20">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                <path
+                  d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+              </svg>
+              <a href="https://aclanthology.org/2021.emnlp-main.495.pdf">More info</a>
+            </small>
           </label>
-          <input v-if="average_adapters == '0'" type="text" v-model="skill_args.adapter" class="form-control form-control-sm" id="adapter"
-            :disabled="skill_args.base_model == ''">
-          <vue-tags-input v-if="average_adapters == '1'" class="form-control form-control-sm" id="multiple_adapters_input"
-          style="max-width: unset;"
-          v-model="auxAdapter"
-          :tags="skill_args.adapter"
-          @tags-changed="newAdapter => skill_args.adapter = newAdapter"
-          />
+          <input v-if="!average_adapters" type="text" v-model="skill_args.adapter"
+            class="form-control form-control-sm" id="adapter" :disabled="!adapter_flag" placeholder="AdapterHub/bert-base-uncased-pf-squad">
+          <vue-tags-input v-if="average_adapters" class="form-control form-control-sm"
+            id="multiple_adapters_input" style="max-width: unset;" v-model="auxAdapter" :tags="list_adapters"
+            @tags-changed="newAdapter => list_adapters = newAdapter" />
         </div>
       </div>
       <div class="row">
@@ -168,7 +180,7 @@
                 <svg content="If your Skill requires the use of a datastore (i.e., a document collection) because
                 it is an open-domain Skill, write the name of the datastore here.
                  eg: 'bioasq' Leave blank if unsure" v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                  fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                  fill="currentColor" class="bi bi-info-circle" viewBox="0 0 20 20">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                   <path
                     d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -190,7 +202,7 @@
                 write the name of the index here.
                  eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
                 v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle" viewBox="0 0 16 16">
+                class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path
                   d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -211,7 +223,7 @@
               content="Write any other additional argument you may need. The text should be a json document (i.e., {'key': 'value'}) Leave blank if unsure"
               v-tippy class="text-muted">(leave empty if not required)
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle" viewBox="0 0 16 16">
+                class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path
                   d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -285,7 +297,7 @@ import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
-import { getSkill, getSkillTypes, getDataSets, getDatastoreIndices, getDatastores} from '@/api'
+import { getSkill, getSkillTypes, getDataSets, getDatastoreIndices, getDatastores } from '@/api'
 
 import VueTippy from "vue-tippy";
 Vue.use(VueTippy);
@@ -302,7 +314,9 @@ export default Vue.component('edit-skill', {
       dataSets: [],
       datastores: [],
       indices: [],
-      average_adapters: "0",
+      adapter_flag: false,
+      average_adapters: false,
+      list_adapters: [],
       auxAdapter: "",
       skill: {
         name: '',
@@ -425,11 +439,11 @@ export default Vue.component('edit-skill', {
       if (this.skill_args.base_model != '') {
         this.skill.default_skill_args = { 'base_model': this.skill_args.base_model }
       }
-      this.skill.default_skill_args['average_adapters'] = this.average_adapters == '1'
+      this.skill.default_skill_args['average_adapters'] = this.average_adapters
       if (this.skill.default_skill_args['average_adapters']) {
         this.skill.default_skill_args['adapter'] = []
-        for (let i = 0; i < this.skill_args.adapter.length; i++) {
-          this.skill.default_skill_args['adapter'].push(this.skill_args.adapter[i]['text'])
+        for (let i = 0; i < this.list_adapters.length; i++) {
+          this.skill.default_skill_args['adapter'].push(this.list_adapters[i]['text'])
         }
       } else {
         if (this.skill_args.adapter != '') {
@@ -487,7 +501,7 @@ export default Vue.component('edit-skill', {
         alert("You must have at least 2 choices.")
       }
     },
-    setSkillURL(){
+    setSkillURL() {
       switch (this.skill.skill_type) {
         case 'abstractive':
           this.skill.url = 'http://generative-qa'
@@ -516,9 +530,9 @@ export default Vue.component('edit-skill', {
   },
   watch: {
     'skill.skill_type'() {
-        this.setSkillURL()
+      this.setSkillURL()
     },
-    'skill.skill_settings.requires_context'(){
+    'skill.skill_settings.requires_context'() {
       this.setSkillURL()
     },
     'skill_args.datastore'() {
@@ -556,20 +570,25 @@ export default Vue.component('edit-skill', {
           this.skill_args.base_model = this.skill.default_skill_args['base_model']
           // adding adapters
           if (this.skill.default_skill_args['average_adapters']) {
-            this.average_adapters = '1'
-            this.skill_args.adapter = []
+            this.adapter_flag = true
+            this.average_adapters = true
+            this.list_adapters = []
             for (let i = 0; i < this.skill.default_skill_args['adapter'].length; i++) {
-              this.skill_args.adapter.push({ 'text': this.skill.default_skill_args['adapter'][i] })
+              this.list_adapters.push({ 'text': this.skill.default_skill_args['adapter'][i] })
             }
           } else {
-            this.average_adapters = '0'
+            this.average_adapters = false
             this.skill_args.adapter = this.skill.default_skill_args['adapter']
+            this.list_adapters = [{ 'text': this.skill.default_skill_args['adapter']}] // just in case the use wants to change to average adapters
+            if (this.skill_args.adapter != '') {
+              this.adapter_flag = true
+            }
           }
-          
-          
+
+
           // adding datastore
           this.skill_args.datastore = this.skill.default_skill_args['datastore']
-          if(this.skill_args.datastore !== '' && this.skill.default_skill_args['index'] == '') {
+          if (this.skill_args.datastore !== '' && this.skill.default_skill_args['index'] == '') {
             this.skill_args.index = 'BM25'
           } else {
             this.skill_args.index = this.skill.default_skill_args['index']
@@ -615,17 +634,18 @@ export default Vue.component('edit-skill', {
 </script>
 
 <style lang="css">
-  /* style the background and the text color of the input ... */
+/* style the background and the text color of the input ... */
 
-  .vue-tags-input .ti-input {
-    padding: 0px 0px;
-    border: 0px;
-  }
-  .vue-tags-input .ti-tag {
-    padding: 0px 5px;
-  }
+.vue-tags-input .ti-input {
+  padding: 0px 0px;
+  border: 0px;
+}
 
-  .vue-tags-input .ti-new-tag-input-wrapper {
-    margin: 0px;
-  }
+.vue-tags-input .ti-tag {
+  padding: 0px 5px;
+}
+
+.vue-tags-input .ti-new-tag-input-wrapper {
+  margin: 0px;
+}
 </style>
