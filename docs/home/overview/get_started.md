@@ -22,6 +22,11 @@ A Skill is a QA pipeline. It defines a datastore, a retrieval model, a reader mo
 Deploying a Skill is a simple as filling the form shown below. You just need to give a name to your Skill, select the QA format (i.e., extractive, multiple-choice, categorical/boolean, or abstractive), add some metadata such as the datasets used during training and a plain-text description, and finally specify the pipeline (i.e., the base model, the adapters (if needed), and the datastore and index (if needed)).
 ![skill-creation](../../static/img/skill_creation.png)
 
+You can find this form after loggin in, clicking the button on the top-right with your name as shown in the GIF below. 
+
+![skill-creation](../../static/img/skill_creation_location.gif)
+
+
 ## Implementing a New Skill
 If you want to *implement* a new Skill (i.e., create a new QA pipeline), please follow the skill package examples (e.g. [skills/local](https://github.com/UKP-SQuARE/square-core/blob/master/skills/local/skill.py)) and submit yours via a [pull request](https://github.com/UKP-SQuARE/square-core/pulls). We will make it run after code review.
 
