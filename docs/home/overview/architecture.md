@@ -7,9 +7,9 @@ sidebar_position: 5
 
 ![square-arch](../../static/img/square-arch.png)
 
-SQuARE is composed of 5 modules:
+SQuARE is composed of 4 modules:
 
-- **Datastores**: contains the index of large collections of documents (e.g. Wikipedia, PubMed). These indexes can be for 
+- **Datastores**: contains knowledge bases (e.g. ConceptNet) and indexes for large collections of documents (e.g. Wikipedia, PubMed). These indexes can be from 
   traditional systems such as BM25 or new dense retrieval systems such as Facebook’s DPR.
 - **Models**: manages the three type of models used in SQuARE:
     - Embedding models for indexing documents.
@@ -20,4 +20,3 @@ SQuARE is composed of 5 modules:
       we can define how to use a fine-tuned HF Transformer for QA (e.g. [distilBERT for SQuAD](https://huggingface.co/distilbert-base-uncased-distilled-squad)). or set the Adapter weights for a Transformer model (e.g. [SQuAD Adapter for RoBERTa](https://adapterhub.ml/adapters/AdapterHub/roberta-base-pf-squad/)).
     - Open-retrieval (a.k.a. open-domain; i.e., the input is only a question). In this case, we can define the model to retrieve documents and the consecutive steps as in the previous case.
 - **User Interface**: allows the user to interact with the Skills.
-- **Explainability**: uses [CheckList](https://github.com/marcotcr/checklist) to conduct behavioral tests on the Skills. This allows to easily see biases of the Skills.
