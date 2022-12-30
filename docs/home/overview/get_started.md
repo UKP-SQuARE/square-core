@@ -16,6 +16,14 @@ with contexts or without contexts (open QA based on retrieval).
 A Skill is a QA pipeline. It defines a datastore, a retrieval model, a reader model, and a data preprocessing and postprocessing steps. All components are optional, allowing maximum flexibility to the user.
 
 
+## Running a Skill
+To run a Skill, you need to go to the QA page in the navigation bar. Then, select one Skill and write the inputs, usually a question, a context, and candidate answers for multiple-choice Skills. We have defined four types of Skills:
+- Extractive: the input is a question and optionally a context (i.e., a short passage) and the answer is a subspan of the context. If the context is not given, the Skill needs to make use of a datastore and an index to retrieve a relevant document that may contain the answer.
+- Multiple Choice: the input is a question, a list of candidate answers, and optinally a context. The Skill has to identify the correct answer from the list of candidate answers.
+- Categorical: it is a special case of multiple-choice where only two candiate answers are available, true/false or yes/no.
+- Abstractive: similar to extractive, the input is a question and a context, but the answer is not a subspan of the context, instead it is a free-form text based on the context.
+- IR: the input is a question and the Skill needs to retrieve a relevant document.
+
 <a name="Add-New-Skills"></a>
 
 ## Deploying New Skills
