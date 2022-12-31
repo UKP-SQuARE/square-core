@@ -75,7 +75,7 @@ class BingSearch:
         return await asyncio.gather(*tasks)
 
 
-    async def search(self, query: str, count=10):
+    async def search(self, query: str, count=10, region: str = None):
         """Searches Bing for the given query and returns a list of QueryResults."""
 
         if count > 50:
@@ -85,7 +85,7 @@ class BingSearch:
 
         # call Bing API to get urls 
         try:
-            params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count}
+            params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count, "mkt": region}
             response = requests.get(self.search_url, headers=self.headers, params=params)
             response.raise_for_status()
             search_results = response.json()

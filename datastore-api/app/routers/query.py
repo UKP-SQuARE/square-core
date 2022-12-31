@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.param_functions import Body, Path, Query
 
 from ..models.httperror import HTTPError
-from ..models.query import QueryResult
+from ..models.query import QueryResult, Region
 from .dependencies import get_search_client, get_storage_connector, client_credentials, get_bing_search_client
 
 router = APIRouter(tags=["Query"])
@@ -30,6 +30,7 @@ async def search(
     top_k: int = Query(40, description="Number of documents to retrieve."),
     feedback_documents: List[str] = Query(
         None, description="Relevant feedback documents from previous query."),
+    region: Region = Query(None, description="Region of the query when using the bing_search datastore."),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
     credential_token=Depends(client_credentials),
@@ -37,7 +38,7 @@ async def search(
 ):
     if datastore_name == bing_search.datastore_name:
         try:
-            return await bing_search.search(query, top_k)
+            return await bing_search.search(query, top_k, region.value if region else None)
         except ValueError as e:
             raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
