@@ -205,5 +205,10 @@ class EvaluationHandler:
             mongo_client.client.evaluator.evaluations.find_one(filter)
         )
         if existing is not None:
-            return not existing.metric_status == EvaluationStatus.failed
+            status = (
+                existing.metric_status
+                if "metric_name" in filter
+                else existing.prediction_status
+            )
+            return not status == EvaluationStatus.failed
         return False

@@ -41,7 +41,9 @@ def skill_exists(skill_id, token) -> bool:
         headers = {"Authorization": f"Bearer {token}"}
 
     response = requests.get(
-        f"https://square.ukp-lab.de/api/skill-manager/skill/{skill_id}", headers=headers
+        f"http://square-core_skill-manager_1:8000/api/skill/{skill_id}",
+        headers=headers,
+        timeout=30,
     )
 
     return response.status_code == 200

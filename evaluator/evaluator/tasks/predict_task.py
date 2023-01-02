@@ -36,10 +36,31 @@ def predict(
     metric_name: str = None,
     token: str = Depends(client_credentials),
 ):
-    logger.info(
-        f"Started prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
-    )
+    try:
+        logger.info(
+            f"Started prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
+        )
+        if hasattr(mongo_client, "client") == False:
+            mongo_client.connect()
+        do_predict(skill_id, dataset_name, metric_name, token)
+    except Exception as e:
+        logger.error(f"{e}")
+        evaluation_filter = {
+            "skill_id": ObjectId(skill_id),
+            "dataset_name": dataset_name,
+        }
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
+        )
+        raise e
 
+
+def do_predict(
+    skill_id: str,
+    dataset_name: str,
+    metric_name: str = None,
+    token: str = Depends(client_credentials),
+):
     if hasattr(mongo_client, "client") == False:
         mongo_client.connect()
 
@@ -99,6 +120,7 @@ def predict(
             headers=headers,
             data=json.dumps(query_request),
         )
+        logger.debug(f"Predict-response: {response.json()}")
         prediction_response = response.json()["predictions"][0]
 
         predictions.append(

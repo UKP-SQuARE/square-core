@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 import logging
@@ -6,6 +7,7 @@ from datetime import timedelta
 from threading import Thread
 from typing import Dict, List
 
+import requests
 import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
@@ -128,6 +130,8 @@ async def create_skill(
     # returned, but not logged and not persisted.
     skill.client_secret = client["secret"]
 
+    trigger_evaluations(skill_id, skill.data_sets, request.headers)
+
     return skill
 
 
@@ -165,6 +169,9 @@ async def update_skill(
             skill=skill, updated_skill=updated_skill
         )
     )
+
+    trigger_evaluations(id, skill.data_sets, request.headers)
+
     return skill
 
 
@@ -287,3 +294,21 @@ async def query_skill(
         )
     )
     return predictions
+
+
+def trigger_evaluations(skill_id: str, dataset_names: List[str], headers={}):
+    for dataset_name in dataset_names:
+        asyncio.create_task(trigger_evaluation(skill_id, dataset_name, headers))
+
+
+async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
+    loop = asyncio.get_event_loop()
+    url = f"http://square-core_evaluator_1:8081/api/evaluate/{skill_id}/{dataset_name.lower()}"
+    future = loop.run_in_executor(
+        None, lambda: requests.post(url, headers=headers, timeout=30)
+    )
+    response = await future
+    if not response.ok:
+        logger.error(
+            f"Triggering evaluation for dataset '{dataset_name}' failed: {response.json()}"
+        )

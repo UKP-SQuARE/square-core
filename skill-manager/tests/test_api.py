@@ -38,7 +38,6 @@ client = TestClient(app)
 def pers_client(
     monkeymodule, init_mongo_db: MongoDbContainer, init_redis: RedisContainer
 ):
-
     monkeymodule.setenv(
         "MONGO_INITDB_ROOT_USERNAME", init_mongo_db.MONGO_INITDB_ROOT_USERNAME
     )
@@ -74,7 +73,6 @@ def create_skill_via_api():
         realm="test-realm",
         **skill_kwargs,
     ):
-
         skill = skill_factory(**{"user_id": username, **skill_kwargs})
         token = token_factory(preferred_username=username)
         app.dependency_overrides[auth] = lambda: dict(realm=realm, username=username)
@@ -127,7 +125,6 @@ def test_skill_heartbeat(is_alive, client):
 
 
 def test_skill_types(client):
-
     response = client.get("/api/skill-types")
     assert response.status_code == 200
 
@@ -137,7 +134,6 @@ def test_skill_types(client):
 
 @pytest.mark.asyncio
 async def test_create_skill(pers_client: TestClient, skill_factory, token_factory):
-
     test_user = "test-user"
     app.dependency_overrides[auth] = lambda: dict(
         realm="test-realm", username=test_user
@@ -160,7 +156,6 @@ async def test_create_skill(pers_client: TestClient, skill_factory, token_factor
 async def test_create_skill_with_data_sets(
     pers_client: TestClient, skill_factory, token_factory
 ):
-
     test_user = "test-user"
     app.dependency_overrides[auth] = lambda: dict(
         realm="test-realm", username=test_user
@@ -183,7 +178,6 @@ async def test_create_skill_with_data_sets(
 def test_get_skill_by_id_authorized(
     published, pers_client, skill_factory, token_factory, create_skill_via_api
 ):
-
     test_user = "test-user"
     response, skill = create_skill_via_api(
         pers_client, token_factory, skill_factory, username=test_user, published=True
@@ -202,7 +196,6 @@ def test_get_skill_by_id_authorized(
 def test_get_skill_by_id_unauthorized(
     pers_client, skill_factory, token_factory, create_skill_via_api
 ):
-
     # create a private skill for skill_creator_user
     skill_creator_user = "skill-creator"
     response, _ = create_skill_via_api(
@@ -230,7 +223,6 @@ def test_get_skill_by_id_unauthorized(
 def test_get_all_skills(
     pers_client, skill_factory, token_factory, create_skill_via_api
 ):
-
     test_user = "test-user"
     skill_creator_user = "skill-creator"
 
@@ -302,7 +294,6 @@ def test_get_public_user_skill_only_once(
 def test_update_skill(
     authorized, pers_client, skill_factory, token_factory, create_skill_via_api
 ):
-
     test_realm = "test-realm"
     test_user = "test-user"
     skill_creator = test_user if authorized else "skill-creator"
@@ -340,7 +331,6 @@ def test_update_skill(
 def test_delete_skill(
     authorized, pers_client, skill_factory, token_factory, create_skill_via_api
 ):
-
     test_realm = "test-realm"
     test_user = "test-user"
     skill_creator = test_user if authorized else "skill-creator"
@@ -384,7 +374,6 @@ def test_delete_skill(
 def test_publish_unpublish(
     authorized, pers_client, skill_factory, token_factory, create_skill_via_api
 ):
-
     test_realm = "test-realm"
     test_user = "test-user"
     skill_creator = test_user if authorized else "skill-creator"
@@ -436,7 +425,6 @@ def test_query_skill(
     token_factory,
     create_skill_via_api,
 ):
-
     test_realm = "test-realm"
     test_user = "test-user"
     skill_creator = test_user if authorized else "skill-creator"
