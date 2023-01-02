@@ -29,6 +29,9 @@ from skill_manager.models import Prediction, Skill, SkillType
 from skill_manager.routers import client_credentials
 
 logger = logging.getLogger(__name__)
+evaluator_url = os.getenv(
+    "EVALUATOR_API_URL", "https://square.ukp-lab.de/api/evaluator"
+)
 
 router = APIRouter(prefix="/skill")
 
@@ -303,7 +306,7 @@ def trigger_evaluations(skill_id: str, dataset_names: List[str], headers={}):
 
 async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
     loop = asyncio.get_event_loop()
-    url = f"http://square-core_evaluator_1:8081/api/evaluate/{skill_id}/{dataset_name.lower()}"
+    url = f"{evaluator_url}/evaluate/{skill_id}/{dataset_name.lower()}"
     future = loop.run_in_executor(
         None, lambda: requests.post(url, headers=headers, timeout=30)
     )

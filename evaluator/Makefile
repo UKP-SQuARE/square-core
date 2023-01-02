@@ -13,7 +13,7 @@ install-dev:
 
 ##		Format code base. Run before commiting.
 format:
-	black .
+	black evaluator
 	isort --profile black --filter-files evaluator
 	isort --profile black --filter-files tests
 
