@@ -57,7 +57,7 @@ faiss_url:
 
 model_url:
   prod: https://square.ukp-lab.de/api
-  local: https://localhost/api
+  local: https://traefik/api
 
 docker_host_url:
   windows: http://host.docker.internal
