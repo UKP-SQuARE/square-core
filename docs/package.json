@@ -12,7 +12,7 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "prepare": "husky install"
+    "prepare": "cd .. && husky install docs/.husky"
   },
   "dependencies": {
     "@docusaurus/core": "^2.2.0",
@@ -38,6 +38,6 @@
     ]
   },
   "devDependencies": {
-    "husky": "^7.0.0"
+    "husky": "^7.0.4"
   }
 }
