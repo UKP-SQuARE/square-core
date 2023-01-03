@@ -69,6 +69,11 @@ class ModelTask(Task, ABC):
 
             MODEL_MAPPING = {"graph": GraphTransformers}
 
+        if model_config.model_type == "metaqa":
+            from .inference.metaqa import MetaQA
+
+            MODEL_MAPPING = {"metaqa": MetaQA}
+
         if not self.model:
             logger.info(model_config)
             model_instance = MODEL_MAPPING[model_config.model_type]()

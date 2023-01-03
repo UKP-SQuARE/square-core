@@ -3,7 +3,7 @@ import torch
 from typing import List,Tuple
 import numpy as np
 from transformers import AutoTokenizer
-from metaqa_utils.MetaQA_Model import MetaQA_Model
+from .metaqa_utils.MetaQA_Model import MetaQA_Model
 
 # from metaqa_utils.inference import MetaQA_basemodel
 from model_inference.tasks.inference.model import Model
@@ -20,22 +20,57 @@ class MetaQA(Model):
         self.metaqa_model =  MetaQA_Model.from_pretrained(model_config.model_name) ## model_name = "haritzpuerto/MetaQA"
         self.tokenizer = AutoTokenizer.from_pretrained(model_config.model_name)
 
+    def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
+        '''
+        Cover the function in parent model to run predict
+
+        '''
+
+        if task == Task.question_answering:
+            return self._question_answering(request)
+
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
-        question = request.input[0][0]
-        context = request.input[0][1]
-        agent_predictions = self._get_agents_prediction(question,context)
-        (model_answer, agent_name, metaqa_score, agent_score) = self._predict(question,agent_predictions)
+        '''
+        QA of MetaQA, the required field in request are
+        question: str
+        agents_predtions: the prediction from qa agents,
+
+        '''
+        question = request.input["question"] # str
+        agents_predictions = request.input["agents_predictions"] # list[[str, float]]
+        # agents_predictions =  [["Utah", 0.1442876160144806],
+        #      ["DOC] [TLE] 1886", 0.10822545737028122],
+        #      ["Utah Territory", 0.6455602645874023],
+        #      ["Eli Murray opposed the", 0.352359801530838],
+        #      ["Utah", 0.48052430152893066],
+        #      ["Utah Territory", 0.35186105966567993],
+        #      ["Utah Territory", 0.35186105966567993],
+        #      ["Utah", 0.8328599333763123],
+        #      ["Utah", 0.3405868709087372],
+        #     ]
+        if len(agents_predictions) <16:
+            #TODO:how many agents?
+            for i in range(16 - len(agents_predictions)):
+                agents_predictions.append(["", 0.0])
+        # agent_predictions = self._get_agents_prediction(question,context)
+        (model_answer, agent_name, metaqa_score, agent_score) = self._predict(question,agents_predictions)
         # (pred:str, agent_name:str, metaqa_score:float, agent_score:float)
 
         task_outputs = {
             "answers":
-                {
-                    "answer": model_answer,
-                    "agent_name":agent_name,
-                    "metaqa_score":metaqa_score,
-                    "agent_score":agent_score
+            [
+                [
+                    {
+                        "answer": model_answer,
+                        "agent_name": agent_name,
+                        "metaqa_score": metaqa_score,
+                        "agent_score": agent_score
 
-                }
+                    }
+                ]
+
+            ]
+
 
 
 
@@ -44,25 +79,25 @@ class MetaQA(Model):
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
 
-    def _get_agents_prediction(self,question:str,context:str) -> List[Tuple[str,float]]:
-        '''
+    # def _get_agents_prediction(self,question:str,context:str) -> List[Tuple[str,float]]:
+    #     '''
+    #
+    #
+    #
+    #     '''
+    #     list_preds = [('Utah', 0.1442876160144806),
+    #                   ('DOC] [TLE] 1886', 0.10822545737028122),
+    #                   ('Utah Territory', 0.6455602645874023),
+    #                   ('Eli Murray opposed the', 0.352359801530838),
+    #                   ('Utah', 0.48052430152893066),
+    #                   ('Utah Territory', 0.35186105966567993),
+    #                   ('Utah', 0.8328599333763123),
+    #                   ('Utah', 0.3405868709087372),
+    #                   ]
+    #
+    #     return  list_preds
 
-
-
-        '''
-        list_preds = [('Utah', 0.1442876160144806),
-                      ('DOC] [TLE] 1886', 0.10822545737028122),
-                      ('Utah Territory', 0.6455602645874023),
-                      ('Eli Murray opposed the', 0.352359801530838),
-                      ('Utah', 0.48052430152893066),
-                      ('Utah Territory', 0.35186105966567993),
-                      ('Utah', 0.8328599333763123),
-                      ('Utah', 0.3405868709087372),
-                      ]
-
-        return  list_preds
-
-    def _predict(self,question:str,agents_predictions:List[(str, float)]):
+    def _predict(self,question:str,agents_predictions:list[(str, float)]):
         '''
                Runs MetaQA on a single instance.
                '''
@@ -75,7 +110,7 @@ class MetaQA(Model):
                                                                               agents_predictions)
         return (pred, agent_name, metaqa_score, agent_score)
 
-    def _encode_metaQA_instance(self, question:str,agents_predictions:List[(str, float)], max_len=512):
+    def _encode_metaQA_instance(self, question:str,agents_predictions:list[(str, float)], max_len=512):
         '''
         Creates input ids, token ids, token masks for an instance of MetaQA.
         '''
