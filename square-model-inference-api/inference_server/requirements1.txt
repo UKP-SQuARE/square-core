@@ -16,3 +16,4 @@ square-elk-json-formatter==0.0.3
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz#egg=en_core_web_sm
 importlib-metadata<5.0 # https://github.com/celery/celery/issues/7783
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+wheel>=0.38.0 # not directly required, pinned by Snyk to avoid a vulnerability
