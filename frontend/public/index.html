@@ -2,7 +2,7 @@
 <html lang="en" class="h-100">
 <head>
 
-    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="36777cf3-0dbd-43eb-b0c5-3b9797f9427e" data-blockingmode="auto" type="text/javascript"></script>
+    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="<%= VUE_APP_COOKIE_BOT_ID %>" data-blockingmode="auto" type="text/javascript"></script>
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -21,12 +21,12 @@
     <meta name="keywords" content="Question Answering, Models, Datastores, Explainability, UKP Lab, Open Source, Research, Platform">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@UKP_SQuARE">
-    <meta property="og:url" content="https://square.ukp-lab.de" />
+    <meta property="og:url" content="<%= VUE_APP_SQUARE_URL %>" />
     <meta property="og:title" content="UKP-SQuARE" />
     <meta property="og:description" content="Software for Question Answering Research" />
-    <meta property="og:image" content="https://square.ukp-lab.de/SQ_Web_Dark_400px.png" />
-    <link rel="icon" type="image/png" href="<%= BASE_URL %>SQ_Web_Dark_90px.png">
-    <link rel="apple-touch-icon" href="<%= BASE_URL %>SQ_Web_Dark_400px.png">
+    <meta property="og:image" content="<%= VUE_APP_SQUARE_URL %>/SQ_Web_Dark_400px.png" />
+    <link rel="icon" type="image/png" href="<%= VUE_APP_SQUARE_URL %>SQ_Web_Dark_90px.png">
+    <link rel="apple-touch-icon" href="<%= VUE_APP_SQUARE_URL %>SQ_Web_Dark_400px.png">
 </head>
 <body class="d-flex flex-column h-100">
 <!-- Google Tag Manager (noscript) -->
