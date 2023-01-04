@@ -108,8 +108,11 @@ jobs:
       - name: Set Image Tag
         id: image_tag
         run: |
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "tag=${{ github.event.inputs.environment || 'build' }}-$SHORT_SHA" >> $GITHUB_OUTPUT
+          SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
+          echo $SHORT_SHA
+          TAG="${{ github.event.inputs.environment || 'build' }}-$SHORT_SHA"
+          echo $TAG
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Add latest tag if deploying to prod
         uses: haya14busa/action-cond@v1
