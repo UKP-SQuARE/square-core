@@ -88,17 +88,28 @@
 
 
 
-        <div class="col-5 mt-3">
-          <label for="url" class="form-label">Skill URL</label>
-          <input v-model="skill.url" type="url" class="form-control" id="url" placeholder="http://...">
-          <small class="text-muted">URL to the hosted skill (<span class="text-info">scheme</span>://<span
-              class="text-info">host</span>:<span class="text-info">port</span>/<span
-              class="text-info">base_path</span>)</small>
-        </div>
-        <div class="col-1 mt-5">
-          <Status :url="skill.url" />
+        <div class="col-6 mt-3">
+          <label for="url_select" class="form-label">Skill URL</label>
+          <select class="form-select" v-model="url" aria-label="Default select example" id="url_select">
+            <option v-for="url in avail_urls" v-bind:key="url" :value="url">{{ url }} </option>
+            <option value="Externally hosted">Externally hosted</option>
+          </select>
+          <small class="text-muted">URL to the hosted skill</small>
+
+          <div v-if="url == 'Externally hosted'">
+            <div class="col-5 mt-3"></div>
+            <input v-model="extern_url" type="url" class="form-control" id="url" placeholder="http://...">
+            <small class="text-muted">URL to the hosted skill (<span class="text-info">scheme</span>://<span
+                class="text-info">host</span>:<span class="text-info">port</span>/<span
+                class="text-info">base_path</span>)</small>
+
+            <div class="col-1 mt-5">
+              <Status :url="extern_url" />
+            </div>
+          </div>
         </div>
       </div>
+
 
       <div class="row">
         <div class="col mt-3">
@@ -113,7 +124,8 @@
           <h3>Provide the arguments of the Skill</h3>
         </div>
       </div>
-      <div class="row">
+
+      <div class="row" v-if="url != 'http://meta-qa'">
         <div class="col-md-6">
           <label for="base_model" class="form-label">Base Model
             <small class="text-muted">(leave empty if not required)
@@ -129,9 +141,9 @@
             class="form-control form-control-sm" id="base_model" placeholder="UKP-SQuARE/distilroberta-squad">
           <input v-if="skill.skill_type == 'information-retrieval'" type="text" v-model="skill_args.base_model"
             class="form-control form-control-sm" id="base_model">
-
         </div>
-        <div class="col-md-6">          
+
+        <div class="col-md-6">
           <input class="form-check-input" type="checkbox" id="adapter_flag" v-model="adapter_flag"
             :disabled="skill_args.base_model == ''">
           <label for="adapter" class="form-label">
@@ -149,10 +161,10 @@
             </small>
           </label>
           &nbsp;
-          <input class="form-check-input" type="checkbox" id="average_adapters_flag" v-model="average_adapters" value="1"
-            :disabled="!adapter_flag">
+          <input class="form-check-input" type="checkbox" id="average_adapters_flag" v-model="average_adapters"
+            value="1" :disabled="!adapter_flag">
           <label class="form-check-label" for="average_adapters_flag">
-            &nbsp; Combine Adapters 
+            &nbsp; Combine Adapters
             <small class="text-muted">
               <svg
                 content="(Advanced!) If you want to combine multiple adapters by averaging their weights as in (Friedman et al., EMNLP 2021), select 'Use Adapter' and 'Combine Adapters' and write the list of adapters below. (press enter after each adapter). Do not select this if unsure."
@@ -165,14 +177,32 @@
               <a href="https://aclanthology.org/2021.emnlp-main.495.pdf">More info</a>
             </small>
           </label>
-          <input v-if="!average_adapters" type="text" v-model="skill_args.adapter"
-            class="form-control form-control-sm" id="adapter" :disabled="!adapter_flag" placeholder="AdapterHub/bert-base-uncased-pf-squad">
-          <vue-tags-input v-if="average_adapters" class="form-control form-control-sm"
-            id="multiple_adapters_input" style="max-width: unset;" v-model="auxAdapter" :tags="list_adapters"
+          <input v-if="!average_adapters" type="text" v-model="skill_args.adapter" class="form-control form-control-sm"
+            id="adapter" :disabled="!adapter_flag" placeholder="AdapterHub/bert-base-uncased-pf-squad">
+          <vue-tags-input v-if="average_adapters" class="form-control form-control-sm" id="multiple_adapters_input"
+            style="max-width: unset;" v-model="auxAdapter" :tags="list_adapters"
             @tags-changed="newAdapter => list_adapters = newAdapter" />
         </div>
       </div>
-      <div class="row">
+
+      <!-- MetaQA Input -->
+      <div class="row" v-if="url == 'http://meta-qa'">
+        <div class="col-md-6">
+          <label for="base_model" class="form-label">MetaQA Model</label>
+          <input type="text" v-model="skill_args.base_model" class="form-control form-control-md" id="base_model"
+            placeholder="haritzpuerto/MetaQA">
+        </div>
+
+        <div class="col-md-6">
+          <label for="datasets" class="form-label">MetaQA's Agents</label>
+          <multiselect v-model="metaqa_agents" :options="list_skills" :multiple="true" :close-on-select="false"
+            placeholder="Select the skills"></multiselect>
+          <small class="text-muted">Select the Skills in the same order as MetaQA was trained.</small>
+        </div>
+
+      </div>
+
+      <div class="row" v-if="skill.url != 'http://meta-qa'">
         <div class="col-md-6">
           <div>
             <label for="datastore" class="form-label">Datastore
@@ -297,7 +327,7 @@ import Vue from 'vue'
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
 import Status from '@/components/Status.vue'
-import { getSkill, getSkillTypes, getDataSets, getDatastoreIndices, getDatastores } from '@/api'
+import { getSkill, getSkills, getSkillTypes, getDataSets, getDatastoreIndices, getDatastores } from '@/api'
 
 import VueTippy from "vue-tippy";
 Vue.use(VueTippy);
@@ -314,9 +344,16 @@ export default Vue.component('edit-skill', {
       dataSets: [],
       datastores: [],
       indices: [],
+      url: '',
+      extern_url: '', // skill.url will be overwritten by this value if it is not empty
+      avail_urls: [],
+      // adapters
       adapter_flag: false,
       average_adapters: false,
       list_adapters: [],
+      // metaqa
+      list_skills: [],
+      metaqa_agents: [],
       auxAdapter: "",
       skill: {
         name: '',
@@ -424,8 +461,16 @@ export default Vue.component('edit-skill', {
           this.skill.skill_input_examples[i]['choices'] = this.list_answer_choices[i]
         }
       }
+      this.skill.url = this.url
+      // if extern url is not empty, overwrite skill.url
+      if (this.url == 'Externally hosted' && this.extern_url != '') {
+        this.skill.url = this.extern_url
+      }
       // add arguments to skill
       this.addSkillArgs2Skill()
+      if (this.skill.url == 'http://meta-qa') {
+        this.addSkillAgents()
+      }
       // create skill
       this.$store
         .dispatch('createSkill', { skill: this.skill })
@@ -474,6 +519,9 @@ export default Vue.component('edit-skill', {
       }
 
     },
+    addSkillAgents() {
+
+    },
     addInputExampleFields() {
       // Dynamically add input fields
       // In case the default amount is modified later this will adapt for legacy skills
@@ -502,26 +550,37 @@ export default Vue.component('edit-skill', {
       }
     },
     setSkillURL() {
+      this.avail_urls = []
       switch (this.skill.skill_type) {
         case 'abstractive':
-          this.skill.url = 'http://generative-qa'
+          this.url = 'http://generative-qa'
+          this.avail_urls.push('http://generative-qa')
           break
         case 'span-extraction':
           if (this.skill.skill_settings.requires_context) {
-            this.skill.url = 'http://extractive-qa'
+            this.url = 'http://extractive-qa'
+            this.avail_urls.push('http://extractive-qa')
           }
           else {
-            this.skill.url = 'http://open-extractive-qa'
+            this.url = 'http://open-extractive-qa'
+            this.avail_urls.push('http://open-extractive-qa')
           }
+          this.avail_urls.push('http://meta-qa')
+          this.avail_urls.push('http://tweac')
           break
         case 'multiple-choice':
-          this.skill.url = 'http://multiple-choice-qa'
+          this.url = 'http://multiple-choice-qa'
+          this.avail_urls.push('http://multiple-choice-qa')
+          this.avail_urls.push('http://meta-qa')
+          this.avail_urls.push('http://tweac')
           break
         case 'categorical':
-          this.skill.url = 'http://multiple-choice-qa'
+          this.url = 'http://multiple-choice-qa'
+          this.avail_urls.push('http://multiple-choice-qa')
           break
         case 'information-retrieval':
-          this.skill.url = 'http://information-retrieval'
+          this.url = 'http://information-retrieval'
+          this.avail_urls.push('http://information-retrieval')
           break
         default:
           break
@@ -557,6 +616,13 @@ export default Vue.component('edit-skill', {
           this.datastores.push(response.data[i].name)
         }
       })
+    getSkills(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        // iterate over the skills and add the name to the list
+        for (let i = 0; i < response.data.length; i++) {
+          this.list_skills.push(response.data[i].name)
+        }
+      })
     if (!this.isCreateSkill) {
       getSkill(this.$store.getters.authenticationHeader(), this.$route.params.id)
         .then((response) => {
@@ -579,7 +645,7 @@ export default Vue.component('edit-skill', {
           } else {
             this.average_adapters = false
             this.skill_args.adapter = this.skill.default_skill_args['adapter']
-            this.list_adapters = [{ 'text': this.skill.default_skill_args['adapter']}] // just in case the use wants to change to average adapters
+            this.list_adapters = [{ 'text': this.skill.default_skill_args['adapter'] }] // just in case the use wants to change to average adapters
             if (this.skill_args.adapter != '') {
               this.adapter_flag = true
             }
