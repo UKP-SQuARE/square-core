@@ -49,7 +49,7 @@ jobs:
             context: ./docs
           - service: frontend
             context: ./frontend
-            build-args: "mode=${{ github.event.inputs.environment }}"
+            build-args: "mode=${{ github.event.inputs.environment || 'test' }}"
           - service: model-management
             context: ./square-model-inference-api/management_server
           - service: model-inference
