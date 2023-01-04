@@ -126,7 +126,7 @@ jobs:
           context: ${{ matrix.context }}
           target: build
           build-args: ${{ matrix.build-args }}
-          push: true
+          push: ${{ github.event.inputs.environment == 'production' || github.event.inputs.environment == 'test' }}
           tags: |
             ukpsquare/${{ matrix.service }}:${{ steps.image_tag.outputs.tag }}
             ${{ steps.latest_tag_str.outputs.value }}
