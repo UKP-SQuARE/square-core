@@ -47,6 +47,7 @@ jobs:
             context: ./docs
           - service: frontend
             context: ./frontend
+            build-args: "mode=${{ github.event.inputs.environment }}"
           - service: model-management
             context: ./square-model-inference-api/management_server
           - service: model-inference
@@ -121,7 +122,7 @@ jobs:
           build-args: ${{ matrix.build-args }}
           push: true
           tags: |
-            ukpsquare/${{ matrix.service }}:${{ github.sha }}
+            ukpsquare/${{ matrix.service }}:${{ github.event.inputs.environment }}-${{ github.sha }}
             ${{ steps.latest_tag_str.outputs.value }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
@@ -144,5 +145,5 @@ jobs:
         env:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
-          data: '{"environment": "${{ github.event.inputs.environment }}", "branch": "${{ github.event.inputs.branch }}", "sha": "${{ github.sha }}"}'
+          data: '{"environment": "${{ github.event.inputs.environment }}", "branch": "${{ github.event.inputs.branch }}", "tag": "${{ github.event.inputs.environment }}-${{ github.sha }}"}'
           verify_ssl: false
