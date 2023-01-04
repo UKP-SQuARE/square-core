@@ -15,8 +15,10 @@ SQuARE is composed of 4 modules:
     - Embedding models for indexing documents.
     - Fine-tuned HuggingFace (HF) Transformer models for QA.
     - The backbone Transformer models for Adapters (e.g., bert-base-uncased)
-- **Skills**: module defines a QA pipeline. There are two base pipelines depending on the input:
-    - Machine Reading Comprehension (i.e., the input is a question and a document). In this case, 
-      we can define how to use a fine-tuned HF Transformer for QA (e.g. [distilBERT for SQuAD](https://huggingface.co/distilbert-base-uncased-distilled-squad)). or set the Adapter weights for a Transformer model (e.g. [SQuAD Adapter for RoBERTa](https://adapterhub.ml/adapters/AdapterHub/roberta-base-pf-squad/)).
-    - Open-retrieval (a.k.a. open-domain; i.e., the input is only a question). In this case, we can define the model to retrieve documents and the consecutive steps as in the previous case.
-- **User Interface**: allows the user to interact with the Skills.
+- **Skills**: module defines a QA pipeline. The predefined available pipelines are: 
+  - **Extractive**: the input is a question and optionally a context (i.e., a short passage) and the answer is a subspan of the context. If the context is not given, the Skill needs to make use of a datastore and an index to retrieve a relevant document that may contain the answer.
+  - **Multiple Choice**: the input is a question, a list of candidate answers, and optinally a context. The Skill has to identify the correct answer from the list of candidate answers.
+  - **Categorical**: it is a special case of multiple-choice where only two candiate answers are available, true/false or yes/no.
+  - **Abstractive**: similar to extractive, the input is a question and a context, but the answer is not a subspan of the context, instead it is a free-form text based on the context.
+  - **Information Retrieval (IR)**: the input is a question and the Skill needs to retrieve a relevant document.
+  - **User Interface**: allows the user to interact with the Skills.
