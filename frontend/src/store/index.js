@@ -5,7 +5,15 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, getSkills, putSkill, deleteSkill, postSkill } from '../api'
+import {
+  postQuery,
+  getSkills,
+  putSkill,
+  deleteSkill,
+  postSkill,
+  // getDatastoreIndices,
+  getDatastores
+} from '../api'
 
 Vue.use(Vuex)
 
@@ -24,6 +32,7 @@ export default new Vuex.Store({
     currentChoices: [],
     currentSkills: [],
     availableSkills: [],
+    availableDatastores:[],
     mySkills: [],
     skillOptions: {
       qa: {
@@ -54,6 +63,10 @@ export default new Vuex.Store({
       if (state.userInfo.preferred_username) {
         state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.userInfo.preferred_username)
       }
+    },
+    setDatastores(state, payload) {
+      state.availableDatastores = payload.datastores
+
     },
     setAuthentication(state, payload) {
       if (payload.userInfo) {
@@ -138,6 +151,10 @@ export default new Vuex.Store({
     updateSkills(context) {
       return getSkills(context.getters.authenticationHeader())
           .then((response) => context.commit('setSkills', { skills: response.data }))
+    },
+    updateDatastores(context) {
+      return getDatastores(context.getters.authenticationHeader())
+          .then((response) => context.commit('setDatastores', { datastores: response.data }))
     },
     updateSkill(context, { skill }) {
       return putSkill(context.getters.authenticationHeader(), skill.id, skill)
