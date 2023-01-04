@@ -12,7 +12,7 @@ on:
         type: choice
         options:
           - 'test'
-          - 'prod'
+          - 'production'
       branch:
         description: 'Branch to deploy'
         required: true
@@ -108,7 +108,7 @@ jobs:
         uses: haya14busa/action-cond@v1
         id: latest_tag_str
         with:
-          cond: ${{ github.event.inputs.environment == 'prod' }}
+          cond: ${{ github.event.inputs.environment == 'production' }}
           if_true: "ukpsquare/${{matrix.service}}:latest"
           if_false: ""
 
