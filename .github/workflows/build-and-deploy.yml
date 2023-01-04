@@ -109,7 +109,7 @@ jobs:
         id: image_tag
         run: |
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "::set-output name=tag::${{ github.event.inputs.environment || 'build' }}-$SHORT_SHA"
+          echo "tag=${{ github.event.inputs.environment || 'build' }}-$SHORT_SHA" >> $GITHUB_OUTPUT
 
       - name: Add latest tag if deploying to prod
         uses: haya14busa/action-cond@v1
