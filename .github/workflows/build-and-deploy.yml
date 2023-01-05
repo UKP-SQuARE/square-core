@@ -12,7 +12,7 @@ on:
         type: choice
         options:
           - 'test'
-          - 'prod'
+          - 'production'
       branch:
         description: 'Branch to deploy'
         required: true
@@ -20,6 +20,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.image_tag.outputs.tag }}
     strategy:
       matrix:
         service: [
@@ -47,6 +49,7 @@ jobs:
             context: ./docs
           - service: frontend
             context: ./frontend
+            build-args: "mode=${{ github.event.inputs.environment || 'test' }}"
           - service: model-management
             context: ./square-model-inference-api/management_server
           - service: model-inference
@@ -104,11 +107,20 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.service }}-
             ${{ runner.os }}-buildx-
 
+      - name: Set Image Tag
+        id: image_tag
+        run: |
+          SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
+          echo $SHORT_SHA
+          TAG="${{ github.event.inputs.environment || 'build' }}-$SHORT_SHA"
+          echo $TAG
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
       - name: Add latest tag if deploying to prod
         uses: haya14busa/action-cond@v1
         id: latest_tag_str
         with:
-          cond: ${{ github.event.inputs.environment == 'prod' }}
+          cond: ${{ github.event.inputs.environment == 'production' }}
           if_true: "ukpsquare/${{matrix.service}}:latest"
           if_false: ""
 
@@ -119,9 +131,9 @@ jobs:
           context: ${{ matrix.context }}
           target: build
           build-args: ${{ matrix.build-args }}
-          push: true
+          push: ${{ github.event.inputs.environment == 'production' || github.event.inputs.environment == 'test' }}
           tags: |
-            ukpsquare/${{ matrix.service }}:${{ github.sha }}
+            ukpsquare/${{ matrix.service }}:${{ steps.image_tag.outputs.tag }}
             ${{ steps.latest_tag_str.outputs.value }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
@@ -144,5 +156,5 @@ jobs:
         env:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
-          data: '{"environment": "${{ github.event.inputs.environment }}", "branch": "${{ github.event.inputs.branch }}", "sha": "${{ github.sha }}"}'
+          data: '{"environment": "${{ github.event.inputs.environment }}", "branch": "${{ github.event.inputs.branch }}", "tag": "${{ needs.build.outputs.tag }}"}'
           verify_ssl: false
