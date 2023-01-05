@@ -7,7 +7,7 @@
 
         <div class="container text-center" style="height: 20em; overflow-y: scroll;">
           <div class="row">
-            <div class="col col-3 bg-light text-dark">
+            <div class="col col-3 d-none d-md-block">
               <div class="container text-start"></div>
               <div class="row">
                 <div class="col text-start">
@@ -44,7 +44,7 @@
                 </div>
               </div>
             </div>
-            <div class="col col-9">
+            <div class="col col-md-9">
               <!-- Search Bar -->
               <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text" id="basic-addon1">
