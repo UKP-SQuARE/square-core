@@ -33,41 +33,30 @@ fi
 
 if [ -f ./mongodb/.env ]; then
 	echo "./mongodb/.env already exists. Skipping."
-	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./mongodb/.env)"
+	eval "$(grep ^MONGO_INITDB_ROOT_PASSWORD= ./mongodb/.env)"    
 else
 	sed -e "s/%%MONGO_PASSWORD%%/$MONGO_PASSWORD/g" ./mongodb/.env.template > ./mongodb/.env
 fi
 
 if [ -f ./rabbitmq/.env ]; then
 	echo "./rabbitmq/.env already exists. Skipping."
-	eval "$(grep ^RABBITMQ_DEFAULT_PASS= ./rabbitmq/.env)"
+	eval "$(grep ^RABBITMQ_DEFAULT_PASS= ./rabbitmq/.env)"    
 else
 	sed -e "s/%%RABBITMQ_DEFAULT_PASS%%/$RABBITMQ_DEFAULT_PASS/g" ./rabbitmq/.env.template > ./rabbitmq/.env
 fi
 
 if [ -f ./redis/.env ]; then
 	echo "./redis/.env already exists. Skipping."
-	eval "$(grep ^REDIS_PASSWORD= ./redis/.env)"
+	eval "$(grep ^REDIS_PASSWORD= ./redis/.env)"    
 else
 	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./redis/.env.template > ./redis/.env
 fi
 
-# get all servies that need to be registered as clients keycloak
-# CLIENTS=( "models" "datastores" )
-# cd ./skills
-# for SKILL_DIR in ./*; do
-# 	if [[ -d $SKILL_DIR ]]; then
-# 		cp ./.env.template "$SKILL_DIR/.env"
-# 		SKILL=$(echo "$SKILL_DIR" | sed -e "s/\.\///")
-# 		CLIENTS+=( "$SKILL" )
-# 	fi
-# done
-# cd ..
-
+# create .env file for Datastores
 cp ./datastore-api/.env.template ./datastore-api/.env
 
 # bring up services required to setup authentication
-ytt -f docker-compose.ytt.min.yaml -f config.yaml > docker-compose.yaml
+ytt -f docker-compose.ytt.min.yaml -f config.yaml --data-value environment=local > docker-compose.yaml
 sleep 1
 echo "Pulling Images. This might take a while. Meanwhile grab a coffe c[_]. "
 COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose pull
@@ -83,7 +72,7 @@ E=$(cat <<- EOF
 WELCOME="$(echo "$E" | base64 -d | gunzip)"
 echo "$WELCOME"
 echo "$(cat <<-EOF
-	Congrats! UKP-SQuARE has been sucessfully installed!
+	Congrats! UKP-SQuARE has been sucessfully installed! 
 	You can run it with: docker-compose up -d
 	Then visit: https://$SQUARE_URL
 EOF
