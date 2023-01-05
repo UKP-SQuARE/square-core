@@ -18,14 +18,17 @@ Host: {{hostname}}
 
 ###
 # @name predictor
-POST {{path_prefix}}/predict/{{skill_id}}/{{dataset_id}} HTTP/1.1
+# @prompt skill_id
+# @prompt dataset_id 
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
 
 ###
 # @name evaluator
-POST {{path_prefix}}/evaluate/{{skill_id}}/{{dataset_id}}/{{metric_name}} HTTP/1.1
+# @prompt skill_id
+# @prompt dataset_id 
+# @prompt metric_name 
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
