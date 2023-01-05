@@ -20,6 +20,7 @@ Host: {{hostname}}
 # @name predictor
 # @prompt skill_id
 # @prompt dataset_id 
+POST {{path_prefix}}/predictor/{{skill_id}}/{{dataset_id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
@@ -29,6 +30,7 @@ content-type: application/json
 # @prompt skill_id
 # @prompt dataset_id 
 # @prompt metric_name 
+POST {{path_prefix}}/evaluator/{{skill_id}}/{{dataset_id}}/{{metric_name}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
