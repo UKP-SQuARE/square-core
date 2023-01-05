@@ -41,45 +41,11 @@ async def _call_tweac(request):
         pipeline="sequence-classification",
         model_request=model_request,
     )
-    # model_response = {'model_outputs': {'logits': None},
-    #                   'model_output_is_encoded': True,
-    #                   'labels': [14],
-    #                   'id2label': {0: 'boolq', 1: 'commonsense_qa', 10: 'biu-nlp/qamr', 11: 'race', 12: 'search_qa', 13: 'social_i_qa', 14: 'squad', 15: 'trivia_qa', 2: 'drop', 3: 'duorc', 4: 'hellaswag', 5: 'hotpot_qa', 6: 'hybrid_qa', 7: 'narrativeqa', 8: 'natural_questions', 9: 'newsqa'},
-    #                   'attributions': [],
-    #                   'questions': [],
-    #                   'contexts': [],
-    #                   'adversarial': {}
-    #                   }
     logger.info("TWEAC response: {}".format(model_response))
-    # "logits": [
-    #     [
-    #       0.9998825788497925,
-    #       5.138603683008114e-06,
-    #       7.102704330463894e-06,
-    #       1.022551441565156e-05,
-    #       4.9858945203595795e-06,
-    #       4.930585419060662e-06,
-    #       4.98797771797399e-06,
-    #       3.965129053540295e-06,
-    #       4.125905888940906e-06,
-    #       3.048108374059666e-05,
-    #       7.981140697665978e-06,
-    #       6.66554251438356e-06,
-    #       6.2153631006367505e-06,
-    #       4.478948540054262e-06,
-    #       9.486773706157692e-06,
-    #       6.597141236852622e-06
-    #     ]
-    #   ]
     # get top 1 prediction
     raw_pred = model_response["labels"][0]
     logger.info("Raw prediction: {}".format(raw_pred))
     dataset_name = model_response["id2label"][raw_pred]
-    # get top k predictions
-    # raw_pred = model_response["logits"][0]
-    # top_k = len(raw_pred) - 1
-    # ind = np.argpartition(np.array(raw_pred), top_k)[-top_k:][::-1]
-    # list_predicted_datasets = [model_response["id2label"][i] for i in ind]
     logger.info("TWEAC prediction: {}".format(dataset_name))
     return dataset_name
 
@@ -88,10 +54,8 @@ async def _retrieve_skills(dataset_name):
     """
     API call to Skill Manager to get the names of the skills trained on the dataset
     """
-    # skill_manager_api_url = "https://square.ukp-lab.de/api/skill-manager"
     skill_manager_api_url = os.getenv("SQUARE_SKILL_MANAGER")
     client_credentials = ClientCredentials()
-    # client_credentials = "TOKEN"
 
     response = requests.get(
         url=f"{skill_manager_api_url}/skill/dataset/{dataset_name}",
@@ -107,10 +71,8 @@ async def _retrieve_skills(dataset_name):
 
 
 async def _call_skill(skill_id, question, context):
-    # skill_manager_api_url = "https://square.ukp-lab.de/api/skill-manager"
     skill_manager_api_url = os.getenv("SQUARE_SKILL_MANAGER")
     client_credentials = ClientCredentials()
-    # client_credentials = "TOKEN"
 
     input_data = {
         "query": question,
@@ -121,7 +83,6 @@ async def _call_skill(skill_id, question, context):
     }
 
     response = requests.post(
-        # url=f"{skill_manager_api_url}/skill/{{skill_id}}/query", # THIS doesn't work because of the curly braces in skill_id
         url=skill_manager_api_url + "/skill/" + skill_id + "/query",
         json=input_data,
         headers={"Authorization": f"Bearer {client_credentials}"},
