@@ -129,7 +129,7 @@
             <input v-model="skill.meta_skill" v-bind:value="skill.meta_skill" class="form-check-input" type="checkbox"
               role="switch" id="metaskill">
             <label class="form-check-label d-inline-flex align-items-center" for="metaskill">
-              Is it a Meta-Skill? &nbsp;
+              Meta-Skill? &nbsp;
               <svg
                 content="Meta-Skills are Skills that combine two or more Skills. Currently, TWEAC (routing), Meta-QA (fusion of predictions), and average of adapter werights are supported."
                 v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
