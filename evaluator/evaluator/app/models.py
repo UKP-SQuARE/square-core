@@ -70,6 +70,11 @@ class MetricResult(MongoModel):
     prediction_result_id: PyObjectId = Field(
         ..., description="Identifier of the corresponding PredictionResult object"
     )
+    skill_id: PyObjectId = Field(
+        ...,
+        description="Identifier of the skill that generated the predictions the metrics are calculated on.",
+    )
+    dataset_name: str = Field(..., description="Name of the dataset")
     metrics: dict = Field(..., description="Dictionary of all Metric objects")
 
 

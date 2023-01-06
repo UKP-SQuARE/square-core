@@ -20,7 +20,7 @@
           <multiselect id="metric" v-model="metric_name" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard"></multiselect>
         </div>
       </div>
-      <b-table striped hover borderless :stacked="doStackTable" :busy="isLoading" :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
+      <b-table striped hover borderless show-empty :stacked="doStackTable" :busy="isLoading" :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
         <template #table-busy>
           <div class="text-center text-secondary my-4">
             <b-spinner class="align-middle"></b-spinner>
@@ -28,10 +28,28 @@
             <strong>Retrieving leaderboard</strong>
           </div>
         </template>
+        <template #empty>
+          <div class="text-center text-secondary my-4">
+            <strong>There are no evaluation results for the selected dataset and metric</strong>
+          </div>
+        </template>
+        <template #cell(private)="data">
+          <div class="stacked">
+            <span v-if="data.item.private">Yes</span>
+            <span v-else>No</span>
+          </div>
+          <div v-if="data.item.private" class="lock-container position-absolute top-50 start-50 translate-middle">
+            <span data-bs-toggle="tooltip" data-bs-placement="topright" title="Only you are able to see this results, because your skill is set to private." class="position-absolute top-50 start-50 translate-middle">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>
+            </span>
+          </div>
+        </template>
         <template #cell(rank)="data">
-          <div class="text-center">
-            <span>{{ data.value }}</span><br>
-            <span class="badge bg-secondary">{{ date_format(data.item.date) }}</span>
+          <div class="text-center d-flex">
+            <div>
+              <span>{{ data.value }}</span><br>
+              <span class="badge bg-secondary">{{ date_format(data.item.date) }}</span>
+            </div>
           </div>
         </template>
       </b-table>
@@ -54,7 +72,7 @@ const base_fields = [
     key: "rank",
     label: "Rank",
     sortable: true,
-    class: "align-middle test",
+    class: "align-middle rank",
     isRowHeader: true
   },
   {
@@ -64,6 +82,12 @@ const base_fields = [
     class: "align-middle"
   }
 ]
+let private_field = {
+  key: "private",
+  label: "",
+  sortable: false,
+  class: "position-relative lock"
+}
 
 export default Vue.component("show-leaderboard", {
    data() {
@@ -75,7 +99,7 @@ export default Vue.component("show-leaderboard", {
       dataset_name: "quoref",
       metric_name: "squad",
       datasets: [],
-      metrics: [],
+      metrics: ["squad", "squad_v2", "exact_match", "f1", "accurracy"],
       fields: base_fields,
       items: []
     }
@@ -98,14 +122,35 @@ export default Vue.component("show-leaderboard", {
   methods: {
     handleResize() {  
       this.doStackTable = window.innerWidth < 500
+      if (this.doStackTable) {
+        private_field.label = "Private" 
+      } else {
+        private_field.label = "" 
+      }
     },
     date_format(date_string) {
       return new Date(date_string).toLocaleDateString()
     },
-    get_fields(items) {
-      let fields = base_fields
-      if (items.length > 0) {
-        Object.keys(items[0].result).forEach((key) => {
+    refreshLeaderboard() {
+      setTimeout(function() {
+        this.isLoading = true
+        getLeaderboard(this.dataset_name, this.metric_name, this.$store.getters.authenticationHeader())
+          .then((response) => {
+            this.fields = this.get_fields(response.data)
+            this.items = response.data
+            this.isLoading = false
+          })
+      }.bind(this), 50)
+    },
+    get_fields(leaderboard_entries) {
+      let fields = [...base_fields]
+      if (leaderboard_entries.length > 0) {
+        // add column to display private-indicator
+        if (this.contains_private_entries(leaderboard_entries)) {
+          fields.unshift(private_field)
+        }
+        // add a column for each value of the metric
+        Object.keys(leaderboard_entries[0].result).forEach((key) => {
           fields.push({
             key: "result." + key,
             label: this.get_metric_value_label(key),
@@ -116,6 +161,12 @@ export default Vue.component("show-leaderboard", {
       }
       return fields
     },
+    contains_private_entries(leaderboard_entries) {
+      let private_entries = leaderboard_entries.filter( (entry) => {
+        return entry.private === true
+      })
+      return private_entries.length > 0
+    },
     get_metric_value_label(metric_value_name) {
       switch (metric_value_name) {
         case "exact_match":
@@ -125,15 +176,6 @@ export default Vue.component("show-leaderboard", {
         default:
           return metric_value_name;
       }
-    },
-    refreshLeaderboard() {
-      this.isLoading = true
-      getLeaderboard(this.dataset_name, this.metric_name, this.$store.getters.authenticationHeader())
-        .then((response) => {
-          this.fields = this.get_fields(response.data)
-          this.items = response.data
-          this.isLoading = false
-        })
     }
   }
 })
@@ -142,6 +184,12 @@ export default Vue.component("show-leaderboard", {
 <style scoped>
 ::v-deep .sr-only{
   display:none !important
+}
+
+.lock svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--bs-secondary);
 }
 </style>
 
@@ -161,9 +209,31 @@ export default Vue.component("show-leaderboard", {
   margin-left: 1em;
 }
 
+.stacked {
+  display: block;
+}
+
+.lock-container {
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
 @media (min-width: 500px) {
-  th.align-middle.test {
+  th.align-middle.rank {
     width: 120px;
+  }
+
+  .lock {
+    width: 30px;
+  }
+
+  .stacked {
+    display: none;
+  }
+
+  .lock-container {
+    display: block;
   }
 }
 </style>

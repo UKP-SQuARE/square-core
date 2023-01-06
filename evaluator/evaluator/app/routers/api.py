@@ -2,9 +2,9 @@ from fastapi import APIRouter
 
 from evaluator.app.routers.dataset import router as dataset_router
 from evaluator.app.routers.evaluator import router as evaluator_router
+from evaluator.app.routers.leaderboard import router as leaderboard_router
 from evaluator.app.routers.predictor import router as predictor_router
 from evaluator.app.routers.task import router as task_router
-from evaluator.app.routers.leaderboard import router as leaderboard_router
 
 router = APIRouter()
 
