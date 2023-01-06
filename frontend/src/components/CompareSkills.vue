@@ -23,11 +23,26 @@
 
               <div class="row">
                 <div class="col text-start">
-                  <h4>Domain</h4>
-                  <span role="button" v-on:click="addRemoveScopeFilter('single_skill')" class="btn btn-outline-primary btn-sm me-1 mb-1" id="single_skill">
+                  <h4>Domain
+                    <svg
+                      content="A Skill is a single domain if it was trained on a single dataset, and thus is expected to only perform well in that dataset.<br/>A Skill is a multi domain if it was trained on multiple datasets to be more general.<br/>A Skill is a Meta-Skill if it combines multiple Skills."
+                      v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-info-circle" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                      <path
+                        d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                    </svg>
+                  </h4>
+
+                  <span role="button" v-on:click="addRemoveScopeFilter('single_skill')"
+                    class="btn btn-outline-primary btn-sm me-1 mb-1" id="single_skill">
                     Single Domain</span>
-                  <span role="button" v-on:click="addRemoveScopeFilter('multi_skill')" class="btn btn-outline-primary btn-sm me-1 mb-1" id="multi_skill">
+                  <span role="button" v-on:click="addRemoveScopeFilter('multi_skill')"
+                    class="btn btn-outline-primary btn-sm me-1 mb-1" id="multi_skill">
                     Multi Domain</span>
+                  <span role="button" v-on:click="addRemoveScopeFilter('meta_skill')"
+                    class="btn btn-outline-primary btn-sm me-1 mb-1" id="meta_skill">
+                    Meta-Skill</span>
                 </div>
               </div>
 
@@ -86,6 +101,14 @@
                             <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H3v2.5a.5.5 0 0 1-1 0v-3zm12 7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H13V8.5a.5.5 0 0 1 1 0v3z"/>
                           </svg>
                           300M -->
+                        </small>
+                        <small v-if="skill.meta_skill" class="text-muted">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-boxes" viewBox="0 0 16 16">
+                            <path
+                              d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434L7.752.066ZM4.25 7.504 1.508 9.071l2.742 1.567 2.742-1.567L4.25 7.504ZM7.5 9.933l-2.75 1.571v3.134l2.75-1.571V9.933Zm1 3.134 2.75 1.571v-3.134L8.5 9.933v3.134Zm.508-3.996 2.742 1.567 2.742-1.567-2.742-1.567-2.742 1.567Zm2.242-2.433V3.504L8.5 5.076V8.21l2.75-1.572ZM7.5 8.21V5.076L4.75 3.504v3.134L7.5 8.21ZM5.258 2.643 8 4.21l2.742-1.567L8 1.076 5.258 2.643ZM15 9.933l-2.75 1.571v3.134L15 13.067V9.933ZM3.75 14.638v-3.134L1 9.933v3.134l2.75 1.571Z" />
+                          </svg>
+                          Meta-Skill
                         </small>
                       </span>
                     </label>
@@ -159,6 +182,8 @@ export default Vue.component('compare-skills', {
         availableSkills = availableSkills.filter(skill => skill.data_sets.length <= 1)
       } else if (this.selectedSkillScope === 'multi_skill') {
         availableSkills = availableSkills.filter(skill => skill.data_sets.length > 1)
+      } else if (this.selectedSkillScope === 'meta_skill') {
+        availableSkills = availableSkills.filter(skill => skill.meta_skill)
       }
       return availableSkills
     },
@@ -237,7 +262,7 @@ export default Vue.component('compare-skills', {
     },
     addRemoveScopeFilter(scope) {
       // remove all active classes from scope buttons
-      for (let scope of ['single_skill', 'multi_skill']) {
+      for (let scope of ['single_skill', 'multi_skill', 'meta_skill']) {
         document.getElementById(scope).classList.remove('active')
       }
       if (this.selectedSkillScope === scope) {
@@ -283,13 +308,13 @@ export default Vue.component('compare-skills', {
       }
 
       skillInfo += this.boxIcon() + ' HuggingFace\'s ID: ' + this.skillBaseModel(skill)
-      
+
       if (this.skillAdapter(skill) !== '') {
         skillInfo += '<br/>' + this.boxIcon() + ' Adapter: ' + this.skillAdapter(skill)
       }
       return skillInfo
     },
-    boxIcon(){
+    boxIcon() {
       return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16"> <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z" /></svg>'
     }
 
@@ -320,7 +345,7 @@ export default Vue.component('compare-skills', {
       })
       .catch((error) => {
         console.log(error)
-      })  
+      })
   },
 })
 </script>
