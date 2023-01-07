@@ -21,4 +21,4 @@ SQuARE is composed of 4 modules:
   - **Categorical**: it is a special case of multiple-choice where only two candiate answers are available, true/false or yes/no.
   - **Abstractive**: similar to extractive, the input is a question and a context, but the answer is not a subspan of the context, instead it is a free-form text based on the context.
   - **Information Retrieval (IR)**: the input is a question and the Skill needs to retrieve a relevant document.
-  - **User Interface**: allows the user to interact with the Skills.
+- **User Interface**: allows the user to interact with the Skills.
