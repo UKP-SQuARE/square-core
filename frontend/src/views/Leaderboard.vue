@@ -99,7 +99,7 @@ export default Vue.component("show-leaderboard", {
       dataset_name: "quoref",
       metric_name: "squad",
       datasets: [],
-      metrics: ["squad", "squad_v2", "exact_match", "f1", "accurracy"],
+      metrics: ["squad", "squad_v2", "exact_match"],
       fields: base_fields,
       items: []
     }
@@ -113,6 +113,7 @@ export default Vue.component("show-leaderboard", {
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
         this.datasets = response.data
+        this.datasets = ["squad", "quoref", "commonsense_qa", "cosmos_qa"]
       })
     this.refreshLeaderboard()
   },
@@ -170,6 +171,7 @@ export default Vue.component("show-leaderboard", {
     get_metric_value_label(metric_value_name) {
       switch (metric_value_name) {
         case "exact_match":
+        case "exact":
           return "EM";
         case "f1":
           return "F1";

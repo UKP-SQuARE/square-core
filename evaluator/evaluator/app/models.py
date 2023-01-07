@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field, validator
@@ -104,6 +104,20 @@ class TaskResponse(BaseModel):
         None, description="Date when the task finished processing."
     )
     result: Optional[str] = Field(None, description="Result of the task.")
+
+
+class LeaderboardEntry(BaseModel):
+    rank: Union[None, int] = Field(None, description="Rank of the entry.")
+    date: datetime = Field(..., description="Date when the metric got calculated.")
+    skill_id: str = Field(..., description="ID of the skill, the results are based on.")
+    skill_name: str = Field(
+        ..., description="Name of the skill, the results are based on"
+    )
+    private: bool = Field(
+        ...,
+        description="Whether the skill is only visible to the currently logged in user.",
+    )
+    result: dict = Field(..., description="Evaluation results of the metric.")
 
 
 # Mocked function. Remove after https://github.com/nclskfm/square-core/issues/7 is implemented.

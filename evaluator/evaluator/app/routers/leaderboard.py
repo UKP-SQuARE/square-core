@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Dict, List
 
 import jwt
@@ -7,12 +8,15 @@ from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
 
 from evaluator.app import mongo_client
-from evaluator.app.models import DataSet, MetricResult
+from evaluator.app.models import DataSet, LeaderboardEntry, Metric, MetricResult
 from evaluator.app.routers import client_credentials
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/leaderboard")
 auth = Auth()
+SKILL_MANAGER_API_URL = os.getenv(
+    "SKILL_MANAGER_API_URL", "https://square.ukp-lab.de/api/skill-manager"
+)
 
 
 @router.get(
@@ -34,8 +38,6 @@ async def get_leaderboard(
 
     Returns: List of leaderboard entries.
     """
-    user_id = get_user_id(request, token)
-
     # retrieve all evaluations for the respective dataset and metric
     dataset_filter = {"dataset_name": dataset_name.lower()}
     metric_filter = {"metrics." + metric_name.lower(): {"$exists": True}}
@@ -44,7 +46,8 @@ async def get_leaderboard(
     )
     metric_results = [MetricResult.from_mongo(result) for result in results]
 
-    # retrieve skills
+    # retrieve user-id and skills
+    user_id = get_user_id(request, token)
     skills = get_skills(token)
 
     # extract the information required for the leaderboard
@@ -55,22 +58,21 @@ async def get_leaderboard(
         if not skill_id in skills:
             continue
 
-        is_private = skills[skill_id]["published"] is False
-        has_access = not is_private or skills[skill_id]["user_id"] == user_id
+        skill_is_private = skills[skill_id]["published"] is False
+        has_access = not skill_is_private or skills[skill_id]["user_id"] == user_id
         if not has_access:
             continue
 
-        metric = metric_result.metrics[metric_name]
-        leaderboard.append(
-            {
-                "rank": None,
-                "date": metric["last_updated_at"],
-                "skill_id": skill_id,
-                "skill_name": skills[skill_id]["name"],
-                "private": is_private,
-                "result": metric["results"],
-            }
+        metric = Metric.parse_obj(metric_result.metrics[metric_name])
+        leaderboard_entry = LeaderboardEntry(
+            date=metric.last_updated_at,
+            skill_id=skill_id,
+            skill_name=skills[skill_id]["name"],
+            private=skill_is_private,
+            result=metric.results,
         )
+        leaderboard.append(leaderboard_entry)
+
     # rank the results
     leaderboard = rank(leaderboard)
     return leaderboard
@@ -87,13 +89,20 @@ def rank(leaderboard):
     """
     if len(leaderboard) <= 0:
         return leaderboard
-
+    # get key of the field we want to base the rank on
     key = get_ranking_key(leaderboard[0])
-
-    leaderboard.sort(key=lambda x: x["result"][key], reverse=True)
+    # sort by that field
+    leaderboard.sort(key=lambda x: x.result[key], reverse=True)
+    # assign ranks
+    prev_value = None
+    rank = 0
     for i in range(0, len(leaderboard)):
-        leaderboard[i]["rank"] = i + 1
-
+        current_value = leaderboard[i].result[key]
+        if current_value != prev_value:
+            # only assign the next rank if the results are different (if they are the same, both entries will simply have the same rank)
+            prev_value = current_value
+            rank = rank + 1
+        leaderboard[i].rank = rank
     return leaderboard
 
 
@@ -107,24 +116,19 @@ def get_ranking_key(leaderboard_entry):
     Returns: The key of the field that should be used to determine the ranking.
     """
     if (
-        len(leaderboard_entry["result"].keys()) > 1
-        and "f1" in leaderboard_entry["result"].keys()
+        len(leaderboard_entry.result.keys()) > 1
+        and "f1" in leaderboard_entry.result.keys()
     ):
         # multiple computed values => choose F1 for ranking (if exists)
         return "f1"
     else:
         # only one computed value (or no F1 available) => choose first (and usually only) one for ranking
-        return leaderboard_entry["result"].keys()[0]
+        return list(leaderboard_entry.result.keys())[0]
 
 
 def get_skills(token: str) -> dict:
-    headers = {}
-    if token:
-        headers = {"Authorization": f"Bearer {token}"}
-
-    response = requests.get(
-        f"http://square-core-skill-manager-1:8000/api/skill", headers=headers
-    )
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    response = requests.get(f"{SKILL_MANAGER_API_URL}/skill", headers=headers)
 
     skills = dict()
     for skill in response.json():
@@ -139,5 +143,4 @@ def get_user_id(request: Request, token: str):
         user_id = payload["preferred_username"]
     else:
         user_id = None
-
     return user_id
