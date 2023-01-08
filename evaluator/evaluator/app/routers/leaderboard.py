@@ -64,18 +64,18 @@ async def get_leaderboard(
             continue
 
         metric = Metric.parse_obj(metric_result.metrics[metric_name])
-        leaderboard_entry = LeaderboardEntry(
-            date=metric.last_updated_at,
-            skill_id=skill_id,
-            skill_name=skills[skill_id]["name"],
-            private=skill_is_private,
-            result=metric.results,
+        leaderboard.append(
+            LeaderboardEntry(
+                date=metric.last_updated_at,
+                skill_id=skill_id,
+                skill_name=skills[skill_id]["name"],
+                private=skill_is_private,
+                result=metric.results,
+            )
         )
-        leaderboard.append(leaderboard_entry)
 
-    # rank the results
-    leaderboard = rank(leaderboard)
-    return leaderboard
+    # rank and return the results
+    return rank(leaderboard)
 
 
 def rank(leaderboard):
@@ -83,7 +83,7 @@ def rank(leaderboard):
     Assigns a rank to each leaderboard entry.
 
     Args:
-        leaderboard (List[dict]): List of leaderboard entries.
+        leaderboard (List[LeaderboardEntry]): List of leaderboard entries.
 
     Returns: List of leaderboard entries with assigned "rank" field.
     """
@@ -106,12 +106,12 @@ def rank(leaderboard):
     return leaderboard
 
 
-def get_ranking_key(leaderboard_entry):
+def get_ranking_key(leaderboard_entry: LeaderboardEntry):
     """
     Determines the field that should be used to determine the final ranking.
 
     Args:
-        leaderboard_entry (dict): A single entry of the leaderboard list.
+        leaderboard_entry (LeaderboardEntry): A single entry of the leaderboard list.
 
     Returns: The key of the field that should be used to determine the ranking.
     """
