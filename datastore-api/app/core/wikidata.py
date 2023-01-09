@@ -3,7 +3,7 @@ import json
 import concurrent.futures
 from typing import Tuple, Dict, List
 from collections import defaultdict
-from fastapi import Request, Response
+from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 import aiohttp
 import asyncio
@@ -23,7 +23,7 @@ class WikiData:
         result = []
         for line in data['results']['bindings']:
             value_line=()
-                                    # BUG: MAYBE TO BIG
+            # BUG: MAYBE TO BIG
             for value in line.values():
                 value_line += (value['value'],)
             result.append(value_line)
@@ -85,10 +85,25 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
         path = request.url.path
         allowed_paths = [
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name'},
+            {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name'},
             {'verb': 'GET', 'path': f'/datastores/kg/{WikiData.kg_name}'},
         ]
         if path.startswith(f"/datastores/kg/{WikiData.kg_name}") \
         and not any([path == p['path'] and request.method == p['verb'] for p in allowed_paths]):
             return Response(status_code=404, content="This operation is not supported for the Wikidata knowledge graph.")
 
+        wikidata = WikiData()
+        try: 
+            if path == f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name':
+                response = await wikidata.get_entity_by_names(names = await request.json())
+                return Response(status_code=200, content=str(response))
+
+            elif path == f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name':               
+                response = await wikidata.get_entity_by_names(names = await request.json())
+                return Response(status_code=200, content=str(response))
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+        # This should not be reached
         return await call_next(request)

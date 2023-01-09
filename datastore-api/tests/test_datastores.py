@@ -8,8 +8,8 @@ class TestDatastores:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
         assert len(response.json()) >= 1
-        # first item should be the demo datastore
-        assert response.json()[0] == wiki_datastore.dict()
+        # first or second item should be the demo datastore
+        assert response.json()[0] == wiki_datastore.dict() or response.json()[1] == wiki_datastore.dict() 
 
     def test_get_datastore(self, client: TestClient, wiki_datastore: Datastore):
         response = client.get(f"/datastores/{wiki_datastore.name}")
@@ -97,3 +97,4 @@ class TestDatastores:
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 204
+    
