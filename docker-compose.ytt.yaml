@@ -23,7 +23,7 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
 #@ def frontend_traefik_redirect():
-#@ if data.values.environment == "prod":
+#@ if data.values.environment == "production":
 #@  return [
 #@    "traefik.http.routers.frontend.rule=Host(`" + data.values.frontend_url[data.values.environment] + "`) || Host(`square.ukp.informatik.tu-darmstadt.de`)",
 #@    "traefik.http.routers.frontend.middlewares=tuda-redirect",
@@ -156,7 +156,10 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        mode: #@ "" + data.values.environment
     image: #@ "ukpsquare/frontend:" + data.values.tag
     restart: always
     expose:
