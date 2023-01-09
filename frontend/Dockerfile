@@ -8,7 +8,8 @@ COPY package*.json ./
 RUN npm install -g npm@8.1.4
 RUN npm ci
 COPY . .
-RUN npm run build
+ARG mode
+RUN npm run build -- --mode $mode
 
 # production stage
 FROM nginx:1.23.1-alpine as build
