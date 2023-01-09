@@ -11,7 +11,7 @@ from ..models.datastore import Datastore, DatastoreRequest
 from ..models.stats import DatastoreStats
 from ..models.httperror import HTTPError
 from ..models.upload import UploadResponse, UploadUrlSet
-from .dependencies import get_storage_connector, get_kg_storage_connector, get_mongo_client
+from .dependencies import get_storage_connector, get_kg_storage_connector, get_wikidata_kg_client, get_mongo_client
 from ..core.mongo import MongoClient
 
 from ..core.kgs.connector import KnowledgeGraphConnector
@@ -277,8 +277,6 @@ async def post_kg_nodes(
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
-
-
 ###    QUERIES    ###
 @router.post(
     "/{kg_name}/nodes/query_by_name",
@@ -296,12 +294,21 @@ async def get_node_by_name(
     kg_name: str = Path(..., description="The name of the node"),
     doc_id: set = Body(..., description="The name of the node to retrieve"),
     conn=Depends(get_kg_storage_connector),
+    wikidata=Depends(get_wikidata_kg_client),
 ):
-    result = await conn.get_node_by_name_msearch(kg_name, doc_id)
-    if result is not None:
-        return result
+    if kg_name == wikidata.kg_name:
+        try:
+            return await wikidata.get_entity_by_names(doc_id)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
+        result = await conn.get_node_by_name_msearch(kg_name, doc_id)
+        if result is not None:
+            return result
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
 
 
 @router.get(

@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 import pytest
 from app.core.es.connector import ElasticsearchConnector
+from app.core.kgs.connector import KnowledgeGraphConnector
 from app.core.config import settings
 from app.core.dense_retrieval import DenseRetrieval
 from app.core.faiss import FaissClient
@@ -65,6 +66,35 @@ def wiki_datastore(datastore_name):
     )
 
 
+# KG test preparations
+@pytest.fixture(scope="package")
+def wikidata_kg_name():
+    return "wikidata"
+
+@pytest.fixture(scope="package")
+def wikidata_kg(wikidata_kg_name):
+    return Datastore(
+        name=wikidata_kg_name,
+        fields=[
+            DatastoreField(name="text", type="text"),
+            DatastoreField(name="title", type="text"),
+        ],
+    )
+# # BING SEARCH Tools:
+# @pytest.fixture(scope="package")
+# def bing_search_datastore_name():
+#     return "bing_search"
+
+# @pytest.fixture(scope="package")
+# def bing_search_datastore(bing_search_datastore_name):
+#     return Datastore(
+#         name=bing_search_datastore_name,
+#         fields=[
+#             DatastoreField(name="text", type="text"),
+#             DatastoreField(name="title", type="text"),
+#         ],
+#     )
+
 @pytest.fixture(scope="package")
 def dpr_index(datastore_name: str) -> Index:
     return Index(
@@ -122,6 +152,8 @@ def user_id() -> str:
 @pytest.fixture(scope="package")
 def es_container(
     wiki_datastore: Datastore,
+    # bing_search_datastore: Datastore,
+    wikidata_kg: Datastore,
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -144,13 +176,18 @@ def es_container(
     )
     es_container.start()
     host_ip = get_container_ip("es")
+    # print(f"ip of es :{host_ip}")
+    # host_ip = "localhost"
     host_url = f"http://{host_ip}:9200"
     wait_for_up(host_url)
     try:
         es_connector = ElasticsearchConnector(host_url)
+        kg_connector = KnowledgeGraphConnector(host_url)
         loop = asyncio.get_event_loop()
         tasks = [
             loop.create_task(es_connector.add_datastore(wiki_datastore)),
+            # loop.create_task(es_connector.add_datastore(bing_search_datastore)),
+            loop.create_task(kg_connector.add_kg(wikidata_kg)),
             loop.create_task(es_connector.add_index(dpr_index)),
             loop.create_task(es_connector.add_index(second_index)),
             loop.create_task(
@@ -175,6 +212,27 @@ def es_container(
                 mongo_client.item_keys["datastore"]: datastore_name,
             }
         )
+
+        # # add binding
+        # datastore_name = bing_search_datastore.name
+        # mongo_client = build_mongo_client(*mongo_container)
+        # mongo_client.user_datastore_bindings.insert_one(
+        #     {
+        #         "user_id": user_id,
+        #         mongo_client.item_keys["datastore"]: datastore_name,
+        #     }
+        # )
+
+        # add binding
+        datastore_name = wikidata_kg.name
+        mongo_client = build_mongo_client(*mongo_container)
+        mongo_client.user_datastore_bindings.insert_one(
+            {
+                "user_id": user_id,
+                mongo_client.item_keys["datastore"]: datastore_name,
+            }
+        )
+        
         yield host_url
     finally:
         es_container.stop()
