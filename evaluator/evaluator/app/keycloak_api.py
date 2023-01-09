@@ -5,7 +5,7 @@ from typing import Dict
 
 import requests
 
-from evaluator.settings import KeycloakSettings
+from evaluator.app.settings import KeycloakSettings
 
 
 class KeycloakAPI:

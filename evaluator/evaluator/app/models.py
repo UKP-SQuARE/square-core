@@ -2,10 +2,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 
+from fastapi import HTTPException
 from pydantic import BaseModel, Field, validator
 
-from evaluator.mongo.mongo_model import MongoModel
-from evaluator.mongo.py_object_id import PyObjectId
+from evaluator.app.mongo.mongo_model import MongoModel
+from evaluator.app.mongo.py_object_id import PyObjectId
 
 
 class DataSet(str, Enum):
@@ -89,3 +90,67 @@ class MultipleChoiceDatasetSample(BaseModel):
         ...,
         description="Index of the choice-entry in choices that represents the correct answer.",
     )
+
+
+class TaskResponse(BaseModel):
+    task_id: str = Field(..., description="ID of the task.")
+    state: str = Field(..., description="Current state of the task.")
+    finished: Optional[datetime] = Field(
+        None, description="Date when the task finished processing."
+    )
+    result: Optional[str] = Field(None, description="Result of the task.")
+
+
+# Mocked function. Remove after https://github.com/nclskfm/square-core/issues/7 is implemented.
+def get_dataset_metadata(dataset_name):
+    if dataset_name == "squad":
+        return {
+            "name": "squad",
+            "skill-type": "extractive-qa",
+            "metric": "squad",
+            "mapping": {
+                "id-column": "id",
+                "question-column": "question",
+                "context-column": "context",
+                "answer-text-column": "answers.text",
+            },
+        }
+    elif dataset_name == "quoref":
+        return {
+            "name": "quoref",
+            "skill-type": "extractive-qa",
+            "metric": "squad",
+            "mapping": {
+                "id-column": "id",
+                "question-column": "question",
+                "context-column": "context",
+                "answer-text-column": "answers.text",
+            },
+        }
+    elif dataset_name == "commonsense_qa":
+        return {
+            "name": "commonsense_qa",
+            "skill-type": "multiple-choice",
+            "metric": "accuracy",
+            "mapping": {
+                "id-column": "id",
+                "question-column": "question",
+                "choices-columns": ["choices.text"],
+                "choices-key-mapping-column": "choices.label",
+                "answer-index-column": "answerKey",
+            },
+        }
+    elif dataset_name == "cosmos_qa":
+        return {
+            "name": "cosmos_qa",
+            "skill-type": "multiple-choice",
+            "mapping": {
+                "id-column": "id",
+                "question-column": "question",
+                "choices-columns": ["answer0", "answer1", "answer2", "answer3"],
+                "choices-key-mapping-column": None,
+                "answer-index-column": "label",
+            },
+        }
+    else:
+        raise HTTPException(400, "Unsupported dataset!")

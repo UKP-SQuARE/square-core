@@ -1,6 +1,6 @@
 import pymongo
 
-from evaluator.settings.mongo_settings import MongoSettings
+from evaluator.app.settings.mongo_settings import MongoSettings
 
 
 class MongoClient:
