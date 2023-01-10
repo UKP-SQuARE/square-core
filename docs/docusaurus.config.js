@@ -43,20 +43,20 @@ const config = {
      {
        specs: [
            {
-           routePath: "/api/datastores/",
-           specUrl: "https://square.ukp-lab.de/api/datastores/openapi.json",
+           route: "/api/datastores/",
+           spec: "https://square.ukp-lab.de/api/datastores/openapi.json",
            },
            {
-           routePath: "/api/skills/",
-           specUrl: "https://square.ukp-lab.de/api/skill-manager/openapi.json",
+            route: "/api/skills/",
+           spec: "https://square.ukp-lab.de/api/skill-manager/openapi.json",
           },
            {
-           routePath: "/api/models-inference/",
-           specUrl: "https://square.ukp-lab.de/api/main/openapi.json",
+            route: "/api/models-inference/",
+           spec: "https://square.ukp-lab.de/api/main/openapi.json",
           },
            {
-           routePath: "/api/models-management/",
-           specUrl: "https://square.ukp-lab.de/api/models/openapi.json",
+            route: "/api/models-management/",
+           spec: "https://square.ukp-lab.de/api/models/openapi.json",
           },
        ],
      },

@@ -67,6 +67,7 @@ Try out the on-the-go skills on the [demo page](https://square.ukp-lab.de/)! The
 To add new skills, please see the [skills](https://github.com/UKP-SQuARE/square-core/tree/master/skills#add-new-skills) section.
 
 ## Local Installation
+>*One can also refer to this [minimal version](README.min.md) for a simpler local setup.*
 ### Requirements
 To run UKP-SQuARE locally, you need the following software:
 * [docker](https://docs.docker.com/get-docker/)
