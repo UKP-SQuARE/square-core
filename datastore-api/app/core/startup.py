@@ -1,4 +1,4 @@
-# from .bing import BingSearch
+from .wikidata import WikiData
 from ..routers.dependencies import get_storage_connector, get_mongo_client
 from .es.connector import ElasticsearchConnector
 from .mongo import MongoClient
@@ -30,7 +30,7 @@ async def startup_event_handler():
     wait_for_up(settings.ES_URL)
     logger.info("ES-container ready!")
     # datastore_name is bing_search
-    datastore_name = BingSearch.datastore_name
+    datastore_name = WikiData.kg_name
     # create placehoder DatastoreRequest
     fields = DatastoreRequest(
         __root__=[DatastoreField(name="title", type="text"),

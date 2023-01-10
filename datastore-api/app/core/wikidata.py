@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class WikiData:
     """Wraps access to the Bing Search API."""
 
-    kg_name = "wikidata"
+    kg_name = "wikidata"    
 
     def __init__(self):
         self.sparql_url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql"
@@ -61,6 +61,25 @@ class WikiData:
 
         return results
 
+    async def get_edges_by_name(self, entity_pair_list: list):
+        query = "select "
+        for i, pair in enumerate(entity_pair_list):
+            query += f"?relation{i} "
+        query += " WHERE {"
+
+        for i, pair in enumerate(entity_pair_list):
+            if i != 0:
+                query += " UNION "
+            query += "{wd:"+pair[0]+ f"?relation{i} wd:"+pair[1]+" . }"
+        query += " }"
+
+        data = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
+        response_clean =  set(self.__json_to_doubles(data))
+
+        return response_clean
+
+
+    # Not finished
     async def get_subgraph_by_id(self, entity_id: str, hops = 2):
         
         query = '''select ''' + ' '.join(["?relation"+str(hop)+" ?obj"+str(hop) for hop in range(hops)]) + ''' where { wd:'''+str(entity_id)+" ?relation0 ?obj0 . " + ' . '.join(["?obj"+str(hop) +" ?relation"+str(hop+1)+" ?obj"+str(hop+1) for hop in range(hops-1)])+''' }'''
@@ -68,13 +87,6 @@ class WikiData:
         data = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
         return set(self.__json_to_doubles(data))
 
-
-    async def get_node_by_name(self, names: list):
-        """ input names and output node id """
-        new_names = []
-        for name in names:
-            new_names.append(name+" smith")
-        return new_names
 
 class WikiDataMiddleware(BaseHTTPMiddleware):
 
@@ -86,6 +98,7 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
         allowed_paths = [
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name'},
+            {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name'},
             {'verb': 'GET', 'path': f'/datastores/kg/{WikiData.kg_name}'},
         ]
         if path.startswith(f"/datastores/kg/{WikiData.kg_name}") \
@@ -100,6 +113,10 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
 
             elif path == f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name':               
                 response = await wikidata.get_entity_by_names(names = await request.json())
+                return Response(status_code=200, content=str(response))
+
+            elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name':
+                response = await wikidata.get_edges_by_name(entity_pair_list = await request.json())
                 return Response(status_code=200, content=str(response))
 
         except Exception as e:

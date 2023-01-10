@@ -43,11 +43,4 @@ def get_mongo_client() -> MongoClient:
         settings.MONGO_SERVER_SELECTION_TIMEOUT_MS
     )
 
-# @lru_cache()
-# def get_bing_search_client() -> BingSearch:
-#     return BingSearch()
-
-@lru_cache()
-def get_wikidata_kg_client() -> WikiData:
-    return WikiData()
     

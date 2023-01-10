@@ -28,3 +28,13 @@ class TestKGs:
         true_value = {'Barack Obama': ['http://www.wikidata.org/entity/Q76', 'http://www.wikidata.org/entity/Q47513588', 'http://www.wikidata.org/entity/Q61909968'], 'Bill Clinton': ['http://www.wikidata.org/entity/Q1124', 'http://www.wikidata.org/entity/Q2903164', 'http://www.wikidata.org/entity/Q47508810', 'http://www.wikidata.org/entity/Q47513276', 'http://www.wikidata.org/entity/Q47513347', 'http://www.wikidata.org/entity/Q77009656']}
         prediction = ast.literal_eval(response.content.decode())
         assert prediction == true_value
+
+    def test_wikidata_get_edges_by_ids(self, client, wikidata_kg_name):
+        response = client.post(
+            f"/datastores/kg/{wikidata_kg_name}/edges/query_by_name",
+             json=[["Q76", "Q11696"],["Q76", "Q13133"]]
+             )
+        
+        assert response.status_code == 200
+
+        assert response.content.decode() == "{('http://www.wikidata.org/prop/direct/P39',), ('http://www.wikidata.org/prop/direct/P26',)}"
