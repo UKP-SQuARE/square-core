@@ -8,6 +8,7 @@ WORKDIR /app
 
 COPY ./dockerfiles/graph_transformer/requirements.txt ./requirements.graph.txt
 RUN pip install -r requirements.graph.txt
+RUN pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
 
 FROM build as test
 
