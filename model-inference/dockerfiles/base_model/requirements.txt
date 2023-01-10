@@ -10,7 +10,6 @@ torch-sparse
 torch-geometric
 sentence-transformers==1.2.0    # sentence transformers libs
 onnxruntime==1.12.0             # onnx inference and models
-square-auth==0.0.12             # keycloak authentication
 celery==5.1.2                   # queue requests
 redis==4.1.4
 spacy>=3.0.0,<4.0.0
