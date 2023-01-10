@@ -99,9 +99,10 @@ class ModelManagementClient:
         for worker2tasks in running_tasks.values():
             for tasks in worker2tasks.values():
                 for task in tasks:
-                    model_name = task["args"][0]["MODEL_NAME"]
-                    model_type = task["args"][0]["MODEL_TYPE"]
-                    models_in_deployment[model_name] = model_type
+                    if task["name"] == "tasks.tasks.deploy_task":
+                        model_name = task["args"][0]["MODEL_NAME"]
+                        model_type = task["args"][0]["MODEL_TYPE"]
+                        models_in_deployment[model_name] = model_type
 
         return models_in_deployment
 
