@@ -20,9 +20,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
     Given a question, calls the TWEAC model to identify the Skill to run.
     """
     logger.info("Request: {}".format(request))
-    predicted_dataset = _call_tweac(request)
-    list_predicted_skills = _retrieve_skills(predicted_dataset)
-    skill_response = _call_skill(list_predicted_skills[0], request.query)
+    predicted_dataset = await _call_tweac(request)
+    list_predicted_skills = await _retrieve_skills(predicted_dataset)
+    skill_response = await _call_skill(list_predicted_skills[0], request.query)
     query_output = QueryOutput(
         predictions=skill_response.json()["predictions"],
         adversarial=skill_response.json()["adversarial"],
