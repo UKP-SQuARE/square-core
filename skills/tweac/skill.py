@@ -67,7 +67,9 @@ async def _retrieve_skills(dataset_name):
     logger.info("Retrieved Skills: {}".format(response))
     list_predicted_skills = response.json()
     list_predicted_skills = [
-        skill for skill in list_predicted_skills if skill["skill_type"] != "meta-skill"
+        skill["id"]
+        for skill in list_predicted_skills
+        if skill["skill_type"] != "meta-skill"
     ]
     return list_predicted_skills
 
