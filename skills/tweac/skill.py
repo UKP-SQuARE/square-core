@@ -3,7 +3,7 @@ import os
 import requests
 import numpy as np
 
-from square_auth import ClientCredentials
+from square_auth.client_credentials import ClientCredentials
 from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
