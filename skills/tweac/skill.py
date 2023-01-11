@@ -56,7 +56,8 @@ async def _retrieve_skills(dataset_name):
     """
     skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     client_credentials = ClientCredentials()
-
+    api_call = f"{skill_manager_api_url}/skill/dataset/{dataset_name}"
+    logger.info("Calling: {}".format(api_call))
     response = requests.get(
         url=f"{skill_manager_api_url}/skill/dataset/{dataset_name}",
         headers={"Authorization": f"Bearer {client_credentials}"},
