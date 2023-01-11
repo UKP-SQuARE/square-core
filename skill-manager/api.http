@@ -84,33 +84,6 @@ content-type: application/json
   }
 
 ###
-# @name create_skill_tweac
-POST {{path_prefix}}/skill HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-
-{
-  "name":"tweac",
-  "skill_type":"meta-skill",
-  "description":"",
-  "skill_settings": {
-    "requires_context": false,
-    "requires_multiple_choices":0
-  },
-  "url":"http://127.0.0.1:8001",
-  "default_skill_args": {
-  },
-  "user_id":"LOCAL_SQUARE_USER",
-  "published":true,
-  "skill_input_examples": [
-    {"query":"","context":""},
-    {"query":"","context":""},
-    {"query":"","context":""}
-  ]
-  }
-
-###
 # @name update_skill_by_id
 # @prompt id {skill_id}
 PUT {{path_prefix}}/skill/{{id}} HTTP/1.1
@@ -153,23 +126,8 @@ Authorization: Bearer {{token}}
 content-type: application/json
 
 {
-  "query": "When was the UN founded?",
-  "skill_args": {},
-  "skill": {},
-  "user_id": "",
-  "explain_kwargs": {}
-}
-
-
-###
-# @name query_tweac
-POST {{path_prefix}}/skill/638f9f7feab6419900fecdc7/query HTTP/1.1
-Host: {{hostname}}
-content-type: application/json
-
-{
   "query": "Which NFL team represented the AFC at Super Bowl 50?",
-  "skill_args": {},
+  "skill_args": {"context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24–10 to earn their third Super Bowl title."},
   "skill": {},
   "user_id": "",
   "explain_kwargs": {}
