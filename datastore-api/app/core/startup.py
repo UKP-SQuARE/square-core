@@ -14,14 +14,13 @@ import logging
 
 def wait_for_up(url: str, ntries=100) -> None:
     for _ in range(ntries):
-        try:
-            # import ipdb; ipdb.set_trace()
-            response = requests.get(url)
-            if response.status_code == 200:
-                logger.info(f"Connected to {url}")
-                break
-        except:
-            time.sleep(1)
+        response = requests.get(url)
+        if response.status_code == 200:
+            logger.info(f"Connected to {url}")
+            return
+        time.sleep(1)
+    raise RuntimeError(f"Could not connect to {url}")
+
 
 logger = logging.getLogger(__name__)
 

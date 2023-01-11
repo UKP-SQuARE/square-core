@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     MONGO_HOST: str = ""
     MONGO_PORT: int = 27017
     MONGO_SERVER_SELECTION_TIMEOUT_MS: int = 3000
+    BING_KEY = ""
 
     class Config:
         env_file = ".env"

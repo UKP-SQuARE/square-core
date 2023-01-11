@@ -9,6 +9,7 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 import aiohttp
 import asyncio
+from .config import settings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,10 +20,11 @@ class BingSearch:
     datastore_name = "bing_search"
 
     def __init__(self):
-        # TODO: make sure to set the environment variable BING_SEARCH_KEY in your .env file
-        self.subscription_key = "e7f1863c98084549951c5c80ee702d72"
+        self.subscription_key = settings.BING_KEY
         self.search_url = "https://api.bing.microsoft.com/v7.0/search"
         self.headers = {"Ocp-Apim-Subscription-Key": self.subscription_key}
+        self.min_search_pages = 1
+        self.max_search_pages = 50
 
     def __process_html(self, doc: Tuple[str, str]) -> Dict[str, str]:
         """
@@ -78,22 +80,14 @@ class BingSearch:
     async def search(self, query: str, count=10, region: str = None):
         """Searches Bing for the given query and returns a list of QueryResults."""
 
-        if count > 50:
-            count = 50
-        elif count < 1:
-            count = 1
+        if count > self.max_search_pages: count = self.max_search_pages
+        elif count < self.min_search_pages: count = self.min_search_pages
 
         # call Bing API to get urls 
-        try:
-            params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count, "mkt": region}
-            response = requests.get(self.search_url, headers=self.headers, params=params)
-            response.raise_for_status()
-            search_results = response.json()
-        except Exception as e:
-            logger.error(f"Error searching Bing for {query}: {e}")
-            return {
-                "error": f"Error searching Bing for {query}"
-            }
+        params = {"q": query, "textDecorations": True, "textFormat": "HTML", "count": count, "mkt": region}
+        response = requests.get(self.search_url, headers=self.headers, params=params)
+        response.raise_for_status()
+        search_results = response.json()
 
         # create a dictionary of urls and their search results
         values_dict = {} # values_dict[url] = search result

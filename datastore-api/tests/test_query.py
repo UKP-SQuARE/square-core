@@ -143,16 +143,6 @@ class TestQuery:
         assert response.status_code == 404
         assert "detail" in response.json()
 
-
-    # def test_bing_search_available(self, client, bing_search_datastore_name):
-    #     response = client.get(
-    #         f"/datastores/{bing_search_datastore_name}/search",
-    #         params={"query": "quack", "top_k": 1},
-    #     )
-    #     assert response.status_code == 200
-    #     assert len(response.json()) == 1
-
-
     def test_unsupported_operation_for_bing_search(self, client, bing_search_datastore_name):
         response = client.get(
             f"/datastores/{bing_search_datastore_name}/search_by_vector",
@@ -176,11 +166,6 @@ class TestQuery:
 
 
         '''
-        # requests_mock.real_http = True
-        # requests_mock.get(
-        #     f"/datastores/{bing_search_datastore_name}/search",
-        #
-        # )
 
         bing_search_return = [query_result]
         with patch.object(BingSearch, "search", new_callable=async_mock_callable(bing_search_return)):
@@ -208,12 +193,7 @@ class TestQuery:
 
 
         '''
-        # requests_mock.real_http = True
-        # requests_mock.get(
-        #     f"/datastores/{bing_search_datastore_name}/search",
-        #
-        # )
-
+        
         bing_search_return = [query_result for i in range(50) ]
         with patch.object(BingSearch, "search", new_callable=async_mock_callable(bing_search_return)):
             response = client.get(
