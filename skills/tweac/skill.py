@@ -3,7 +3,7 @@ import os
 import requests
 import numpy as np
 
-from square_auth.client_credentials import ClientCredentials
+from square_auth import ClientCredentials
 from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
@@ -56,11 +56,12 @@ async def _retrieve_skills(dataset_name):
     """
     skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     client_credentials = ClientCredentials()
+    token = client_credentials()
     api_call = f"{skill_manager_api_url}/skill/dataset/{dataset_name}"
     logger.info("Calling: {}".format(api_call))
     response = requests.get(
         url=f"{skill_manager_api_url}/skill/dataset/{dataset_name}",
-        headers={"Authorization": f"Bearer {client_credentials}"},
+        headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL") == "1",
     )
     logger.info("Retrieved Skills: {}".format(response))
@@ -74,6 +75,7 @@ async def _retrieve_skills(dataset_name):
 async def _call_skill(skill_id, question, context):
     skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     client_credentials = ClientCredentials()
+    token = client_credentials()
 
     input_data = {
         "query": question,
@@ -86,7 +88,7 @@ async def _call_skill(skill_id, question, context):
     response = requests.post(
         url=skill_manager_api_url + "/skill/" + skill_id + "/query",
         json=input_data,
-        headers={"Authorization": f"Bearer {client_credentials}"},
+        headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL") == "1",
     )
     return response
