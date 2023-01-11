@@ -54,7 +54,7 @@ async def _retrieve_skills(dataset_name):
     """
     API call to Skill Manager to get the names of the skills trained on the dataset
     """
-    skill_manager_api_url = os.getenv("SQUARE_SKILL_MANAGER")
+    skill_manager_api_url = os.getenv("SQUARE_API_URL")
     client_credentials = ClientCredentials()
 
     response = requests.get(
@@ -71,7 +71,7 @@ async def _retrieve_skills(dataset_name):
 
 
 async def _call_skill(skill_id, question, context):
-    skill_manager_api_url = os.getenv("SQUARE_SKILL_MANAGER")
+    skill_manager_api_url = os.getenv("SQUARE_API_URL")
     client_credentials = ClientCredentials()
 
     input_data = {
