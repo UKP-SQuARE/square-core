@@ -16,6 +16,8 @@ from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
 from evaluator.app.core.metric_formatters import Formatter, MetricFormattingError
 from evaluator.app.models import (
+    Evaluation,
+    EvaluationStatus,
     Metric,
     MetricResult,
     Prediction,
@@ -39,17 +41,30 @@ def evaluate(
         f"Started evaluation-task for skill '{skill_id}' and dataset '{dataset_name}' on metric '{metric_name}'"
     )
 
+    if hasattr(mongo_client, "client") == False:
+        mongo_client.connect()
+
+    evaluation_filter = {
+        "skill_id": ObjectId(skill_id),
+        "dataset_name": dataset_name,
+        "metric_name": metric_name,
+    }
+    mongo_client.client.evaluator.evaluations.update_many(
+        evaluation_filter, {"$set": {"metric_status": EvaluationStatus.started}}
+    )
+
     # Load the metric
     try:
         metric = load(metric_name)
     except FileNotFoundError:
         msg = f"Metric with name='{metric_name}' not found!"
         logger.error(msg)
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.failed}}
+        )
         raise ValueError(msg)
 
     # Load the predictions for the given `skill_id` and `dataset_name`
-    if hasattr(mongo_client, "client") == False:
-        mongo_client.connect()
     try:
         prediction_result = PredictionResult.from_mongo(
             mongo_client.client.evaluator.predictions.find_one(
@@ -61,6 +76,9 @@ def evaluate(
     except AttributeError as e:
         msg = f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
         logger.error(msg)
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.failed}}
+        )
         raise ValueError(msg)
 
     # Load dataset metadata (TODO)
@@ -72,6 +90,9 @@ def evaluate(
         dataset = dataset_handler.get_dataset(dataset_name)
     except DatasetDoesNotExistError as e:
         logger.error(f"{e}")
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.failed}}
+        )
         raise e
 
     # map predictions into correct format (from skill output format to metric format)
@@ -86,6 +107,9 @@ def evaluate(
         )
     except ValueError as e:
         logger.error(f"{e}")
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.failed}}
+        )
         raise e
 
     # map references into correct format (from generic dataset format to metric format)
@@ -93,6 +117,9 @@ def evaluate(
         references = Formatter().format_references(metric_name, references)
     except MetricFormattingError as e:
         logger.error(f"{e}")
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.failed}}
+        )
         raise ValueError(
             f"The dataset '{dataset_name}' cannot be evaluated on metric '{metric_name}'."
         )
@@ -104,6 +131,9 @@ def evaluate(
     except ValueError as e:
         msg = f"Could not evaluate metric '{metric_name}' on dataset '{dataset_name}': {e}"
         logger.error(msg)
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.failed}}
+        )
         raise ValueError(msg)
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
 
@@ -127,6 +157,10 @@ def evaluate(
 
     mongo_client.client.evaluator.results.replace_one(
         metric_result_identifier, metric_result.mongo(), upsert=True
+    )
+
+    mongo_client.client.evaluator.evaluations.update_many(
+        evaluation_filter, {"$set": {"metric_status": EvaluationStatus.finished}}
     )
 
     logger.info(f"New metric result: {metric_result}")
