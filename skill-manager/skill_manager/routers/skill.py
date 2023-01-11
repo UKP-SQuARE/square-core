@@ -78,22 +78,12 @@ async def get_skills(request: Request):
 )
 async def get_skills_by_dataset(request: Request, dataset: str = None):
     """Returns all the skills that were trained on the given dataset."""
-    mongo_query = {"published": True}
     if has_auth_header(request):
         payload = await get_payload_from_token(request)
         user_id = payload["username"]
-        # make a mongo query to get all the skills that the user has access to and are published and trained on the given dataset
-        mongo_query = {
-            "$and": [
-                {"data_sets": dataset},
-                {
-                    "$or": [
-                        mongo_query,
-                        # {"user_id": user_id}, # this user id is not the one that logged in
-                    ]
-                },
-            ]
-        }
+        user_avail_skills_query = {"$or": [{"published": True}, {"user_id": user_id}]}
+        # make a mongo query that retrieves any skill that published is True or belongs to the user and dataset is in data_sets
+        mongo_query = {"$and": [user_avail_skills_query, {"data_sets": dataset}]}
 
     logger.debug("Skill query: {query}".format(query=json.dumps(mongo_query)))
     skills = mongo_client.client.skill_manager.skills.find(mongo_query)
