@@ -22,7 +22,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info("Request: {}".format(request))
     predicted_dataset = await _call_tweac(request)
     list_predicted_skills = await _retrieve_skills(predicted_dataset)
-    skill_response = await _call_skill(list_predicted_skills[0], request.query)
+    skill_response = await _call_skill(list_predicted_skills[0], request)
     query_output = QueryOutput(
         predictions=skill_response.json()["predictions"],
         adversarial=skill_response.json()["adversarial"],
@@ -72,14 +72,14 @@ async def _retrieve_skills(dataset_name):
     return list_predicted_skills
 
 
-async def _call_skill(skill_id, question, context):
+async def _call_skill(skill_id, request):
     skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     client_credentials = ClientCredentials()
     token = client_credentials()
 
     input_data = {
-        "query": question,
-        "skill_args": {"context": context},
+        "query": request.query,
+        "skill_args": {"context": request.skill_args["context"]},
         "skill": {},
         "user_id": "",
         "explain_kwargs": {},
