@@ -73,6 +73,10 @@ class Skill(MongoModel):
         False,
         description="If `True`, the skill will be publicly availble, ready to be used by anyone. If `False`, only the skill author has access to it.",
     )
+    meta_skill: bool = Field(
+        False,
+        description="If `True`, the skill is a meta skill, i.e. a Skill that combines more than one Skills.",
+    )
     client_id: Optional[str] = Field(
         None, description="The clientId of the skill stored in Keycloak."
     )
