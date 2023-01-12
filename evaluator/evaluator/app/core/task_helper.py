@@ -1,4 +1,5 @@
 import logging
+import os
 
 import requests
 from evaluate import list_evaluation_modules
@@ -6,6 +7,7 @@ from evaluate import list_evaluation_modules
 from evaluator.app.models import get_dataset_metadata
 
 logger = logging.getLogger(__name__)
+base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
 
 
 def task_id(task_name, skill_id, dataset_name, metric_name=None) -> str:
@@ -41,7 +43,7 @@ def skill_exists(skill_id, token) -> bool:
         headers = {"Authorization": f"Bearer {token}"}
 
     response = requests.get(
-        f"https://square.ukp-lab.de/api/skill-manager/skill/{skill_id}", headers=headers
+        f"{base_url}/skill-manager/skill/{skill_id}", headers=headers
     )
 
     return response.status_code == 200
