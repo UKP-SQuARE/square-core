@@ -78,6 +78,16 @@ class MetricResult(MongoModel):
     metrics: dict = Field(..., description="Dictionary of all Metric objects")
 
 
+class EvaluationResult(BaseModel):
+    id: str = Field(..., description="Model name")
+    dataset: str = Field(..., description="Dataset used for evaluation")
+    public: bool = Field(
+        ...,
+        description="Describes wether it's a public evaluation or a private evaluation for the user.",
+    )
+    metric_results: dict = Field(..., description="Dictionary of all metric results")
+
+
 class ExtractiveDatasetSample(BaseModel):
     id: str = Field(..., description="ID of the sample in the dataset.")
     question: str = Field(..., description="Question of the sample.")

@@ -70,6 +70,7 @@ async def get_skills(request: Request):
             skills=", ".join(["{}:{}".format(s.name, str(s.id)) for s in skills])
         )
     )
+    logger.debug(skills)
     return skills
 
 

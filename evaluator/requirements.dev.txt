@@ -1,4 +1,3 @@
-black
 pre-commit
 isort
 pytest>=6.2.5

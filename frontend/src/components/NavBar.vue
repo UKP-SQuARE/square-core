@@ -53,7 +53,7 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
-                <li><router-link class="dropdown-item" to="/evaluation">Evaluate skills</router-link></li>
+                <li><router-link class="dropdown-item" to="/evaluations">Evaluate skills</router-link></li>
                 <li><a v-on:click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a v-on:click.prevent="$emit('sign-out')" href="#" class="dropdown-item">Sign out</a></li>

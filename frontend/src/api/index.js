@@ -135,3 +135,11 @@ export function pingSkill(headers, skillUrl) {
 export function getLeaderboard(dataset_name, metric_name, headers) {
     return axios.get(`${EVALUATOR_URL}/leaderboard/${dataset_name}/${metric_name}`, { headers: headers })
 }
+
+/**
+ * Get all user and public evaluations.
+ * @param {Object} headers Authentication header
+ */
+ export function getEvaluations(headers) {
+    return axios.get(`${EVALUATOR_URL}/evaluations`, { headers: headers })
+}
