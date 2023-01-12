@@ -38,7 +38,12 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "attack_kwargs": attack_kwargs,
     }
     if request.skill_args.get("adapter"):
-        model_request["adapter_name"] = request.skill_args["adapter"]
+        if request.skill_args.get("average_adapters"):
+            model_request["adapter_name"] = request.skill_args["adapter"]
+            model_request["model_kwargs"]['average_adapters'] = True
+        else:
+            model_request["adapter_name"] = request.skill_args["adapter"]
+
     logger.debug("Request for model api:{}".format(model_request))
 
     model_response = await square_model_client(
