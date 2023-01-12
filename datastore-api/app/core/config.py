@@ -1,28 +1,23 @@
-from pydantic import BaseSettings, SecretStr
-
+from pydantic import BaseSettings, SecretStr, Field
 
 class Settings(BaseSettings):
-    API_PREFIX: str = ""
-    OPENAPI_URL: str = "/datastores/openapi.json"
-    API_KEY: SecretStr = ""
-    ES_URL: str = ""
-    ES_SEARCH_TIMEOUT: int = 30
+    API_PREFIX: str = Field("", env="API_PREFIX")
+    OPENAPI_URL: str = Field("/datastores/openapi.json", env="OPENAPI_URL")
+    API_KEY: SecretStr = Field("", env="API_KEY")
+    ES_URL: str = Field("", env="ES_URL")
+    ES_SEARCH_TIMEOUT: int = Field(30, env="ES_SEARCH_TIMEOUT")
 
-    FAISS_PORT: int = 5000
-    UPLOAD_BATCH_SIZE: int = 1000
-    MODEL_API_URL: str = ""
-    MAX_RETURN_ITEMS: int = 10000
+    FAISS_PORT: int = Field(5000, env="FAISS_PORT")
+    UPLOAD_BATCH_SIZE: int = Field(1000, env="UPLOAD_BATCH_SIZE")
+    MODEL_API_URL: str = Field("", env="MODEL_API_URL")
+    MAX_RETURN_ITEMS: int = Field(10000, env="MAX_RETURN_ITEMS")
 
     # Mongo ROOT
-    MONGO_INITDB_ROOT_USERNAME: str = ""
-    MONGO_INITDB_ROOT_PASSWORD: str = ""
-    MONGO_HOST: str = ""
-    MONGO_PORT: int = 27017
-    MONGO_SERVER_SELECTION_TIMEOUT_MS: int = 3000
-    BING_KEY = ""
-
-    class Config:
-        env_file = ".env"
-
+    MONGO_INITDB_ROOT_USERNAME: str = Field("", env="MONGO_INITDB_ROOT_USERNAME")
+    MONGO_INITDB_ROOT_PASSWORD: str = Field("", env="MONGO_INITDB_ROOT_PASSWORD")
+    MONGO_HOST: str = Field("", env="MONGO_HOST")
+    MONGO_PORT: int = Field(27017, env="MONGO_PORT")
+    MONGO_SERVER_SELECTION_TIMEOUT_MS: int = Field(3000, env="MONGO_SERVER_SELECTION_TIMEOUT_MS")
+    BING_KEY: str = Field("", env="BING_KEY")
 
 settings = Settings()
