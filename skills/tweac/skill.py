@@ -81,7 +81,10 @@ async def _call_skill(skill_id, request):
 
     input_data = {
         "query": request.query,
-        "skill_args": {"context": request.skill_args["context"]},
+        "skill_args": {
+            "context": request.skill_args["context"],
+            "choices": request.skill_args["choices"],
+        },
         "skill": {},
         "user_id": "",
         "explain_kwargs": {},
