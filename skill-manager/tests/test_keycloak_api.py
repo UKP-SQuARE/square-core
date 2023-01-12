@@ -13,7 +13,6 @@ from tests.testcontainer_keycloak import TestcontainerKeycloak
 
 @pytest.fixture(scope="session")
 def monkeypatch_session():
-
     mp = MonkeyPatch()
     yield mp
     mp.undo()

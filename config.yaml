@@ -26,38 +26,46 @@ skills:
 web_concurrency: 2
 
 verify_ssl:
-  prod: 1
+  production: 1
+  test: 1
   local: 0
 
 verify_issuer:
-  prod: 1
+  production: 1
+  test: 1
   local: 0
 
 realm: square
 
 square_api_url: 
-  prod: https://square.ukp-lab.de/api
+  production: https://square.ukp-lab.de/api
+  test: https://test.square.ukp-lab.de/api
   local: https://host.docker.internal/api
 
 keycloak_base_url:
-  prod: square.ukp-lab.de
+  production: square.ukp-lab.de
+  test: test.square.ukp-lab.de
   local: square.ukp-lab.localhost
 
 frontend_url:
-  prod: square.ukp-lab.de
+  production: square.ukp-lab.de
+  test: test.square.ukp-lab.de
   local: square.ukp-lab.localhost
 
 keycloak_base_url_https:
-  prod: https://square.ukp-lab.de
+  production: https://square.ukp-lab.de
+  test: https://test.square.ukp-lab.de
   local: http://keycloak:8080
 
 faiss_url:
-  prod: https://square.ukp-lab.de/api
+  production: https://square.ukp-lab.de/api
+  test: https://test.square.ukp-lab.de/api
   local: https://localhost/api
 
 model_url:
-  prod: https://square.ukp-lab.de/api
-  local: https://localhost/api
+  production: https://square.ukp-lab.de/api
+  test: https://test.square.ukp-lab.de/api
+  local: https://traefik/api
 
 docker_host_url:
   windows: http://host.docker.internal

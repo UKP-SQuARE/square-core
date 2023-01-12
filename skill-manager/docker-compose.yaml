@@ -47,5 +47,25 @@ services:
     - redis-server
     - --requirepass ${REDIS_PASSWORD}
 
+  extractive-qa:
+    image: ukpsquare/skills-extractive-qa:latest
+    build:
+      context: ../skills
+      args:
+        skill: extractive-qa
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "1"
+      SQUARE_API_URL: https://square.ukp-lab.de/api
+      SQUARE_SKILL_MANAGER: http://skill-manager:8000/api
+      KEYCLOAK_BASE_URL: ""
+      REALM: square
+      CLIENT_ID: ukp-extractive-qa
+      SQUARE_PRIVATE_KEY_FILE: /app/private_key.pem
+    volumes:
+      - ./private_key.pem:/app/private_key.pem
+    ports:
+      - 8001:80
+
 volumes:
   mongo-data:

@@ -3,7 +3,7 @@ fastapi>=0.73.0                 # REST API Framework
 pydantic==1.8.2                 # Input/ output modelling
 python-dotenv==0.17.1           # Required for .env configs
 sentencepiece==0.1.96           # tokenizer
-torch==1.11.0                   # pytorch libs
+torch==1.13.1                   # pytorch libs
 onnxruntime==1.12.0             # onnx inference and models
 square-auth==0.0.12             # keycloak authentication
 celery==5.1.2                   # queue requests
