@@ -40,85 +40,46 @@
                 class="pt-4"
                 v-bind:style="{ 'border-left': '1px solid #ddd' }"
               >
-                <span
-                  class="badge fs-6 ms-1 mb-1 float-end"
-                  :style="{color: 'black'}"
-                >
-                  {{
-                    selectDatastore.indices[row - 1]
-                      ? selectDatastore.indices[row - 1].doc_encoder_model
-                      : "-"
-                  }}
-                </span>
-                <span
-                  v-html="
-                    selectDatastore.indices[row - 1]
-                      ? selectDatastore.indices[row - 1].name
-                      : '-'
-                  "
-                />
+
+                <div  v-if="selectDatastore.indices[row - 1]!=Null" >
+                  <table
+                      v-for=" (val,key,index) in  selectDatastore.indices[row - 1]"
+                      :key="key"
+                      >
+
+<!--                                      <p>{{ typeof(selectDatastore.indices[row - 1])}}</p>-->
+
+
+                    <tr v-if="index <=2|| showAllIndices">
+                      <th scope="row" style="vertical-align: top;">{{key}}:</th>
+                      <td >{{val}}</td>
+                    </tr>
+
+                  </table>
+                </div>
+
               </td>
             </tr>
           </tbody>
         </table>
+
       </div>
     </div>
+    <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+      <button v-on:click="changeShowAllIndices()"  class="btn btn-danger btn-lg shadow text-white" id="btn-showAll" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+         <span v-if="!showAllIndices">Show Details</span>
+        <span v-if="showAllIndices">Hide Details</span>
+      </button>
+    </div>
+
   </div>
+
 </template>
 
 <script>
 import Vue from "vue";
 
-let my_value = [
-  {
-    skill: {
-      name: "CommonsenseQA BERT Adapter",
-      description:
-        "A multiple-choice QA skill with bert-base-uncased as base model with the bert-base-uncased-pf-commonsense_qa adapter.",
-    },
-    predictions: [
-      {
-        prediction_score: 0.38965174555778503,
-        prediction_output: {
-          output: "waterfall",
-        },
-      },
-    ],
-    adversarial: null,
-  },
-  {
-    skill: {
-      name: "CommonsenseQA BERT Adapter",
-      description:
-        "A multiple-choice QA skill with bert-base-uncased as base model with the bert-base-uncased-pf-commonsense_qa adapter.",
-    },
-    predictions: [
-      {
-        prediction_score: 0.38965174555778503,
-        prediction_output: {
-          output: "waterfall",
-        },
-      },
-    ],
-    adversarial: null,
-  },
-  {
-    skill: {
-      name: "CommonsenseQA BERT Adapter",
-      description:
-        "A multiple-choice QA skill with bert-base-uncased as base model with the bert-base-uncased-pf-commonsense_qa adapter.",
-    },
-    predictions: [
-      {
-        prediction_score: 0.38965174555778503,
-        prediction_output: {
-          output: "waterfall",
-        },
-      },
-    ],
-    adversarial: null,
-  },
-];
+
 
 export default Vue.component("datastore-indices", {
   props: {
@@ -128,11 +89,20 @@ export default Vue.component("datastore-indices", {
       default: () => [],
     }
   },
-  computed: {
-    currentResults() {
-      // return this.$store.state.currentResults
-      return my_value;
-    },
+  data() {
+    return {
+      showAllIndices:false
+    }
+
   },
+  computed: {
+
+  },
+  methods:{
+    changeShowAllIndices(){
+      this.showAllIndices = !this.showAllIndices
+      console.log(this.showAllIndices)
+    }
+  }
 });
 </script>

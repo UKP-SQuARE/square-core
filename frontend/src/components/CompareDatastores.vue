@@ -70,7 +70,7 @@
 import Vue from "vue";
 
 export default Vue.component("compare-datastores", {
-  props: ["selectorTarget", "skillFilter"],
+  props: ["selectorTarget", ],
   data() {
     return {
       searchText: "",
@@ -101,6 +101,23 @@ export default Vue.component("compare-datastores", {
                 "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
               index_ids_url:
                 "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
+              index_description: "QT_8bit-IVF65536",
+              collection_url: "http://www.bioasq.org/",
+            },
+            {
+              datastore_name: "bioasq",
+              name: "distilbert",
+              doc_encoder_model: "msmarco-distilbert-base-tas-b",
+              doc_encoder_adapter: null,
+              query_encoder_model:
+                  "sentence-transformers/msmarco-distilbert-base-tas-b",
+              query_encoder_adapter: null,
+              embedding_size: 768,
+              embedding_mode: "cls",
+              index_url:
+                  "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
+              index_ids_url:
+                  "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
               index_description: "QT_8bit-IVF65536",
               collection_url: "http://www.bioasq.org/",
             },
