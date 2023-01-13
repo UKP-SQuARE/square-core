@@ -5,6 +5,7 @@ from .mongo import MongoClient
 from ..models.datastore import DatastoreRequest, DatastoreField
 from .config import settings
 import requests
+from requests.exceptions import ConnectionError
 import time
 from fastapi import Request
 import jwt
@@ -14,11 +15,14 @@ import logging
 
 def wait_for_up(url: str, ntries=100) -> None:
     for _ in range(ntries):
-        response = requests.get(url)
-        if response.status_code == 200:
-            logger.info(f"Connected to {url}")
-            return
-        time.sleep(1)
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                logger.info(f"Connected to {url}")
+                return
+        except ConnectionError:
+            time.sleep(1)
+
     raise RuntimeError(f"Could not connect to {url}")
 
 
