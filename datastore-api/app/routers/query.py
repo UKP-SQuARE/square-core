@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.param_functions import Body, Path, Query
 
 from ..models.httperror import HTTPError
-from ..models.query import QueryResult
-from .dependencies import get_search_client, get_storage_connector, client_credentials
+from ..models.query import QueryResult, Region
+from .dependencies import get_search_client, get_storage_connector, client_credentials, get_bing_search_client
 
 router = APIRouter(tags=["Query"])
 
@@ -28,18 +28,28 @@ async def search(
     index_name: Optional[str] = Query(None, description="Index name."),
     query: str = Query(..., description="The query string."),
     top_k: int = Query(40, description="Number of documents to retrieve."),
-    feedback_documents: List[str] = Query(None, description="Relevant feedback documents from previous query."),
+    feedback_documents: List[str] = Query(
+        None, description="Relevant feedback documents from previous query."),
+    region: Region = Query(None, description="Region of the query when using the bing_search datastore."),
     conn=Depends(get_storage_connector),
     dense_retrieval=Depends(get_search_client),
-    credential_token=Depends(client_credentials)
+    credential_token=Depends(client_credentials),
+    bing_search=Depends(get_bing_search_client)
 ):
+    if datastore_name == bing_search.datastore_name:
+        try:
+            return await bing_search.search(query, top_k, region.value if region else None)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
     # do dense retrieval
-    if index_name:
+    elif index_name:
         try:
             return await dense_retrieval.search(
-                datastore_name, 
-                index_name, 
-                query, 
+                datastore_name,
+                index_name,
+                query,
                 top_k,
                 credential_token
             )
@@ -109,10 +119,10 @@ async def score(
     if index_name:
         try:
             result = await dense_retrieval.score(
-                datastore_name, 
-                index_name, 
-                query, 
-                doc_id, 
+                datastore_name,
+                index_name,
+                query,
+                doc_id,
                 credential_token
             )
         except ValueError as ex:
