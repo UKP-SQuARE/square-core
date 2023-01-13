@@ -23,7 +23,7 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
 #@ def frontend_traefik_redirect():
-#@ if data.values.environment == "prod":
+#@ if data.values.environment == "production":
 #@  return [
 #@    "traefik.http.routers.frontend.rule=Host(`" + data.values.frontend_url[data.values.environment] + "`) || Host(`square.ukp.informatik.tu-darmstadt.de`)",
 #@    "traefik.http.routers.frontend.middlewares=tuda-redirect",
@@ -156,7 +156,10 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        mode: #@ "" + data.values.environment
     image: #@ "ukpsquare/frontend:" + data.values.tag
     restart: always
     expose:
@@ -204,6 +207,7 @@ services:
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EVALUATOR_API_URL: #@ data.values.square_api_url + "/evaluator"
     depends_on:
       - mongodb
       - redis
@@ -234,6 +238,7 @@ services:
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       DATASET_DIR: /app/datasets/
+      SKILL_MANAGER_API_URL: #@ data.values.square_api_url + "/skill-manager"
     depends_on:
       - mongodb
     labels:

@@ -1,0 +1,5 @@
+tqdm
+square-auth==0.0.14
+faiss-instant
+docker
+square-model-client
