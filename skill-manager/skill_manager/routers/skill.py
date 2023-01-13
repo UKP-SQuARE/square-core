@@ -11,7 +11,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
 from square_auth.utils import is_local_deployment
-from square_skill_api.models.prediction import QueryOutput
+from square_skill_api.models.prediction import QueryOutput, TweacOutput
 from square_skill_api.models.request import QueryRequest
 
 from skill_manager import mongo_client
@@ -71,6 +71,7 @@ async def get_skills(request: Request):
         )
     )
     return skills
+
 
 @router.get(
     "/dataset/{dataset}",
@@ -281,7 +282,10 @@ async def query_skill(
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
-    predictions = QueryOutput.parse_obj(response.json())
+    if "skill_id" in response.json():
+        predictions = TweacOutput.parse_obj(response.json())
+    else:
+        predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
         "predictions from skill: {predictions}".format(
             predictions=str(predictions.json())[:100]
