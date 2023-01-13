@@ -54,6 +54,10 @@
             </div>
           </div>
         </template>
+        <template #cell()="data">
+          <span v-if="isNaN(data.value)">{{ data.value }}</span>
+          <span v-else>{{ round(data.value) }}</span>
+        </template>
       </b-table>
     </div>
   </div>
@@ -180,6 +184,9 @@ export default Vue.component("show-leaderboard", {
         default:
           return metric_value_name;
       }
+    },
+    round(value) {
+      return parseFloat(value).toFixed(3)
     }
   }
 })
