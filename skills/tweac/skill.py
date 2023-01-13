@@ -6,7 +6,7 @@ import numpy as np
 from square_auth.client_credentials import ClientCredentials
 from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
-from square_skill_api.models import QueryOutput, QueryRequest
+from square_skill_api.models import TweacOutput, QueryRequest
 
 
 logger = logging.getLogger(__name__)
@@ -15,15 +15,17 @@ square_model_client = SQuAREModelClient()
 square_datastore_client = SQuAREDatastoreClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+async def predict(request: QueryRequest) -> TweacOutput:
     """
     Given a question, calls the TWEAC model to identify the Skill to run.
     """
     logger.info("Request: {}".format(request))
     predicted_dataset = await _call_tweac(request)
     list_predicted_skills = await _retrieve_skills(predicted_dataset)
-    skill_response = await _call_skill(list_predicted_skills[0], request)
-    query_output = QueryOutput(
+    skill_id = list_predicted_skills[0]
+    skill_response = await _call_skill(skill_id, request)
+    query_output = TweacOutput(
+        skill_id=skill_id,
         predictions=skill_response.json()["predictions"],
         adversarial=skill_response.json()["adversarial"],
     )
