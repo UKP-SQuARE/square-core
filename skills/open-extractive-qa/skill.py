@@ -26,6 +26,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         data_response = await square_datastore_client(
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
+            top_k=request.skill_args.get("datastore_topk", 10),
             query=query,
         )
         logger.info(f"Data response:\n{data_response}")

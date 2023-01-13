@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,6 +10,7 @@ from .dependencies import get_search_client, get_storage_connector, client_crede
 
 router = APIRouter(tags=["Query"])
 
+logger = logging.getLogger(__name__)
 
 @router.get(
     "/search",
@@ -36,6 +38,11 @@ async def search(
     credential_token=Depends(client_credentials),
     bing_search=Depends(get_bing_search_client)
 ):
+    logger.debug(
+        f"Searching datastore {datastore_name} on index {index_name} "
+        f"with query {query} and top_k {top_k}."
+    )
+
     if datastore_name == bing_search.datastore_name:
         try:
             return await bing_search.search(query, top_k, region.value if region else None)
