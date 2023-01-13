@@ -20,4 +20,7 @@ class Settings(BaseSettings):
     MONGO_SERVER_SELECTION_TIMEOUT_MS: int = Field(3000, env="MONGO_SERVER_SELECTION_TIMEOUT_MS")
     BING_KEY: str = Field("", env="BING_KEY")
 
+    class Config:
+        env_file = ".env"
+
 settings = Settings()
