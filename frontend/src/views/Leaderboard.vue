@@ -31,6 +31,8 @@
         <template #empty>
           <div class="text-center text-secondary my-4">
             <strong>There are no evaluation results for the selected dataset and metric</strong>
+            <br>
+            <router-link to="/evaluation" exact-active-class="active" class="text-reset">Click here to start one yourself</router-link>
           </div>
         </template>
         <template #cell(private)="data">
@@ -96,7 +98,7 @@ export default Vue.component("show-leaderboard", {
       isLoading: false,
       sortBy: "rank",
       sortDesc: false,
-      dataset_name: "quoref",
+      dataset_name: "squad",
       metric_name: "squad",
       datasets: [],
       metrics: ["squad", "squad_v2", "exact_match"],
