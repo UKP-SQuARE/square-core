@@ -996,7 +996,7 @@ class Transformer(Model):
             predictions.questions = questions
             predictions.adversarial["indices"] = indices
 
-        elif request.attack_kwargs["method"] is "topk_tokens" or "sub_span":
+        elif request.attack_kwargs["method"] in ["topk_tokens", "sub_span"]:
             inputs, indices = [], []
             batch_request = {}
             if request.attack_kwargs["method"] == "topk_tokens":
