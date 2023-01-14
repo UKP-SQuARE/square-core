@@ -13,11 +13,11 @@
       <div class="row">
         <div class="col-sm-8 col-12 mb-3">
           <label for="dataset" class="form-label">Dataset</label>
-          <multiselect id="dataset" v-model="datasetName" :options="datasetNames" :disabled=isLoading placeholder="Select a dataset" @select="refreshLeaderboard"></multiselect>
+          <multiselect id="dataset" v-model="datasetName" :options="datasetNames" :disabled=isLoading placeholder="Select a dataset" @select="refreshLeaderboard('dataset')"></multiselect>
         </div>
         <div class="col-sm-4 col-12 mb-3">
           <label for="dataset" class="form-label">Metric</label>
-          <multiselect id="metric" v-model="metricName" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard"></multiselect>
+          <multiselect id="metric" v-model="metricName" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard('metric')"></multiselect>
         </div>
       </div>
       <b-table striped hover borderless show-empty :stacked="doStackTable" :busy="isLoading" :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
@@ -187,11 +187,13 @@ export default Vue.component("show-leaderboard", {
     dateFormat(dateString) {
       return new Date(dateString).toLocaleDateString()
     },
-    refreshLeaderboard() {
+    refreshLeaderboard(triggeredBy) {
       setTimeout(function() {
         this.isLoading = true
-        let defaultMetric = this.getDefaultMetric(this.datasetName)
-        this.metricName = defaultMetric || this.metricName
+        if (triggeredBy != "metric") {
+          let defaultMetric = this.getDefaultMetric(this.datasetName)
+          this.metricName = defaultMetric || this.metricName
+        }
         getLeaderboard(this.datasetName, this.metricName, this.$store.getters.authenticationHeader())
           .then((response) => {
             this.fields = this.getFields(response.data)
