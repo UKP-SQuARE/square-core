@@ -2,6 +2,113 @@ import numpy as np
 import pytest
 from model_inference.app.models.request import Task
 
+@pytest.mark.usefixtures("test_onnx_question_answering")
+class TestOnnxQuestionAnswering:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "input",
+        [
+            ([["What is a test?", "A test is a thing where you test."]]),
+            (
+                [
+                    ["What is a test?", "A test is a thing where you test."],
+                    [
+                        "What is a longer test?",
+                        "A test is a thing where you test. If it is longer you call it longer",
+                    ],
+                ]
+            ),
+        ],
+    )
+    async def test_question_answering(self, prediction_request, test_onnx_question_answering, input):
+        prediction_request.input = input
+        prediction_request.task_kwargs = {"topk": 1}
+
+        prediction = test_onnx_question_answering.predict(prediction_request, Task.question_answering)
+        answers = [
+            input[i][1][prediction.answers[i][0].start : prediction.answers[i][0].end] for i in range(len(input))
+        ]
+        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
+        assert len(prediction.answers) == len(input)
+        assert all(prediction.answers[i][0].answer == answers[i] for i in range(len(input)))
+
+    @pytest.mark.asyncio
+    async def test_question_answering_topk(self, prediction_request, test_onnx_question_answering):
+        input = [["What is a test?", "A test is a thing where you test."]]
+        prediction_request.input = input
+        prediction_request.task_kwargs = {"topk": 2}
+
+        prediction = test_onnx_question_answering.predict(prediction_request, Task.question_answering)
+        answers = [input[0][1][prediction.answers[0][i].start : prediction.answers[0][i].end] for i in range(2)]
+        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
+        assert len(prediction.answers) == len(input)
+        assert prediction.answers[0][0].score >= prediction.answers[0][1].score
+        assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
+
+
+@pytest.mark.usefixtures("test_onnx_quantized_question_answering")
+class TestOnnxQuantizedQuestionAnswering:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "input",
+        [
+            ([["What is a test?", "A test is a thing where you test."]]),
+            (
+                [
+                    ["What is a test?", "A test is a thing where you test."],
+                    [
+                        "What is a longer test?",
+                        "A test is a thing where you test. If it is longer you call it longer",
+                    ],
+                ]
+            ),
+        ],
+    )
+    async def test_question_answering(self, prediction_request, test_onnx_quantized_question_answering, input):
+        prediction_request.input = input
+        prediction_request.task_kwargs = {"topk": 1}
+
+        prediction = test_onnx_quantized_question_answering.predict(prediction_request, Task.question_answering)
+        answers = [
+            input[i][1][prediction.answers[i][0].start : prediction.answers[i][0].end] for i in range(len(input))
+        ]
+        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
+        assert len(prediction.answers) == len(input)
+        assert all(prediction.answers[i][0].answer == answers[i] for i in range(len(input)))
+
+    @pytest.mark.asyncio
+    async def test_question_answering_topk(self, prediction_request, test_onnx_quantized_question_answering):
+        input = [["What is a test?", "A test is a thing where you test."]]
+        prediction_request.input = input
+        prediction_request.task_kwargs = {"topk": 2}
+
+        prediction = test_onnx_quantized_question_answering.predict(prediction_request, Task.question_answering)
+        answers = [input[0][1][prediction.answers[0][i].start : prediction.answers[0][i].end] for i in range(2)]
+        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
+        assert len(prediction.answers) == len(input)
+        assert prediction.answers[0][0].score >= prediction.answers[0][1].score
+        assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
+
+
+@pytest.mark.usefixtures("test_onnx_categorical")
+class TestOnnxCategorical:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "input",
+        [
+            ([[
+            "is a wolverine the same as a badger",
+            "Badgers are short-legged omnivores in the family Mustelidae, which also includes the otters, polecats, weasels, and wolverines. They belong to the caniform suborder of carnivoran mammals. The 11 species of badgers are grouped in three subfamilies: Melinae (Eurasian badgers), Mellivorinae (the honey badger or ratel), and Taxideinae (the American badger). The Asiatic stink badgers of the genus Mydaus were formerly included within Melinae (and thus Mustelidae), but recent genetic evidence indicates these are actually members of the skunk family, placing them in the taxonomic family Mephitidae."]
+            ]),
+        ],
+    )
+    async def test_onnx_categorical(self, prediction_request, test_onnx_categorical, input):
+        prediction_request.input = input
+        prediction_request.task_kwargs = {"topk": 1}
+
+        prediction = test_onnx_categorical.predict(prediction_request, Task.sequence_classification)
+        assert prediction.labels[0] == 0
+
 
 @pytest.mark.usefixtures("test_onnx_sequence_classification")
 class TestOnnxSequenceClassification:
@@ -178,54 +285,6 @@ class TestOnnxEmbedding:
             prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
 
 
-@pytest.mark.usefixtures("test_onnx_question_answering")
-class TestOnnxQuestionAnswering:
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "input",
-        [
-            ([["What is a test?", "A test is a thing where you test."]]),
-            (
-                [
-                    ["What is a test?", "A test is a thing where you test."],
-                    [
-                        "What is a longer test?",
-                        "A test is a thing where you test. If it is longer you call it longer",
-                    ],
-                ]
-            ),
-        ],
-    )
-    async def test_question_answering(self, prediction_request, test_onnx_question_answering, input):
-        if test_onnx_question_answering is None:
-            pytest.skip("No model found.")
-        prediction_request.input = input
-        prediction_request.task_kwargs = {"topk": 1}
-
-        prediction = test_onnx_question_answering.predict(prediction_request, Task.question_answering)
-        answers = [
-            input[i][1][prediction.answers[i][0].start : prediction.answers[i][0].end] for i in range(len(input))
-        ]
-        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
-        assert len(prediction.answers) == len(input)
-        assert all(prediction.answers[i][0].answer == answers[i] for i in range(len(input)))
-
-    @pytest.mark.asyncio
-    async def test_question_answering_topk(self, prediction_request, test_onnx_question_answering):
-        if test_onnx_question_answering is None:
-            pytest.skip("No model found.")
-        input = [["What is a test?", "A test is a thing where you test."]]
-        prediction_request.input = input
-        prediction_request.task_kwargs = {"topk": 2}
-
-        prediction = test_onnx_question_answering.predict(prediction_request, Task.question_answering)
-        answers = [input[0][1][prediction.answers[0][i].start : prediction.answers[0][i].end] for i in range(2)]
-        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
-        assert len(prediction.answers) == len(input)
-        assert prediction.answers[0][0].score >= prediction.answers[0][1].score
-        assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
-
-
 @pytest.mark.usefixtures("test_onnx_generation")
 class TestOnnxGeneration:
     @pytest.mark.asyncio
@@ -261,3 +320,4 @@ class TestOnnxGeneration:
 
         prediction = test_onnx_generation.predict(prediction_request, Task.generation)
         assert len(prediction.generated_texts[0]) == 4
+        
