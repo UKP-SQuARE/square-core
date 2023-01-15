@@ -23,7 +23,7 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
 #@ def frontend_traefik_redirect():
-#@ if data.values.environment == "production":
+#@ if data.values.environment == "prod":
 #@  return [
 #@    "traefik.http.routers.frontend.rule=Host(`" + data.values.frontend_url[data.values.environment] + "`) || Host(`square.ukp.informatik.tu-darmstadt.de`)",
 #@    "traefik.http.routers.frontend.middlewares=tuda-redirect",
@@ -40,17 +40,17 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 
 #@ def traefik_tls(service):
 #@ return [
-#@  "traefik.http.routers." + service + ".entrypoints=websecure", 
-#@  "traefik.http.routers." + service + ".tls=true", 
+#@  "traefik.http.routers." + service + ".entrypoints=websecure",
+#@  "traefik.http.routers." + service + ".tls=true",
 #@  "traefik.http.routers." + service + ".tls.certresolver=le"
 #@ ]
 #@ end
 
 #@ def traefik_prefix(service):
 #@ return [
-#@  "traefik.http.routers." + service + ".rule=PathPrefix(`/api/" + service + "`)", 
-#@  "traefik.http.routers." + service + ".middlewares=" + service + "-stripprefix," + service + "-addprefix", 
-#@  "traefik.http.middlewares." + service + "-stripprefix.stripprefix.prefixes=/api/" + service, 
+#@  "traefik.http.routers." + service + ".rule=PathPrefix(`/api/" + service + "`)",
+#@  "traefik.http.routers." + service + ".middlewares=" + service + "-stripprefix," + service + "-addprefix",
+#@  "traefik.http.middlewares." + service + "-stripprefix.stripprefix.prefixes=/api/" + service,
 #@  "traefik.http.middlewares." + service + "-addprefix.addPrefix.prefix=/api"
 #@  ]
 #@ end
@@ -68,7 +68,7 @@ VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
 MODEL_API_IMAGE: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
-ONNX_VOLUME: squar-core_onnx-models
+ONNX_VOLUME: model-inference_onnx-models
 REALM: #@ data.values.realm
 MONGO_HOST: mongodb
 MONGO_PORT: 27017
@@ -111,7 +111,7 @@ services:
       - traefik.http.routers.traefik.middlewares=auth
       - traefik.http.middlewares.auth.basicauth.users=admin:${SQUARE_ADMIN_PASSWORD}
     ports:
-      - "80:80" 
+      - "80:80"
       - "443:443"
       - "8080:8080"
     volumes:
@@ -197,7 +197,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      ONNX_VOLUME: squar-core_onnx-models
+      ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
       QUEUE: msmarco-distilbert-base-tas-b
@@ -206,6 +206,190 @@ services:
       #! - maintaining
       - rabbit
       - redis
+
+
+  onnx_bert_worker:
+    build:
+      context: ./model-inference
+      dockerfile: ./dockerfiles/onnx/Dockerfile
+    container_name: onnx_bert_worker
+    command: celery -A tasks worker -Q bert-base-uncased-pf-squad-onnx --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+      - ./local_deploy:/local_deploy
+    env_file:
+      - ./rabbitmq/.env
+      - ./redis/.env
+      - ./model-inference/model_configurations/.env.squad_bert_onnx
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      ONNX_VOLUME: onnx_models
+      REALM: square
+      CONFIG_PATH: /model_configs
+      QUEUE: bert-base-uncased-pf-squad-onnx
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+      - rabbit
+      - redis
+  onnx_roberta_worker:
+    build:
+      context: ./model-inference
+      dockerfile: ./dockerfiles/onnx/Dockerfile
+    container_name: onnx_roberta_worker
+    command: celery -A tasks worker -Q roberta-base-pf-squad-onnx --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+      - ./local_deploy:/local_deploy
+    env_file:
+      - ./rabbitmq/.env
+      - ./redis/.env
+      - ./model-inference/model_configurations/.env.squad_roberta_onnx
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      ONNX_VOLUME: onnx_models
+      REALM: square
+      CONFIG_PATH: /model_configs
+      QUEUE: roberta-base-pf-squad-onnx
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+      - rabbit
+      - redis
+  boolq_roberta_worker:
+    build:
+      context: ./model-inference
+      dockerfile: ./dockerfiles/onnx/Dockerfile
+    container_name: boolq_roberta_worker
+    command: celery -A tasks worker -Q roberta-base-pf-boolq-onnx --loglevel=info
+    volumes:
+    - ./:/usr/src/app
+    - /var/run/docker.sock:/var/run/docker.sock
+    - model_configs:/model_configs
+    - ./local_deploy:/local_deploy
+    env_file:
+    - ./rabbitmq/.env
+    - ./redis/.env
+    - ./model-inference/model_configurations/.env.boolq_roberta_onnx
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      ONNX_VOLUME: onnx_models
+      REALM: square
+      CONFIG_PATH: /model_configs
+      QUEUE: roberta-base-pf-boolq-onnx
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+    - rabbit
+    - redis
+  quartz_roberta_worker:
+    build:
+      context: ./model-inference
+      dockerfile: ./dockerfiles/onnx/Dockerfile
+    container_name: quartz_roberta_worker
+    command: celery -A tasks worker -Q roberta-base-pf-quartz-onnx --loglevel=info
+    volumes:
+    - ./:/usr/src/app
+    - /var/run/docker.sock:/var/run/docker.sock
+    - model_configs:/model_configs
+    - ./local_deploy:/local_deploy
+    env_file:
+    - ./rabbitmq/.env
+    - ./redis/.env
+    - ./model-inference/model_configurations/.env.quartz_roberta_onnx
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      ONNX_VOLUME: onnx_models
+      REALM: square
+      CONFIG_PATH: /model_configs
+      QUEUE: roberta-base-pf-quartz-onnx
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+    - rabbit
+    - redis
+
+    
+  maintaining_worker:
+    build:
+      context: ./model-manager
+      dockerfile: ./Dockerfile
+    container_name: maintaining_worker
+    command: celery -A tasks worker --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./local_deploy:/local_deploy
+    env_file:
+      - ./rabbitmq/.env
+      - ./redis/.env
+      - ./model-manager/.env
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      MONGO_INITDB_ROOT_USERNAME: root
+      REALM: square
+      CLIENT_ID: models
+      CONFIG_VOLUME: square-core_model_configs
+      CONFIG_PATH: /model_configs
+      QUEUE: bert-base-uncased-pf-squad-onnx
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+      - maintaining
+      - rabbit
+      - redis
+
+  maintaining:
+    command: uvicorn model_manager.main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
+    container_name: maintaining
+    build:
+      context: ./model-manager
+      dockerfile: Dockerfile
+    ports:
+      - 9001:9001
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    links:
+    - mongodb
+    depends_on:
+    - mongodb
+    env_file:
+    - ./model-manager/.env
+    - ./rabbitmq/.env
+    - ./redis/.env
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      CONFIG_PATH: /model_configs
+      CONFIG_VOLUME: square-core_model_configs
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+      REALM: square
+      CLIENT_ID: models
+    labels:
+    - traefik.enable=true
+    - traefidk.http.routers.maintaining.rule=PathPrefix(`/api/models`)
+    - traefik.http.routers.maintaining.entrypoints=websecure
+    - traefik.http.routers.maintaining.tls=true
+    - traefik.http.routers.maintaining.tls.certresolver=le
+    - traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix
+    - traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/models
+    - traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api
 
   datastore_api:
     privileged: true
