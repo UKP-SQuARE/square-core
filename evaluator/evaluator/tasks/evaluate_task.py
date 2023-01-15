@@ -144,7 +144,10 @@ def evaluate(
     )
     if metric_result is None:
         metric_result = MetricResult(
-            prediction_result_id=prediction_result.id, metrics={}
+            prediction_result_id=prediction_result.id,
+            skill_id=ObjectId(skill_id),
+            dataset_name=dataset_name,
+            metrics={},
         )
 
     metric = Metric(

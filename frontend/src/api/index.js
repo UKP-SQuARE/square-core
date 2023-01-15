@@ -143,3 +143,13 @@ export function pingSkill(headers, skillUrl) {
     headers.params = { skill_url: skillUrl }
     return axios.get(`${SKILL_URL}/health/skill-heartbeat`, headers)
 }
+
+/**
+ * Get leaderboard data.
+ * @param {String} dataset_name Name of the dataset to get the leaderboard for.
+ * @param {String} metric_name Name of the metric to get the leaderboard for.
+ * @param {Object} headers Authentication header
+ */
+export function getLeaderboard(dataset_name, metric_name, headers) {
+    return axios.get(`${EVALUATOR_URL}/leaderboard/${dataset_name}/${metric_name}`, { headers: headers })
+}
