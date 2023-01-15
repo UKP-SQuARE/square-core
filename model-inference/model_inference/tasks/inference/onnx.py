@@ -1,14 +1,18 @@
 from collections import defaultdict
 from typing import Tuple, Union
 
+import logging
 import numpy as np
 import onnxruntime
+
 import torch
+import json
 from model_inference.tasks.config.model_config import model_config
 from model_inference.tasks.models.prediction import (
     PredictionOutput,
     PredictionOutputForEmbedding,
     PredictionOutputForGeneration,
+    PredictionOutputForQuestionAnswering,
     PredictionOutputForSequenceClassification,
     PredictionOutputForTokenClassification,
 )
@@ -17,8 +21,13 @@ from torch import nn
 from torch.nn import functional as F
 from transformers import AutoTokenizer
 
+from huggingface_hub import hf_hub_download
+from huggingface_hub.utils import EntryNotFoundError, RepositoryNotFoundError
+
+
 from .transformer import Transformer
 
+logger = logging.getLogger(__name__)
 
 def to_numpy(x):
     if type(x) is not np.ndarray:
@@ -28,24 +37,85 @@ def to_numpy(x):
 
 class Onnx(Transformer):
     def __init__(self, **kwargs) -> None:
-
         """
+        Initialize the ONNX model
         Args:
-            model_path: path where the model is stored
-            model_name: the ONNX model name
-            decoder_path: path to the decoder ONNX model
+             model_name: the Huggingface model name
+             task_name: the task name (e.g. question_answering)
+             disable_gpu: do not move model to GPU even if CUDA is available
+             kwargs: Not used
+        """
+        self.task = None
+        # new added section start
+        self.gradients = None
+        # new added section end
+
+        # Currently we only consider model class question_answering (encoder-only)
+        self._load_model(
+            model_config.model_name,
+            model_config.onnx_use_quantized
+        )
+
+    def _load_model(self, model_name, load_quantized=False, decoder_name=None):
+        """
+        Load the ONNX model model_name and its tokenizer with Huggingface.
+        Args:
+            model_name: the Huggingface ONNX model name
+            tokenizer_name: the Huggingface tokenizer name
+            load_quantized: load quantized model (faster inference but lower accuracy)
+            decoder_name: the Huggingface name of the ONNX decoder model
             kwargs: Not used
         """
-        # This assumes that a corresponding onnx file exists
-        self.tokenizer = AutoTokenizer.from_pretrained(model_config.model_name)
+        def download_model(repo_id, filename):
+            """
+            Download a model from the Huggingface Hub
+            Args:
+                repo_id: the Huggingface Hub repository id
+                filename: the filename of the model
+            """
+            try:
+                logger.debug(f"Loading model {filename} from {repo_id}")
+                model_path = hf_hub_download(repo_id=repo_id, filename=filename)
+            except EntryNotFoundError:
+                logger.error(f"Error loading model {repo_id}: File {filename} does not exist")
+                raise
+            except RepositoryNotFoundError:
+                logger.error(f"Error loading model {repo_id}: HuggingFace repository does not exist")
+                raise
+            return model_path
+
+        # load model and create onnx session
+        filename = "model_quant.onnx" if load_quantized else "model.onnx" 
+        model_path = download_model(repo_id=model_name, filename=filename)
+        self.session = onnxruntime.InferenceSession(model_path)
+
+        # enable all graph optimizations
+        so = onnxruntime.SessionOptions()
+        so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+
+        try:
+             # load tokenizer from model repository
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)    
+        except EnvironmentError:
+            # if tokenizer is not available in the repository, use the base model's tokenizer
+            config_path = download_model(repo_id=model_name, filename="config.json")
+        
+            with open(config_path) as json_file:
+                base_model = json.load(json_file)["_name_or_path"]
+        
+            self.tokenizer = AutoTokenizer.from_pretrained(base_model)
+            
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.session = onnxruntime.InferenceSession(model_config.model_path)
+
         # check whether a decoder model is available
-        self.is_encoder_decoder = model_config.decoder_path is not None and model_config.decoder_path != ""
+        self.is_encoder_decoder = decoder_name is not None and decoder_name != ""
         if self.is_encoder_decoder:
             # if available load the decoder model in a onnx session
-            self.decoder_session = onnxruntime.InferenceSession(model_config.decoder_path)
+            decoder_path = download_model(repo_id=decoder_name, filename=filename)
+            self.decoder_session = onnxruntime.InferenceSession(decoder_path)
+
+        logger.info(f"Model {model_name} loaded")
 
     def _predict(
         self, request: PredictionRequest, output_features=False, features=None
@@ -77,7 +147,18 @@ class Onnx(Transformer):
                 if k in input_names
             )
 
+            if request.task_kwargs.get("multiple_choice", False):
+                # Multiple choice QA with ONNX expects input dimension expansion
+                ort_inputs = dict(
+                    (
+                        k,
+                        np.expand_dims(v, axis=0)
+                    )
+                    for k, v in ort_inputs.items()
+                )
+            
             res = self.session.run([], ort_inputs)
+
             if self.is_encoder_decoder:
                 if self.decoder_session:
                     # Prepare decoder input
@@ -174,13 +255,22 @@ class Onnx(Transformer):
                  The prediction output containing the predicted labels
         """
         predictions = self._predict(request)
+
+        # Some models use last_hidden_state instead of logits
+        if "logits" not in predictions.keys() and "last_hidden_state" in predictions.keys():
+            predictions["logits"] = predictions["last_hidden_state"]
+
         task_outputs = {}
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
+        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False) and not request.task_kwargs.get("multiple_choice", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
+        elif request.task_kwargs.get("multiple_choice", False):
+            probabilities = torch.softmax(predictions["logits"].flatten(), dim=-1)
+            predictions["logits"] = probabilities
+            task_outputs["labels"] = [torch.argmax(predictions["logits"])]
 
         return PredictionOutputForSequenceClassification(model_outputs=predictions, **task_outputs)
 
@@ -285,6 +375,191 @@ class Onnx(Transformer):
             if unfinished_sequences.max() == 0:
                 break
         return [generated_ids], scores
+
+    def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
+        """
+        Span-based question answering for a given question and context.
+        We expect the input to use the (question, context) format for the text pairs.
+        Args:
+            request: the prediction request
+        """
+
+        # Making heavy use of https://huggingface.co/transformers/
+        # _modules/transformers/pipelines/question_answering.html#QuestionAnsweringPipeline
+        def decode(
+            start_: np.ndarray,
+            end_: np.ndarray,
+            topk: int,
+            max_answer_len: int,
+            undesired_tokens_: np.ndarray,
+        ) -> Tuple:
+            """
+            Take the output of any :obj:`ModelForQuestionAnswering` and
+                will generate probabilities for each span to be the
+                actual answer.
+            In addition, it filters out some unwanted/impossible cases
+            like answer len being greater than max_answer_len or
+            answer end position being before the starting position.
+            The method supports output the k-best answer through
+            the topk argument.
+            Args:
+                start_ (:obj:`np.ndarray`): Individual start
+                    probabilities for each token.
+                end (:obj:`np.ndarray`): Individual end_ probabilities
+                    for each token.
+                topk (:obj:`int`): Indicates how many possible answer
+                    span(s) to extract from the model output.
+                max_answer_len (:obj:`int`): Maximum size of the answer
+                    to extract from the model's output.
+                undesired_tokens_ (:obj:`np.ndarray`): Mask determining
+                    tokens that can be part of the answer
+            """
+            # Ensure we have batch axis
+            if start_.ndim == 1:
+                start_ = start_[None]
+
+            if end_.ndim == 1:
+                end_ = end_[None]
+
+            # Compute the score of each tuple(start_, end_) to be the real answer
+            outer = np.matmul(np.expand_dims(start_, -1), np.expand_dims(end_, 1))
+
+            # Remove candidate with end_ < start_ and end_ - start_ > max_answer_len
+            candidates = np.tril(np.triu(outer), max_answer_len - 1)
+
+            #  Inspired by Chen & al. (https://github.com/facebookresearch/DrQA)
+            scores_flat = candidates.flatten()
+            if topk == 1:
+                idx_sort = [np.argmax(scores_flat)]
+            elif len(scores_flat) < topk:
+                idx_sort = np.argsort(-scores_flat)
+            else:
+                idx = np.argpartition(-scores_flat, topk)[0:topk]
+                idx_sort = idx[np.argsort(-scores_flat[idx])]
+
+            starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
+            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
+            starts_ = starts_[desired_spans]
+            ends_ = ends_[desired_spans]
+            scores_ = candidates[0, starts_, ends_]
+
+            return starts_, ends_, scores_
+
+        request.preprocessing_kwargs["truncation"] = "only_second"
+        predictions, features = self._predict(request, output_features=True)
+
+        task_outputs = {
+            "answers": [],
+            "attributions": [],
+            "adversarial": {
+                "indices": [],
+            },  # for hotflip, input_reduction and topk
+        }
+        for idx, (start, end, (_, context)) in enumerate(
+            zip(predictions["start_logits"], predictions["end_logits"], request.input)
+        ):
+            start = start.numpy()
+            end = end.numpy()
+            # Ensure padded tokens & question tokens cannot
+            # belong to the set of candidate answers.
+            question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
+            # Unmask CLS token for 'no answer'
+            question_tokens[0] = 1
+            undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
+
+            # Generate mask
+            undesired_tokens_mask = undesired_tokens == 0.0
+
+            # Make sure non-context indexes in the tensor cannot
+            # contribute to the softmax
+            start = np.where(undesired_tokens_mask, -10000.0, start)
+            end = np.where(undesired_tokens_mask, -10000.0, end)
+
+            start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
+            end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
+
+            # Get score for 'no answer' then mask for decoding step (CLS token
+            no_answer_score = (start[0] * end[0]).item()
+            start[0] = end[0] = 0.0
+
+            starts, ends, scores = decode(
+                start,
+                end,
+                request.task_kwargs.get("topk", 1),
+                request.task_kwargs.get("max_answer_len", 128),
+                undesired_tokens,
+            )
+            enc = features[idx]
+            self.original_ans_start = enc.token_to_word(starts[0])
+            self.original_ans_end = enc.token_to_word(ends[0])
+            answers = [
+                {
+                    "score": score.item(),
+                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0],
+                    "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
+                    "answer": context[
+                        enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0] : enc.word_to_chars(
+                            enc.token_to_word(e), sequence_index=1
+                        )[1]
+                    ],
+                }
+                for s, e, score in zip(starts, ends, scores)
+            ]
+            if request.task_kwargs.get("show_null_answers", True):
+                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
+            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
+            task_outputs["answers"].append(answers)
+
+            # word attributions
+            if request.explain_kwargs or request.attack_kwargs:
+                start_idx = torch.argmax(predictions["start_logits"])
+                end_idx = torch.argmax(predictions["end_logits"])
+                answer_start = torch.tensor([start_idx])
+                answer_end = torch.tensor([end_idx])
+
+                grad_kwargs = {
+                    "start_positions": answer_start.to(self.model.device),
+                    "end_positions": answer_end.to(self.model.device),
+                }
+                attributions = self._interpret(
+                    request=request,
+                    prediction=predictions,
+                    method=request.explain_kwargs["method"]
+                    if request.explain_kwargs
+                    else request.attack_kwargs["saliency_method"],
+                    **grad_kwargs,
+                )
+                # new added section start
+                # to extract the name of the attack method
+                attack_method = None
+                if request.attack_kwargs:
+                    for k, v in request.attack_kwargs.items():
+                        if k == "method":
+                            attack_method = v
+                # new added section end
+                word_imp = self.process_outputs(
+                    attributions=attributions,
+                    top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
+                    mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+                    task="question_answering",
+                    # new added paramter in process_ourput method
+                    attack_method=attack_method,
+                )
+                task_outputs["attributions"] = word_imp
+
+            if (
+                not request.attack_kwargs
+                and not request.explain_kwargs
+                and not request.model_kwargs.get("output_attentions", False)
+            ):
+                predictions.pop("attentions", None)
+
+            if request.attack_kwargs:
+                new_predictions = self._model_attacks(request, task_outputs)
+                return new_predictions
+
+        return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
+
 
     def _prepare_input(self, encoder_features, generated_sequence):
         """
