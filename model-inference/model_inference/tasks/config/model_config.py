@@ -54,6 +54,8 @@ class ModelConfig(Mapping):
     # the base64 string back to the numpy array
     return_plaintext_arrays: bool = False
 
+    onnx_use_quantized: bool = True
+
     def __getitem__(self, key):
         return self.__dict__[key]
 
@@ -115,6 +117,7 @@ class ModelConfig(Mapping):
             transformers_cache=config("TRANSFORMERS_CACHE", default=None),
             model_class=config("MODEL_CLASS", default="base"),
             return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
+            onnx_use_quantized=config("ONNX_USE_QUANTIZED", cast=bool, default=False),
         )
         model_config.save(IDENTIFIER)
         return model_config
@@ -155,6 +158,7 @@ def set_test_config(
     onnx_path="",
     decoder_path="",
     data_path="",
+    onnx_use_quantized=False,
 ):
     global model_config
     model_config.model_name = model_name
@@ -168,6 +172,7 @@ def set_test_config(
     model_config.data_path = data_path
     model_config.model_path = onnx_path
     model_config.decoder_path = decoder_path
+    model_config.onnx_use_quantized = onnx_use_quantized
 
 
 if os.getenv("TEST", 0) == "1":
