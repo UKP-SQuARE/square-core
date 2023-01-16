@@ -4,18 +4,16 @@ from model_inference.app.models.request import Task
 import base64
 from io import BytesIO
 
-
 def decode_output(encoded_output: str):
-    """
-    Decodes a base64 string output to a numpy array
-    """
-    arr_binary_b64 = encoded_output.encode()
-    arr_binary = base64.decodebytes(arr_binary_b64)
-    arr = np.load(BytesIO(arr_binary))
-    return arr
+        """
+        Decodes a base64 string output to a numpy array
+        """
+        arr_binary_b64 = encoded_output.encode()
+        arr_binary = base64.decodebytes(arr_binary_b64)
+        arr = np.load(BytesIO(arr_binary))
+        return arr
 
-@pytest.mark.usefixtures("test_onnx_question_answering")
-class TestOnnxQuestionAnswering:
+class TestOnnxInference:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input",
@@ -57,9 +55,6 @@ class TestOnnxQuestionAnswering:
         assert prediction.answers[0][0].score >= prediction.answers[0][1].score
         assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
 
-
-@pytest.mark.usefixtures("test_onnx_quantized_question_answering")
-class TestOnnxQuantizedQuestionAnswering:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input",
@@ -76,7 +71,7 @@ class TestOnnxQuantizedQuestionAnswering:
             ),
         ],
     )
-    async def test_question_answering(self, prediction_request, test_onnx_quantized_question_answering, input):
+    async def test_quantized_question_answering(self, prediction_request, test_onnx_quantized_question_answering, input):
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 1}
 
@@ -89,7 +84,7 @@ class TestOnnxQuantizedQuestionAnswering:
         assert all(prediction.answers[i][0].answer == answers[i] for i in range(len(input)))
 
     @pytest.mark.asyncio
-    async def test_question_answering_topk(self, prediction_request, test_onnx_quantized_question_answering):
+    async def test_quantized_question_answering_topk(self, prediction_request, test_onnx_quantized_question_answering):
         input = [["What is a test?", "A test is a thing where you test."]]
         prediction_request.input = input
         prediction_request.task_kwargs = {"topk": 2}
@@ -101,9 +96,6 @@ class TestOnnxQuantizedQuestionAnswering:
         assert prediction.answers[0][0].score >= prediction.answers[0][1].score
         assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
 
-
-@pytest.mark.usefixtures("test_onnx_categorical")
-class TestOnnxCategorical:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input",
@@ -121,9 +113,6 @@ class TestOnnxCategorical:
         prediction = test_onnx_categorical.predict(prediction_request, Task.sequence_classification)
         assert prediction.labels[0] == 0
 
-
-@pytest.mark.usefixtures("test_onnx_sequence_classification")
-class TestOnnxSequenceClassification:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input",
@@ -174,9 +163,6 @@ class TestOnnxSequenceClassification:
         ), "logits are not softmax"
         assert "logits" in prediction.model_outputs
 
-
-@pytest.mark.usefixtures("test_onnx_token_classification")
-class TestOnnxTokenClassification:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input,word_ids",
@@ -246,9 +232,6 @@ class TestOnnxTokenClassification:
         assert "logits" in prediction.model_outputs
         assert prediction.word_ids == word_ids
 
-
-@pytest.mark.usefixtures("test_onnx_embedding")
-class TestOnnxEmbedding:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input,mode",
@@ -319,9 +302,6 @@ class TestOnnxEmbedding:
         with pytest.raises(ValueError):
             prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
 
-
-@pytest.mark.usefixtures("test_onnx_generation")
-class TestOnnxGeneration:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input",
@@ -354,5 +334,4 @@ class TestOnnxGeneration:
         }
 
         prediction = test_onnx_generation.predict(prediction_request, Task.generation)
-        assert len(prediction.generated_texts[0]) == 4
-        
+        assert len(prediction.generated_texts[0]) == 4        
