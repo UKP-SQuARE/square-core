@@ -4,7 +4,7 @@ import logging
 import os
 from datetime import timedelta
 from threading import Thread
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import requests_cache
 from bson import ObjectId
@@ -242,7 +242,7 @@ async def unpublish_skill(request: Request, id: str):
 
 @router.post(
     "/{id}/query",
-    response_model=TweacOutput,
+    response_model=Union[QueryOutput, TweacOutput],
 )
 async def query_skill(
     request: Request,
