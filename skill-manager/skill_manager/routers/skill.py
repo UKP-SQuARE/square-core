@@ -242,7 +242,7 @@ async def unpublish_skill(request: Request, id: str):
 
 @router.post(
     "/{id}/query",
-    response_model=QueryOutput,
+    response_model=TweacOutput,
 )
 async def query_skill(
     request: Request,
