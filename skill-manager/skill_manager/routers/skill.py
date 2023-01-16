@@ -11,7 +11,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
 from square_auth.utils import is_local_deployment
-from square_skill_api.models.prediction import QueryOutput, TweacOutput
+from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
 from skill_manager import mongo_client
@@ -242,7 +242,7 @@ async def unpublish_skill(request: Request, id: str):
 
 @router.post(
     "/{id}/query",
-    response_model=Union[QueryOutput, TweacOutput],
+    response_model=QueryOutput,
 )
 async def query_skill(
     request: Request,
@@ -283,7 +283,7 @@ async def query_skill(
         logger.exception(response.content)
         response.raise_for_status()
 
-    predictions = TweacOutput.parse_obj(response.json())
+    predictions = QueryOutput.parse_obj(response.json())
 
     logger.debug(
         "predictions from skill: {predictions}".format(
