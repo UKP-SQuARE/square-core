@@ -1,5 +1,6 @@
 square-elk-json-formatter==0.0.3
-square-skill-api==0.0.36
+square-skill-api==0.#0.36
+git+https://github.com/HaritzPuerto/square-skill-api.git#egg=square-skill-api
 square-auth==0.0.14
 uvicorn>=0.15.0
 fastapi>=0.70.0
