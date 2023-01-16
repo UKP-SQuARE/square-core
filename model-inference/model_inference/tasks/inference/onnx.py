@@ -53,10 +53,11 @@ class Onnx(Transformer):
         # Currently we only consider model class question_answering (encoder-only)
         self._load_model(
             model_config.model_name,
-            model_config.onnx_use_quantized
+            model_config.onnx_use_quantized,
+            model_config.is_encoder_decoder
         )
 
-    def _load_model(self, model_name, load_quantized=False, decoder_name=None):
+    def _load_model(self, model_name, load_quantized=False, is_encoder_decoder=False):
         """
         Load the ONNX model model_name and its tokenizer with Huggingface.
         Args:
@@ -84,8 +85,19 @@ class Onnx(Transformer):
                 raise
             return model_path
 
+        # check whether a decoder model is available
+        self.is_encoder_decoder = is_encoder_decoder
+        if is_encoder_decoder:
+            # if available load the decoder model in a onnx session
+            filename = "encoder_model.onnx"
+            decoder = "decoder_model.onnx"
+
+            model_path = download_model(repo_id=model_name, filename=decoder)
+            self.decoder_session = onnxruntime.InferenceSession(model_path)
+        else:
+            filename = "model_quant.onnx" if load_quantized else "model.onnx" 
+
         # load model and create onnx session
-        filename = "model_quant.onnx" if load_quantized else "model.onnx" 
         model_path = download_model(repo_id=model_name, filename=filename)
         self.session = onnxruntime.InferenceSession(model_path)
 
@@ -94,7 +106,7 @@ class Onnx(Transformer):
         so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
 
         try:
-             # load tokenizer from model repository
+            # load tokenizer from model repository
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)    
         except EnvironmentError:
             # if tokenizer is not available in the repository, use the base model's tokenizer
@@ -107,13 +119,6 @@ class Onnx(Transformer):
             
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        # check whether a decoder model is available
-        self.is_encoder_decoder = decoder_name is not None and decoder_name != ""
-        if self.is_encoder_decoder:
-            # if available load the decoder model in a onnx session
-            decoder_path = download_model(repo_id=decoder_name, filename=filename)
-            self.decoder_session = onnxruntime.InferenceSession(decoder_path)
 
         logger.info(f"Model {model_name} loaded")
 
@@ -240,8 +245,11 @@ class Onnx(Transformer):
             elif embedding_mode == "token":
                 emb = hidden_state
                 task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
+        
+        if request.task_kwargs.get("normalize", False):
+            print("*****Normalize the embedding*****")
+            emb = torch.nn.functional.normalize(emb)
         predictions["embeddings"] = emb
-
         return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
@@ -332,6 +340,8 @@ class Onnx(Transformer):
             for key in res.keys():
                 model_outputs[key].append(res[key])
 
+        logger.info("Generated texts: {}".format(task_outputs["generated_texts"]))
+        logger.info("Model outputs: {}".format(model_outputs))
         return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
 
     def _greedy_generation(self, request, prompt, max_length):

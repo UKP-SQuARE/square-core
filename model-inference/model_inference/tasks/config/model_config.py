@@ -25,9 +25,7 @@ class ModelConfig(Mapping):
     # See square_model_inference.core.event_handlers.MODEL_MAPPING for all available names with corresponding model
     model_type: str = None
 
-    # Path to the onnx file of the model (this is necessary for onnx models)
-    model_path: str = None
-    decoder_path: str = None
+    is_encoder_decoder: bool = False
 
     # data paths to store additional data
     data_path: str = None
@@ -90,9 +88,8 @@ class ModelConfig(Mapping):
 
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
-        self.model_path = config["model_path"]
+        self.is_encoder_decoder = config["is_encoder_decoder"]
         self.data_path = config["data_path"]
-        self.decoder_path = config["decoder_path"]
         self.preloaded_adapters = config["preloaded_adapters"]
         self.disable_gpu = config["disable_gpu"]
         self.batch_size = config["batch_size"]
@@ -107,9 +104,8 @@ class ModelConfig(Mapping):
         model_config = ModelConfig(
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
-            model_path=config("MODEL_PATH", default=None),
+            is_encoder_decoder=config("IS_ENCODER_DECODER", default=False),
             data_path=config("DATA_PATH", default=None),
-            decoder_path=config("DECODER_PATH", default=None),
             preloaded_adapters=config("PRELOADED_ADAPTERS", cast=bool, default=True),
             disable_gpu=config("DISABLE_GPU", cast=bool, default=False),
             batch_size=config("BATCH_SIZE", cast=int, default=32),
@@ -155,8 +151,7 @@ def set_test_config(
     model_class="base",
     cache="./.cache",
     preloaded_adapters=False,
-    onnx_path="",
-    decoder_path="",
+    is_encoder_decoder=False,
     data_path="",
     onnx_use_quantized=False,
 ):
@@ -170,8 +165,7 @@ def set_test_config(
     model_config.transformers_cache = cache
     model_config.preloaded_adapters = preloaded_adapters
     model_config.data_path = data_path
-    model_config.model_path = onnx_path
-    model_config.decoder_path = decoder_path
+    model_config.is_encoder_decoder = is_encoder_decoder
     model_config.onnx_use_quantized = onnx_use_quantized
 
 
