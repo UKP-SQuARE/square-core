@@ -51,7 +51,7 @@ async def _call_tweac(request):
     logger.info("Raw prediction: {}".format(raw_pred))
     dataset_name = model_response["id2label"][str(raw_pred)]
     logger.info("TWEAC prediction: {}".format(dataset_name))
-    conf = model_response["logits"][0][raw_pred]
+    conf = model_response["model_outputs"]["logits"][0][raw_pred]
     return dataset_name, conf
 
 
