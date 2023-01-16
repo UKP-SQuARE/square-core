@@ -282,10 +282,9 @@ async def query_skill(
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
-    if "skill_id" in response.json():
-        predictions = TweacOutput.parse_obj(response.json())
-    else:
-        predictions = QueryOutput.parse_obj(response.json())
+
+    predictions = TweacOutput.parse_obj(response.json())
+
     logger.debug(
         "predictions from skill: {predictions}".format(
             predictions=str(predictions.json())[:100]
