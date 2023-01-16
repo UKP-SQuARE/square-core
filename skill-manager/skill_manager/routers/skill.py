@@ -6,7 +6,6 @@ from datetime import timedelta
 from threading import Thread
 from typing import Dict, List
 
-import requests_cache
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
@@ -25,6 +24,7 @@ from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill, SkillType
 from skill_manager.routers import client_credentials
+from skill_manager.utils import merge_dicts
 
 logger = logging.getLogger(__name__)
 
@@ -236,13 +236,29 @@ async def query_skill(
     query = query_request.query
     user_id = query_request.user_id
 
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=False)
+    skill: Skill = await get_skill_if_authorized(
+        request, skill_id=id, write_access=False
+    )
     query_request.skill = json.loads(skill.json())
 
-    default_skill_args = skill.default_skill_args
-    if default_skill_args is not None:
-        # add default skill args, potentially overwrite with query.skill_args
-        query_request.skill_args = {**default_skill_args, **query_request.skill_args}
+    # merge kargs with kwargs in request
+    for kwargs_key in [
+        "model_kwargs",
+        "task_kwargs",
+        "preprocessing_kwargs",
+        "explain_kwargs",
+        "attack_kwargs",
+    ]:
+        # overwrite kwargs from query_request with default kwargs
+        kwargs = merge_dicts(
+            skill.default_skill_args.pop(kwargs, {}), getattr(query_request, kwargs)
+        )
+        # set kwargs in query_request
+        setattr(query_request, kwargs_key, kwargs)
+
+    query_request.skill_args = merge_dicts(
+        skill.default_skill_args, query_request.skill_args
+    )
 
     headers = {"Authorization": f"Bearer {token}"}
     if request.headers.get("Cache-Control"):
