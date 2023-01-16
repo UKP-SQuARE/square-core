@@ -1,6 +1,18 @@
 import numpy as np
 import pytest
 from model_inference.app.models.request import Task
+import base64
+from io import BytesIO
+
+
+def decode_output(encoded_output: str):
+    """
+    Decodes a base64 string output to a numpy array
+    """
+    arr_binary_b64 = encoded_output.encode()
+    arr_binary = base64.decodebytes(arr_binary_b64)
+    arr = np.load(BytesIO(arr_binary))
+    return arr
 
 @pytest.mark.usefixtures("test_onnx_question_answering")
 class TestOnnxQuestionAnswering:
@@ -125,11 +137,11 @@ class TestOnnxSequenceClassification:
         if test_onnx_sequence_classification is None:
             pytest.skip("No model found.")
         prediction_request.input = input
-        prediction_request.task_kwargs["embedding_mode"] = "pooler"
 
         prediction = test_onnx_sequence_classification.predict(prediction_request, Task.sequence_classification)
+        logits = decode_output(prediction.model_outputs["logits"])
         np.testing.assert_allclose(
-            np.sum(prediction.model_outputs["logits"], axis=-1),
+            np.sum(logits, axis=-1),
             [1.0] * len(input),
             err_msg="logits are softmax",
         )
@@ -155,8 +167,10 @@ class TestOnnxSequenceClassification:
         prediction_request.task_kwargs = {"is_regression": True}
 
         prediction = test_onnx_sequence_classification.predict(prediction_request, Task.sequence_classification)
+        logits = decode_output(prediction.model_outputs["logits"])
+
         assert not np.array_equal(
-            np.sum(prediction.model_outputs["logits"], axis=-1) - 1, [0.0] * len(input)
+            np.sum(logits, axis=-1) - 1, [0.0] * len(input)
         ), "logits are not softmax"
         assert "logits" in prediction.model_outputs
 
@@ -184,8 +198,10 @@ class TestOnnxTokenClassification:
         prediction_request.input = input
 
         prediction = test_onnx_token_classification.predict(prediction_request, Task.token_classification)
+        logits = decode_output(prediction.model_outputs["logits"])
+
         np.testing.assert_allclose(
-            np.sum(prediction.model_outputs["logits"], axis=-1),
+            np.sum(logits, axis=-1),
             np.ones(shape=(len(input), len(word_ids[0]))),
             rtol=1e-6,
             err_msg="logits are softmax",
@@ -218,9 +234,11 @@ class TestOnnxTokenClassification:
         prediction_request.task_kwargs = {"is_regression": True}
 
         prediction = test_onnx_token_classification.predict(prediction_request, Task.token_classification)
+        logits = decode_output(prediction.model_outputs["logits"])
+
         assert not np.array_equal(
             (
-                np.sum(prediction.model_outputs["logits"], axis=-1),
+                np.sum(logits, axis=-1),
                 np.ones_like(word_ids),
             ),
             "logits are not softmax",
@@ -241,8 +259,6 @@ class TestOnnxEmbedding:
             (["this is a test", "this is a test with a longer sentence"], "max"),
             (["this is a test"], "cls"),
             (["this is a test", "this is a test with a longer sentence"], "cls"),
-            (["this is a test"], "pooler"),
-            (["this is a test", "this is a test with a longer sentence"], "pooler"),
         ],
     )
     async def test_embedding(self, prediction_request, test_onnx_embedding, input, mode):
@@ -252,11 +268,29 @@ class TestOnnxEmbedding:
         prediction_request.task_kwargs = {"embedding_mode": mode}
 
         prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
+        embeddings = decode_output(prediction.model_outputs["embeddings"])
 
-        assert np.array(prediction.model_outputs["embeddings"]).shape[1] == 768
-        assert np.array(prediction.model_outputs["embeddings"]).shape[0] == len(input)
+        assert embeddings.shape[1] == 768
+        assert embeddings.shape[0] == len(input)
         assert "hidden_states" not in prediction.model_outputs
         assert prediction.embedding_mode == mode
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "input,mode",
+        [
+            (["this is a test"], "pooler"),
+            (["this is a test", "this is a test with a longer sentence"], "pooler"),
+        ],
+    )
+    async def test_embedding_pooler_not_available(self, prediction_request, test_onnx_embedding, input, mode):
+        if test_onnx_embedding is None:
+            pytest.skip("No model found.")
+        prediction_request.input = input
+        prediction_request.task_kwargs = {"embedding_mode": mode}
+
+        with pytest.raises(ValueError):
+            prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
 
     @pytest.mark.asyncio
     async def test_embedding_unknown_mode(self, prediction_request, test_onnx_embedding):

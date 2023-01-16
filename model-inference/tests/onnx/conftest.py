@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from model_inference.app.models.request import PredictionRequest
 from model_inference.main import auth, get_app
@@ -69,25 +67,8 @@ def test_onnx_categorical():
     return Onnx()
 
 @pytest.fixture(scope="class")
-def test_onnx_generation():
-    model_name = "optimum/t5-small"
-    set_test_config(
-            model_name=model_name,
-            is_encoder_decoder=True,
-            disable_gpu=True,
-            batch_size=1,
-            max_input_size=50,
-            model_type="onnx",
-        )
-    return Onnx()
-
-
-# We tried to replicate the other non-qa tests using the models from Huggingface but we got an error
-# We will update the tests once the original models are available on Huggingface
-
-@pytest.fixture(scope="class")
 def test_onnx_sequence_classification():
-    model_name = "UKP-SQuARE/bert-base-german-cased-onnx"
+    model_name = "UKP-SQuARE/roberta-base-pf-boolq-onnx"
     set_test_config(
             model_name=model_name,
             onnx_use_quantized=False,
@@ -117,6 +98,19 @@ def test_onnx_embedding():
     set_test_config(
             model_name=model_name,
             onnx_use_quantized=False,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            model_type="onnx",
+        )
+    return Onnx()
+
+@pytest.fixture(scope="class")
+def test_onnx_generation():
+    model_name = "optimum/t5-small"
+    set_test_config(
+            model_name=model_name,
+            is_encoder_decoder=True,
             disable_gpu=True,
             batch_size=1,
             max_input_size=50,

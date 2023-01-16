@@ -274,7 +274,8 @@ class Onnx(Transformer):
         if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False) and not request.task_kwargs.get("multiple_choice", False):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
-            task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
+            labels = torch.argmax(predictions["logits"], dim=-1)
+            task_outputs["labels"] = labels.tolist()
         elif request.task_kwargs.get("multiple_choice", False):
             probabilities = torch.softmax(predictions["logits"].flatten(), dim=-1)
             predictions["logits"] = probabilities
