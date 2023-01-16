@@ -68,72 +68,58 @@ def test_onnx_categorical():
         )
     return Onnx()
 
-# Non-QA onnx models are not yet exported to Huggingface and therefor tested with local models
 @pytest.fixture(scope="class")
-def test_onnx_sequence_classification():
-    onnx_path = "./onnx_models/german-bert/model.onnx"
-    if os.path.isfile(onnx_path):
-        set_test_config(
-            model_name=ONNX_MODEL,
+def test_onnx_generation():
+    model_name = "optimum/t5-small"
+    set_test_config(
+            model_name=model_name,
+            is_encoder_decoder=True,
             disable_gpu=True,
             batch_size=1,
             max_input_size=50,
-            onnx_path=onnx_path,
             model_type="onnx",
         )
-        return Onnx()
-    else:
-        return None
+    return Onnx()
 
+
+# We tried to replicate the other non-qa tests using the models from Huggingface but we got an error
+# We will update the tests once the original models are available on Huggingface
+
+@pytest.fixture(scope="class")
+def test_onnx_sequence_classification():
+    model_name = "UKP-SQuARE/bert-base-german-cased-onnx"
+    set_test_config(
+            model_name=model_name,
+            onnx_use_quantized=False,
+            disable_gpu=True,
+            batch_size=1,
+            max_input_size=50,
+            model_type="onnx",
+        )
+    return Onnx()
 
 @pytest.fixture(scope="class")
 def test_onnx_token_classification():
-    onnx_path = "./onnx_models\\NER-bert\\model.onnx"
-    if os.path.isfile(onnx_path):
-        set_test_config(
-            model_name=ONNX_MODEL,
+    model_name = "optimum/bert-base-NER"
+    set_test_config(
+            model_name=model_name,
+            onnx_use_quantized=False,
             disable_gpu=True,
             batch_size=1,
             max_input_size=50,
-            onnx_path=onnx_path,
             model_type="onnx",
         )
-        return Onnx()
-    else:
-        return None
-
+    return Onnx()
 
 @pytest.fixture(scope="class")
 def test_onnx_embedding():
-    onnx_path = "./onnx_models/bert-base-cased/model.onnx"
-    if os.path.isfile(onnx_path):
-        set_test_config(
-            model_name=ONNX_MODEL,
+    model_name = "UKP-SQuARE/bert-base-cased-onnx"
+    set_test_config(
+            model_name=model_name,
+            onnx_use_quantized=False,
             disable_gpu=True,
             batch_size=1,
             max_input_size=50,
-            onnx_path=onnx_path,
             model_type="onnx",
         )
-        return Onnx()
-    else:
-        return None
-
-
-@pytest.fixture(scope="class")
-def test_onnx_generation():
-    onnx_path = "./onnx_models/t5_encoder_decoder/t5-small-encoder.onnx"
-    decoder_init_path = "./onnx_models/t5_encoder_decoder/t5-small-init-decoder.onnx"
-    if os.path.isfile(onnx_path):
-        set_test_config(
-            model_name=ONNX_MODEL,
-            disable_gpu=True,
-            batch_size=1,
-            max_input_size=50,
-            onnx_path=onnx_path,
-            decoder_path=decoder_init_path,
-            model_type="onnx",
-        )
-        return Onnx()
-    else:
-        return None
+    return Onnx()

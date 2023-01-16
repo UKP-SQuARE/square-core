@@ -252,6 +252,7 @@ class TestOnnxEmbedding:
         prediction_request.task_kwargs = {"embedding_mode": mode}
 
         prediction = test_onnx_embedding.predict(prediction_request, Task.embedding)
+
         assert np.array(prediction.model_outputs["embeddings"]).shape[1] == 768
         assert np.array(prediction.model_outputs["embeddings"]).shape[0] == len(input)
         assert "hidden_states" not in prediction.model_outputs
