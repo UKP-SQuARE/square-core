@@ -107,6 +107,21 @@ def test_kg_nodes_batch() -> Iterable[Document]:
         node_list.append(temp_node)
     return list(node_list)
 
+@pytest.fixture(scope="package")
+def test_node() -> Document:
+    return Document(
+        __root__={
+            "id": "n111",
+            "title": "obama",
+            'type': 'node',
+            'description': 'obama',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+            'in_out_id':None
+        }
+    )
+
 # Wikidata-KG test preparations
 @pytest.fixture(scope="package")
 def bing_search_datastore_name():
@@ -181,6 +196,7 @@ def es_container(
     wiki_datastore: Datastore,
     bing_search_datastore: Datastore,
     conceptnet_kg: Datastore,
+    test_node: Document,
     # test_kg_nodes_batch: Iterable[Document],
     mongo_container: Tuple[str, str],
     user_id: str,
@@ -228,6 +244,7 @@ def es_container(
                 )
             ),
             loop.create_task(kg_connector.add_kg(conceptnet_kg)),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node ))
             # loop.create_task(kg_connector.add_document_batch(conceptnet_kg.name, test_kg_nodes_batch)),
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
