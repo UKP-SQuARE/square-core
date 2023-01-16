@@ -1,9 +1,10 @@
 import os
-from typing import Tuple
+from typing import Tuple, Iterable, List
 from fastapi.testclient import TestClient
 
 import pytest
 from app.core.es.connector import ElasticsearchConnector
+from app.core.kgs.connector import KnowledgeGraphConnector
 from app.core.config import settings
 from app.core.dense_retrieval import DenseRetrieval
 from app.core.faiss import FaissClient
@@ -19,6 +20,7 @@ from app.routers.dependencies import (
     get_storage_connector,
     client_credentials,
     get_mongo_client,
+    get_kg_storage_connector,
 )
 import jwt
 
@@ -64,6 +66,48 @@ def wiki_datastore(datastore_name):
         ],
     )
 
+# Local-KG test preparations
+@pytest.fixture(scope="package")
+def kg_name():
+    return "conceptnet"
+
+@pytest.fixture(scope="package")
+def conceptnet_kg(kg_name):
+    return Datastore(
+        name=kg_name,
+        fields=[
+            DatastoreField(name="description", type="text"),
+            DatastoreField(name="in_id", type="keyword"),
+            DatastoreField(name="in_out_id", type="keyword"),
+            DatastoreField(name="name", type="keyword"),
+            DatastoreField(name="out_id", type="keyword"),
+            DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="weight", type="double"),
+        ],
+    )
+
+@pytest.fixture(scope="package")
+def test_kg_nodes_batch() -> Iterable[Document]:
+
+    node_names = ["obama", "united_states_of_america"]
+    node_list = []
+    
+    for i, name in enumerate(node_names):
+        temp_node = {
+                'id': f'n{i}',
+                'name': name,
+                'type': 'node',
+                # 'description': '',
+                'description': name.replace('_', ' '),
+                'weight': None,
+                'in_id': None,
+                'out_id': None,
+                'in_out_id':None}
+                
+        node_list.append(temp_node)
+    return list(node_list)
+
+# Wikidata-KG test preparations
 @pytest.fixture(scope="package")
 def bing_search_datastore_name():
     return "bing_search"
@@ -136,6 +180,8 @@ def user_id() -> str:
 def es_container(
     wiki_datastore: Datastore,
     bing_search_datastore: Datastore,
+    conceptnet_kg: Datastore,
+    # test_kg_nodes_batch: Iterable[Document],
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -158,14 +204,17 @@ def es_container(
     )
     es_container.start()
     host_ip = get_container_ip("es")
+    # print(f"ip of es :{host_ip}")
+    # host_ip = "localhost"
     host_url = f"http://{host_ip}:9200"
     wait_for_up(host_url)
     try:
         es_connector = ElasticsearchConnector(host_url)
+        kg_connector = KnowledgeGraphConnector(host_url)
         loop = asyncio.get_event_loop()
         tasks = [
-            loop.create_task(es_connector.add_datastore(wiki_datastore)),
-            loop.create_task(es_connector.add_datastore(bing_search_datastore)),
+            loop.create_task(es_connector.add_datastore(wiki_datastore)),    
+            loop.create_task(es_connector.add_datastore(bing_search_datastore)),       
             loop.create_task(es_connector.add_index(dpr_index)),
             loop.create_task(es_connector.add_index(second_index)),
             loop.create_task(
@@ -178,6 +227,8 @@ def es_container(
                     wiki_datastore.name, query_document.id, query_document
                 )
             ),
+            loop.create_task(kg_connector.add_kg(conceptnet_kg)),
+            # loop.create_task(kg_connector.add_document_batch(conceptnet_kg.name, test_kg_nodes_batch)),
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
@@ -191,7 +242,17 @@ def es_container(
             }
         )
 
-        # add binding
+        # add conceptnet kg binding
+        datastore_name = conceptnet_kg.name
+        mongo_client = build_mongo_client(*mongo_container)
+        mongo_client.user_datastore_bindings.insert_one(
+            {
+                "user_id": user_id,
+                mongo_client.item_keys["datastore"]: datastore_name,
+            }
+        )
+        
+        # add wikidata kg binding
         datastore_name = bing_search_datastore.name
         mongo_client = build_mongo_client(*mongo_container)
         mongo_client.user_datastore_bindings.insert_one(
@@ -200,7 +261,7 @@ def es_container(
                 mongo_client.item_keys["datastore"]: datastore_name,
             }
         )
-
+        
         yield host_url
     finally:
         es_container.stop()
@@ -290,6 +351,9 @@ def client(es_container, mock_search_client, mongo_client, token) -> TestClient:
     app.dependency_overrides[auth] = lambda: token
     app.dependency_overrides[client_credentials] = lambda: token
     app.dependency_overrides[get_storage_connector] = lambda: ElasticsearchConnector(
+        es_container
+    )
+    app.dependency_overrides[get_kg_storage_connector] = lambda: KnowledgeGraphConnector(
         es_container
     )
     app.dependency_overrides[get_search_client] = lambda: mock_search_client
