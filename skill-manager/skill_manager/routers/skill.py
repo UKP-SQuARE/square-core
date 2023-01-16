@@ -251,7 +251,8 @@ async def query_skill(
     ]:
         # overwrite kwargs from query_request with default kwargs
         kwargs = merge_dicts(
-            skill.default_skill_args.pop(kwargs, {}), getattr(query_request, kwargs)
+            skill.default_skill_args.pop(kwargs_key, {}),
+            getattr(query_request, kwargs_key),
         )
         # set kwargs in query_request
         setattr(query_request, kwargs_key, kwargs)
