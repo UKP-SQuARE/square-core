@@ -30,7 +30,7 @@ def prediction_request():
 
 @pytest.fixture(scope="class")
 def test_onnx_question_answering():
-    model_name = "bert-base-uncased-pf-squad-onnx"
+    model_name = "UKP-SQuARE/bert-base-uncased-pf-squad-onnx"
     set_test_config(
             model_name=model_name,
             onnx_use_quantized=False,
@@ -43,7 +43,7 @@ def test_onnx_question_answering():
 
 @pytest.fixture(scope="class")
 def test_onnx_quantized_question_answering():
-    model_name = "roberta-base-pf-squad-onnx"
+    model_name = "UKP-SQuARE/roberta-base-pf-squad-onnx"
     set_test_config(
             model_name=model_name,
             onnx_use_quantized=True,
@@ -57,7 +57,7 @@ def test_onnx_quantized_question_answering():
 
 @pytest.fixture(scope="class")
 def test_onnx_categorical():
-    model_name = "roberta-base-pf-boolq-onnx"
+    model_name = "UKP-SQuARE/roberta-base-pf-boolq-onnx"
     set_test_config(
             model_name=model_name,
             onnx_use_quantized=False,
