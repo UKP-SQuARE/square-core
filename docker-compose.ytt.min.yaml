@@ -320,6 +320,34 @@ services:
     depends_on:
     - rabbit
     - redis
+  narrativeqa_worker:
+    build:
+      context: ./model-inference
+      dockerfile: ./dockerfiles/onnx/Dockerfile
+    container_name: narrativeqa_worker
+    command: celery -A tasks worker -Q narrativeqa-onnx --loglevel=info
+    volumes:
+    - ./:/usr/src/app
+    - /var/run/docker.sock:/var/run/docker.sock
+    - model_configs:/model_configs
+    - ./local_deploy:/local_deploy
+    env_file:
+    - ./rabbitmq/.env
+    - ./redis/.env
+    - ./model-inference/model_configurations/.env.narrativeqa_bart_onnx
+    environment:
+      WEB_CONCURRENCY: "2"
+      VERIFY_SSL: "0"
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      DOCKER_HOST_URL: https://172.17.0.1
+      ONNX_VOLUME: onnx_models
+      REALM: square
+      CONFIG_PATH: /model_configs
+      QUEUE: narrativeqa-onnx
+      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+    depends_on:
+    - rabbit
+    - redis  
 
     
   maintaining_worker:

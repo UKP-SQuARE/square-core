@@ -113,6 +113,26 @@ Content-Type: application/json
  "adapter_name": ""
 }
 
+###
+# @name narrativeqa
+POST {{domain_dev}}/api/main/narrativeqa-onnx/generation
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+ "input": [
+ [
+    "Sara hates taxes. </s>What does Sara hate?</s>"]
+  ],
+ "is_preprocessed": false,
+ "preprocessing_kwargs": {},
+ "model_kwargs": {},
+ "task_kwargs": {
+  "num_beams": 4
+ },
+ "adapter_name": ""
+}
+
 
 ####
 # @name get_results
