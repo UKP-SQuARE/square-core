@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, Iterable, List
 from fastapi.testclient import TestClient
 
 import pytest
@@ -20,6 +20,7 @@ from app.routers.dependencies import (
     get_storage_connector,
     client_credentials,
     get_mongo_client,
+    get_kg_storage_connector,
 )
 import jwt
 
@@ -66,7 +67,7 @@ def wiki_datastore(datastore_name):
     )
 
 
-# KG test preparations
+# Wikidata-KG test preparations
 @pytest.fixture(scope="package")
 def wikidata_kg_name():
     return "wikidata"
@@ -80,20 +81,6 @@ def wikidata_kg(wikidata_kg_name):
             DatastoreField(name="title", type="text"),
         ],
     )
-# # BING SEARCH Tools:
-# @pytest.fixture(scope="package")
-# def bing_search_datastore_name():
-#     return "bing_search"
-
-# @pytest.fixture(scope="package")
-# def bing_search_datastore(bing_search_datastore_name):
-#     return Datastore(
-#         name=bing_search_datastore_name,
-#         fields=[
-#             DatastoreField(name="text", type="text"),
-#             DatastoreField(name="title", type="text"),
-#         ],
-#     )
 
 @pytest.fixture(scope="package")
 def dpr_index(datastore_name: str) -> Index:
@@ -152,7 +139,6 @@ def user_id() -> str:
 @pytest.fixture(scope="package")
 def es_container(
     wiki_datastore: Datastore,
-    # bing_search_datastore: Datastore,
     wikidata_kg: Datastore,
     mongo_container: Tuple[str, str],
     user_id: str,
@@ -185,9 +171,7 @@ def es_container(
         kg_connector = KnowledgeGraphConnector(host_url)
         loop = asyncio.get_event_loop()
         tasks = [
-            loop.create_task(es_connector.add_datastore(wiki_datastore)),
-            # loop.create_task(es_connector.add_datastore(bing_search_datastore)),
-            loop.create_task(kg_connector.add_kg(wikidata_kg)),
+            loop.create_task(es_connector.add_datastore(wiki_datastore)),           
             loop.create_task(es_connector.add_index(dpr_index)),
             loop.create_task(es_connector.add_index(second_index)),
             loop.create_task(
@@ -200,10 +184,11 @@ def es_container(
                     wiki_datastore.name, query_document.id, query_document
                 )
             ),
+            loop.create_task(kg_connector.add_kg(wikidata_kg)),
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
-        # add binding
+        # add wiki datastore binding
         datastore_name = wiki_datastore.name
         mongo_client = build_mongo_client(*mongo_container)
         mongo_client.user_datastore_bindings.insert_one(
@@ -213,17 +198,8 @@ def es_container(
             }
         )
 
-        # # add binding
-        # datastore_name = bing_search_datastore.name
-        # mongo_client = build_mongo_client(*mongo_container)
-        # mongo_client.user_datastore_bindings.insert_one(
-        #     {
-        #         "user_id": user_id,
-        #         mongo_client.item_keys["datastore"]: datastore_name,
-        #     }
-        # )
-
-        # add binding
+        
+        # add wikidata kg binding
         datastore_name = wikidata_kg.name
         mongo_client = build_mongo_client(*mongo_container)
         mongo_client.user_datastore_bindings.insert_one(
@@ -322,6 +298,9 @@ def client(es_container, mock_search_client, mongo_client, token) -> TestClient:
     app.dependency_overrides[auth] = lambda: token
     app.dependency_overrides[client_credentials] = lambda: token
     app.dependency_overrides[get_storage_connector] = lambda: ElasticsearchConnector(
+        es_container
+    )
+    app.dependency_overrides[get_kg_storage_connector] = lambda: KnowledgeGraphConnector(
         es_container
     )
     app.dependency_overrides[get_search_client] = lambda: mock_search_client
