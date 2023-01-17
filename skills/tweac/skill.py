@@ -1,13 +1,13 @@
+import asyncio
 import logging
 import os
-import requests
-import numpy as np
 
+import numpy as np
+import requests
 from square_auth.client_credentials import ClientCredentials
 from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +22,27 @@ async def predict(request: QueryRequest) -> QueryOutput:
     logger.info("Request: {}".format(request))
     predicted_dataset, tweac_conf = await _call_tweac(request)
     list_predicted_skills = await _retrieve_skills(predicted_dataset)
-    skill_id = list_predicted_skills[0]
-    skill_response = await _call_skill(skill_id, request)
+    list_predicted_skills = list_predicted_skills[
+        : request.skill_args["max_skills_per_dataset"]
+    ]
+    list_skill_responses = await _call_skills(list_predicted_skills, request)
+
+    list_predictions = []
+    for skill_id, skill_response in zip(list_predicted_skills, list_skill_responses):
+        predictions = skill_response.json()["predictions"]
+        # add skill_id and confidence to the prediction
+        pred = predictions[0]
+        pred["skill_id"] = skill_id
+        pred["prediction_score"] = (
+            pred["prediction_output"]["output_score"] * tweac_conf
+        )
+        list_predictions.append(pred)
+
     query_output = QueryOutput(
-        predictions=skill_response.json()["predictions"],
-        adversarial=skill_response.json()["adversarial"],
+        predictions=list_predictions,
+        adversarial=[],
     )
-    for pred in query_output.predictions:
-        pred.skill_id = skill_id
-        pred.prediction_score = pred.prediction_output.output_score * tweac_conf
+
     return query_output
 
 
@@ -77,6 +89,16 @@ async def _retrieve_skills(dataset_name):
         if skill["skill_type"] != "meta-skill"
     ]
     return list_predicted_skills
+
+
+async def _call_skills(list_predicted_skills, request):
+    list_skill_responses = []
+    for skill_id in list_predicted_skills:
+        # how to call the skill without waiting
+        skill_response = _call_skill(skill_id, request)  # only 1 answer per skill
+        list_skill_responses.append(skill_response)
+    list_skill_responses = await asyncio.gather(*list_skill_responses)
+    return list_skill_responses
 
 
 async def _call_skill(skill_id, request):
