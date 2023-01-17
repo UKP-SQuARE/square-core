@@ -17,7 +17,6 @@ class SkillType(str, Enum):
     multiple_choice = "multiple-choice"
     categorical = "categorical"
     information_retrieval = "information-retrieval"
-    meta_skill = "meta-skill"
 
 
 class SkillSettings(BaseModel):
