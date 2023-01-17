@@ -584,40 +584,44 @@ export default Vue.component('edit-skill', {
       }
     },
     setSkillURL() {
-      this.avail_urls = []
-      switch (this.skill.skill_type) {
-        case 'abstractive':
-          this.url = 'http://generative-qa'
-          this.avail_urls.push('http://generative-qa')
-          break
-        case 'span-extraction':
-          if (this.skill.skill_settings.requires_context) {
-            this.url = 'http://extractive-qa'
-            this.avail_urls.push('http://extractive-qa')
-          }
-          else {
-            this.url = 'http://open-extractive-qa'
-            this.avail_urls.push('http://open-extractive-qa')
-          }
-          this.avail_urls.push('http://meta-qa')
-          this.avail_urls.push('http://tweac')
-          break
-        case 'multiple-choice':
-          this.url = 'http://multiple-choice-qa'
-          this.avail_urls.push('http://multiple-choice-qa')
-          this.avail_urls.push('http://meta-qa')
-          this.avail_urls.push('http://tweac')
-          break
-        case 'categorical':
-          this.url = 'http://multiple-choice-qa'
-          this.avail_urls.push('http://multiple-choice-qa')
-          break
-        case 'information-retrieval':
-          this.url = 'http://information-retrieval'
-          this.avail_urls.push('http://information-retrieval')
-          break
-        default:
-          break
+      if (this.skill.meta_skill) {
+        this.avail_urls = ["http://meta-qa", "http://tweac"]
+      } else {
+        this.avail_urls = []
+        switch (this.skill.skill_type) {
+          case 'abstractive':
+            this.url = 'http://generative-qa'
+            this.avail_urls.push('http://generative-qa')
+            break
+          case 'span-extraction':
+            if (this.skill.skill_settings.requires_context) {
+              this.url = 'http://extractive-qa'
+              this.avail_urls.push('http://extractive-qa')
+            }
+            else {
+              this.url = 'http://open-extractive-qa'
+              this.avail_urls.push('http://open-extractive-qa')
+            }
+            this.avail_urls.push('http://meta-qa')
+            this.avail_urls.push('http://tweac')
+            break
+          case 'multiple-choice':
+            this.url = 'http://multiple-choice-qa'
+            this.avail_urls.push('http://multiple-choice-qa')
+            this.avail_urls.push('http://meta-qa')
+            this.avail_urls.push('http://tweac')
+            break
+          case 'categorical':
+            this.url = 'http://multiple-choice-qa'
+            this.avail_urls.push('http://multiple-choice-qa')
+            break
+          case 'information-retrieval':
+            this.url = 'http://information-retrieval'
+            this.avail_urls.push('http://information-retrieval')
+            break
+          default:
+            break
+        }
       }
     }
   },
@@ -638,6 +642,9 @@ export default Vue.component('edit-skill', {
       } else {
         this.skill.meta_skill = false
       }
+    },
+    'skill.meta_skill'() {
+      this.setSkillURL()
     },
     'average_adapters'() {
       this.skill.meta_skill = this.average_adapters
@@ -675,6 +682,7 @@ export default Vue.component('edit-skill', {
             data.skill_input_examples = []
           }
           this.skill = data
+          this.url = this.skill.url
           this.originalName = this.skill.name
           // add skill args to the UI
           this.skill_args.base_model = this.skill.default_skill_args['base_model']
@@ -690,8 +698,11 @@ export default Vue.component('edit-skill', {
             this.average_adapters = false
             this.skill_args.adapter = this.skill.default_skill_args['adapter']
             this.list_adapters = [{ 'text': this.skill.default_skill_args['adapter'] }] // just in case the use wants to change to average adapters
-            if (this.skill_args.adapter != '') {
+            console.log("adapter:", this.skill.default_skill_args['adapter'])
+            if (this.skill_args.adapter != null && this.skill_args.adapter != '') {
               this.adapter_flag = true
+            } else {
+              this.adapter_flag = false
             }
           }
 
