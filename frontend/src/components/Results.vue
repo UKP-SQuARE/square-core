@@ -6,14 +6,13 @@
         <table class="table table-borderless">
           <thead class="border-bottom border-dark">
             <tr>
-              <!--            This for name of the skills   eg: SQuAD 1.1 BERT Adapter-->
+              <!-- This for name of the skills   eg: SQuAD 1.1 BERT Adapter-->
               <th v-if="skillType.options.name !== 'categorical-results'" scope="col" />
               <th v-for="(skillResult, index) in currentResults" :key="index" scope="col"
-                class="fs-2 fw-light text-center">{{ skillResult.skill.name }}</th>
+                class="fs-2 fw-light text-center">{{ skillResult.skill.name }} </th>
             </tr>
             <tr>
-              <!--            This is for type of model eg:Extractive QA, bert-base-uncased
- -->
+              <!-- DESCRIPTION -->
               <th v-if="skillType.options.name !== 'categorical-results'" scope="col" />
               <th v-for="(skillResult, index) in currentResults" :key="index" scope="col" class="fw-normal text-center">
                 {{ skillResult.skill.description }}</th>
@@ -27,7 +26,7 @@
               </th>
               <component v-for="(skillResult, index) in currentResults" :key="index" :is="skillType"
                 :prediction="skillResult.predictions[row - 1]" :showWithContext="showWithContext"
-                :width="`${100 / currentResults.length }%`" style="min-width: 320px;" />
+                :width="`${100 / currentResults.length}%`" style="min-width: 320px;" />
             </tr>
           </tbody>
         </table>
@@ -38,7 +37,7 @@
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a v-on:click="showWithContext = !showWithContext" :class="{ 'active': showWithContext }" role="button"
             class="btn btn-primary shadow">
-            Show answers {{ showWithContext ? 'without' : 'with' }} context
+            Show answers {{ showWithContext? 'without': 'with' }} context
           </a>
         </div>
       </div>
@@ -78,6 +77,7 @@
 import Vue from 'vue'
 import Categorical from '@/components/results/Categorical.vue'
 import SpanExtraction from '@/components/results/SpanExtraction.vue'
+import MetaSkill from '@/components/results/MetaSkill.vue'
 import InformationRetrieval from '@/components/results/InformationRetrieval.vue'
 import AttackOutput from '../components/modals/AttackOutput.vue'
 import ExplainOutput from '../components/modals/ExplainOutput'
@@ -98,6 +98,7 @@ export default Vue.component('skill-results', {
   components: {
     Categorical,
     SpanExtraction,
+    MetaSkill,
     AttackOutput,
     ExplainOutput,
     GraphViz
@@ -107,6 +108,9 @@ export default Vue.component('skill-results', {
       return this.$store.state.currentResults
     },
     skillType() {
+      if (this.$store.state.currentResults[0].skill.meta_skill) {
+        return MetaSkill
+      }
       switch (this.$store.state.currentResults[0].skill.skill_type) {
         case 'abstractive':
         // Fall through
