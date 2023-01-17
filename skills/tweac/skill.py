@@ -20,8 +20,10 @@ async def predict(request: QueryRequest) -> QueryOutput:
     Given a question, calls the TWEAC model to identify the Skill to run.
     """
     logger.info("Request: {}".format(request))
+    qa_format = _get_qa_format(request)
+
     predicted_dataset, tweac_conf = await _call_tweac(request)
-    list_predicted_skills = await _retrieve_skills(predicted_dataset)
+    list_predicted_skills = await _retrieve_skills(predicted_dataset, qa_format)
     list_predicted_skills = list_predicted_skills[
         : request.skill_args["max_skills_per_dataset"]
     ]
@@ -47,6 +49,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
 
 async def _call_tweac(request):
+    """
+    Calls the TWEAC model and returns the predicted dataset and confidence score
+    """
     model_request = {
         "input": [request.query],
     }
@@ -67,7 +72,7 @@ async def _call_tweac(request):
     return dataset_name, conf
 
 
-async def _retrieve_skills(dataset_name):
+async def _retrieve_skills(dataset_name, qa_format):
     """
     API call to Skill Manager to get the names of the skills trained on the dataset
     """
@@ -83,15 +88,19 @@ async def _retrieve_skills(dataset_name):
     )
     logger.info("Retrieved Skills: {}".format(response))
     list_predicted_skills = response.json()
+
     list_predicted_skills = [
         skill["id"]
         for skill in list_predicted_skills
-        if skill["skill_type"] != "meta-skill"
+        if (not skill["meta_skill"]) and (skill["skill_type"] == qa_format)
     ]
     return list_predicted_skills
 
 
 async def _call_skills(list_predicted_skills, request):
+    """
+    Calls the skills in parallel
+    """
     list_skill_responses = []
     for skill_id in list_predicted_skills:
         # how to call the skill without waiting
@@ -124,3 +133,13 @@ async def _call_skill(skill_id, request):
         verify=os.getenv("VERIFY_SSL") == "1",
     )
     return response
+
+
+def _get_qa_format(request):
+    """
+    Returns the format of the question
+    """
+    if "choices" in request.skill_args and len(request.skill_args["choices"]) > 0:
+        return "multiple-choice"
+    else:
+        return "span-extraction"
