@@ -13,39 +13,28 @@
     <div class="list-group list-group-flush">
       <li
           v-for="evaluation in items"
-          :key="evaluation.id"
+          :key="evaluation.skill_id"
           class="list-group-item bg-transparent py-4">
         <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-1">{{evaluation.id}}</h5>
+          <h5 class="mb-1">{{evaluation.skill_name}}</h5>
           <small>
-            <div class="b-button" v-on:click="toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-chevron-compact-down" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M1.553 6.776a.5.5 0 0 1 .67-.223L8 9.44l5.776-2.888a.5.5 0 1 1 .448.894l-6 3a.5.5 0 0 1-.448 0l-6-3a.5.5 0 0 1-.223-.67z"/>
-            </svg>
-            <span class="toggleIcon" id="toggleIcon">{{toggleIcon}}</span>
-            </div>
+            <ExpandButton :evaluation="evaluation"></ExpandButton>
           </small>
         </div>
         <h5 class="mb-1">Dataset: {{evaluation.dataset}}</h5>
-        <Status :url="hallo" />
-        <span v-if="true" class="badge bg-info ms-1 p-2">Public</span>
+        <Status :url="evaluation.skill_url" />
+        <span v-if=evaluation.public class="badge bg-info ms-1 p-2">Public</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Private</span>
         <div class="d-grid gap-2 d-flex mt-2">
-          <router-link :to="{ name: 'evaluation', params: {id: evaluation.id}} " class="btn btn-outline-danger" role="button">Edit</router-link>
+          <router-link :to="{ name: 'evaluation', params: {id: evaluation.skill_id}} " class="btn btn-outline-danger" role="button">Edit</router-link>
           <ConfirmDestructiveAction
               :skill="evaluation.name"
               destructive-action="delete"
               v-on:callback="deleteEvaluation"
-              :callbackValue="evaluation.id"
+              :callbackValue="evaluation.skill_id"
               class="ms-auto" />
         </div>
-        <div class="body" v-show="showSection">
-          <div v-for="elem in evaluation.metric_results" :key="elem.id">
-            <div v-for="(value, key) in elem.results" :key="value.id">
-              <p class="mb-3">{{ key }} : {{value}}</p>
-            </div>
-          </div>
-        </div>
+        <CardExpansion :evaluation="evaluation"></CardExpansion>
       </li>
     </div>
     <div v-if="!items.length" class="p-5 text-center">
@@ -72,6 +61,8 @@
 <script>
 import Vue from 'vue'
 import Card from '@/components/Card.vue'
+import ExpandButton from '@/components/ExpandButton.vue'
+import CardExpansion from '@/components/CardExpansion.vue'
 import ConfirmDestructiveAction from '@/components/modals/ConfirmDestructiveAction.vue'
 import Status from '@/components/Status.vue'
 import { getEvaluations } from '@/api'
@@ -80,6 +71,8 @@ import { getEvaluations } from '@/api'
 export default Vue.component('list-evaluations', {
   components: {
     Card,
+    CardExpansion,
+    ExpandButton,
     ConfirmDestructiveAction,
     Status
   },
@@ -96,9 +89,6 @@ export default Vue.component('list-evaluations', {
     },
     deleteEvaluation(evaluationId) {
       this.$store.dispatch('deleteEvaluation', { evaluationId: evaluationId })
-    },
-    toggle() {
-      this.showSection = !this.showSection
     }
   },
   data() {

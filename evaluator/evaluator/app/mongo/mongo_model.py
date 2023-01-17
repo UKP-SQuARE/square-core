@@ -30,18 +30,8 @@ class MongoModel(BaseModel):
             [MongoModel]
         """
         if not data:
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.debug("-----------------------------")
             return data
-        import logging
-
-        logger = logging.getLogger(__name__)
-        logger.debug("..................................")
-        logger.debug(data)
         id = data.pop("_id", None)
-        logger.debug(data)
         return cls(**dict(data, id=id))
 
     def mongo(self, **kwargs) -> Dict:

@@ -32,11 +32,12 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
     """Returns all skills that a user has access to. A user has access to
     all public skills, and private skill created by them."""
 
-    mongo_query = {"published": True}
+    # mongo_query = {"published": True}
     if has_auth_header(request):
         payload = await get_payload_from_token(request)
         user_id = payload["username"]
         # mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
+        # TODO create a private skill in ukp and work with that one too
 
     # evaluations = mongo_client.client.evaluator.results.find(mongo_query)
     evaluations = mongo_client.client.evaluator.results.find()
@@ -48,23 +49,24 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
 
     for evaluation in evaluations:
         skill_id = str(evaluation.skill_id)
-
-        logger.debug(skill_id)
+        logger.debug(evaluation.metrics)
 
         if not skill_id in skills:
             continue
 
-        skill_is_private = skills[skill_id]["published"] is False
-        has_access = not skill_is_private or skills[skill_id]["user_id"] == user_id
+        skill_is_public = skills[skill_id]["published"]
+        has_access = skill_is_public or skills[skill_id]["user_id"] == user_id
         if not has_access:
             continue
 
         evaluation_results.append(
             EvaluationResult(
-                id="model name, qa type, etc @todo",
+                skill_id=skill_id,
+                skill_name=skills[skill_id]["name"],
                 dataset=evaluation.dataset_name,
-                public=True,
+                public=skill_is_public,
                 metric_results=evaluation.metrics,
+                skill_url=skills[skill_id]["url"],
             )
         )
     return evaluation_results

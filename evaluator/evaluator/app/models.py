@@ -108,13 +108,18 @@ class MetricResult(MongoModel):
 
 
 class EvaluationResult(BaseModel):
-    id: str = Field(..., description="Model name")
+    skill_id: str = Field(..., description="Skill Id")
+    skill_name: str = Field(..., description="Model name")
     dataset: str = Field(..., description="Dataset used for evaluation")
     public: bool = Field(
         ...,
         description="Describes wether it's a public evaluation or a private evaluation for the user.",
     )
     metric_results: dict = Field(..., description="Dictionary of all metric results")
+    skill_url: str = Field(
+        ...,
+        description="Skill url, used to check if skill is available to compute evaluations",
+    )
 
 
 class ExtractiveDatasetSample(BaseModel):
