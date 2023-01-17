@@ -97,4 +97,16 @@ class TestDatastores:
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 204
+        
+    def test_unsupported_operation_for_bing_search(self, client, bing_search_datastore_name):
+        response = client.get(
+            f"/datastores/{bing_search_datastore_name}/stats",
+        )
+        assert response.status_code == 404
+        response = client.delete(
+            f"/datastores/{bing_search_datastore_name}",
+        )
+        assert response.status_code == 404
+        
+
     

@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.wikidata import WikiDataMiddleware
+from .core.bing import BingMiddleware
 from .core.startup import startup_event_handler
 from .core.config import settings
 # from .core.auth import verify_api_key  # deprecated
@@ -24,6 +25,7 @@ def get_app():
     )
     
     app.add_middleware(WikiDataMiddleware)
+    app.add_middleware(BingMiddleware)
 
     app.include_router(api.router, prefix=settings.API_PREFIX)
 

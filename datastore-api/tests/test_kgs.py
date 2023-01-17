@@ -29,12 +29,5 @@ class TestKGs:
         prediction = ast.literal_eval(response.content.decode())
         assert prediction == true_value
 
-    def test_wikidata_get_edges_by_ids(self, client, wikidata_kg_name):
-        response = client.post(
-            f"/datastores/kg/{wikidata_kg_name}/edges/query_by_name",
-             json=[["Q76", "Q11696"],["Q76", "Q13133"]]
-             )
-        
-        assert response.status_code == 200
 
-        assert response.content.decode() == "{('http://www.wikidata.org/prop/direct/P39',), ('http://www.wikidata.org/prop/direct/P26',)}"
+

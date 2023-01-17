@@ -427,7 +427,7 @@ async def get_relationinfo(
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")    
 
-@router.get(
+@router.post(
     "/{kg_name}/edges/query_by_name",
     summary="Get a edge from a knowledge graph",
     description="Get a edge from the knowledge graph by name",

@@ -503,7 +503,11 @@ def test_query_skill_with_default_skill_args(
 ):
     test_realm = "test-realm"
     test_user = "test-user"
-    default_skill_args = {"adapter": "my-adapter", "context": "default context"}
+    default_skill_args = {
+        "adapter": "my-adapter",
+        "context": "default context",
+        "model_kwargs": {"model_foo": "model_bar"},
+    }
     response, skill = create_skill_via_api(
         pers_client,
         token_factory,
@@ -540,10 +544,19 @@ def test_query_skill_with_default_skill_args(
         headers=dict(Authorization="Bearer " + token),
     )
 
-    actual_skill_query_body = json.loads(responses.calls[0].request.body)["skill_args"]
+    actual_request_body = json.loads(responses.calls[0].request.body)
+
+    # model_kwargs is supposed to be removed from the skill_args and parsed separately
+    TestCase().assertDictEqual(
+        actual_request_body["model_kwargs"], default_skill_args.pop("model_kwargs")
+    )
+
+    # remaining args should end up in skill_args
     expected_skill_query_body = default_skill_args
     expected_skill_query_body["context"] = query_context["context"]
-    TestCase().assertDictEqual(actual_skill_query_body, expected_skill_query_body)
+    TestCase().assertDictEqual(
+        actual_request_body["skill_args"], expected_skill_query_body
+    )
 
 
 @responses.activate

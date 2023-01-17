@@ -66,6 +66,19 @@ def wiki_datastore(datastore_name):
         ],
     )
 
+@pytest.fixture(scope="package")
+def bing_search_datastore_name():
+    return "bing_search"
+
+@pytest.fixture(scope="package")
+def bing_search_datastore(bing_search_datastore_name):
+    return Datastore(
+        name=bing_search_datastore_name,
+        fields=[
+            DatastoreField(name="text", type="text"),
+            DatastoreField(name="title", type="text"),
+        ],
+    )
 
 # Wikidata-KG test preparations
 @pytest.fixture(scope="package")
@@ -140,6 +153,7 @@ def user_id() -> str:
 def es_container(
     wiki_datastore: Datastore,
     wikidata_kg: Datastore,
+    bing_search_datastore: Datastore,
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -171,7 +185,8 @@ def es_container(
         kg_connector = KnowledgeGraphConnector(host_url)
         loop = asyncio.get_event_loop()
         tasks = [
-            loop.create_task(es_connector.add_datastore(wiki_datastore)),           
+            loop.create_task(es_connector.add_datastore(wiki_datastore)),
+            loop.create_task(es_connector.add_datastore(bing_search_datastore)),
             loop.create_task(es_connector.add_index(dpr_index)),
             loop.create_task(es_connector.add_index(second_index)),
             loop.create_task(
@@ -188,27 +203,17 @@ def es_container(
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
-        # add wiki datastore binding
-        datastore_name = wiki_datastore.name
-        mongo_client = build_mongo_client(*mongo_container)
-        mongo_client.user_datastore_bindings.insert_one(
-            {
-                "user_id": user_id,
-                mongo_client.item_keys["datastore"]: datastore_name,
-            }
-        )
-
-        
-        # add wikidata kg binding
-        datastore_name = wikidata_kg.name
-        mongo_client = build_mongo_client(*mongo_container)
-        mongo_client.user_datastore_bindings.insert_one(
-            {
-                "user_id": user_id,
-                mongo_client.item_keys["datastore"]: datastore_name,
-            }
-        )
-        
+        # Add bindings for wiki datastore, bing search, wikidata:
+        datastore_names = [wiki_datastore.name, bing_search_datastore.name, wikidata_kg.name]
+        for datastore_name in datastore_names:
+            mongo_client = build_mongo_client(*mongo_container)
+            mongo_client.user_datastore_bindings.insert_one(
+                {
+                    "user_id": user_id,
+                    mongo_client.item_keys["datastore"]: datastore_name,
+                }
+            )
+            
         yield host_url
     finally:
         es_container.stop()
