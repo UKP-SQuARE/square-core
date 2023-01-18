@@ -225,8 +225,8 @@ def es_container(
         kg_connector = KnowledgeGraphConnector(host_url)
         loop = asyncio.get_event_loop()
         tasks = [
-            loop.create_task(es_connector.add_datastore(wiki_datastore)),    
-            loop.create_task(es_connector.add_datastore(bing_search_datastore)),       
+            loop.create_task(es_connector.add_datastore(wiki_datastore)),
+            loop.create_task(es_connector.add_datastore(bing_search_datastore)),
             loop.create_task(es_connector.add_index(dpr_index)),
             loop.create_task(es_connector.add_index(second_index)),
             loop.create_task(
