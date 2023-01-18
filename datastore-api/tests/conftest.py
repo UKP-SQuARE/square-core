@@ -87,7 +87,7 @@ def conceptnet_kg(kg_name):
     )
 
 @pytest.fixture(scope="package")
-def test_kg_nodes_batch() -> Iterable[Document]:
+def test_kg_nodes_batch() -> List[Document]:
 
     node_names = ["obama", "united_states_of_america"]
     node_list = []
