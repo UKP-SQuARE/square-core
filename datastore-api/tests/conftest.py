@@ -218,8 +218,6 @@ def es_container(
     )
     es_container.start()
     host_ip = get_container_ip("es")
-    # print(f"ip of es :{host_ip}")
-    # host_ip = "localhost"
     host_url = f"http://{host_ip}:9200"
     wait_for_up(host_url)
     try:
