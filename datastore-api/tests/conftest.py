@@ -241,7 +241,6 @@ def es_container(
             ),
             loop.create_task(kg_connector.add_kg(conceptnet_kg)),
             loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node ))
-            # loop.create_task(kg_connector.add_document_batch(conceptnet_kg.name, test_kg_nodes_batch)),
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
