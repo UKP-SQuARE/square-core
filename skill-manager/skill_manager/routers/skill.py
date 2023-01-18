@@ -74,11 +74,19 @@ async def get_skills(request: Request):
 
 
 @router.get(
+    "/dataset/{hf_name}/{dataset}",
+    response_model=List[Skill],
+)
+@router.get(
     "/dataset/{dataset}",
     response_model=List[Skill],
 )
-async def get_skills_by_dataset(request: Request, dataset: str = None):
+async def get_skills_by_dataset(
+    request: Request, hf_name: str = None, dataset: str = None
+):
     """Returns all the skills that were trained on the given dataset."""
+    if hf_name is not None:
+        dataset = f"{hf_name}/dataset"
     if has_auth_header(request):
         payload = await get_payload_from_token(request)
         user_id = payload["username"]
