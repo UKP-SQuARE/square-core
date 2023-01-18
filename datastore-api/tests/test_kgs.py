@@ -68,26 +68,14 @@ class TestKGs:
         assert "documents" in response.json()
         assert "size_in_bytes" in response.json()
 
-
-    # BUG: put-Request has error
-    # def test_put_kg(self, client):
-
-
     def test_delete_kg(self, client: TestClient, token: str):
         # Given:
         kg_name = "conceptnet"
         url = f"/datastores/kg/{kg_name}"
 
-        expected_code_get = 200
+        expected_code_get_sucess = 200
         expected_code_delete = 204
-        expected_code_get2 = 404
-
-        # BUG: put-Request has error
-        # response = client.put(
-        #     "/datastores/kg/{}".format(kg_name),
-        #     json=conceptnet_kg.dict()['fields'],
-        #     headers={"Authorization": f"Bearer {token}"},
-        # )
+        expected_code_get_not_found = 404
 
         # When:
         response_get = client.get(url)
@@ -95,6 +83,6 @@ class TestKGs:
         response_get2 = client.get(url)
 
         # Then:
-        assert response_get.status_code == expected_code_get     
+        assert response_get.status_code == expected_code_get_sucess     
         assert response_delete.status_code == expected_code_delete
-        assert response_get2.status_code == expected_code_get2
+        assert response_get2.status_code == expected_code_get_not_found
