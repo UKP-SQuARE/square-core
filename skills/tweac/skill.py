@@ -7,7 +7,12 @@ import requests
 from square_auth.client_credentials import ClientCredentials
 from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
-from square_skill_api.models import QueryOutput, QueryRequest
+from square_skill_api.models import (
+    QueryOutput,
+    QueryRequest,
+    Prediction,
+    PredictionOutput,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +29,9 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     predicted_dataset, tweac_conf = await _call_tweac(request)
     list_predicted_skills = await _retrieve_skills(predicted_dataset, qa_format)
+    if len(list_predicted_skills) == 0:
+        return _create_no_skill_response(request.query)
+
     list_predicted_skills = list_predicted_skills[
         : request.skill_args["max_skills_per_dataset"]
     ]
@@ -147,3 +155,20 @@ def _get_qa_format(request):
         return "multiple-choice"
     else:
         return "span-extraction"
+
+
+def _create_no_skill_response(question):
+    """
+    Creates a response when no skill is found
+    """
+    return QueryOutput(
+        predictions=[
+            Prediction(
+                question=question,
+                prediction_score=0.0,
+                prediction_output=PredictionOutput(
+                    output="No Appropiate Skill Found", output_score=0.0
+                ),
+            )
+        ],
+    )
