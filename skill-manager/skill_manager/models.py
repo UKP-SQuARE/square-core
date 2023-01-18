@@ -65,7 +65,7 @@ class Skill(MongoModel):
         description="A description of the skill, for example describing its pipeline.",
     )
     default_skill_args: Optional[Dict] = Field(
-        None,
+        {},
         description="A dictionary holding key-value pairs that should always be sent to the skill as input. This allows to use the same skill implementataion in different ways.",
     )
     published: bool = Field(
