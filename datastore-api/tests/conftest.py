@@ -196,7 +196,6 @@ def es_container(
     bing_search_datastore: Datastore,
     conceptnet_kg: Datastore,
     test_node: Document,
-    # test_kg_nodes_batch: Iterable[Document],
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
