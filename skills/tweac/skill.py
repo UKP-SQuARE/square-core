@@ -50,7 +50,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     query_output = QueryOutput(
         predictions=list_predictions,
-        adversarial=[],
     )
 
     return query_output
