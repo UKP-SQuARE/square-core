@@ -97,7 +97,6 @@ def test_kg_nodes_batch() -> List[Document]:
                 'id': f'n{i}',
                 'name': name,
                 'type': 'node',
-                # 'description': '',
                 'description': name.replace('_', ' '),
                 'weight': None,
                 'in_id': None,
