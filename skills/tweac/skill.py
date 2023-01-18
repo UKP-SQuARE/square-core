@@ -167,7 +167,7 @@ def _create_no_skill_response(question):
                 question=question,
                 prediction_score=0.0,
                 prediction_output=PredictionOutput(
-                    output="No Appropiate Skill Found", output_score=0.0
+                    output="No answer found.", output_score=0.0
                 ),
             )
         ],

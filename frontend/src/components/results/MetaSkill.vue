@@ -48,6 +48,9 @@ export default Vue.component('span-extraction', {
       let availableSkills = this.$store.state.availableSkills;
       // get Skill from availableSkills that matches the skill id
       let skill = availableSkills.filter(skill => skill.id === this.prediction.skill_id)[0];
+      if (skill === undefined) {
+        return "No Appropiate Skill found";
+      }
       return skill.name;
     }
   },
