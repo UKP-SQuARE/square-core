@@ -844,8 +844,8 @@ class Transformer(Model):
                     tokens = self.decode(features["input_ids"][0].tolist(), skip_special_tokens=False)
                     # get sentence_b_start
                     sentence_b_start = features["input_ids"].tolist()[0].index(self.tokenizer.sep_token_id) + 1
-                    head_view_html = head_view(attention, tokens, sentence_b_start)  # get html_object of head_view
-                    task_outputs["bertviz"] = [head_view_html]
+                    head_view_html = head_view(attention, tokens, sentence_b_start, html_action='return')  # get html_object of head_view
+                    task_outputs["bertviz"] = [f'{head_view_html}']
                     
             if (
                 not request.attack_kwargs
