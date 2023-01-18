@@ -639,6 +639,7 @@ export default Vue.component('edit-skill', {
     'url'() {
       if (this.url == 'http://tweac' || this.url == 'http://meta-qa') {
         this.skill.meta_skill = true
+        this.skill_args.others = '{"max_skills_per_dataset": 2}'
       } else {
         this.skill.meta_skill = false
       }
