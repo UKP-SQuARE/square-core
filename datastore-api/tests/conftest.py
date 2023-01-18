@@ -273,7 +273,6 @@ def es_container(
                 mongo_client.item_keys["datastore"]: datastore_name,
             }
         )
-        
         yield host_url
     finally:
         es_container.stop()
