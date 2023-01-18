@@ -38,7 +38,6 @@ class TestKGNodes:
                 'id': node_id,
                 'name': 'test_node_name',
                 'type': 'node',
-                # 'description': '',
                 'description': 'This_is_a_test_node',
                 'weight': None,
                 'in_id': None,
