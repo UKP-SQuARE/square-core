@@ -148,13 +148,7 @@ async def _call_skill(skill_id, request):
 
 
 def _get_qa_format(request):
-    """
-    Returns the format of the question
-    """
-    if "choices" in request.skill_args and len(request.skill_args["choices"]) > 0:
-        return "multiple-choice"
-    else:
-        return "span-extraction"
+    return request.skill["skill_type"]
 
 
 def _create_no_skill_response(question):
