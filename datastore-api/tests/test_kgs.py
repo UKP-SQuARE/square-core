@@ -1,16 +1,8 @@
-import asyncio
-from typing import Any
-from unittest.mock import MagicMock, patch
-import json
-import ast
-import pytest
-from requests_mock import Mocker
-from tests.utils import async_mock_callable
-import ipdb
+from fastapi.testclient import TestClient
+from app.models.datastore import Datastore
 
 class TestKGs:
-
-    def test_get_all_kgs(self, client):
+    def test_get_all_kgs(self, client: TestClient):
         # Given:
         url = "/datastores/kg"
         expected_code = 200
@@ -21,8 +13,9 @@ class TestKGs:
         # Then:
         assert response.status_code == expected_code
         assert len(response.json()) == 1
+        assert response.content.decode() == '[{"name":"conceptnet","fields":[{"name":"description","type":"text"},{"name":"in_id","type":"keyword"},{"name":"in_out_id","type":"keyword"},{"name":"name","type":"keyword"},{"name":"out_id","type":"keyword"},{"name":"title","type":"text"},{"name":"type","type":"keyword"},{"name":"weight","type":"double"}]}]'
 
-    def test_get_conceptnet(self, client, conceptnet_kg):
+    def test_get_conceptnet(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
         url = "/datastores/kg/conceptnet"
         expected_code = 200
@@ -39,7 +32,7 @@ class TestKGs:
         del resp_json["fields"][-3]
         assert resp_json == conceptnet_kg.dict()
 
-    def test_get_kg_not_found(self, client):
+    def test_get_kg_not_found(self, client: TestClient):
         # Given:
         url = "/datastores/kg/not_found"
         expected_code = 404
@@ -50,18 +43,18 @@ class TestKGs:
         # Then:
         assert response.status_code == expected_code
 
-    def test_delete_kg_not_found(self, client, token):
+    def test_delete_kg_not_found(self, client: TestClient):
         # Given:
         url = "/datastores/kg/not_found"
         expected_code = 404
 
         # When:
-        response = client.delete(url, headers={"Authorization": f"Bearer {token}"})
+        response = client.delete(url)
 
         # Then:
         assert response.status_code == expected_code
 
-    def test_get_kg_stats(self, client, kg_name):
+    def test_get_kg_stats(self, client: TestClient, kg_name: str):
         # Given:
         url = f"/datastores/kg/{kg_name}/stats"
         expected_code = 200
@@ -80,7 +73,7 @@ class TestKGs:
     # def test_put_kg(self, client):
 
 
-    def test_delete_kg(self, client, token):
+    def test_delete_kg(self, client: TestClient, token: str):
         # Given:
         kg_name = "conceptnet"
         url = f"/datastores/kg/{kg_name}"

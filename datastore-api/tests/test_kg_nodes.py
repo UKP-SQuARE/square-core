@@ -1,15 +1,15 @@
 import ipdb
 import json
-
+from fastapi.testclient import TestClient
+from app.models.document import Document
 class TestKGNodes:
-
-    def test_get_nodes(self, client, kg_name, test_node, token):
+    def test_get_nodes(self, client: TestClient, kg_name: str, test_node: Document):
         # Given:
         nid = test_node['id']
         url = f"/datastores/kg/{kg_name}/{nid}"
 
         # When:
-        response = client.get(url, headers={"Authorization": f"Bearer {token}"})
+        response = client.get(url)
 
         # Then:
         assert response.status_code == 200
@@ -18,19 +18,19 @@ class TestKGNodes:
         assert response.json()[nid]['_id'] == nid
 
 
-    def test_get_node_not_found(self, client, kg_name, token):
+    def test_get_node_not_found(self, client: TestClient, kg_name: str):
         # Given:
         url = f"/datastores/kg/{kg_name}/documents/n99999999"
         expected_code = 404
 
         # When:
-        response = client.get(url, headers={"Authorization": f"Bearer {token}"})
+        response = client.get(url)
 
         # Then:
         assert response.status_code == expected_code
 
 
-    def test_put_node(self, client, kg_name, token):
+    def test_put_node(self, client: TestClient, kg_name: str, token: str):
         # Given:
         node_id = "n999999"
         nodes={}
@@ -56,7 +56,7 @@ class TestKGNodes:
             headers={"Authorization": f"Bearer {token}"}
         )
         # request added document to see if it was added correctly
-        response_get = client.get(url_get,headers={"Authorization": f"Bearer {token}"})
+        response_get = client.get(url_get)
 
         # Then:
         assert response_post.status_code == 201
