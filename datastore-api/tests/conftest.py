@@ -78,7 +78,6 @@ def conceptnet_kg(kg_name):
         fields=[
             DatastoreField(name="description", type="text"),
             DatastoreField(name="in_id", type="keyword"),
-            DatastoreField(name="in_out_id", type="keyword"),
             DatastoreField(name="name", type="keyword"),
             DatastoreField(name="out_id", type="keyword"),
             DatastoreField(name="type", type="keyword"),
@@ -101,7 +100,7 @@ def test_kg_nodes_batch() -> List[Document]:
                 'weight': None,
                 'in_id': None,
                 'out_id': None,
-                'in_out_id':None}
+                }
                 
         node_list.append(temp_node)
     return list(node_list)
@@ -117,7 +116,6 @@ def test_node() -> Document:
             'weight': None,
             'in_id': None,
             'out_id': None,
-            'in_out_id':None
         }
     )
 

@@ -42,7 +42,6 @@ class TestKGNodes:
                 'weight': None,
                 'in_id': None,
                 'out_id': None,
-                'in_out_id':None
             }
         nodes['test_node_name'] = node
         url_post = f"/datastores/kg/{kg_name}/nodes/"
