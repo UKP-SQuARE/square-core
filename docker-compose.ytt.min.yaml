@@ -23,7 +23,7 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@ end
 
 #@ def frontend_traefik_redirect():
-#@ if data.values.environment == "prod":
+#@ if data.values.environment == "production":
 #@  return [
 #@    "traefik.http.routers.frontend.rule=Host(`" + data.values.frontend_url[data.values.environment] + "`) || Host(`square.ukp.informatik.tu-darmstadt.de`)",
 #@    "traefik.http.routers.frontend.middlewares=tuda-redirect",
@@ -40,17 +40,17 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 
 #@ def traefik_tls(service):
 #@ return [
-#@  "traefik.http.routers." + service + ".entrypoints=websecure",
-#@  "traefik.http.routers." + service + ".tls=true",
+#@  "traefik.http.routers." + service + ".entrypoints=websecure", 
+#@  "traefik.http.routers." + service + ".tls=true", 
 #@  "traefik.http.routers." + service + ".tls.certresolver=le"
 #@ ]
 #@ end
 
 #@ def traefik_prefix(service):
 #@ return [
-#@  "traefik.http.routers." + service + ".rule=PathPrefix(`/api/" + service + "`)",
-#@  "traefik.http.routers." + service + ".middlewares=" + service + "-stripprefix," + service + "-addprefix",
-#@  "traefik.http.middlewares." + service + "-stripprefix.stripprefix.prefixes=/api/" + service,
+#@  "traefik.http.routers." + service + ".rule=PathPrefix(`/api/" + service + "`)", 
+#@  "traefik.http.routers." + service + ".middlewares=" + service + "-stripprefix," + service + "-addprefix", 
+#@  "traefik.http.middlewares." + service + "-stripprefix.stripprefix.prefixes=/api/" + service, 
 #@  "traefik.http.middlewares." + service + "-addprefix.addPrefix.prefix=/api"
 #@  ]
 #@ end
@@ -68,7 +68,7 @@ VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
 MODEL_API_IMAGE: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
-ONNX_VOLUME: model-inference_onnx-models
+ONNX_VOLUME: squar-core_onnx-models
 REALM: #@ data.values.realm
 MONGO_HOST: mongodb
 MONGO_PORT: 27017
@@ -111,7 +111,7 @@ services:
       - traefik.http.routers.traefik.middlewares=auth
       - traefik.http.middlewares.auth.basicauth.users=admin:${SQUARE_ADMIN_PASSWORD}
     ports:
-      - "80:80"
+      - "80:80" 
       - "443:443"
       - "8080:8080"
     volumes:
@@ -197,7 +197,7 @@ services:
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      ONNX_VOLUME: onnx_models
+      ONNX_VOLUME: squar-core_onnx-models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
       QUEUE: msmarco-distilbert-base-tas-b

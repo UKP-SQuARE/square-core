@@ -50,7 +50,9 @@ class PredictionRequest(BaseModel):
         "to control what additional tensors are returned.<br><br>"
         "SentenceTransformer: This is ignored.<br>"
         "Transformer/ Adapter: See the forward method of the Huggingface models for possible parameters"
-        "For example, set ‘output_attentions=True’ to receive the attention results in the output.",
+        "For example, set ‘output_attentions=True’ to receive the attention results in the output."
+        "For adapter models, the following options are also available:"
+        "1. set `average_adapters` to True to average the adapter weights",
     )
     # task: Task = Field(...)
     task_kwargs: dict = Field(
@@ -91,8 +93,8 @@ class PredictionRequest(BaseModel):
         "- 'max_flips': number of words to flip in hotflip <br>"
         "- 'include_answer: Whether to remove answer from context while attacking model. ",
     )
-    adapter_name: Optional[str] = Field(
-        default="",
+    adapter_name: Optional[Union[str, List[str]]] = Field(
+        ...,
         description="Only necessary for Adapter. "
-        "The fully specified name of the to-be-used adapter from adapterhub.ml",
+                    "The fully specified name of the to-be-used adapter from adapterhub.ml",
     )

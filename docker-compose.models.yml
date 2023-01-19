@@ -210,17 +210,17 @@ services:
 
 #  tweac_worker:
 #    build:
-#      context: ./modeinference
+#      context: ./model-inference
 #      dockerfile: ./dockerfiles/transformer/Dockerfile
 #    container_name: tweac_worker
-#    command: celery -A tasks worker -Q tweac --loglevel=info --concurrency=1
+#    command: celery -A tasks worker -Q tweac --loglevel=info --concurrency=2
 #    volumes:
 #      - ./:/usr/src/app
 #      - /var/run/docker.sock:/var/run/docker.sock
 #      - model_configs:/model_configs
 #    env_file:
-#      - inference_api/model_configurations/.env.tweac
-#      - .env
+#      - ./model-inference/model_configurations/.env.tweac
+#      - ./model-inference/.env
 #    environment:
 #      - DOCKER_HOST_URL=https://172.17.0.1:8443
 #      - VERIFY_SSL=0
@@ -407,8 +407,6 @@ services:
   mongo-express:
     image: mongo-express:latest
     restart: always
-#    env_file:
-#      - ./management_server/.env
     env_file:
       - ./model-manager/.env
     ports:

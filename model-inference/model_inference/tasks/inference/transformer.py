@@ -3,9 +3,11 @@ import math
 import string
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple, Union
+import importlib
 
 import numpy as np
 import torch
+from bertviz import head_view
 from model_inference.tasks.attacks import hotflip, input_reduction, subspan, topk_tokens
 from model_inference.tasks.config.model_config import model_config
 from model_inference.tasks.inference.model import Model
@@ -59,20 +61,19 @@ class Transformer(Model):
              kwargs: Not used
         """
         self.task = None
-        # new added section start
         self.gradients = None
-        # new added section end
         if model_config.model_class == "from_config":
             config = AutoConfig.from_pretrained(model_config.model_name)
-            model_arch = config.architectures[0]
-            hf_modelling = model_arch.split("For")[-1]
-            for task, hf_model in CLASS_MAPPING.items():
-                if hf_modelling in hf_model.__name__:
-                    model_cls = CLASS_MAPPING[task]
-                    break
-                else:
-                    model_cls = CLASS_MAPPING["base"]
-            CLASS_MAPPING["from_config"] = model_cls
+            if config.architectures:
+                architecture = config.architectures[0]
+                transformers_module = importlib.import_module("transformers")
+                _class = getattr(transformers_module, architecture, None)
+            else:
+                logging.info("No architecture specified in config, using base model")
+                architecture = "base"
+                _class = CLASS_MAPPING[architecture]
+
+            CLASS_MAPPING["from_config"] = _class
         elif model_config.model_class not in CLASS_MAPPING:
             raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
         self._load_model(
@@ -326,7 +327,7 @@ class Transformer(Model):
             self.word_mappings = [features.word_ids(i) for i in range(len(features["input_ids"]))]
 
         if request.explain_kwargs:
-            if request.explain_kwargs["method"] in ["attention", "scaled_attention"]:
+            if request.explain_kwargs["method"] in ["attention", "scaled_attention", "bertviz"]:
                 request.model_kwargs["output_attentions"] = True
         if request.attack_kwargs:
             if request.attack_kwargs["saliency_method"] in [
@@ -811,32 +812,41 @@ class Transformer(Model):
                     "start_positions": answer_start.to(self.model.device),
                     "end_positions": answer_end.to(self.model.device),
                 }
-                attributions = self._interpret(
-                    request=request,
-                    prediction=predictions,
-                    method=request.explain_kwargs["method"]
-                    if request.explain_kwargs
-                    else request.attack_kwargs["saliency_method"],
-                    **grad_kwargs,
-                )
-                # new added section start
-                # to extract the name of the attack method
-                attack_method = None
-                if request.attack_kwargs:
-                    for k, v in request.attack_kwargs.items():
-                        if k == "method":
-                            attack_method = v
-                # new added section end
-                word_imp = self.process_outputs(
-                    attributions=attributions,
-                    top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
-                    mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
-                    task="question_answering",
-                    # new added paramter in process_ourput method
-                    attack_method=attack_method,
-                )
-                task_outputs["attributions"] = word_imp
-
+                if request.explain_kwargs["method"] != "bertviz":
+                    attributions = self._interpret(
+                        request=request,
+                        prediction=predictions,
+                        method=request.explain_kwargs["method"]
+                        if request.explain_kwargs
+                        else request.attack_kwargs["saliency_method"],
+                        **grad_kwargs,
+                    )
+                    # new added section start
+                    # to extract the name of the attack method
+                    attack_method = None
+                    if request.attack_kwargs:
+                        for k, v in request.attack_kwargs.items():
+                            if k == "method":
+                                attack_method = v
+                    # new added section end
+                    word_imp = self.process_outputs(
+                        attributions=attributions,
+                        top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
+                        mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+                        task="question_answering",
+                        # new added paramter in process_ourput method
+                        attack_method=attack_method,
+                    )
+                    task_outputs["attributions"] = word_imp
+                else:  # bertviz case
+                    attention = predictions["attentions"]  # get attention
+                    # get tokens
+                    tokens = self.decode(features["input_ids"][0].tolist(), skip_special_tokens=False)
+                    # get sentence_b_start
+                    sentence_b_start = features["input_ids"].tolist()[0].index(self.tokenizer.sep_token_id) + 1
+                    head_view_html = head_view(attention, tokens, sentence_b_start, html_action='return')  # get html_object of head_view
+                    task_outputs["bertviz"] = head_view_html.data
+                    
             if (
                 not request.attack_kwargs
                 and not request.explain_kwargs

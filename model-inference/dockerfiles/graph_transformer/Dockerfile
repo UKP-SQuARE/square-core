@@ -6,9 +6,9 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-RUN pip install torch-scatter torch-sparse torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
 COPY ./dockerfiles/graph_transformer/requirements.txt ./requirements.graph.txt
 RUN pip install -r requirements.graph.txt
+RUN pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
 
 FROM build as test
 

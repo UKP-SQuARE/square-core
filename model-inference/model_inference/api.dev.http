@@ -62,10 +62,9 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  ],
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
-#  "model_kwargs": {},
+#  "model_kwargs": {"average_adapters": false},
 #  "task_kwargs": {},
-#  "attack_kwargs":{"method":"hotflip", "saliency_method": "attention", "max_flips":5},
-#  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
+#  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
 #}
 
 ###
@@ -146,8 +145,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
-#  "task_kwargs": {},
-#  "attack_kwargs":{"method":"sub_span", "saliency_method": "attention", "max_tokens":5},
+#  "task_kwargs": {"return_all_scores": true},
 #  "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
 #}
 
@@ -285,7 +283,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name tweac
-#POST {{domain_dev}}/api/main/UKP-SQuARE/tweac_16/sequence-classification
+#POST {{domain_dev}}/api/main/tweac/sequence-classification
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 #
@@ -295,7 +293,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
 #  "model_kwargs": {},
-#  "task_kwargs": {},
+#  "task_kwargs": {"return_all_scores": true},
 #  "adapter_name": ""
 #}
 
@@ -303,7 +301,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name task_output
-#GET {{domain_dev}}/api/main/task_result/e2c909ca-ae52-47d5-9b58-830994172114
+#GET {{domain_dev}}/api/main/task_result/23bc9deb-fda0-426f-a33d-020465073604
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 

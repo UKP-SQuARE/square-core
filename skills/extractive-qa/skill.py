@@ -1,9 +1,7 @@
 import logging
 
-from square_skill_api.models import QueryOutput, QueryRequest
-
 from square_model_client import SQuAREModelClient
-
+from square_skill_api.models import QueryOutput, QueryRequest
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,10 @@ async def predict(request: QueryRequest) -> QueryOutput:
     prepared_input = [[query, context]]
     model_request = {
         "input": prepared_input,
-        "task_kwargs": {"topk": request.skill_args.get("topk", 5), "show_null_answers": request.skill_args.get("show_null_answers", True)},
+        "task_kwargs": {
+            "topk": request.skill_args.get("topk", 5),
+            "show_null_answers": request.skill_args.get("show_null_answers", True),
+        },
         "explain_kwargs": explain_kwargs,
         "attack_kwargs": attack_kwargs,
     }

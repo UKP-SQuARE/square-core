@@ -1,9 +1,8 @@
 import logging
 import uuid
 
-from square_skill_api.models import QueryOutput, QueryRequest
-
 from square_model_client import SQuAREModelClient
+from square_skill_api.models import QueryOutput, QueryRequest
 
 logger = logging.getLogger(__name__)
 
