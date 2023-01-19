@@ -80,6 +80,7 @@ def conceptnet_kg(kg_name):
             DatastoreField(name="in_id", type="keyword"),
             DatastoreField(name="name", type="keyword"),
             DatastoreField(name="out_id", type="keyword"),
+            DatastoreField(name="title", type="text"),
             DatastoreField(name="type", type="keyword"),
             DatastoreField(name="weight", type="double"),
         ],

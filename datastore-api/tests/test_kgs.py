@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from app.models.datastore import Datastore
 
 class TestKGs:
-    def test_get_all_kgs(self, client: TestClient):
+    def test_get_all_kgs(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
         url = "/datastores/kg"
         expected_code = 200
@@ -13,7 +13,7 @@ class TestKGs:
         # Then:
         assert response.status_code == expected_code
         assert len(response.json()) == 1
-        assert response.content.decode() == '[{"name":"conceptnet","fields":[{"name":"description","type":"text"},{"name":"in_id","type":"keyword"},{"name":"in_out_id","type":"keyword"},{"name":"name","type":"keyword"},{"name":"out_id","type":"keyword"},{"name":"title","type":"text"},{"name":"type","type":"keyword"},{"name":"weight","type":"double"}]}]'
+        assert response.content.decode() == '[{"name":"conceptnet","fields":[{"name":"description","type":"text"},{"name":"in_id","type":"keyword"},{"name":"name","type":"keyword"},{"name":"out_id","type":"keyword"},{"name":"title","type":"text"},{"name":"type","type":"keyword"},{"name":"weight","type":"double"}]}]'
 
     def test_get_conceptnet(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
@@ -25,12 +25,8 @@ class TestKGs:
 
         # Then:
         assert response.status_code == expected_code
-        # BUG: KG API is adding a "title"-field to the output, if solved change back to:
-        # assert response.json() == conceptnet_kg.dict()
+        assert response.json() == conceptnet_kg.dict()
 
-        resp_json = response.json()
-        del resp_json["fields"][-3]
-        assert resp_json == conceptnet_kg.dict()
 
     def test_get_kg_not_found(self, client: TestClient):
         # Given:
