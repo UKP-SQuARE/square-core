@@ -84,14 +84,6 @@ export default new Vuex.Store({
           context.commit('setLoadingExplainability', { 'value': true });
         }, 8000);
       }
-      // get preprocessing kwargs from availableSkills
-      options["preprocessing_kwargs"] = []
-      for (var i = 0; i < options.selectedSkills.length; i++) {
-        var skill = context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[i])[0]
-        if (skill) {
-          options["preprocessing_kwargs"].push(skill.default_skill_args["preprocessing_kwargs"])
-        }
-      }
       return postQuery(context.getters.authenticationHeader(), question, inputContext, choices, options)
         .then(axios.spread((...responses) => {
           // Map responses to a list with the skill metadata and predictions combined

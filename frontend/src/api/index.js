@@ -119,9 +119,8 @@ export function postQuery(headers, question, context, choices, options) {
             "max_tokens": options.attack_kwargs.max_tokens,
         }
     }
-    if (options.preprocessing_kwargs) {
-        data.preprocessing_kwargs = options.preprocessing_kwargs
-    }
+    data.preprocessing_kwargs = { "max_length": 512 }
+
     if (options.feedback_documents) {
         data.skill_args.feedback_documents = options.feedback_documents
     }
