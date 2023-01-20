@@ -25,8 +25,6 @@ class ModelConfig(Mapping):
     # See square_model_inference.core.event_handlers.MODEL_MAPPING for all available names with corresponding model
     model_type: str = None
 
-    is_encoder_decoder: bool = False
-
     # data paths to store additional data
     data_path: str = None
 
@@ -52,7 +50,11 @@ class ModelConfig(Mapping):
     # the base64 string back to the numpy array
     return_plaintext_arrays: bool = False
 
-    onnx_use_quantized: bool = True
+    # Flag that decides if quantized ONNX model should be used for inference
+    onnx_use_quantized: bool = False
+
+    # Flag that decides if ONNX model is encoder-decoder model
+    is_encoder_decoder: bool = False
 
     def __getitem__(self, key):
         return self.__dict__[key]
@@ -104,7 +106,7 @@ class ModelConfig(Mapping):
         model_config = ModelConfig(
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
-            is_encoder_decoder=config("IS_ENCODER_DECODER", default=False),
+            is_encoder_decoder=config("IS_ENCODER_DECODER", cast=bool, default=False),
             data_path=config("DATA_PATH", default=None),
             preloaded_adapters=config("PRELOADED_ADAPTERS", cast=bool, default=True),
             disable_gpu=config("DISABLE_GPU", cast=bool, default=False),

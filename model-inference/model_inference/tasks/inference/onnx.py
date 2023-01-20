@@ -46,11 +46,8 @@ class Onnx(Transformer):
              kwargs: Not used
         """
         self.task = None
-        # new added section start
         self.gradients = None
-        # new added section end
 
-        # Currently we only consider model class question_answering (encoder-only)
         self._load_model(
             model_config.model_name,
             model_config.onnx_use_quantized,
