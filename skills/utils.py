@@ -11,5 +11,5 @@ def extract_model_kwargs_from_request(request: QueryRequest) -> Dict[str, Dict]:
         "attack_kwargs": request.attack_kwargs or {},
         "model_kwargs": request.model_kwargs or {},
         "task_kwargs": request.task_kwargs or {},
-        "preprocessing_kwargs": request.preprocessing_kwargs or {},
+        "preprocessing_kwargs": request.skill_args.preprocessing_kwargs or {},
     }
