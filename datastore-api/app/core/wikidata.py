@@ -4,6 +4,7 @@ import concurrent.futures
 from typing import Tuple, Dict, List
 from collections import defaultdict
 from fastapi import Request, Response, HTTPException
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 import aiohttp
 import asyncio
@@ -28,6 +29,9 @@ class WikiData:
                 value_line += (value['value'],)
             result.append(value_line)
         return result
+
+    def __without_link(self, link):
+        return link.split("/")[-1]
 
     async def is_alive(self):
         return True
@@ -61,7 +65,12 @@ class WikiData:
 
         return results
 
+    # Depreceated
     async def get_edges_by_name(self, entity_pair_list: list):
+        '''
+        entity_pair_list - A list of the name-pairs
+        Return - List of all relations, which are found for the given name-pair.        
+        '''
         query = "select "
         for i, pair in enumerate(entity_pair_list):
             query += f"?relation{i} "
@@ -76,7 +85,61 @@ class WikiData:
         data = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
         response_clean =  set(self.__json_to_doubles(data))
 
+        # Response in the shape of SQuARE-KG-Schema:
         return response_clean
+
+    async def get_edges_for_id_pairs(self, entity_pair_list: list):
+        '''
+        entity_pair_list - List of entityID-pairs. E.g. [["Q32", "Q53"], ["Q32", "Q53"]]
+        Return - List of edges in SQuARE-KG-Schema.
+        '''
+
+        query = "select"
+        for i, pair in enumerate(entity_pair_list):
+            query += f" ?relation{i} ?entOne{i} ?entTwo{i} ?h{i} ?h{i}Label ?h{i}Description ?h{i}AltLabel"
+        query += " WHERE {"
+
+        for i, pair in enumerate(entity_pair_list):
+            if i != 0:
+                query += " UNION "
+            query += "{BIND(wd:"+pair[0]+ f" as ?entOne{i}) BIND(wd:"+pair[1]+ f" as ?entTwo{i}) ?entOne{i} ?relation{i} ?entTwo{i} . ?h{i} wikibase:directClaim ?relation{i} . }}"
+        query += " SERVICE wikibase:label { bd:serviceParam wikibase:language '[AUTO_LANGUAGE],en'. }}"
+        data = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
+
+        ids = [i for i in range(len(data['results']['bindings']))]
+
+        edges = {}
+        for rel in data['results']['bindings']:
+            for i in ids:
+                try:
+                    edge_type = rel[f'relation{i}']['value']
+                    edge_label = rel[f'h{i}Label']['value']
+                    edge_description = rel[f'h{i}Description']['value']
+                    entOne = self.__without_link(rel[f'entOne{i}']['value'])
+                    entTwo = self.__without_link(rel[f'entTwo{i}']['value'])
+
+                    # entity with link -> http://www.wikidata.org/entity/Q76
+                    # entity without link -> Q76
+                    id = entOne+"_"+entTwo
+                    # egde_type with link -> http://www.wikidata.org/prop/direct/P39
+                    # egde_type without link -> P39
+                    edge = {
+                        "id": id,
+                        "name": edge_label,
+                        "type": "node",
+                        "description": self.__without_link(edge_type) + "; " + edge_description.replace("\"", "\-"),
+                        "weight": None,
+                        "in_id": entOne,
+                        "out_id": entTwo,
+                        "in_out_id":id
+                    }
+                    edges[id] = edge
+                    break
+
+                except Exception as e:
+                    continue
+
+        return edges
 
 
     # Not finished
@@ -99,6 +162,7 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name'},
+            {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids'},
             {'verb': 'GET', 'path': f'/datastores/kg/{WikiData.kg_name}'},
         ]
         if path.startswith(f"/datastores/kg/{WikiData.kg_name}") \
@@ -118,6 +182,10 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name':
                 response = await wikidata.get_edges_by_name(entity_pair_list = await request.json())
                 return Response(status_code=200, content=str(response))
+    
+            elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids':
+                response = await wikidata.get_edges_for_id_pairs(entity_pair_list = await request.json())
+                return JSONResponse(status_code=200, content=response)
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
