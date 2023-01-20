@@ -79,47 +79,59 @@ export default new Vuex.Store({
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
       // if explain_kwargs in options
       var timeoutExplainabilityLoading = null
-      if ( "explain_kwargs" in options ){
+      if ("explain_kwargs" in options) {
         timeoutExplainabilityLoading = setTimeout(() => {
-          context.commit('setLoadingExplainability', {'value': true});
+          context.commit('setLoadingExplainability', { 'value': true });
         }, 8000);
       }
+      // get preprocessing kwargs from availableSkills
+      options["preprocessing_kwargs"] = []
+      for (var i = 0; i < options.selectedSkills.length; i++) {
+        var skill = context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[i])[0]
+        if (skill) {
+          options["preprocessing_kwargs"].push(skill.default_skill_args["preprocessing_kwargs"])
+        }
+      }
       return postQuery(context.getters.authenticationHeader(), question, inputContext, choices, options)
-          .then(axios.spread((...responses) => {
-            // Map responses to a list with the skill metadata and predictions combined
-            let results = responses.map((response, index) => ({
-              skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
-              predictions: response.data.predictions,
-              adversarial: response.data.adversarial
-            }))
-            context.commit('setAnsweredQuestion', { results: results, 
-                                                    question: question, 
-                                                    context: inputContext, 
-                                                    choices: choices, 
-                                                    skills: options.selectedSkills })
-          })).finally(() => {
-            if ( "explain_kwargs" in options ){
-              clearTimeout(timeoutExplainabilityLoading);
-              context.commit('setLoadingExplainability', {'value': false});
-            }
+        .then(axios.spread((...responses) => {
+          // Map responses to a list with the skill metadata and predictions combined
+          let results = responses.map((response, index) => ({
+            skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
+            predictions: response.data.predictions,
+            adversarial: response.data.adversarial
+          }))
+          context.commit('setAnsweredQuestion', {
+            results: results,
+            question: question,
+            context: inputContext,
+            choices: choices,
+            skills: options.selectedSkills
           })
+        })).finally(() => {
+          if ("explain_kwargs" in options) {
+            clearTimeout(timeoutExplainabilityLoading);
+            context.commit('setLoadingExplainability', { 'value': false });
+          }
+        })
     },
     attack(context, { question, inputContext, choices, options }) {
       options.maxResultsPerSkill = parseInt(options.maxResultsPerSkill)
       return postQuery(context.getters.authenticationHeader(), question, inputContext, choices, options)
-          .then(axios.spread((...responses) => {
-            // Map responses to a list with the skill metadata and predictions combined
-            let results = responses.map((response, index) => ({
-              skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
-              predictions: response.data.predictions,
-              adversarial: response.data.adversarial
-            }))
-            context.commit('setAttack', { results: results,
-                                          question: question,
-                                          context: inputContext,
-                                          choices: choices,
-                                          skills: options.selectedSkills })
+        .then(axios.spread((...responses) => {
+          // Map responses to a list with the skill metadata and predictions combined
+          let results = responses.map((response, index) => ({
+            skill: context.state.availableSkills.filter(skill => skill.id === options.selectedSkills[index])[0],
+            predictions: response.data.predictions,
+            adversarial: response.data.adversarial
           }))
+          context.commit('setAttack', {
+            results: results,
+            question: question,
+            context: inputContext,
+            choices: choices,
+            skills: options.selectedSkills
+          })
+        }))
     },
     signIn(context, { userInfo, token }) {
       context.commit('setAuthentication', { userInfo: userInfo, token: token })
@@ -137,25 +149,25 @@ export default new Vuex.Store({
     },
     updateSkills(context) {
       return getSkills(context.getters.authenticationHeader())
-          .then((response) => context.commit('setSkills', { skills: response.data }))
+        .then((response) => context.commit('setSkills', { skills: response.data }))
     },
     updateSkill(context, { skill }) {
       return putSkill(context.getters.authenticationHeader(), skill.id, skill)
-          .then(() => context.dispatch('updateSkills'))
+        .then(() => context.dispatch('updateSkills'))
     },
     createSkill(context, { skill }) {
       return postSkill(context.getters.authenticationHeader(), skill)
-          .then(() => context.dispatch('updateSkills'))
+        .then(() => context.dispatch('updateSkills'))
     },
     deleteSkill(context, { skillId }) {
       return deleteSkill(context.getters.authenticationHeader(), skillId)
-          .then(() => context.dispatch('updateSkills'))
+        .then(() => context.dispatch('updateSkills'))
     }
   },
   getters: {
     authenticationHeader: (state) => () => {
       if (state.token) {
-        return {'Authorization': `Bearer ${state.token}`}
+        return { 'Authorization': `Bearer ${state.token}` }
       } else {
         return {}
       }
