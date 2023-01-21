@@ -166,14 +166,15 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
             {'verb': 'GET', 'path': f'/datastores/kg/{WikiData.kg_name}'},
         ]
         if path.startswith(f"/datastores/kg/{WikiData.kg_name}") \
-        and not any([path == p['path'] and request.method == p['verb'] for p in allowed_paths]):
+        and not any([path == p['path'] and request.method == p['verb'] for p in allowed_paths]) \
+        and not path.startswith(f"/datastores/kg/{WikiData.kg_name}/Q"):
             return Response(status_code=404, content="This operation is not supported for the Wikidata knowledge graph.")
 
         wikidata = WikiData()
         try: 
             if path == f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name':
                 response = await wikidata.get_entity_by_names(names = await request.json())
-                return Response(status_code=200, content=str(response))
+                return JSONResponse(status_code=200, content=response)
 
             elif path == f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name':               
                 response = await wikidata.get_entity_by_names(names = await request.json())
@@ -182,9 +183,14 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name':
                 response = await wikidata.get_edges_by_name(entity_pair_list = await request.json())
                 return Response(status_code=200, content=str(response))
-    
+
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids':
                 response = await wikidata.get_edges_for_id_pairs(entity_pair_list = await request.json())
+                return JSONResponse(status_code=200, content=response)
+
+            # This should only be used to search certain entities 
+            elif path.startswith(f'/datastores/kg/{WikiData.kg_name}/'):
+                response = await wikidata.get_entity_by_names([path.split("/")[-1]])
                 return JSONResponse(status_code=200, content=response)
 
         except Exception as e:
