@@ -34,11 +34,11 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "identifier": "AdapterHub/bert-base-uncased-pf-hotpotqa",
-  "model_name": "AdapterHub/bert-base-uncased-pf-hotpotqa",
+  "identifier": "bert-base-uncased",
+  "model_name": "bert-base-uncased",
   "onnx_use_quantized": true,
   "is_encoder_decoder": false,
-  "model_type": "adaptertransformer",
+  "model_type": "onnx",
   "disable_gpu": true,
   "batch_size": 32,
   "max_input": 1024,
@@ -51,7 +51,7 @@ Content-Type: application/json
 } 
 
 ###
-# @name deploy_normal_model
+# @name deploy_custom
 # @prompt hf_token
 POST /api/models/deploy HTTP/1.1
 Host: {{domain_dev}}
@@ -63,7 +63,7 @@ Content-Type: application/json
   "model_name": "SpanBERT/spanbert-base-cased",
   "onnx_use_quantized": true,
   "is_encoder_decoder": false,
-  "model_type": "transformer",
+  "model_type": "onnx",
   "disable_gpu": true,
   "batch_size": 32,
   "max_input": 1024,
@@ -76,7 +76,7 @@ Content-Type: application/json
 } 
 
 ###
-# @name deploy_custom_config
+# @name deploy_auto
 # @prompt hf_token
 POST /api/models/deploy HTTP/1.1
 Host: {{domain_dev}}
@@ -88,7 +88,7 @@ Content-Type: application/json
   "model_name": "distilbert-base-uncased",
   "onnx_use_quantized": true,
   "is_encoder_decoder": false,
-  "model_type": "transformer",
+  "model_type": "onnx",
   "disable_gpu": true,
   "batch_size": 32,
   "max_input": 1024,
@@ -97,13 +97,50 @@ Content-Type: application/json
   "return_plaintext_arrays": false,
   "hf_token": "{{hf_token}}",
   "adapter_id": "",
-  "custom_onnx_config": "{\"input_ids\": {\"0\": \"batch\", \"1\": \"sequence\"}, \"attention_mask\": {\"0\": \"batch\", \"1\": \"sequence\"}}"
+  "custom_onnx_config": ""
 } 
 
 
+
+###
+# @name hotpotqa_inference
+POST {{domain_dev}}/api/main/UKP-SQuARE/bert-base-uncased-pf-hotpotqa-onnx/question-answering
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+ "input": [
+ ["Who stars in The Matrix?",
+    "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+ ],
+ "is_preprocessed": false,
+ "preprocessing_kwargs": {},
+ "model_kwargs": {},
+ "task_kwargs": {},
+ "adapter_name": ""
+}
+
+###
+# @name spanbert_inference
+POST {{domain_dev}}/api/main/UKP-SQuARE/spanbert-base-cased-onnx/embedding
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+ "input": [
+ ["Who stars in The Matrix?",
+    "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+ ],
+ "is_preprocessed": false,
+ "preprocessing_kwargs": {},
+ "model_kwargs": {},
+ "task_kwargs": {},
+ "adapter_name": ""
+}
+
 ###
 # @name distilbert_inference
-POST {{domain_dev}}/api/main/onnxport/distilbert-base-uncased-onnx/embedding
+POST {{domain_dev}}/api/main/UKP-SQuARE/distilbert-base-uncased-onnx/embedding
 Authorization: Bearer {{token}}
 Content-Type: application/json
 

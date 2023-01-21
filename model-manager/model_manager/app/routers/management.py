@@ -195,20 +195,22 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     """
     deploy a new model to the platform
     """
-    try:
-        model_name = onnx_export(model_params.model_name 
-                ,model_params.model_class 
-                ,model_params.hf_token
-                ,model_params.adapter_id 
-                ,model_params.custom_onnx_config
-                ,model_params.onnx_use_quantized
-                )
-        model_type = "onnx"
-    except Exception as e: 
-        # Use normal model if model can not be exported to onnx
-        logger.debug(f"Onnx export failed: {str(e)}")
-        model_name = model_params.model_name
-        model_type = model_params.model_type
+    model_name = model_params.model_name
+    model_type = model_params.model_type
+
+    if model_type == "onnx":
+        try:
+            model_name = onnx_export(model_params.model_name 
+                    ,model_params.model_class 
+                    ,model_params.hf_token
+                    ,model_params.adapter_id 
+                    ,model_params.custom_onnx_config
+                    ,model_params.onnx_use_quantized
+                    )
+        except Exception as e: 
+            # Use normal model if model can not be exported to onnx
+            logger.debug(f"Onnx export failed, using normal model instead: {str(e)}")
+            model_type = "transformer"
 
     user_id = await utils.get_user_id(request)
     env = {
