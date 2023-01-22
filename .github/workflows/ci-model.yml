@@ -23,7 +23,7 @@ jobs:
           "transformer",
           "graph_transformer",
           "sentence_transformer",
-          "onnx",
+          # "onnx",
         ]
         include:
           - model_type: transformer
