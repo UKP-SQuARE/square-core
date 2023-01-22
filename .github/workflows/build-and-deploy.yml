@@ -57,19 +57,15 @@ jobs:
             context: ./model-manager
           - service: model-inference-transformer
             context: ./model-inference
-            file: ./model-inference/dockerfiles/transformer/Dockerfile
             build-args: "MODEL_TYPE=transformer"
           - service: model-inference-onnx
             context: ./model-inference
-            file: ./model-inference/dockerfiles/onnx/Dockerfile
             build-args: "MODEL_TYPE=onnx"
           - service: model-inference-sentence-transfomer
             context: ./model-inference
-            file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
             build-args: "MODEL_TYPE=sentence_transformer"
           - service: model-inference-graph-transfomer
             context: ./model-inference
-            file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
             build-args: "MODEL_TYPE=graph_transformer"
           - service: skill-manager
             context: ./skill-manager
