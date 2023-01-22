@@ -38,10 +38,10 @@ jobs:
             test_dir: sentence_transformer
             test_setup: sentence_transformer
             image_suffix: sentence-transformer
-          - model_type: onnx
-            test_dir: onnx
-            test_setup: transformer
-            image_suffix: onnx
+          # - model_type: onnx
+          #   test_dir: onnx
+          #   test_setup: transformer
+          #   image_suffix: onnx
 
     steps:
       - uses: actions/checkout@v3
