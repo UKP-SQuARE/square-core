@@ -31,12 +31,32 @@ To run a Skill, you need to go to the QA page in the navigation bar. Then, selec
 <a name="Add-New-Skills"></a>
 
 ## Deploying New Skills
-Deploying a Skill is a simple as filling the form shown below. You just need to give a name to your Skill, select the QA format (i.e., extractive, multiple-choice, categorical/boolean, or abstractive), add some metadata such as the datasets used during training and a plain-text description, and finally specify the pipeline (i.e., the base model, the adapters (if needed), and the datastore and index (if needed)).
-![skill-creation](../../static/img/skill_creation.png)
-
-You can find this form after loggin in, clicking the button on the top-right with your name as shown in the GIF below. 
+Deploying a Skill is a simple as filling a form. You can find this form after loggin in, clicking the button on the top-right with your name as shown in the GIF below. Next, we will show you how to deploy a basic Skill (i.e., a Skill that is only composed of a reader model), and how to deploy more advanced Skills (i.e., Skills that makes use of a pipeline). 
 
 ![skill-creation](../../static/img/skill_creation_location.gif)
+
+### Deploying a Basic Skill
+If you want to deploy a QA model such as https://huggingface.co/haritzpuerto/spanbert-large-cased_SQuAD in SQuARE, you just need to write the HuggingFace's id of the model (i.e., `haritzpuerto/spanbert-large-cased_SQuAD`) in this example, and fill the metadata of the Skill. In particular, you would need to write:
+- Skill name.
+- Skill type: abstractive, span-extraction, multiple-choice, categorical (a.k.a. boolean) or information-retrieval.
+- Whether it requires a context/passage as input alongside the question.
+- The dataset it was trained on.
+- Whether the Skill is publicly available for any user or only visible for you.
+- Short description.
+
+Please, do not forget to upload the tokenizer of your model to the HuggingFace repository so that SQuARE can know the tokenizer needed.  The Figure below shows an example of how the Skill creation page should look.
+![skill-creation](../../static/img/basic_skill.png)
+
+
+### Deploying an Advanced Skill
+If you want to deploy a Skill that uses Adapter weights, you can also do it in SQuARE. It is the same as with the basic skill shown above, but you would need to specify the base model (e.g.: `bert-base-uncased`), then check the `Use Adapter` checkbox, and finally write the id of your adapter in HuggingFace or AdapterHub. The Figure below shows an example.
+![skill-creation](../../static/img/skill_creation.png)
+
+
+Lastly, we will show you how to deploy a Skill that has a pipeline, such as a retriever and reader models, you can also do it on SQuARE.
+If your Skill makes use of a Datastore, such as Wikipedia, first, you need to turn-off the switch for `requires context` because the context is not given by the user, but retrieved by the Skill from the Datastore. Then, you need to select a Datastore (eg: NaturalQuestions - Wikipedia), and then the index (eg: BM25 or DPR). The Figure below shows as an example of a Skill using the Wikipedia dump provided by Natural Questiosn dataset, indexed with DPR, and with BERT+SQuAD Adapter as reader.
+![skill-creation](../../static/img/skill_w_datastore.png)
+
 
 
 ## Implementing a New Skill
