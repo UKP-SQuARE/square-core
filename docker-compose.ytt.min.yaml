@@ -182,6 +182,10 @@ services:
 
   tasb_worker:
     image: #@ "ukpsquare/model-inference-sentence-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      args:
+        - MODEL_TYPE=sentence_transformer
     command: celery -A tasks worker -Q msmarco-distilbert-base-tas-b --loglevel=info
     volumes:
       - ./:/usr/src/app
