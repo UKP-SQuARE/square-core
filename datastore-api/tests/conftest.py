@@ -64,6 +64,19 @@ def wiki_datastore(datastore_name):
         ],
     )
 
+@pytest.fixture(scope="package")
+def bing_search_datastore_name():
+    return "bing_search"
+
+@pytest.fixture(scope="package")
+def bing_search_datastore(bing_search_datastore_name):
+    return Datastore(
+        name=bing_search_datastore_name,
+        fields=[
+            DatastoreField(name="text", type="text"),
+            DatastoreField(name="title", type="text"),
+        ],
+    )
 
 @pytest.fixture(scope="package")
 def dpr_index(datastore_name: str) -> Index:
@@ -122,6 +135,7 @@ def user_id() -> str:
 @pytest.fixture(scope="package")
 def es_container(
     wiki_datastore: Datastore,
+    bing_search_datastore: Datastore,
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -151,6 +165,7 @@ def es_container(
         loop = asyncio.get_event_loop()
         tasks = [
             loop.create_task(es_connector.add_datastore(wiki_datastore)),
+            loop.create_task(es_connector.add_datastore(bing_search_datastore)),
             loop.create_task(es_connector.add_index(dpr_index)),
             loop.create_task(es_connector.add_index(second_index)),
             loop.create_task(
@@ -175,6 +190,17 @@ def es_container(
                 mongo_client.item_keys["datastore"]: datastore_name,
             }
         )
+
+        # add binding
+        datastore_name = bing_search_datastore.name
+        mongo_client = build_mongo_client(*mongo_container)
+        mongo_client.user_datastore_bindings.insert_one(
+            {
+                "user_id": user_id,
+                mongo_client.item_keys["datastore"]: datastore_name,
+            }
+        )
+
         yield host_url
     finally:
         es_container.stop()
