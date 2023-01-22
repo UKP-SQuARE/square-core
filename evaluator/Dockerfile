@@ -13,7 +13,7 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY ./evaluator/app evaluator
+COPY ./evaluator/app evaluator/app
 COPY ./evaluator/tasks tasks
 
 COPY logging.conf logging.conf
