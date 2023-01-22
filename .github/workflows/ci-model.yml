@@ -69,7 +69,7 @@ jobs:
             TEST_DIR=${{ matrix.test_dir }}
             TEST_SETUP=${{ matrix.test_setup }}
           load: true
-          tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
+          push: false
 
       - name: Retrieve Test Reports
         id: transformer-extract
