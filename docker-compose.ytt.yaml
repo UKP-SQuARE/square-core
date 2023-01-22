@@ -310,6 +310,8 @@ services:
       CONFIG_PATH: /model_configs
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      MODEL_API_IMAGE: ukpsquare/model-inference
+      MODEL_API_IMAGE_TAG: #@ data.values.tag
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
