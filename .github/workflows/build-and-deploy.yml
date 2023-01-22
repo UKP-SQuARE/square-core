@@ -29,7 +29,6 @@ jobs:
           "docs",
           "frontend",
           "model-manager",
-          "model-inference-base-model",
           "model-inference-transformer",
           "model-inference-onnx",
           "model-inference-sentence-transfomer",
@@ -56,9 +55,6 @@ jobs:
             build-args: "mode=${{ github.event.inputs.environment || 'test' }}"
           - service: model-manager
             context: ./model-manager
-          - service: model-inference-base-model
-            context: ./model-inference
-            file: ./model-inference/dockerfiles/base_model/Dockerfile
           - service: model-inference-transformer
             context: ./model-inference
             file: ./model-inference/dockerfiles/transformer/Dockerfile
