@@ -41,6 +41,7 @@ jobs:
           - model_type: onnx
             test_dir: onnx
             test_setup: transformer
+            image_suffix: onnx
 
     steps:
       - uses: actions/checkout@v3
