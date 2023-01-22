@@ -31,8 +31,8 @@ jobs:
           "model-manager",
           "model-inference-transformer",
           "model-inference-onnx",
-          "model-inference-sentence-transfomer",
-          "model-inference-graph-transfomer",
+          "model-inference-sentence-transformer",
+          "model-inference-graph-transformer",
           "skill-manager",
           "skill-boolq",
           "skill-commonsense-qa",
@@ -61,10 +61,10 @@ jobs:
           - service: model-inference-onnx
             context: ./model-inference
             build-args: "MODEL_TYPE=onnx"
-          - service: model-inference-sentence-transfomer
+          - service: model-inference-sentence-transformer
             context: ./model-inference
             build-args: "MODEL_TYPE=sentence_transformer"
-          - service: model-inference-graph-transfomer
+          - service: model-inference-graph-transformer
             context: ./model-inference
             build-args: "MODEL_TYPE=graph_transformer"
           - service: skill-manager
