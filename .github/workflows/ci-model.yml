@@ -83,7 +83,8 @@ jobs:
           image: ${{ steps.transformer-prep.outputs.image }}:ci-${{ steps.transformer-prep.outputs.tag }}
           path: /app/test-reports
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v3
         with:
           name: model_api-test-reports
           path: ${{ steps.transformer-extract.outputs.destination }}/test-reports
