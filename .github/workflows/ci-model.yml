@@ -48,9 +48,12 @@ jobs:
         id: transformer-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/model-inference-${{ matrix.image_suffix }}"
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo $TAG
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
+      
+          IMAGE="ukpsquare/model-inference-${{ matrix.image_suffix }}"
+          echo $IMAGE
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
