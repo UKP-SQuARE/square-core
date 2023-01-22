@@ -151,7 +151,8 @@ services:
     image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
     build:
       context: ./model-inference
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./rabbitmq/.env
