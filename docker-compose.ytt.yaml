@@ -325,7 +325,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./model-inference/model_configurations/.env.dpr
@@ -359,7 +360,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -389,7 +391,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -419,7 +422,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q roberta-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -448,8 +452,9 @@ services:
     image: #@ "ukpsquare/model-inference-graph-transformer:" + data.values.tag
     build:
       context: ./model-inference
-      dockerfile: ./dockerfiles/graph_transformer/Dockerfile
       target: build
+      args:
+        - MODEL_TYPE=graph_transformer
     command: celery -A tasks worker -Q qagnn --loglevel=info
     volumes:
       - ./:/usr/src/app
