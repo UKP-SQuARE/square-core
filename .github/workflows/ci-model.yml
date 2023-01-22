@@ -70,12 +70,13 @@ jobs:
             TEST_SETUP=${{ matrix.test_setup }}
           load: true
           push: false
+          tags: ${{ steps.transformer-prep.outputs.image }}:ci-${{ steps.transformer-prep.outputs.tag }}
 
       - name: Retrieve Test Reports
         id: transformer-extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
+          image: ${{ steps.transformer-prep.outputs.image }}:ci-${{ steps.transformer-prep.outputs.tag }}
           path: /app/test-reports
 
       - uses: actions/upload-artifact@v3
