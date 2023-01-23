@@ -5,6 +5,8 @@ from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
 
+from utils import extract_model_kwargs_from_request
+
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
@@ -18,14 +20,13 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
-    explain_kwargs = request.explain_kwargs or {}
-    attack_kwargs = request.attack_kwargs or {}
-
     context = request.skill_args.get("context")
+
     if not context:
         data_response = await square_datastore_client(
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
+            top_k=request.skill_args.get("datastore_topk", 10),
             query=query,
         )
         logger.info(f"Data response:\n{data_response}")
@@ -38,14 +39,11 @@ async def predict(request: QueryRequest) -> QueryOutput:
         prepared_input = [[query, context]]
         context_score = 1
 
-    model_request = {
-        "input": prepared_input,
-        "task_kwargs": {"topk": request.skill_args.get("topk", 5)},
-        "explain_kwargs": explain_kwargs,
-        "attack_kwargs": attack_kwargs,
-    }
+    model_request_kwargs = extract_model_kwargs_from_request(request)
+    model_request = {"input": prepared_input, **model_request_kwargs}
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
+
     model_response = await square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="question-answering",
