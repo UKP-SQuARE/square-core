@@ -1,0 +1,26 @@
+[tool.black]
+line-length = 120
+
+include = '\.pyi?$'
+
+exclude = '''
+(
+      __pycache__
+    | \.git
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.venv
+)
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+ensure_newline_before_comments = "True"
+include_trailing_comma = "True"
+lines_after_imports = 2
+use_parentheses = "True"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
