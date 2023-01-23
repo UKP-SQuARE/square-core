@@ -96,6 +96,11 @@ def wikidata_kg(wikidata_kg_name):
     )
 
 @pytest.fixture(scope="package")
+def wikidata_expected_nodes() -> dict:
+    # This return is expected for ["Barack Obama", "Bill Clinton"] 
+    return {'Barack Obama': [{'name': 'Barack Obama', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q76'}, {'name': 'Barack Obama', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q47513588'}, {'name': 'Barack Obama', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q61909968'}], 'Bill Clinton': [{'name': 'Bill Clinton', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q1124'}, {'name': 'Bill Clinton', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q2903164'}, {'name': 'Bill Clinton', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q47508810'}, {'name': 'Bill Clinton', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q47513276'}, {'name': 'Bill Clinton', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q47513347'}, {'name': 'Bill Clinton', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q77009656'}]}
+
+@pytest.fixture(scope="package")
 def dpr_index(datastore_name: str) -> Index:
     return Index(
         datastore_name=datastore_name,

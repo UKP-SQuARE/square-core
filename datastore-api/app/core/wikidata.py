@@ -35,7 +35,8 @@ class WikiData:
 
     async def is_alive(self):
         return True
-
+    
+    
     async def get_entity_by_names(self, names: list):
         '''
         names - A list of the names of the preferred label
@@ -50,22 +51,31 @@ class WikiData:
                 values ?prefLabel {'''+queriefied_list+'''}
                 ?item rdfs:label|skos:altLabel ?prefLabel.
             }'''
+        results = {name: [] for name in names}
+
         try:
             response = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
-            results = {name: [] for name in names}
 
             for res in response['results']['bindings']:
-                results[res['prefLabel']['value']].append(res['item']['value'])
+                node_temp =  {
+                                "name": res['prefLabel']['value'],
+                                "type": "node",
+                                "description": "",
+                                "weight": None,
+                                "in_id": None,
+                                "out_id": None,
+                                "_id": self._WikiData__without_link(res['item']['value'])
+                            }
+                results[res['prefLabel']['value']].append(node_temp)
 
         except Exception as e:
             logger.error(f"Error searching WikiData for {query}: {e}")
             return {
                 "error": f"Error searching WikiData for {query}"
             }
-
+    
         return results
 
-    # Depreceated
     async def get_edges_by_name(self, entity_pair_list: list):
         '''
         entity_pair_list - A list of the name-pairs
@@ -173,6 +183,7 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
         wikidata = WikiData()
         try: 
             if path == f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name':
+                print(await request.json())
                 response = await wikidata.get_entity_by_names(names = await request.json())
                 return JSONResponse(status_code=200, content=response)
 
@@ -181,8 +192,19 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
                 return Response(status_code=200, content=str(response))
 
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name':
-                response = await wikidata.get_edges_by_name(entity_pair_list = await request.json())
-                return Response(status_code=200, content=str(response))
+                
+                start_list = await request.json()
+                
+                print("Start: ", start_list)
+
+                # [val[0] for val in dict.values()]
+                ids_pairs = [[val[0] for val in (await wikidata.get_entity_by_names(pair)).values()] for i, pair in enumerate(start_list)] 
+
+                response = await wikidata.get_edges_for_id_pairs(entity_pair_list = ids_pairs)
+                return JSONResponse(status_code=200, content=response)
+                # print(wikidata.get_entity_by_names([ent_id for await request.json()))
+                # response = await wikidata.get_edges_for_id_pairs(entity_pair_list = wikidata.await request.json())
+                # return Response(status_code=200, content=str(start_list))
 
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids':
                 response = await wikidata.get_edges_for_id_pairs(entity_pair_list = await request.json())
