@@ -27,6 +27,18 @@ class TestKGs:
         assert response.status_code == expected_code
         assert response.json() == conceptnet_kg.dict()
 
+    def test_get_node_by_id(self, client: TestClient, conceptnet_kg: Datastore, test_node):
+        # Given:
+        url = f"/datastores/kg/{conceptnet_kg.name}/{test_node.id}"
+        expected_code = 200
+
+        # When:
+        response = client.get(url)
+
+        # Then:
+        assert response.status_code == expected_code
+        assert response.json()[test_node.id] == test_node
+
 
     def test_get_kg_not_found(self, client: TestClient):
         # Given:
@@ -64,7 +76,7 @@ class TestKGs:
         assert "documents" in response.json()
         assert "size_in_bytes" in response.json()
 
-    def test_delete_kg(self, client: TestClient, token: str):
+    def test_delete_kg(self, client: TestClient, token: str, conceptnet_kg):
         # Given:
         kg_name = "conceptnet"
         url = f"/datastores/kg/{kg_name}"
@@ -72,6 +84,13 @@ class TestKGs:
         expected_code_get_sucess = 200
         expected_code_delete = 204
         expected_code_get_not_found = 404
+
+        # BUG: put-Request has error
+        response = client.put(
+            "/datastores/kg/{}".format(kg_name),
+            json=conceptnet_kg.dict()['fields'],
+            headers={"Authorization": f"Bearer {token}"},
+        )
 
         # When:
         response_get = client.get(url)
