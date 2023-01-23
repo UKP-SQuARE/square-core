@@ -13,7 +13,7 @@ class TestKGs:
         # Then:
         assert response.status_code == expected_code
         assert len(response.json()) == 1
-        assert response.content.decode() == '[{"name":"conceptnet","fields":[{"name":"description","type":"text"},{"name":"in_id","type":"keyword"},{"name":"name","type":"keyword"},{"name":"out_id","type":"keyword"},{"name":"title","type":"text"},{"name":"type","type":"keyword"},{"name":"weight","type":"double"}]}]'
+        assert response.json() == conceptnet_kg.dict()
 
     def test_get_conceptnet(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
