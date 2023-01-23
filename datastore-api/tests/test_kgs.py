@@ -129,6 +129,34 @@ class TestKGs:
         # Then:
         assert response.status_code == expected_code
 
+    def test_put_node(self, client: TestClient, kg_name: str, token: str):
+        # Given:
+        node_id = "n999999"
+        node =  {
+            'id': node_id,
+            'name': 'test_node_name',
+            'type': 'node',
+            'description': 'This_is_a_test_node',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+        }
+        url_put = f"/datastores/kg/{kg_name}/nodes/{node_id}"
+        url_get = f"/datastores/kg/{kg_name}/{node_id}"
+
+        # When:
+        response_post = client.put(
+            url_put, 
+            json=node,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        # request added document to see if it was added correctly
+        response_get = client.get(url_get)
+
+        # Then:
+        assert response_post.status_code == 201
+        assert response_get.status_code == 200
+        assert response_get.json() == {node_id: node}
 
     def test_put_nodes(self, client: TestClient, kg_name: str, token: str):
         # Given:
