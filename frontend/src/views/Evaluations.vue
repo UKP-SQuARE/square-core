@@ -13,7 +13,7 @@
     <div class="list-group list-group-flush">
       <li
           v-for="evaluation in items"
-          :key="evaluation.skill_id"
+          :key="evaluation.evaluation_id"
           class="list-group-item bg-transparent py-4">
         <div class="d-flex w-100 justify-content-between">
           <h5 class="mb-1">{{evaluation.skill_name}}</h5>
@@ -21,19 +21,19 @@
             <ExpandButton :evaluation="evaluation"></ExpandButton>
           </small>
         </div>
-        <h5 class="mb-1">Dataset: {{evaluation.dataset}}</h5>
-        <Status :url="evaluation.skill_url" />
+        <div>
+          <BIconBookmarks width="24" height="24"/>
+          <span style="display:inline-block; width: 5px;"></span>
+          <span style="font-size: 16px">{{evaluation.dataset}}</span>
+          <span style="display:inline-block; width: 10px;"></span>
+          <BIconBarChart width="24" height="24"/>
+          <span style="display:inline-block; width: 6px;"></span>
+          <span style="font-size: 16px">{{evaluation.metric_name}}</span>
+        </div>
+        <span style="display:block; height: 5px;"></span>
+        <Status :url="evaluation.skill_url" /> 
         <span v-if=evaluation.public class="badge bg-info ms-1 p-2">Public</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Private</span>
-        <div class="d-grid gap-2 d-flex mt-2">
-          <router-link :to="{ name: 'evaluation', params: {id: evaluation.skill_id}} " class="btn btn-outline-danger" role="button">Edit</router-link>
-          <ConfirmDestructiveAction
-              :skill="evaluation.name"
-              destructive-action="delete"
-              v-on:callback="deleteEvaluation"
-              :callbackValue="evaluation.skill_id"
-              class="ms-auto" />
-        </div>
         <CardExpansion :evaluation="evaluation"></CardExpansion>
       </li>
     </div>
@@ -63,9 +63,9 @@ import Vue from 'vue'
 import Card from '@/components/Card.vue'
 import ExpandButton from '@/components/ExpandButton.vue'
 import CardExpansion from '@/components/CardExpansion.vue'
-import ConfirmDestructiveAction from '@/components/modals/ConfirmDestructiveAction.vue'
 import Status from '@/components/Status.vue'
 import { getEvaluations } from '@/api'
+import { BIconBarChart, BIconBookmarks} from 'bootstrap-vue'
 
 
 export default Vue.component('list-evaluations', {
@@ -73,8 +73,9 @@ export default Vue.component('list-evaluations', {
     Card,
     CardExpansion,
     ExpandButton,
-    ConfirmDestructiveAction,
-    Status
+    Status,
+    BIconBookmarks,
+    BIconBarChart
   },
   methods: {
     evaluations() {

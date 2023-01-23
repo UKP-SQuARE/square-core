@@ -58,17 +58,21 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
         has_access = skill_is_public or skills[skill_id]["user_id"] == user_id
         if not has_access:
             continue
-
-        evaluation_results.append(
-            EvaluationResult(
-                skill_id=skill_id,
-                skill_name=skills[skill_id]["name"],
-                dataset=evaluation.dataset_name,
-                public=skill_is_public,
-                metric_results=evaluation.metrics,
-                skill_url=skills[skill_id]["url"],
+        logger.debug(evaluation.metrics)
+        logger.debug("================")
+        for (metric_name, metric_result) in evaluation.metrics.items():
+            evaluation_results.append(
+                EvaluationResult(
+                    evaluation_id=skill_id + metric_name,
+                    skill_name=skills[skill_id]["name"],
+                    dataset=evaluation.dataset_name,
+                    public=skill_is_public,
+                    metric_name=metric_name,
+                    metric_result=metric_result["results"],
+                    skill_url=skills[skill_id]["url"],
+                )
             )
-        )
+    logger.debug(evaluation_results)
     return evaluation_results
 
 
