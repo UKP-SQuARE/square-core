@@ -2,8 +2,10 @@ import ipdb
 import json
 from fastapi.testclient import TestClient
 from app.models.document import Document
+
+
 class TestKGNodes:
-    def test_get_nodes(self, client: TestClient, kg_name: str, test_node: Document):
+    def test_get_node(self, client: TestClient, kg_name: str, test_node: Document):
         # Given:
         nid = test_node['id']
         url = f"/datastores/kg/{kg_name}/{nid}"
@@ -13,9 +15,7 @@ class TestKGNodes:
 
         # Then:
         assert response.status_code == 200
-        # TODO: Change this as soon as PUT-Request BUG is fixed 
-        # assert response.json() == test_node
-        assert response.json()[nid]['_id'] == nid
+        assert response.json()[nid] == test_node
 
 
     def test_get_node_not_found(self, client: TestClient, kg_name: str):
@@ -30,11 +30,11 @@ class TestKGNodes:
         assert response.status_code == expected_code
 
 
-    def test_put_node(self, client: TestClient, kg_name: str, token: str):
+    def test_put_nodes(self, client: TestClient, kg_name: str, token: str):
         # Given:
         node_id = "n999999"
-        nodes={}
-        node = {
+        nodes = {
+            node_id: {
                 'id': node_id,
                 'name': 'test_node_name',
                 'type': 'node',
@@ -43,7 +43,7 @@ class TestKGNodes:
                 'in_id': None,
                 'out_id': None,
             }
-        nodes['test_node_name'] = node
+        }
         url_post = f"/datastores/kg/{kg_name}/nodes/"
         url_get = f"/datastores/kg/{kg_name}/{node_id}"
 
@@ -59,4 +59,4 @@ class TestKGNodes:
         # Then:
         assert response_post.status_code == 201
         assert response_get.status_code == 200
-        assert response_get.json()[node_id]["_id"] ==  nodes['test_node_name']['id']
+        assert response_get.json() == nodes

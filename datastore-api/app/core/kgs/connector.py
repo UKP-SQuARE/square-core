@@ -357,7 +357,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         objs = {}
         for obj in result['docs']:
             if obj['found']:
-                objs[obj['_id']] = dict(obj['_source'], **{'_id': obj['_id']})
+                objs[obj['_id']] = dict(obj['_source'], **{'id': obj['_id']})
             else:
                 logger.info("Not FOUND")
         return objs

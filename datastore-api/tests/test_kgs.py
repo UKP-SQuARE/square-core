@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from app.models.datastore import Datastore
+from app.models.document import Document
 
 class TestKGs:
     def test_get_all_kgs(self, client: TestClient, conceptnet_kg: Datastore):
@@ -28,7 +29,7 @@ class TestKGs:
         assert response.status_code == expected_code
         assert response.json() == conceptnet_kg.dict()
 
-    def test_get_node_by_id(self, client: TestClient, conceptnet_kg: Datastore, test_node):
+    def test_get_node_by_id(self, client: TestClient, conceptnet_kg: Datastore, test_node: Document):
         # Given:
         url = f"/datastores/kg/{conceptnet_kg.name}/{test_node.id}"
         expected_code = 200
