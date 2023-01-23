@@ -6,6 +6,7 @@ class TestKGs:
         # Given:
         url = "/datastores/kg"
         expected_code = 200
+        expected_all_kgs = [conceptnet_kg.dict()]
         
         # When:
         response = client.get(url)
@@ -13,7 +14,7 @@ class TestKGs:
         # Then:
         assert response.status_code == expected_code
         assert len(response.json()) == 1
-        assert response.json() == conceptnet_kg.dict()
+        assert response.json() == expected_all_kgs
 
     def test_get_conceptnet(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
