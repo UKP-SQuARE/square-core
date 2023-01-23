@@ -202,11 +202,6 @@ def es_container(
     test_document: Document,
     query_document: Document,
 ) -> str:
-    # TODO: Use real docker via testcontainers
-    # os.environ["TC_HOST"] = settings.ES_URL
-    # es = ElasticSearchContainer(image="elasticsearch:7.16.1", remove=True, mem_limit="512m")
-    # import ipdb; ipdb.set_trace()
-    # es.start()
     es_container = start_container(
         image="elasticsearch:7.16.1",
         port_host=9200,
