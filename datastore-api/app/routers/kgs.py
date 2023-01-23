@@ -196,50 +196,50 @@ async def get_kg_relations(
     summary="Insert/Update a node.",
     description="Inserts/Updates a node with its ID as <node_id>.",
     responses={
-        200: {
-            #"model": Datastore,
-            "description": "The node has been succesfully updated.",
-        },
-        400: {
-            "description": "Failed to update the node in the API database",
-        },
-        500: {
-            "description": "Failed to create the node in the storage backend.",
-        },
+        200: {"description": "The node has been succesfully updated."},
+        400: {"description": "Failed to update the node in the API database"},
+        500: {"description": "Failed to create the node in the storage backend."},
     },
-    #response_model=Datastore,
 )
 async def put_node(
     request: Request,
     kg_name: str = Path(..., description="The knowledge graph name"),
     node_id: str = Path(..., description="The node name"),
-    fields: DatastoreRequest = Body(..., description="The knowledge graph fields"),
+    node: Document = Body(..., description="The node to upsert"),
     conn: KnowledgeGraphConnector = Depends(get_kg_storage_connector),
-    response: Response = None,
     mongo: MongoClient = Depends(get_mongo_client)
 ):
-    # Update if existing, otherwise add new
-    schema = await conn.get_object_by_id_msearch(kg_name, [node_id])
-    success = False
-    if schema is None:
-        # creating a new datastore
-        schema = fields.to_datastore(kg_name)
-        success = await conn.add_datastore(schema)
-        response.status_code = status.HTTP_201_CREATED
-        if success:
-            await mongo.new_binding(request, kg_name, binding_item_type)  # It should be placed after conn.add_datastore to make sure the status consistent between conn.add_datastore and mongo.new_binding
-    else:
-        # updating an existing datastore
-        await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
-        schema = fields.to_datastore(kg_name)
-        success = await conn.update_datastore(schema)
-        response.status_code = status.HTTP_200_OK
+    kg = await conn.get_kg(kg_name)
+    if kg is None:
+        raise HTTPException(status_code=404, detail="KG not found.")
 
+    await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
+
+    # First, check if all fields in the uploaded node are valid.
+    if not kg.is_valid_document(node):
+        raise HTTPException(
+            status_code=400,
+            detail="The given document does not have the correct format.",
+        )
+    # also check if the node id in the body matches the one in the path
+    if node_id != node.id:
+        raise HTTPException(
+            status_code=400,
+            detail="The node ID specified in the path and in the request body must match.",
+        )
+
+    success, created = await conn.add_document(datastore_name=kg_name, document_id=node_id, document=node)
     if success:
-        await conn.commit_changes()
-        return schema
+        if not created:
+            status_code = 200
+        else:
+            status_code = 201
+        return Response(
+            status_code=status_code,
+            headers={"Location": request.url_for("get_object_by_id", kg_name=kg_name, object_id=node_id)},
+        )
     else:
-        raise HTTPException(status_code=400)
+        raise HTTPException(status_code=500)
 
 @router.post(
     "/{kg_name}/nodes",
