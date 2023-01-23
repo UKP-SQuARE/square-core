@@ -485,6 +485,7 @@ def test_query_skill(
         for p in response["predictions"]:
             p.pop("attributions")
             p.pop("prediction_graph")
+            p.pop("skill_id")
 
         TestCase().assertDictEqual(
             response, {"predictions": saved_prediction["predictions"]}
