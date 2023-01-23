@@ -1,6 +1,6 @@
 #@data/values
 ---
-environment: prod #! set this to 'local' or 'prod'
+environment: production #! set this to 'local', 'test' or 'production'
 os: linux #! set this to 'linux', 'mac' or 'windows'
 email: square@example.com #! add your email here to obtain certifcates from let's encrypt
 tag: latest
