@@ -68,7 +68,7 @@ VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
 KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
 DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
 MODEL_API_IMAGE: #@ "ukpsquare/square-model-api-v1.1:" + data.values.tag
-ONNX_VOLUME: squar-core_onnx-models
+ONNX_VOLUME: square-model-inference-api_onnx-models
 REALM: #@ data.values.realm
 MONGO_HOST: mongodb
 MONGO_PORT: 27017
@@ -78,7 +78,7 @@ version: "3.4"
 
 services:
   traefik:
-    image: traefik:v2.8.7
+    image: traefik:v2.8.1
     container_name: traefik
     command:
       - --api.insecure=true
@@ -146,14 +146,13 @@ services:
       - ./redis/.env
     command: [ "redis-server", "--requirepass ${REDIS_PASSWORD}" ]
 
-
+  
   main_model:
-    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
     build:
-      context: ./model-inference
-      args:
-        - MODEL_TYPE=transformer
-    command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
+      context: ./square-model-inference-api/inference_server
+      target: build
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./rabbitmq/.env
       - ./redis/.env
@@ -182,11 +181,7 @@ services:
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
   tasb_worker:
-    image: #@ "ukpsquare/model-inference-sentence-transformer:" + data.values.tag
-    build:
-      context: ./model-inference
-      args:
-        - MODEL_TYPE=sentence_transformer
+    image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
     command: celery -A tasks worker -Q msmarco-distilbert-base-tas-b --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -196,13 +191,14 @@ services:
     env_file:
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./model-inference/model_configurations/.env.distilbert_sentence_transformer
+      - ./square-model-inference-api/inference_server/.env.distilbert_sentence_transformer
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      ONNX_VOLUME: squar-core_onnx-models
+      MODEL_API_image: #@ "ukpsquare/square-model-api-v2:" + data.values.tag
+      ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
       QUEUE: msmarco-distilbert-base-tas-b
@@ -215,7 +211,7 @@ services:
   datastore_api:
     privileged: true
     image: #@ "ukpsquare/square-datastore-api:" + data.values.tag
-    build:
+    build: 
       context: ./datastore-api
       target: build
     depends_on:
