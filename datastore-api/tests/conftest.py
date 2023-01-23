@@ -76,13 +76,12 @@ def conceptnet_kg(kg_name):
     return Datastore(
         name=kg_name,
         fields=[
-            DatastoreField(name="description", type="text"),
-            DatastoreField(name="in_id", type="keyword"),
             DatastoreField(name="name", type="keyword"),
-            DatastoreField(name="out_id", type="keyword"),
-            DatastoreField(name="title", type="text"),
             DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="description", type="text"),
             DatastoreField(name="weight", type="double"),
+            DatastoreField(name="in_id", type="keyword"),
+            DatastoreField(name="out_id", type="keyword"), 
         ],
     )
 
@@ -111,7 +110,6 @@ def test_node() -> Document:
     return Document(
         __root__={
             "id": "n111",
-            "title": "obama",
             'type': 'node',
             'description': 'obama',
             'weight': None,
