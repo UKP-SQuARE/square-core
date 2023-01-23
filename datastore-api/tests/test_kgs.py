@@ -80,15 +80,15 @@ class TestKGs:
 
     def test_delete_kg(self, client: TestClient, token: str, conceptnet_kg):
         # Given:
-        kg_name = "conceptnet"
+        kg_name = "new_kg"
         url = f"/datastores/kg/{kg_name}"
 
+        expected_code_put_kg = 201
         expected_code_get_sucess = 200
         expected_code_delete = 204
         expected_code_get_not_found = 404
 
-        # BUG: put-Request has error
-        response = client.put(
+        response_put_kg = client.put(
             "/datastores/kg/{}".format(kg_name),
             json=conceptnet_kg.dict()['fields'],
             headers={"Authorization": f"Bearer {token}"},
@@ -100,6 +100,7 @@ class TestKGs:
         response_get2 = client.get(url)
 
         # Then:
+        assert response_put_kg.status_code == expected_code_put_kg
         assert response_get.status_code == expected_code_get_sucess     
         assert response_delete.status_code == expected_code_delete
         assert response_get2.status_code == expected_code_get_not_found
