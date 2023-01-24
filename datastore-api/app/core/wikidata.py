@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class WikiData:
     """Wraps access to the Bing Search API."""
 
-    kg_name = "wikidata"    
+    kg_name = "wikidata-kg"    
 
     def __init__(self):
         self.sparql_url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql"

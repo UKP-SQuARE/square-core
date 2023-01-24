@@ -83,7 +83,7 @@ def bing_search_datastore(bing_search_datastore_name):
 # Wikidata-KG test preparations
 @pytest.fixture(scope="package")
 def wikidata_kg_name():
-    return "wikidata"
+    return "wikidata-kg"
 
 @pytest.fixture(scope="package")
 def wikidata_kg(wikidata_kg_name):
