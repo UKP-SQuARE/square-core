@@ -92,7 +92,7 @@ def skill_factory():
             user_id=user_id,
             description=description,
             published=published,
-            default_skill_args=default_skill_args,
+            default_skill_args={} if default_skill_args is None else default_skill_args,
             **kwargs,
         )
         if not skill.id:
