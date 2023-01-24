@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import os
 from typing import Dict, List
 
 import requests
@@ -27,6 +28,7 @@ from evaluator.tasks import evaluate_task
 from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
+base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
 
 
 @celery_app.task
@@ -116,11 +118,10 @@ def do_predict(
             )
 
         response = requests.post(
-            f"https://square.ukp-lab.de/api/skill-manager/skill/{skill_id}/query",
+            f"{base_url}/skill-manager/skill/{skill_id}/query",
             headers=headers,
             data=json.dumps(query_request),
         )
-        logger.debug(f"Predict-response: {response.json()}")
         prediction_response = response.json()["predictions"][0]
 
         predictions.append(

@@ -65,12 +65,16 @@ class Skill(MongoModel):
         description="A description of the skill, for example describing its pipeline.",
     )
     default_skill_args: Optional[Dict] = Field(
-        None,
+        {},
         description="A dictionary holding key-value pairs that should always be sent to the skill as input. This allows to use the same skill implementataion in different ways.",
     )
     published: bool = Field(
         False,
         description="If `True`, the skill will be publicly availble, ready to be used by anyone. If `False`, only the skill author has access to it.",
+    )
+    meta_skill: bool = Field(
+        False,
+        description="If `True`, the skill is a meta skill, i.e. a Skill that combines more than one Skills.",
     )
     client_id: Optional[str] = Field(
         None, description="The clientId of the skill stored in Keycloak."
