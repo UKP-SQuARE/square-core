@@ -62,9 +62,9 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #  ],
 #  "is_preprocessed": false,
 #  "preprocessing_kwargs": {},
-#  "model_kwargs": {"average_adapters": false},
+#  "model_kwargs": {"average_adapters": true},
 #  "task_kwargs": {},
-#  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
+#  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2", "AdapterHub/bert-base-uncased-pf-squad"]
 #}
 
 ###
@@ -202,8 +202,8 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 #Content-Type: application/json
 #
 #{
-#  "identifier": "roberta-base",
-#  "model_name": "roberta-base",
+#  "identifier": "deepset/roberta-base-squad2",
+#  "model_name": "deepset/roberta-base-squad2",
 #  "model_type": "transformer",
 #  "disable_gpu": true,
 #  "batch_size": 32,
@@ -282,8 +282,46 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
+# @name deploy_model
+POST {{domain_dev}}/api/models/deploy
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "identifier": "bart_sparql",
+  "model_name": "UKP-SQuARE/BART_SPARQL_KQAPro",
+  "model_type": "transformer",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 512,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "from_config",
+  "return_plaintext_arrays": false
+}
+
+###
+
+# @name bart-sparql
+POST {{domain_dev}}/api/main/UKP-SQuARE/BART_SPARQL_KQAPro/generation
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "input":
+  ["Who is Barack Obama?"],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {},
+  "task_kwargs": {"max_length": 128},
+  "adapter_name": ""
+}
+
+
+
+###
+
 ## @name tweac
-#POST {{domain_dev}}/api/main/tweac/sequence-classification
+#POST {{domain_dev}}/api/main/UKP-SQuARE/tweac_16/sequence-classification
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 #

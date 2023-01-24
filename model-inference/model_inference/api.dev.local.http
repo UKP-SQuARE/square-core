@@ -3,14 +3,77 @@
 #Authorization: Bearer {{auth_token}}
 
 
-# @name sentence-transformer
-POST {{domain_dev}}/api/main/msmarco-distilbert-base-tas-b/embedding
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.GjHbg5EIF4NYrLw7qPvoYU6lmO5S7ftF_85SZ7O4FJ2lQ5I_pJHdzskW8Dp3AQPpYLzg-yoeNmOBPMOQvOGCZa9Hv_6Rxg1oapCHuSrkDc46vFaSP3-qnvPpbAtGLIASjnSMQMdJTnBedzMjv7DAihsN942q6RBv-zK7BDxmjp1ukX5PRjJTuvfZvafFWvIA_w0BX3HOdHEP_YbqM2qM4uXsjTuRWU0eZshPIz3wsfKxOvmedTxQOCs0aQSU2hwTzxI7oWDSu84666ewHKBjnOrEc4xE36KHza6yqpKafImfKR93P8iUJalUo0tSXd8uEcpUtLqy83oZ6CGc2jSGgFxroSG2iZqrTdlTswo0bM3k-dI2O2_snUx3SabR3BYEZjQ0qBtsaY2paWJEemDbYldgwLmKnUG3Q6C40Oe1AvRZdMs1-FI6eh37i0pvpCauSTDLB_FipRLq0xgiZ-LORXaG9gwXMf2oyY1XifpQwmhq9-yq7_fwBc3qDYnzJ5GjWu6WBfwobMNo7S8q9C4qz_WT7goiLI5XFLouN6TSD9QhqO90a9KDBp1lwu10X353deiDMiw50c_xn6ah5ItDAgcdlhucxaVKPn8390hJnr5qU8wi33G_07pAhU97yqMsqHG8_rB5qSQTBY0eingkIMUBF17qnF71enBp80J-Prc
+## @name sentence-transformer
+#POST {{domain_dev}}/api/main/msmarco-distilbert-base-tas-b/embedding
+#Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.nvdg-x9vEwhkpiQh7MCgEORo9XnB0sSxjrykhwsMZHj98CMVdVwBxILdVq_upMANH2LjqKq1pF9JIv0qOeTzWCpqfSyJTX4MZEM8W3gPn0znGgFqKAkVi1LuoZEjJiKcqDxWpVIqgNduDWA2HlF_0dHniu3cfmpHdVpaZK1kSXiJ5dCBikzAhOkypdmP2IuEjSNF_hOtdcOKObOkIIKUTy0ZmOxCFtQ58_0AcR5bfz8aEFyo_Z-fQLFFL7Wl_5efTU1venjfl1Oa6IKhxNhoDYmXIU231MXlBpddABdl68EAacPtSxUrw-Hc-0I669DfKI7JCH-VJ6V2veO3vHgnOAI2XIQiJHq4mETB90HEGqM1HTjdYB5vmX8pX4lB1qzzHWCov6zxXsBJAtWFgzYoLvySDVxy_tPV-jkTJVZASvquG6CfqzkNDO3NXPXIXTFtqCJ7hwKSOXofUui4O7fAOl9bd-iHg-SbjnjpVRKCSRsTSAB3mBXROJxpANH1tHyy3BAe6ogqifQ-KJ8KX3E5oULaXFrEkOMhq4DLzjpX5pBROaDvUgwI0hdoA2KHN34cAMovsLGnG-M56yDW2yEgC1qUqNnEBgH15UxzQPMFk7ZOGxwrwwx_wM7_yXFKxD2MzmhrsWR5GdR1H-2c37AqdSpRISYznE_jIv9dhO37kGA
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    "Do aliens exist?"
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+###
+
+## @name bert-worker
+#POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+#Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.BTo9DLHOSZSbeoUwQTq0b4kZXXqQ1qgJnoKvd0_PPHZiNitqWP52PjUnn29d1xC4B379lu3ru8vfo4BEq5FpqPmQ66H3kFEfBTSu8XboMjK8rrhXSgonY51l7j7NpEQLR5UYxQp3BytEGVUtmIH5TN5lS9C0hXOHBtW3C1LlL807NjoaB1_8lH0uJuwLMQeYQJc6Sp79eLkn0FMDd9eg0kB6syfBPOY8CPejU4gglcT0m1oEMI6dU7BOIT6O4gxvRiYLQkNyGPt83zzrbSFNbpW-OJLvJDa54zieosrKdzLmsSiBGTk8fd8doykMndvLNTrIhh0AbPSkbJjq2eWwG1ePYmdSPakr9LMbTOelYEVL5AioBbZ78L7EobOrj3SE28c8pVumIlz5Slhk9Ju-tJeEK2Xe710HrMh5jEvsAIiO6Uh1NIyhzQXdgErPEF5ni9rCR-CLezdfzVBV2FfX6ne15zBs6t2YyBEF1UcHQhGONZvxb7tLZ4_7Pr0YNKIEoe9nSkD1nAr_Tn9x_xB2lPVM02zf2T1oDCrF-bNkntpQor4my-cKFukQabGJ5-6D1fu8MksXFoqXxlYE0dQPmR2ZOhctg2i6Y1GC08MQXuzo9oANqRCppVw3vSwpqObC1ejqjZmiuU-RYGhNP3iqjEQb_cFBONuTIupezBMmwNk
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#  ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {"average_adapters": false},
+#  "task_kwargs": {},
+#  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
+#}
+
+###
+
+## @name list_models
+#GET {{domain_dev}}/api/models/deployed-models
+#Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.BTo9DLHOSZSbeoUwQTq0b4kZXXqQ1qgJnoKvd0_PPHZiNitqWP52PjUnn29d1xC4B379lu3ru8vfo4BEq5FpqPmQ66H3kFEfBTSu8XboMjK8rrhXSgonY51l7j7NpEQLR5UYxQp3BytEGVUtmIH5TN5lS9C0hXOHBtW3C1LlL807NjoaB1_8lH0uJuwLMQeYQJc6Sp79eLkn0FMDd9eg0kB6syfBPOY8CPejU4gglcT0m1oEMI6dU7BOIT6O4gxvRiYLQkNyGPt83zzrbSFNbpW-OJLvJDa54zieosrKdzLmsSiBGTk8fd8doykMndvLNTrIhh0AbPSkbJjq2eWwG1ePYmdSPakr9LMbTOelYEVL5AioBbZ78L7EobOrj3SE28c8pVumIlz5Slhk9Ju-tJeEK2Xe710HrMh5jEvsAIiO6Uh1NIyhzQXdgErPEF5ni9rCR-CLezdfzVBV2FfX6ne15zBs6t2YyBEF1UcHQhGONZvxb7tLZ4_7Pr0YNKIEoe9nSkD1nAr_Tn9x_xB2lPVM02zf2T1oDCrF-bNkntpQor4my-cKFukQabGJ5-6D1fu8MksXFoqXxlYE0dQPmR2ZOhctg2i6Y1GC08MQXuzo9oANqRCppVw3vSwpqObC1ejqjZmiuU-RYGhNP3iqjEQb_cFBONuTIupezBMmwNk
+
+###
+
+## @name deploy_model
+#POST {{domain_dev}}/api/models/deploy
+#Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.BTo9DLHOSZSbeoUwQTq0b4kZXXqQ1qgJnoKvd0_PPHZiNitqWP52PjUnn29d1xC4B379lu3ru8vfo4BEq5FpqPmQ66H3kFEfBTSu8XboMjK8rrhXSgonY51l7j7NpEQLR5UYxQp3BytEGVUtmIH5TN5lS9C0hXOHBtW3C1LlL807NjoaB1_8lH0uJuwLMQeYQJc6Sp79eLkn0FMDd9eg0kB6syfBPOY8CPejU4gglcT0m1oEMI6dU7BOIT6O4gxvRiYLQkNyGPt83zzrbSFNbpW-OJLvJDa54zieosrKdzLmsSiBGTk8fd8doykMndvLNTrIhh0AbPSkbJjq2eWwG1ePYmdSPakr9LMbTOelYEVL5AioBbZ78L7EobOrj3SE28c8pVumIlz5Slhk9Ju-tJeEK2Xe710HrMh5jEvsAIiO6Uh1NIyhzQXdgErPEF5ni9rCR-CLezdfzVBV2FfX6ne15zBs6t2YyBEF1UcHQhGONZvxb7tLZ4_7Pr0YNKIEoe9nSkD1nAr_Tn9x_xB2lPVM02zf2T1oDCrF-bNkntpQor4my-cKFukQabGJ5-6D1fu8MksXFoqXxlYE0dQPmR2ZOhctg2i6Y1GC08MQXuzo9oANqRCppVw3vSwpqObC1ejqjZmiuU-RYGhNP3iqjEQb_cFBONuTIupezBMmwNk
+#Content-Type: application/json
+#
+#{
+#  "identifier": "deepset/roberta-base-squad2",
+#  "model_name": "deepset/roberta-base-squad2",
+#  "model_type": "transformer",
+#  "disable_gpu": true,
+#  "batch_size": 32,
+#  "max_input": 1024,
+#  "model_class": "from_config",
+#  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+#  "return_plaintext_arrays": false
+#}
+
+###
+
+# @name test_deployed_model
+POST {{domain_dev}}/api/main/deepset/roberta-base-squad2/question-answering
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJMT0NBTF9TUVVBUkVfVVNFUiIsImlzcyI6Ii9MT0NBTF9TUVVBUkVfUkVBTE0iLCJleHAiOjk5OTk5OTk5OTl9.BTo9DLHOSZSbeoUwQTq0b4kZXXqQ1qgJnoKvd0_PPHZiNitqWP52PjUnn29d1xC4B379lu3ru8vfo4BEq5FpqPmQ66H3kFEfBTSu8XboMjK8rrhXSgonY51l7j7NpEQLR5UYxQp3BytEGVUtmIH5TN5lS9C0hXOHBtW3C1LlL807NjoaB1_8lH0uJuwLMQeYQJc6Sp79eLkn0FMDd9eg0kB6syfBPOY8CPejU4gglcT0m1oEMI6dU7BOIT6O4gxvRiYLQkNyGPt83zzrbSFNbpW-OJLvJDa54zieosrKdzLmsSiBGTk8fd8doykMndvLNTrIhh0AbPSkbJjq2eWwG1ePYmdSPakr9LMbTOelYEVL5AioBbZ78L7EobOrj3SE28c8pVumIlz5Slhk9Ju-tJeEK2Xe710HrMh5jEvsAIiO6Uh1NIyhzQXdgErPEF5ni9rCR-CLezdfzVBV2FfX6ne15zBs6t2YyBEF1UcHQhGONZvxb7tLZ4_7Pr0YNKIEoe9nSkD1nAr_Tn9x_xB2lPVM02zf2T1oDCrF-bNkntpQor4my-cKFukQabGJ5-6D1fu8MksXFoqXxlYE0dQPmR2ZOhctg2i6Y1GC08MQXuzo9oANqRCppVw3vSwpqObC1ejqjZmiuU-RYGhNP3iqjEQb_cFBONuTIupezBMmwNk
 Content-Type: application/json
 
 {
   "input": [
-    "Do aliens exist?"
+  ["Who stars in The Matrix?",
+     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
   ],
   "is_preprocessed": false,
   "preprocessing_kwargs": {},

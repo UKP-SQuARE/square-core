@@ -31,4 +31,4 @@ RUN PYTHONPATH=./ pytest \
     --cov \
     --cov-report=xml:test-reports/coverage.xml \
     --cov-report=html:test-reports/coverage.html; \
-    echo $? > test-reports/pytest.existcode
+    echo $? > test-reports/pytest.existcode 
