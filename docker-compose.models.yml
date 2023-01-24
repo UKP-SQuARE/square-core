@@ -154,7 +154,10 @@ services:
 #    image: ukpsquare/model-inference-transformer:latest
     build:
       context: ./model-inference
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        - MODEL_TYPE=transformer
+        - TEST_SETUP=transformer
     container_name: main_model
     command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --reload
     env_file:
@@ -183,7 +186,10 @@ services:
   dpr_worker:
     build:
       context: ./model-inference
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        - MODEL_TYPE=transformer
+        - TEST_SETUP=transformer
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -268,7 +274,10 @@ services:
   bert_worker:
     build:
       context: ./model-inference
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        - MODEL_TYPE=transformer
+        - TEST_SETUP=transformer
     container_name: bert_worker
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info --concurrency=2
     volumes:
@@ -404,13 +413,13 @@ services:
 #    env_file:
 #      - management_server/.env
 
-  mongo-express:
-    image: mongo-express:latest
-    restart: always
-    env_file:
-      - ./model-manager/.env
-    ports:
-      - 8081:8081
+#  mongo-express:
+#    image: mongo-express:latest
+#    restart: always
+#    env_file:
+#      - ./model-manager/.env
+#    ports:
+#      - 8081:8081
 
 ###########################################################
 # --------- Example config for onnx model server ---------#
