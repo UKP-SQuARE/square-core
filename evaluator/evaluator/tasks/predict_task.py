@@ -28,6 +28,7 @@ from evaluator.tasks import evaluate_task
 from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
+logger.setLevel(logging.INFO)
 base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
 
 
@@ -52,7 +53,13 @@ def predict(
             "dataset_name": dataset_name,
         }
         mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
+            evaluation_filter,
+            {
+                "$set": {
+                    "prediction_status": EvaluationStatus.failed,
+                    "prediction_error": f"{e}",
+                }
+            },
         )
         raise e
 
@@ -75,28 +82,16 @@ def do_predict(
     dataset_metadata = get_dataset_metadata(dataset_name)
     # get the dataset
     dataset_handler = DatasetHandler()
-    try:
-        dataset = dataset_handler.get_dataset(dataset_name)
-    except DatasetDoesNotExistError:
-        logger.error("Dataset does not exist!")
-        mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
-        )
-        raise DatasetDoesNotExistError(dataset_name)
+    dataset = dataset_handler.get_dataset(dataset_name)
     # format the dataset into universal format for its skill-type
-    try:
-        dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
-    except ValueError as e:
-        logger.error(f"{e}")
-        mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
-        )
-        raise ValueError(f"{e}")
+    dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
 
     headers = {"Authorization": f"Bearer {token}"}
     predictions: List[Prediction] = []
     start_time = datetime.datetime.now()
-    for i in range(8):
+    num_samples = 8  # len(dataset)
+    for i in range(num_samples):
+        logger.debug(f"Predicting sample {i + 1}/{num_samples}")
         reference_data = dataset[i]
 
         if dataset_metadata["skill-type"] == "extractive-qa":
@@ -122,6 +117,7 @@ def do_predict(
             headers=headers,
             data=json.dumps(query_request),
         )
+        response.raise_for_status()
         prediction_response = response.json()["predictions"][0]
 
         predictions.append(
@@ -150,7 +146,13 @@ def do_predict(
     )
 
     mongo_client.client.evaluator.evaluations.update_many(
-        evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.finished}}
+        evaluation_filter,
+        {
+            "$set": {
+                "prediction_status": EvaluationStatus.finished,
+                "prediction_error": None,
+            }
+        },
     )
 
     # trigger evaluation task specified metric

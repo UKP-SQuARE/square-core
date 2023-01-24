@@ -49,6 +49,8 @@ class EvaluationHandler:
             metric_name=metric_name,
             prediction_status=EvaluationStatus.requested,
             metric_status=EvaluationStatus.requested,
+            prediction_error=None,
+            metric_error=None,
         )
 
         # check if metric/predictions are already computed (or already requested)
