@@ -35,3 +35,5 @@ square-skill-helpers
 
 **/.env
 square-model-inference-api/docker-compose.yaml
+local_deploy/private_key.pem
+/local-bin
