@@ -1,0 +1,1 @@
+adapter-transformers==3.0.0
