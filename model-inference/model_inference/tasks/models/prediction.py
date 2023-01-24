@@ -246,6 +246,7 @@ class PredictionOutputForQuestionAnswering(PredictionOutput):
         {},
         description="scores for the input tokens which are important for the" "model prediction",
     )
+    bertviz: Optional[str] = Field(str, description="The plain html string of bertviz's head view")
 
     def __init__(self, **data):
         super().__init__(**data)

@@ -2,7 +2,7 @@ name: "CI Model"
 
 on:
   push:
-    branches: [ master, model-api-v3 ]
+    branches: [ master ]
     paths:
       - "model-inference/**"
       - ".github/**"
@@ -14,35 +14,34 @@ on:
   workflow_dispatch:
 
 jobs:
-  model-inference-base-model:
+
+  test:
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Prepare
-        id: base-prep
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/model-inference-base-model"
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-
-      - name: Set up Docker Buildx
-        id: base-buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          install: true
-
-      - name: remove images
-        run: |
-          docker kill $(docker ps -q)
-          docker rm -f $(docker ps -a -q)
-          docker image rm -f $(docker images -q)
-
-################################# MODEL IMAGES ##################################
-  model-inference-transformer:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        model_type: [
+          "transformer",
+          "graph_transformer",
+          "sentence_transformer",
+          # "onnx",
+        ]
+        include:
+          - model_type: transformer
+            test_dir: transformer
+            test_setup: transformer
+            image_suffix: transformer
+          - model_type: graph_transformer
+            test_dir: transformer
+            test_setup: transformer
+            image_suffix: graph-transformer
+          - model_type: sentence_transformer
+            test_dir: sentence_transformer
+            test_setup: sentence_transformer
+            image_suffix: sentence-transformer
+          # - model_type: onnx
+          #   test_dir: onnx
+          #   test_setup: transformer
+          #   image_suffix: onnx
 
     steps:
       - uses: actions/checkout@v3
@@ -50,34 +49,42 @@ jobs:
         id: transformer-prep
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/model-inference-transformer"
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo $TAG
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
+      
+          IMAGE="ukpsquare/model-inference-${{ matrix.image_suffix }}"
+          echo $IMAGE
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
-        id: transformer-buildx
+        id: buildx
         uses: docker/setup-buildx-action@v2
         with:
           install: true
 
-      - name: Build transformer test image
+      - name: Build test image
         uses: docker/build-push-action@v3
         with:
-          builder: ${{ steps.transformer-buildx.outputs.name }}
+          builder: ${{ steps.buildx.outputs.name }}
           context: ./model-inference
-          file: ./model-inference/dockerfiles/transformer/Dockerfile
+          file: ./model-inference/Dockerfile
           target: test
+          build-args: |
+            MODEL_TYPE=${{ matrix.model_type }}
+            TEST_DIR=${{ matrix.test_dir }}
+            TEST_SETUP=${{ matrix.test_setup }}
           load: true
-          tags: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
+          push: false
+          tags: ${{ steps.transformer-prep.outputs.image }}:ci-${{ steps.transformer-prep.outputs.tag }}
 
       - name: Retrieve Test Reports
         id: transformer-extract
         uses: shrink/actions-docker-extract@v1
         with:
-          image: ${{ steps.transformer-prep.outputs.image }}:${{ steps.transformer-prep.outputs.tag }}-test
+          image: ${{ steps.transformer-prep.outputs.image }}:ci-${{ steps.transformer-prep.outputs.tag }}
           path: /app/test-reports
 
-
-      - uses: actions/upload-artifact@v3
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v3
         with:
           name: model_api-test-reports
           path: ${{ steps.transformer-extract.outputs.destination }}/test-reports
@@ -87,115 +94,4 @@ jobs:
         with:
           report_paths: ${{ steps.transformer-extract.outputs.destination }}/test-reports/junit.xml
           check_name: Transformers Test Report
-          fail_on_failure: true
-
-      - name: remove images
-
-        run: |
-          docker kill $(docker ps -q)
-          docker rm -f $(docker ps -a -q)
-          docker image rm -f $(docker images -q)
-
-  model-inference-sentence-transformer:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      # sentence-transformers
-      - name: Prepare
-        id: sentence-transformer-prep
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/model-inference-sentence-transformer"
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-      - name: Set up Docker Buildx
-        id: sentence-transformer-buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          install: true
-
-      - name: Build sentence-transformers test image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.sentence-transformer-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
-          target: test
-          load: true
-          tags: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
-
-      - name: Retrieve Test Reports
-        id: sentence-transformer-extract
-        uses: shrink/actions-docker-extract@v1
-        with:
-          image: ${{ steps.sentence-transformer-prep.outputs.image }}:${{ steps.sentence-transformer-prep.outputs.tag }}-test
-          path: /app/test-reports
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: model_api-test-reports
-          path: ${{ steps.sentence-transformer-extract.outputs.destination }}/test-reports
-
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
-        with:
-          report_paths: ${{ steps.sentence-transformer-extract.outputs.destination }}/test-reports/junit.xml
-          check_name: Sentence Transformers Test Report
-          fail_on_failure: true
-
-      - name: remove images
-        run: |
-          docker kill $(docker ps -q)
-          docker rm -f $(docker ps -a -q)
-          docker image rm -f $(docker images -q)
-
-
-  model-inference-graph-transformer:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      # graph- transformer
-      - name: Prepare
-        id: graph-prep
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          IMAGE="ukpsquare/model-inference-graph-transformer"
-          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-      - name: Set up Docker Buildx
-        id: graph-buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          install: true
-
-      - name: Build graph test image
-        uses: docker/build-push-action@v3
-        with:
-          builder: ${{ steps.graph-buildx.outputs.name }}
-          context: ./model-inference
-          file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
-          target: test
-          load: true
-          tags: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
-
-
-      - name: Retrieve Test Reports
-        id: graph-extract
-        uses: shrink/actions-docker-extract@v1
-        with:
-          image: ${{ steps.graph-prep.outputs.image }}:${{ steps.graph-prep.outputs.tag }}-test
-          path: /app/test-reports
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: model_api-test-reports
-          path: ${{ steps.graph-extract.outputs.destination }}/test-reports
-
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
-        with:
-          report_paths: ${{ steps.graph-extract.outputs.destination }}/test-reports/junit.xml
-          check_name: Graph Transformers Test Report
           fail_on_failure: true

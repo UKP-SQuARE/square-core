@@ -12,6 +12,7 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY main.py main.py
+COPY utils.py utils.py
 ARG skill
 COPY ./$skill/skill.py skill.py 
 COPY logging.conf logging.conf

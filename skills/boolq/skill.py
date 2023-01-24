@@ -3,6 +3,8 @@ import logging
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
 
+from utils import extract_model_kwargs_from_request
+
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
@@ -12,18 +14,15 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """Predicts yes/no for a boolean question with context"""
     query = request.query
     context = request.skill_args["context"]
-    explain_kwargs = request.explain_kwargs or {}
-    attack_kwargs = request.attack_kwargs or {}
+
+    model_request_kwargs = extract_model_kwargs_from_request(request)
 
     prepared_input = [[context, query]]
 
     model_request = {
         "input": prepared_input,
-        "preprocessing_kwargs": {},
-        "model_kwargs": {},
         "adapter_name": request.skill_args["adapter"],
-        "explain_kwargs": explain_kwargs,
-        "attack_kwargs": attack_kwargs,
+        **model_request_kwargs,
     }
     model_response = await square_model_client(
         model_name=request.skill_args["base_model"],

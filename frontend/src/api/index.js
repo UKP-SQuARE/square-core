@@ -9,6 +9,8 @@ import axios from 'axios'
  */
 const SKILL_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`
+const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`
+
 /**
  * Get a list of available skill types.
  * @param {Object} headers optional authentication header
@@ -21,8 +23,24 @@ export function getSkillTypes(headers) {
  * Get a list of available datasets.
  * @param {Object} headers optional authentication header
  */
- export function getDataSets(headers) {
+export function getDataSets(headers) {
     return axios.get(`${EVALUATOR_URL}/dataset`, { headers: headers })
+}
+
+/**
+ * Get a list of available datastores
+ * @param {Object} headers optional authentication header
+ */
+export function getDatastores(headers) {
+    return axios.get(`${DATASTORES_URL}`, { headers: headers })
+}
+
+/**
+ * Get a list of all indices of a datastore
+ * @param {Object} headers optional authentication header
+ */
+export function getDatastoreIndices(headers, datastoreId) {
+    return axios.get(`${DATASTORES_URL}/${datastoreId}/indices`, { headers: headers })
 }
 
 /**
@@ -86,18 +104,23 @@ export function postQuery(headers, question, context, choices, options) {
         data.skill_args.choices = choices
     }
     if (options.explain_kwargs) {
-        data.explain_kwargs = {"method": options.explain_kwargs.method,
-                                "top_k": options.explain_kwargs.top_k,
-                                "mode": options.explain_kwargs.mode}
+        data.explain_kwargs = {
+            "method": options.explain_kwargs.method,
+            "top_k": options.explain_kwargs.top_k,
+            "mode": options.explain_kwargs.mode
+        }
     }
     if (options.attack_kwargs) {
-        data.attack_kwargs = {"method": options.attack_kwargs.method,
-                              "saliency_method": options.attack_kwargs.saliency_method,
-                              "max_flips": options.attack_kwargs.max_flips,
-                              "max_reductions": options.attack_kwargs.max_reductions,
-                              "max_tokens": options.attack_kwargs.max_tokens,
-                            }
+        data.attack_kwargs = {
+            "method": options.attack_kwargs.method,
+            "saliency_method": options.attack_kwargs.saliency_method,
+            "max_flips": options.attack_kwargs.max_flips,
+            "max_reductions": options.attack_kwargs.max_reductions,
+            "max_tokens": options.attack_kwargs.max_tokens,
+        }
     }
+    data.preprocessing_kwargs = { "max_length": 512 }
+
     if (options.feedback_documents) {
         data.skill_args.feedback_documents = options.feedback_documents
     }
