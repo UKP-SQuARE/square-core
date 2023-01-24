@@ -7,6 +7,16 @@ import ast
 
 class TestKGs:
 
+    def test_wikidata_alive(self, client: TestClient, wikidata_kg_name: str):
+        # Given:
+        url = f"/datastores/kg/{wikidata_kg_name}"
+
+        # When:
+        response = client.get(url)
+
+        # Then:
+        assert response.json() == 'Wikidata API is alive'
+
     def test_wikidata_get_nodes_by_names(self, client: TestClient, wikidata_kg_name:str, wikidata_expected_nodes: dict):
         # Given:
         url = f"/datastores/kg/{wikidata_kg_name}/nodes/query_by_name"
@@ -31,9 +41,28 @@ class TestKGs:
         response = client.get(url)
 
         # Then:
-        assert response.json() == {'Q42': [{'name': 'Q42', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q28309063'}, {'name': 'Q42', 'type': 'node', 'description': '', 'weight': None, 'in_id': None, 'out_id': None, '_id': 'Q42395533'}]}
+        assert response.json()[node_id]["id"] == node_id
+        assert response.json()[node_id]["name"] == "Douglas Adams"
+        
 
+    def test_wikidata_get_nodes_by_ids(self, client: TestClient, wikidata_kg_name: str):
+        # Given:
+        node_ids = ["Q42", "Q43", "Q24"]
+        url = f"/datastores/kg/{wikidata_kg_name}/nodes/query_by_ids"
 
+        # When:
+        response = client.post(url, json= node_ids)
+
+        # Then:
+        # Check keys
+        assert sorted(response.json().keys()) == sorted(node_ids)
+        assert any("Jack Bauer" == name["name"] for name in response.json().values())
+        assert any("Douglas Adams" == name["name"] for name in response.json().values())
+        assert any("Turkey" == name["name"] for name in response.json().values())
+
+        # Check wheter description is not null
+        assert all(len(name["description"]) > 2 for name in response.json().values())
+    
     def test_wikidata_get_subgraph(self, client: TestClient, wikidata_kg_name:str):
         # Given:
         url = f"/datastores/kg/{wikidata_kg_name}/subgraph/query_by_node_name"
@@ -63,4 +92,3 @@ class TestKGs:
         assert response.status_code == 200
         assert any(rel["description"].split(";")[0] == "P26" for i, rel in response.json().items())
         assert any(rel["description"].split(";")[0] == "P39" for i, rel in response.json().items())
-                

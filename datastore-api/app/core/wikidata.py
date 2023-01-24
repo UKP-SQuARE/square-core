@@ -76,6 +76,47 @@ class WikiData:
     
         return results
 
+    async def get_entity_by_ids(self, ids: list):
+        '''
+        names - A list of the entity ids
+        Return - List of all entity-nodes, which are found for the given name entity-id.
+        '''
+        nids = ""
+        for id in ids:
+            nids += f" wd:{id} "
+
+        url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
+
+
+        query = '''PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT ?entity ?label ?description
+            WHERE {
+            VALUES ?entity {'''+ nids+''' }
+            ?entity rdfs:label ?label .
+            OPTIONAL { ?entity schema:description ?description }
+            FILTER(LANG(?label) = "en")
+            FILTER(LANG(?description) = "en")
+            }
+            '''
+
+        response = requests.get(url, params={'query': query, 'format': 'json'}).json()
+
+        nodes = {}
+        for res in response['results']['bindings']:
+            node_temp =  {
+                            "name": res['label']['value'],
+                            "type": "node",
+                            "description": res['description']['value'],
+                            "weight": None,
+                            "in_id": None,
+                            "out_id": None,
+                            "id": self._WikiData__without_link(res['entity']['value'])
+                        }
+            nodes[self._WikiData__without_link(res['entity']['value'])] = node_temp
+
+        return nodes
+  
+
     async def get_edges_by_name(self, entity_pair_list: list):
         '''
         entity_pair_list - A list of the name-pairs
@@ -170,6 +211,7 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
         path = request.url.path
         allowed_paths = [
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name'},
+            {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_ids'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids'},
@@ -194,17 +236,13 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name':
                 
                 start_list = await request.json()
-                
-                print("Start: ", start_list)
-
-                # [val[0] for val in dict.values()]
                 ids_pairs = [[val[0] for val in (await wikidata.get_entity_by_names(pair)).values()] for i, pair in enumerate(start_list)] 
 
                 response = await wikidata.get_edges_for_id_pairs(entity_pair_list = ids_pairs)
                 return JSONResponse(status_code=200, content=response)
-                # print(wikidata.get_entity_by_names([ent_id for await request.json()))
-                # response = await wikidata.get_edges_for_id_pairs(entity_pair_list = wikidata.await request.json())
-                # return Response(status_code=200, content=str(start_list))
+
+            elif  path == f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_ids':
+                return JSONResponse(status_code=200, content=await wikidata.get_entity_by_ids(ids = await request.json()))
 
             elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids':
                 response = await wikidata.get_edges_for_id_pairs(entity_pair_list = await request.json())
@@ -212,7 +250,11 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
 
             # This should only be used to search certain entities 
             elif path.startswith(f'/datastores/kg/{WikiData.kg_name}/'):
-                response = await wikidata.get_entity_by_names([path.split("/")[-1]])
+                response = await wikidata.get_entity_by_ids([path.split("/")[-1]])
+                return JSONResponse(status_code=200, content=response)
+            
+            elif path == f'/datastores/kg/{WikiData.kg_name}' :
+                response = "Wikidata API is alive"
                 return JSONResponse(status_code=200, content=response)
 
         except Exception as e:
