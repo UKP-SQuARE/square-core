@@ -66,6 +66,39 @@ def wiki_datastore(datastore_name):
         ],
     )
 
+# Local-KG test preparations
+@pytest.fixture(scope="package")
+def kg_name():
+    return "conceptnet"
+
+@pytest.fixture(scope="package")
+def conceptnet_kg(kg_name):
+    return Datastore(
+        name=kg_name,
+        fields=[
+            DatastoreField(name="name", type="keyword"),
+            DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="description", type="text"),
+            DatastoreField(name="weight", type="double"),
+            DatastoreField(name="in_id", type="keyword"),
+            DatastoreField(name="out_id", type="keyword"), 
+        ],
+    )
+
+@pytest.fixture(scope="package")
+def test_node() -> Document:
+    return Document(
+        __root__={
+            "id": "n111",
+            'type': 'node',
+            'description': 'obama',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+        }
+    )
+
+# Wikidata-KG test preparations
 @pytest.fixture(scope="package")
 def bing_search_datastore_name():
     return "bing_search"
@@ -159,6 +192,8 @@ def es_container(
     wiki_datastore: Datastore,
     wikidata_kg: Datastore,
     bing_search_datastore: Datastore,
+    conceptnet_kg: Datastore,
+    test_node: Document,
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -166,11 +201,6 @@ def es_container(
     test_document: Document,
     query_document: Document,
 ) -> str:
-    # TODO: Use real docker via testcontainers
-    # os.environ["TC_HOST"] = settings.ES_URL
-    # es = ElasticSearchContainer(image="elasticsearch:7.16.1", remove=True, mem_limit="512m")
-    # import ipdb; ipdb.set_trace()
-    # es.start()
     es_container = start_container(
         image="elasticsearch:7.16.1",
         port_host=9200,
@@ -205,11 +235,13 @@ def es_container(
                 )
             ),
             loop.create_task(kg_connector.add_kg(wikidata_kg)),
+            loop.create_task(kg_connector.add_kg(conceptnet_kg)),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node ))
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
         # Add bindings for wiki datastore, bing search, wikidata:
-        datastore_names = [wiki_datastore.name, bing_search_datastore.name, wikidata_kg.name]
+        datastore_names = [wiki_datastore.name, bing_search_datastore.name, wikidata_kg.name, conceptnet_kg.name]
         for datastore_name in datastore_names:
             mongo_client = build_mongo_client(*mongo_container)
             mongo_client.user_datastore_bindings.insert_one(
