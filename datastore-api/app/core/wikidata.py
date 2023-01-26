@@ -27,7 +27,7 @@ class WikiData:
         return True
     
     
-    async def get_entity_by_names(self, names: list, limit = 20):
+    async def get_entity_by_names(self, names: list):
         '''
         names - A list of the names of the preferred label
         Return - List of all entites, which are found for the given name entity.
@@ -184,7 +184,6 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
         wikidata = WikiData()
         try: 
             if path == f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name':
-                print(await request.json())
                 response = await wikidata.get_entity_by_names(names = await request.json())
                 return JSONResponse(status_code=200, content=response)
 
