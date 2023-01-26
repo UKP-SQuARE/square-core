@@ -39,6 +39,7 @@ jobs:
           "skill-multiple-choice-qa",
           "skill-open-extractive-qa",
           "skill-qa-gnn",
+          "skill-tweac",
           "evaluator",
         ]
         include:
@@ -80,6 +81,9 @@ jobs:
           - service: skill-qa-gnn
             context: ./skills
             build-args: "skill=qa-gnn"
+          - service: skill-tweac
+            context: ./skills
+            build-args: "skill=tweac"
           - service: evaluator
             context: ./evaluator
     steps:
