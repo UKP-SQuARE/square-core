@@ -34,6 +34,10 @@
         <Status :url="evaluation.skill_url" /> 
         <span v-if=evaluation.public class="badge bg-info ms-1 p-2">Public</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Private</span>
+        <span v-if="evaluation.evaluation_status == 'FINISHED'" class="badge bg-success ms-1 p-2">{{ evaluation.evaluation_status }}</span>
+        <span v-if="evaluation.evaluation_status == 'FAILED'" class="badge bg-danger ms-1 p-2">{{ evaluation.evaluation_status }}</span>
+        <span v-if="evaluation.evaluation_status == 'RUNNING'" class="badge bg-warning ms-1 p-2">{{ evaluation.evaluation_status }}</span>
+        
         <CardExpansion :evaluation="evaluation"></CardExpansion>
       </li>
     </div>

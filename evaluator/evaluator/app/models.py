@@ -109,6 +109,7 @@ class MetricResult(MongoModel):
 
 class EvaluationResult(BaseModel):
     evaluation_id: str = Field(..., description="Skill Id + metric name")
+    evaluation_status: str = Field(..., description="Evaluation status.")
     skill_name: str = Field(..., description="Model name")
     dataset: str = Field(..., description="Dataset used for evaluation")
     public: bool = Field(
