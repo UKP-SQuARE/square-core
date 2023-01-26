@@ -13,23 +13,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class WikiData:
-    """Wraps access to the Wikidata Search API."""
+    """Wraps access to the Bing Search API."""
 
     kg_name = "wikidata-kg"    
 
     def __init__(self):
         self.sparql_url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql"
-
-    def __json_to_doubles(self, data):
-        result = []
-        for line in data['results']['bindings']:
-            value_line=()
-            # BUG: MAYBE TO BIG
-            for value in line.values():
-                value_line += (value['value'],)
-            result.append(value_line)
-        return result
-
+        
     def __without_link(self, link):
         return link.split("/")[-1]
 
@@ -117,27 +107,7 @@ class WikiData:
         return nodes
   
 
-    async def get_edges_by_name(self, entity_pair_list: list):
-        '''
-        entity_pair_list - A list of the name-pairs
-        Return - List of all relations, which are found for the given name-pair.        
-        '''
-        query = "select "
-        for i, pair in enumerate(entity_pair_list):
-            query += f"?relation{i} "
-        query += " WHERE {"
 
-        for i, pair in enumerate(entity_pair_list):
-            if i != 0:
-                query += " UNION "
-            query += "{wd:"+pair[0]+ f"?relation{i} wd:"+pair[1]+" . }"
-        query += " }"
-
-        data = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
-        response_clean =  set(self.__json_to_doubles(data))
-
-        # Response in the shape of SQuARE-KG-Schema:
-        return response_clean
 
     async def get_edges_for_id_pairs(self, entity_pair_list: list):
         '''
@@ -193,15 +163,6 @@ class WikiData:
         return edges
 
 
-    # Not finished
-    async def get_subgraph_by_id(self, entity_id: str, hops = 2):
-        
-        query = '''select ''' + ' '.join(["?relation"+str(hop)+" ?obj"+str(hop) for hop in range(hops)]) + ''' where { wd:'''+str(entity_id)+" ?relation0 ?obj0 . " + ' . '.join(["?obj"+str(hop) +" ?relation"+str(hop+1)+" ?obj"+str(hop+1) for hop in range(hops-1)])+''' }'''
-
-        data = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
-        return set(self.__json_to_doubles(data))
-
-
 class WikiDataMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app) -> None:
@@ -212,8 +173,6 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
         allowed_paths = [
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_ids'},
-            {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name'},
-            {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name'},
             {'verb': 'POST', 'path': f'/datastores/kg/{WikiData.kg_name}/edges/query_by_ids'},
             {'verb': 'GET', 'path': f'/datastores/kg/{WikiData.kg_name}'},
         ]
@@ -229,18 +188,6 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
                 response = await wikidata.get_entity_by_names(names = await request.json())
                 return JSONResponse(status_code=200, content=response)
 
-            elif path == f'/datastores/kg/{WikiData.kg_name}/subgraph/query_by_node_name':               
-                response = await wikidata.get_entity_by_names(names = await request.json())
-                return Response(status_code=200, content=str(response))
-
-            elif path == f'/datastores/kg/{WikiData.kg_name}/edges/query_by_name':
-                
-                start_list = await request.json()
-                ids_pairs = [[val[0] for val in (await wikidata.get_entity_by_names(pair)).values()] for i, pair in enumerate(start_list)] 
-
-                response = await wikidata.get_edges_for_id_pairs(entity_pair_list = ids_pairs)
-                return JSONResponse(status_code=200, content=response)
-
             elif  path == f'/datastores/kg/{WikiData.kg_name}/nodes/query_by_ids':
                 return JSONResponse(status_code=200, content=await wikidata.get_entity_by_ids(ids = await request.json()))
 
@@ -248,7 +195,8 @@ class WikiDataMiddleware(BaseHTTPMiddleware):
                 response = await wikidata.get_edges_for_id_pairs(entity_pair_list = await request.json())
                 return JSONResponse(status_code=200, content=response)
 
-            # This should only be used to search certain entities 
+            # This should only be used to search certain entities, saved as :
+            # /datastores/kg/{WikiData.kg_name}/{entity_id}
             elif path.startswith(f'/datastores/kg/{WikiData.kg_name}/'):
                 response = await wikidata.get_entity_by_ids([path.split("/")[-1]])
                 return JSONResponse(status_code=200, content=response)
