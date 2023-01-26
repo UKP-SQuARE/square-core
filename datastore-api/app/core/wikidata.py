@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class WikiData:
-    """Wraps access to the Bing Search API."""
+    """Wraps access to the Wikidata Search API."""
 
     kg_name = "wikidata-kg"    
 
@@ -37,44 +37,47 @@ class WikiData:
         return True
     
     
-    async def get_entity_by_names(self, names: list):
+    async def get_entity_by_names(self, names: list, limit = 20):
         '''
         names - A list of the names of the preferred label
         Return - List of all entites, which are found for the given name entity.
         '''
-        queriefied_list = ""
+        querified_names = ""
         for name in names:
-            queriefied_list += f"\"{name}\"@en "
+            querified_names += f" \"{name}\"@en "
 
-        query = ''' SELECT ?item ?prefLabel
+        query = '''SELECT ?item ?name ?description 
             WHERE {
-                values ?prefLabel {'''+queriefied_list+'''}
-                ?item rdfs:label|skos:altLabel ?prefLabel.
+            VALUES ?name { '''+querified_names+''' }
+            ?item rdfs:label ?name .
+            OPTIONAL { ?item schema:description ?description. }
+            FILTER(LANG(?description) = "en")
+            SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
             }'''
-        results = {name: [] for name in names}
-
+        
         try:
             response = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
 
+            nodes = {}
             for res in response['results']['bindings']:
                 node_temp =  {
-                                "name": res['prefLabel']['value'],
+                                "name": res['name']['value'],
                                 "type": "node",
-                                "description": "",
+                                "description": res['description']['value'],
                                 "weight": None,
                                 "in_id": None,
                                 "out_id": None,
-                                "_id": self._WikiData__without_link(res['item']['value'])
+                                "id": self._WikiData__without_link(res['item']['value'])
                             }
-                results[res['prefLabel']['value']].append(node_temp)
-
+                nodes[self._WikiData__without_link(res['item']['value'])] = node_temp
+            
         except Exception as e:
             logger.error(f"Error searching WikiData for {query}: {e}")
             return {
                 "error": f"Error searching WikiData for {query}"
             }
     
-        return results
+        return nodes
 
     async def get_entity_by_ids(self, ids: list):
         '''
@@ -84,9 +87,6 @@ class WikiData:
         nids = ""
         for id in ids:
             nids += f" wd:{id} "
-
-        url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
-
 
         query = '''PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             SELECT ?entity ?label ?description
@@ -99,7 +99,7 @@ class WikiData:
             }
             '''
 
-        response = requests.get(url, params={'query': query, 'format': 'json'}).json()
+        response = requests.get(self.sparql_url, params={'query': query, 'format': 'json'}).json()
 
         nodes = {}
         for res in response['results']['bindings']:
