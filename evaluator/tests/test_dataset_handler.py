@@ -1,4 +1,4 @@
-import os
+import shutil
 from unittest.mock import MagicMock
 
 import pytest
@@ -23,19 +23,19 @@ def dataset_location(dataset_handler, dataset_name):
 
 
 def test_remove_dataset_deletes_file(dataset_handler, dataset_name, dataset_location):
-    os.remove = MagicMock()
+    shutil.rmtree = MagicMock()
     removed = dataset_handler.remove_dataset(dataset_name)
     assert removed
-    os.remove.assert_called_once_with(dataset_location)
+    shutil.rmtree.assert_called_once_with(dataset_location)
 
 
 def test_remove_dataset_does_not_fail_on_non_existing_dataset(
     dataset_handler, dataset_name, dataset_location
 ):
-    os.remove = MagicMock(side_effect=FileNotFoundError())
+    shutil.rmtree = MagicMock(side_effect=FileNotFoundError())
     removed = dataset_handler.remove_dataset(dataset_name)
     assert not removed
-    os.remove.assert_called_once_with(dataset_location)
+    shutil.rmtree.assert_called_once_with(dataset_location)
 
 
 def test_download_dataset_loads_and_then_saves_to_disk(

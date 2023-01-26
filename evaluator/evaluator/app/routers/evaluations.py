@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
 
 from evaluator.app import mongo_client
-from evaluator.app.models import EvaluationResult, MetricResult
+from evaluator.app.models import Evaluation, EvaluationResult, MetricResult
 from evaluator.app.routers import client_credentials
 from evaluator.auth_utils import (
     get_metrics_if_authorized,
@@ -39,6 +39,9 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
     evaluations = mongo_client.client.evaluator.results.find()
     evaluations = [MetricResult.from_mongo(e) for e in evaluations]
     evaluation_results = []
+
+    evaluations_status = mongo_client.client.evaluator.evaluations.find()
+    evaluations_status = [Evaluation.from_mongo(e) for e in evaluations]
 
     skills = get_skills(token)
 

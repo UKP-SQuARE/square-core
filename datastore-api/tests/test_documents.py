@@ -167,3 +167,8 @@ class TestDocuments:
             headers={"Authorization": f"Bearer {token_no_permission}"},
         )
         assert response.status_code == 403
+    def test_unsupported_operation_for_bing_search(self, client, bing_search_datastore_name):
+        response = client.get(
+            f"/datastores/{bing_search_datastore_name}/documents"
+        )
+        assert response.status_code == 404

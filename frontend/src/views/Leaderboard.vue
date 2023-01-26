@@ -13,11 +13,11 @@
       <div class="row">
         <div class="col-sm-8 col-12 mb-3">
           <label for="dataset" class="form-label">Dataset</label>
-          <multiselect id="dataset" v-model="dataset_name" :options="datasets" :disabled=isLoading placeholder="Select a dataset" @select="refreshLeaderboard"></multiselect>
+          <multiselect id="dataset" v-model="datasetName" :options="datasetNames" :disabled=isLoading placeholder="Select a dataset" @select="refreshLeaderboard('dataset')"></multiselect>
         </div>
         <div class="col-sm-4 col-12 mb-3">
           <label for="dataset" class="form-label">Metric</label>
-          <multiselect id="metric" v-model="metric_name" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard"></multiselect>
+          <multiselect id="metric" v-model="metricName" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard('metric')"></multiselect>
         </div>
       </div>
       <b-table striped hover borderless show-empty :stacked="doStackTable" :busy="isLoading" :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
@@ -31,6 +31,8 @@
         <template #empty>
           <div class="text-center text-secondary my-4">
             <strong>There are no evaluation results for the selected dataset and metric</strong>
+            <br>
+            <router-link to="/evaluation" exact-active-class="active" class="text-reset">Click here to start one yourself</router-link>
           </div>
         </template>
         <template #cell(private)="data">
@@ -48,9 +50,13 @@
           <div class="text-center d-flex">
             <div>
               <span>{{ data.value }}</span><br>
-              <span class="badge bg-secondary">{{ date_format(data.item.date) }}</span>
+              <span class="badge bg-secondary">{{ dateFormat(data.item.date) }}</span>
             </div>
           </div>
+        </template>
+        <template #cell()="data">
+          <span v-if="isNaN(data.value)">{{ data.value }}</span>
+          <span v-else>{{ round(data.value) }}</span>
         </template>
       </b-table>
     </div>
@@ -67,7 +73,7 @@ import { BootstrapVue } from "bootstrap-vue"
 import "bootstrap-vue/dist/bootstrap-vue.css"
 Vue.use(BootstrapVue)
 
-const base_fields = [
+const baseFields = [
   {
     key: "rank",
     label: "Rank",
@@ -82,7 +88,7 @@ const base_fields = [
     class: "align-middle"
   }
 ]
-let private_field = {
+let privateField = {
   key: "private",
   label: "",
   sortable: false,
@@ -96,11 +102,11 @@ export default Vue.component("show-leaderboard", {
       isLoading: false,
       sortBy: "rank",
       sortDesc: false,
-      dataset_name: "quoref",
-      metric_name: "squad",
+      datasetName: "squad",
+      metricName: null,
       datasets: [],
       metrics: ["squad", "squad_v2", "exact_match"],
-      fields: base_fields,
+      fields: baseFields,
       items: []
     }
   },
@@ -113,48 +119,101 @@ export default Vue.component("show-leaderboard", {
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
         this.datasets = response.data
-        this.datasets = ["squad", "quoref", "commonsense_qa", "cosmos_qa"]
+        this.datasets = [
+          {
+            "name": "squad",
+            "skill-type": "extractive-qa",
+            "metric": "squad",
+            "mapping": {
+              "id-column": "id",
+              "question-column": "question",
+              "context-column": "context",
+              "answer-text-column": "answers.text"
+            }
+          }, {
+            "name": "quoref",
+            "skill-type": "extractive-qa",
+            "metric": "squad",
+            "mapping": {
+              "id-column": "id",
+              "question-column": "question",
+              "context-column": "context",
+              "answer-text-column": "answers.text"
+            }
+          }, {
+            "name": "commonsense_qa",
+            "skill-type":" multiple-choice",
+            "metric": "exact_match",
+            "mapping": {
+              "id-column": "id",
+              "question-column": "question",
+              "choices-columns": ["choices.text"],
+              "choices-key-mapping-column": "choices.label",
+              "answer-index-column": "answerKey"
+            }
+          }, {
+            "name": "cosmos_qa",
+            "skill-type": "multiple-choice",
+            "metric": "exact_match",
+            "mapping":{
+              "id-column": "id",
+              "question-column": "question",
+              "choices-columns": ["answer0", "answer1", "answer2", "answer3"],
+              "choices-key-mapping-column": null,
+              "answer-index-column": "label"
+            }
+          }
+        ]
       })
     this.refreshLeaderboard()
   },
   destroyed() {
     window.removeEventListener("resize", this.handleResize)
   },
+  computed: {
+    datasetNames: function() {
+      return this.datasets.map(dataset => dataset.name);
+    }
+  },
   methods: {
     handleResize() {  
       this.doStackTable = window.innerWidth < 500
       if (this.doStackTable) {
-        private_field.label = "Private" 
+        privateField.label = "Private" 
       } else {
-        private_field.label = "" 
+        privateField.label = "" 
       }
     },
-    date_format(date_string) {
-      return new Date(date_string).toLocaleDateString()
+    dateFormat(dateString) {
+      return new Date(dateString).toLocaleDateString()
     },
-    refreshLeaderboard() {
+    refreshLeaderboard(triggeredBy) {
       setTimeout(function() {
         this.isLoading = true
-        getLeaderboard(this.dataset_name, this.metric_name, this.$store.getters.authenticationHeader())
+        if (triggeredBy != "metric") {
+          let defaultMetric = this.getDefaultMetric(this.datasetName)
+          this.metricName = defaultMetric || this.metricName
+        }
+        getLeaderboard(this.datasetName, this.metricName, this.$store.getters.authenticationHeader())
           .then((response) => {
-            this.fields = this.get_fields(response.data)
+            this.fields = this.getFields(response.data)
             this.items = response.data
             this.isLoading = false
           })
       }.bind(this), 50)
     },
-    get_fields(leaderboard_entries) {
-      let fields = [...base_fields]
-      if (leaderboard_entries.length > 0) {
+    getFields(leaderboardEntries) {
+      let fields = [...baseFields]
+      if (leaderboardEntries.length > 0) {
         // add column to display private-indicator
-        if (this.contains_private_entries(leaderboard_entries)) {
-          fields.unshift(private_field)
+        if (this.containsPrivateEntries(leaderboardEntries)) {
+          fields.unshift(privateField)
         }
         // add a column for each value of the metric
-        Object.keys(leaderboard_entries[0].result).forEach((key) => {
+        Object.keys(leaderboardEntries[0].result).forEach((key) => {
           fields.push({
             key: "result." + key,
-            label: this.get_metric_value_label(key),
+            label: this.getMetricValueLabel(key),
             sortable: true,
             class: "align-middle",
           })
@@ -162,22 +221,30 @@ export default Vue.component("show-leaderboard", {
       }
       return fields
     },
-    contains_private_entries(leaderboard_entries) {
-      let private_entries = leaderboard_entries.filter( (entry) => {
+    containsPrivateEntries(leaderboardEntries) {
+      let privateEntries = leaderboardEntries.filter( (entry) => {
         return entry.private === true
       })
-      return private_entries.length > 0
+      return privateEntries.length > 0
     },
-    get_metric_value_label(metric_value_name) {
-      switch (metric_value_name) {
+    getMetricValueLabel(metricValueName) {
+      switch (metricValueName) {
         case "exact_match":
         case "exact":
           return "EM";
         case "f1":
           return "F1";
         default:
-          return metric_value_name;
+          return metricValueName;
       }
+    },
+    round(value) {
+      return parseFloat(value).toFixed(3)
+    },
+    getDefaultMetric(datasetName) {
+      let dataset = this.datasets.filter(dataset => dataset.name === datasetName)
+      if (!dataset.length) return null
+      return dataset[0].metric ? dataset[0].metric : null
     }
   }
 })

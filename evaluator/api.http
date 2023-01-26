@@ -36,9 +36,12 @@ POST {{path_prefix}}/evaluator/{{skill_id}}/{{dataset_id}}/{{metric_name}} HTTP/
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
+<<<<<<< HEAD
 
 ###
 # @name get_all_user_evaluations
 GET {{path_prefix}}/evaluations HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
+=======
+>>>>>>> origin/develop

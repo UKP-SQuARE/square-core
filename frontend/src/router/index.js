@@ -50,9 +50,15 @@ const routes = [
     }
   },
   {
+<<<<<<< HEAD
     path: '/evaluations',
     name: 'evaluations',
     component: Evaluations,
+=======
+    path: '/evaluation',
+    name: 'evaluation',
+    component: Evaluation,
+>>>>>>> origin/develop
     meta: {
       requiresAuthentication: true
     }
