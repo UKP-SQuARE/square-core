@@ -284,11 +284,11 @@ services:
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
+      - evaluation-datasets:/app/datasets/
     env_file:
       - ./mongodb/.env
       - ./rabbitmq/.env
       - ./redis/.env
-      - evaluation-datasets:/app/datasets/
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
