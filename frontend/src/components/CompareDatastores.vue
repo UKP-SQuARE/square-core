@@ -200,6 +200,8 @@ export default Vue.component("compare-datastores", {
       });
     },
     getAllAvailablDatastores() {
+      // return this.$store.state.availableDatastores
+      // console.log(this.$store.state.availableIndices)
       return this.mock_datastores;
     },
   },
