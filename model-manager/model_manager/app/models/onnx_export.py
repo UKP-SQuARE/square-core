@@ -10,7 +10,8 @@ from huggingface_hub.utils import RepositoryNotFoundError
 import os
 import shutil
 
-from typing import Mapping, OrderedDict, Optional
+from typing import Mapping, Optional
+from collections import OrderedDict
 from pathlib import Path
 
 import json
@@ -396,8 +397,8 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
         logger.info("Using auto onnx config")
         onnx_config = auto_onnx_config(model_name, skill)
     
-    # Generate the local directory in onnx/
-    directory_path = Path("onnx/{}".format(model_id))
+    # Generate the local directory in onnx_tmp/
+    directory_path = Path("onnx_tmp/{}".format(model_id))
     directory_path.mkdir(parents=True, exist_ok=True)
     onnx_model_path = Path("{}/model.onnx".format(directory_path))
 
@@ -427,5 +428,8 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
         repo_id = repo_id,
         hf_token = hf_token
     )
+
+    # Remove directory
+    shutil.rmtree("onnx_tmp")
 
     return repo_id
