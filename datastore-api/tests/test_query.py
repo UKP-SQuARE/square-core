@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from app.core.faiss import FaissClient
 from app.core.model_api import ModelAPIClient
+from app.core.bing import BingSearch
 from app.models.query import QueryResult
 from requests_mock import Mocker
 from tests.utils import async_mock_callable
@@ -141,3 +142,68 @@ class TestQuery:
         )
         assert response.status_code == 404
         assert "detail" in response.json()
+
+    def test_unsupported_operation_for_bing_search(self, client, bing_search_datastore_name):
+        response = client.get(
+            f"/datastores/{bing_search_datastore_name}/search_by_vector",
+        )
+        assert response.status_code == 404
+
+        response = client.get(
+            f"/datastores/{bing_search_datastore_name}/score",
+        )
+        assert response.status_code == 404
+
+
+    def test_bing_search_available(self,requests_mock: Mocker,
+                         client,
+                         bing_search_datastore_name,
+                         query_result,
+
+    ):
+        '''
+        Test if the bing search api is up
+
+
+        '''
+
+        bing_search_return = [query_result]
+        with patch.object(BingSearch, "search", new_callable=async_mock_callable(bing_search_return)):
+            response = client.get(
+                "/datastores/{}/search".format(bing_search_datastore_name),
+                    params={
+                        "query": "who is the president of US?",
+                        "top_k":1
+                    },
+            )
+        assert len(response.json()) == 1
+        assert response.json()[0]["document"] == query_result.document.__root__
+        assert response.json()[0]["score"] ==0
+        assert response.json()[0]["id"] == "222"
+        assert response.status_code == 200
+
+    def test_bing_search_max_count(self,requests_mock: Mocker,
+                         client,
+                         bing_search_datastore_name,
+                         query_result,
+
+    ):
+        '''
+        Test if bing search api could have correct length of return
+
+
+        '''
+        
+        bing_search_return = [query_result for i in range(50) ]
+        with patch.object(BingSearch, "search", new_callable=async_mock_callable(bing_search_return)):
+            response = client.get(
+                "/datastores/{}/search".format(bing_search_datastore_name),
+                    params={
+                        "query": "who is the president of US?",
+                        "top_k":50
+                    },
+            )
+
+        assert response.status_code == 200
+        assert len(response.json()) <= 50
+

@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ master, cicd]
+    branches: [ master, cicd ]
   workflow_dispatch:
     inputs:
       environment:
@@ -29,11 +29,10 @@ jobs:
           "docs",
           "frontend",
           "model-manager",
-          "model-inference-base-model",
           "model-inference-transformer",
           "model-inference-onnx",
-          "model-inference-sentence-transfomer",
-          "model-inference-graph-transfomer",
+          "model-inference-sentence-transformer",
+          "model-inference-graph-transformer",
           "skill-manager",
           "skill-boolq",
           "skill-commonsense-qa",
@@ -56,21 +55,18 @@ jobs:
             build-args: "mode=${{ github.event.inputs.environment || 'test' }}"
           - service: model-manager
             context: ./model-manager
-          - service: model-inference-base-model
-            context: ./model-inference
-            file: ./model-inference/dockerfiles/base_model/Dockerfile
           - service: model-inference-transformer
             context: ./model-inference
-            file: ./model-inference/dockerfiles/transformer/Dockerfile
+            build-args: "MODEL_TYPE=transformer"
           - service: model-inference-onnx
             context: ./model-inference
-            file: ./model-inference/dockerfiles/onnx/Dockerfile
-          - service: model-inference-sentence-transfomer
+            build-args: "MODEL_TYPE=onnx"
+          - service: model-inference-sentence-transformer
             context: ./model-inference
-            file: ./model-inference/dockerfiles/sentence_transformer/Dockerfile
-          - service: model-inference-graph-transfomer
+            build-args: "MODEL_TYPE=sentence_transformer"
+          - service: model-inference-graph-transformer
             context: ./model-inference
-            file: ./model-inference/dockerfiles/graph_transformer/Dockerfile
+            build-args: "MODEL_TYPE=graph_transformer"
           - service: skill-manager
             context: ./skill-manager
           - service: skill-boolq
