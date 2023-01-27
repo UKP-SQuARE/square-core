@@ -42,7 +42,8 @@ jobs:
           "skill-multiple-choice-qa",
           "skill-open-extractive-qa",
           "skill-qa-gnn",
-          "skill-metaqa",
+          "skill-extractive-metaqa",
+          "skill-multiple-choice-metaqa",
           "evaluator",
         ]
         include:
@@ -94,9 +95,12 @@ jobs:
           - service: skill-qa-gnn
             context: ./skills
             build-args: "skill=qa-gnn"
-          - service: skill-metaqa
+          - service: skill-extractive-metaqa
             context: ./skills
-            build-args: "skill=metaqa"
+            build-args: "skill=extractive-metaqa"
+          - service: skill-multiple-choice-metaqa
+            context: ./skills
+            build-args: "skill=multiple-choice-metaqa"
           - service: evaluator
             context: ./evaluator
     steps:
