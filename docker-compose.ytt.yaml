@@ -55,27 +55,6 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@  ]
 #@ end
 
-#@ def model_environment():
-WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
-#@ end
-
-#@ def model_management_environment():
-WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
-VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-
-MODEL_API_IMAGE: #@ "ukpsquare/square-model-api"
-ONNX_VOLUME: model-inference_onnx-models
-
-REALM: #@ data.values.realm
-MONGO_HOST: mongodb
-MONGO_PORT: 27017
-#@ end
-
 version: "3.4"
 
 services:
@@ -331,6 +310,8 @@ services:
       CONFIG_PATH: /model_configs
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      MODEL_API_IMAGE: ukpsquare/model-inference
+      MODEL_API_IMAGE_TAG: #@ data.values.tag
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -344,7 +325,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
       - ./model-inference/model_configurations/.env.dpr
@@ -378,7 +360,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -408,7 +391,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -438,7 +422,8 @@ services:
     build:
       context: ./model-inference
       target: build
-      dockerfile: ./dockerfiles/transformer/Dockerfile
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q roberta-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -467,8 +452,9 @@ services:
     image: #@ "ukpsquare/model-inference-graph-transformer:" + data.values.tag
     build:
       context: ./model-inference
-      dockerfile: ./dockerfiles/graph_transformer/Dockerfile
       target: build
+      args:
+        - MODEL_TYPE=graph_transformer
     command: celery -A tasks worker -Q qagnn --loglevel=info
     volumes:
       - ./:/usr/src/app

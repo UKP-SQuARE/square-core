@@ -94,7 +94,7 @@ class PredictionRequest(BaseModel):
         "- 'include_answer: Whether to remove answer from context while attacking model. ",
     )
     adapter_name: Optional[Union[str, List[str]]] = Field(
-        ...,
+        default="",
         description="Only necessary for Adapter. "
                     "The fully specified name of the to-be-used adapter from adapterhub.ml",
     )
