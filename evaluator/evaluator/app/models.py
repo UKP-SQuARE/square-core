@@ -78,8 +78,16 @@ class Evaluation(MongoModel):
     prediction_status: EvaluationStatus = Field(
         ..., description="Current status of the prediction task."
     )
+    prediction_error: Optional[str] = Field(
+        None,
+        description="Error message of the error that lead to failure of the prediction task.",
+    )
     metric_status: EvaluationStatus = Field(
         ..., description="Current status of the evaluation (metric computation) task."
+    )
+    metric_error: Optional[str] = Field(
+        None,
+        description="Error message of the error that lead to failure of the evaluation (metric computation) task.",
     )
 
 
