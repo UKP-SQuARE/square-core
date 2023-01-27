@@ -29,7 +29,6 @@ from evaluator.app.routers import client_credentials
 from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
-logger.setLevel(logging.INFO)
 
 
 @celery_app.task

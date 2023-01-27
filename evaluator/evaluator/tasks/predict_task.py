@@ -28,7 +28,6 @@ from evaluator.tasks import evaluate_task
 from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
-logger.setLevel(logging.INFO)
 base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
 
 
