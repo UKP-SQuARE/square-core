@@ -161,3 +161,19 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  export function getEvaluations(headers) {
     return axios.get(`${EVALUATOR_URL}/evaluations`, { headers: headers })
 }
+
+/**
+ * Get all user and public evaluations.
+ * @param {Object} headers Authentication header
+ */
+ export function getMetrics(headers) {
+    return axios.get(`${EVALUATOR_URL}/metrics`, { headers: headers })
+}
+
+/**
+ * Get all user and public evaluations.
+ * @param {Object} headers Authentication header
+ */
+ export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
+    return axios.get(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, { headers: headers })
+}
