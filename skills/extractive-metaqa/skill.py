@@ -15,7 +15,7 @@ from square_auth.client_credentials import ClientCredentials
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
-client_credentials = ClientCredentials()
+# client_credentials = ClientCredentials()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -53,10 +53,6 @@ async def predict(request: QueryRequest) -> QueryOutput:
     return _create_metaqa_output_from_question_answering(request, model_response)
 
 
-def _get_qa_format(request):
-    return request.skill["skill_type"]
-
-
 async def _call_skills(list_skills, request):
     """
     Calls the skills in parallel
@@ -72,7 +68,7 @@ async def _call_skills(list_skills, request):
 
 async def _call_skill(skill_id, request):
     skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
-    token = client_credentials()
+    # token = client_credentials()
 
     input_data = {
         "query": request.query,
@@ -92,7 +88,7 @@ async def _call_skill(skill_id, request):
     response = requests.post(
         url=skill_manager_api_url + "/skill/" + skill_id + "/query",
         json=input_data,
-        headers={"Authorization": f"Bearer {token}"},
+        # headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL") == "1",
     )
     return response.json()
