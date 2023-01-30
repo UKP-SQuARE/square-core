@@ -175,5 +175,5 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  * @param {Object} headers Authentication header
  */
  export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
-    return axios.get(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, { headers: headers })
+    return axios.post(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, { headers: headers })
 }

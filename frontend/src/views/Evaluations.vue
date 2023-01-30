@@ -52,10 +52,9 @@
       <p class="lead fs-2">Evaluations can be <span class="text-danger">publicly</span> available or set to <span class="text-danger">private</span>.</p>
       <p class="lead fs-2"><span class="text-danger">Get started</span> by developing a new evaluation.</p>
       <div class="d-grid gap-2 d-flex justify-content-center">
-        <router-link to="/evaluation/new_evaluation" class="btn btn-outline-danger btn-lg px-4 d-inline-flex align-items-center">
+        <router-link to="/new_evaluation" class="btn btn-outline-danger btn-lg px-4 d-inline-flex align-items-center">
           Add a new evaluation
         </router-link>
-        <a href="/docs/home/components/skills" target="_blank" class="btn btn-outline-danger btn-lg px-4">Learn more</a>
       </div>
     </div>
   </Card>
