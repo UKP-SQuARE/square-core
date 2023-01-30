@@ -92,7 +92,7 @@ def start_new_model_container(identifier: str, uid: str, env):
 
     image = ""
     # select the image based on the model type
-    if env["MODEL_TYPE"] in ["transformer","adapter"]:
+    if env["MODEL_TYPE"] in ["transformer","adapter","metaqa"]:
         image = f"{model_api_base_image}-transformer:{image_tag}"
     if env["MODEL_TYPE"] in ["sentence-transformer"]:
         image = f"{model_api_base_image}-sentence-transformer:{image_tag}"
