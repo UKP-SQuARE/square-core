@@ -22,6 +22,10 @@ skills:
     author: ukp
   - name: information-retrieval
     author: ukp
+  - name: extractive-metaqa
+    author: ukp
+  - name: multiple-choice-metaqa
+    author: ukp
 
 web_concurrency: 2
 

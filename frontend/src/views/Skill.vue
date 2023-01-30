@@ -225,7 +225,7 @@
       </div>
 
       <!-- MetaQA Input -->
-      <div class="row" v-if="url == 'http://meta-qa'">
+      <div class="row" v-if="url == 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa'">
         <div class="col-md-6">
           <label for="base_model" class="form-label">MetaQA Model</label>
           <input type="text" v-model="skill_args.base_model" class="form-control form-control-md" id="base_model"
@@ -241,7 +241,7 @@
 
       </div>
 
-      <div class="row" v-if="skill.url != 'http://meta-qa'">
+      <div class="row" v-if="skill.url != 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa'">
         <div class="col-md-6">
           <div>
             <label for="datastore" class="form-label">Datastore
@@ -386,6 +386,7 @@ export default Vue.component('edit-skill', {
       list_adapters: [],
       // metaqa
       list_skills: [],
+      list_skills_names: [],
       metaqa_agents: [],
       auxAdapter: "",
       skill: {
@@ -502,7 +503,7 @@ export default Vue.component('edit-skill', {
       }
       // add arguments to skill
       this.addSkillArgs2Skill()
-      if (this.skill.url == 'http://meta-qa') {
+      if (this.skill.url == 'http://extractive-metaqa' || this.skill.url == 'http://multiple-choice-metaqa') {
         this.addSkillAgents()
       }
       // create skill
@@ -554,6 +555,12 @@ export default Vue.component('edit-skill', {
 
     },
     addSkillAgents() {
+      this.skill.default_skill_args['list_skills'] = []
+      // filter list_skills for skills with names in list_agents
+      this.list_skills.filter(skill => this.list_agents.includes(skill.name)).forEach(skill => {
+        this.skill.default_skill_args['list_skills'].push(skill.id)
+      })
+      console.log(this.skill.default_skill_args['list_skills'])
 
     },
     addInputExampleFields() {
@@ -599,13 +606,13 @@ export default Vue.component('edit-skill', {
             this.url = 'http://open-extractive-qa'
             this.avail_urls.push('http://open-extractive-qa')
           }
-          this.avail_urls.push('http://meta-qa')
+          this.avail_urls.push('http://extractive-metaqa')
           this.avail_urls.push('http://tweac')
           break
         case 'multiple-choice':
           this.url = 'http://multiple-choice-qa'
           this.avail_urls.push('http://multiple-choice-qa')
-          this.avail_urls.push('http://meta-qa')
+          this.avail_urls.push('http://multiple-choice-metaqa')
           this.avail_urls.push('http://tweac')
           break
         case 'categorical':
@@ -633,7 +640,7 @@ export default Vue.component('edit-skill', {
       this.setSelectIndices()
     },
     'url'() {
-      if (this.url == 'http://tweac' || this.url == 'http://meta-qa') {
+      if (this.url == 'http://tweac' || this.url == 'http://extractive-metaqa' || this.url == 'http://multiple-choice-metaqa') {
         this.skill.meta_skill = true
       } else {
         this.skill.meta_skill = false
@@ -664,7 +671,8 @@ export default Vue.component('edit-skill', {
       .then((response) => {
         // iterate over the skills and add the name to the list
         for (let i = 0; i < response.data.length; i++) {
-          this.list_skills.push(response.data[i].name)
+          this.list_skills.push(response.data[i])
+          this.list_skills_names.push(response.data[i].name)
         }
       })
     if (!this.isCreateSkill) {
