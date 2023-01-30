@@ -223,9 +223,19 @@ class QAAnswer(BaseModel):
     end: int
     answer: str
 
+class MetaQAAnswer(BaseModel):
+    """
+    Only for output of MetaQA,
+    """
+
+    answer: str
+    agent_name: str
+    metaqa_score: float
+    agent_score: float
+
 
 class PredictionOutputForQuestionAnswering(PredictionOutput):
-    answers: List[List[QAAnswer]] = Field(
+    answers: List[List[Union[QAAnswer,MetaQAAnswer]]] = Field(
         ...,
         description="List of lists of answers. Length of outer list is the number "
         "of inputs, length of inner list is parameter 'topk' from the "
