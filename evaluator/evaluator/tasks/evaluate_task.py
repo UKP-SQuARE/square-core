@@ -14,15 +14,13 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 from evaluator.app.core.metric_formatters import Formatter, MetricFormattingError
 from evaluator.app.models import (
-    Evaluation,
     EvaluationStatus,
     Metric,
     MetricResult,
-    Prediction,
     PredictionResult,
-    get_dataset_metadata,
 )
 from evaluator.app.routers import client_credentials
 
@@ -100,7 +98,7 @@ def do_evaluate(
             f"Predictions for skill_id='{skill_id}' and dataset_name='{dataset_name}' not found!"
         )
 
-    # Load dataset metadata (TODO)
+    # Load dataset metadata
     dataset_metadata = get_dataset_metadata(dataset_name)
 
     # Load the dataset

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
 
 from evaluator.app import mongo_client
-from evaluator.app.models import DataSet, LeaderboardEntry, Metric, MetricResult
+from evaluator.app.models import LeaderboardEntry, Metric, MetricResult
 from evaluator.app.routers import client_credentials
 
 logger = logging.getLogger(__name__)

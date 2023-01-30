@@ -4,7 +4,8 @@ import os
 import requests
 from evaluate import list_evaluation_modules
 
-from evaluator.app.models import get_dataset_metadata
+from datasets import list_datasets
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 
 logger = logging.getLogger(__name__)
 skill_manager_url = os.getenv(
@@ -53,9 +54,21 @@ def skill_exists(skill_id, token) -> bool:
     return response.status_code == 200
 
 
+def dataset_name_exists(dataset_name: str) -> bool:
+    """
+    Checks if the dataset name exists in Huggingface.
+
+    Args:
+        dataset_name (str): Name of the dataset.
+
+    Returns: True if the dataset exists. Otherwise False.
+    """
+    return dataset_name in list_datasets()
+
+
 def dataset_exists(dataset_name) -> bool:
     """
-    Checks if the dataset exists.
+    Checks if the dataset entry exists in the SQuARE project.
 
     Args:
         dataset_name (str): Name of the dataset.
