@@ -431,26 +431,22 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             body.append({
                 "query": {
                     "bool": {
-                        "filter": {
-                            "bool" : {
-                                "must" : [
-                                    {"term" : { "name" : name.lower() } },
-                                    {"term" : { "name" : name } },
-                                    {"term" : { "type" : "node" } },
-                                ]
-                            }
-                        }
-                    }
-                },
-                "size": 10000
-            })  # 'must' for AND clause
-        responses = await self.es.msearch(body=body)
-        logger.info(responses)
-        results = []        
+                        "must": [
+                            {"match": {"name": name.lower()}},
+                            {"match": {"name": name}}
+                        ],
+                    }},
+                "size": 10000})
+                
+        responses = await self.es.msearch(body=body)              
+        
+        nodes = {}
         for response in responses['responses']:
-            nids = [hit['_id'] for hit in response["hits"]["hits"]]
-            results.append(nids)
-        return results
+            for hit in response['hits']['hits']:
+                node = hit['_source']
+                node.update({"id":hit['_id']})
+                nodes[hit['_id']] = node
+        return nodes
 
     async def extract_subgraph_by_names(self, kg_name, nodes, hops=2):
         """Returns a subgraph as a Set of nodes and edges.
@@ -460,9 +456,11 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             names (List[str]):  List of names of the nodes.
             hops (int):         Number of hops.
         """
-        nids = set()
-        for _nids in await self.get_node_by_name_msearch(kg_name, nodes):
-            nids.update(_nids)
+        nids = []
+
+        for _nids in (await self.get_node_by_name_msearch(kg_name, nodes)).keys():
+            nids.append(_nids)
+
         return await self.extract_subgraph(kg_name, nids, hops)
 
     async def extract_subgraph_by_ids(self, kg_name, nodes, hops=2):
