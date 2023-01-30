@@ -434,6 +434,7 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
                         "filter": {
                             "bool" : {
                                 "must" : [
+                                    {"term" : { "name" : name.lower() } },
                                     {"term" : { "name" : name } },
                                     {"term" : { "type" : "node" } },
                                 ]
