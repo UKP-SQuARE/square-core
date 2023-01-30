@@ -76,12 +76,12 @@ def conceptnet_kg(kg_name):
     return Datastore(
         name=kg_name,
         fields=[
-            DatastoreField(name="name", type="keyword"),
-            DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="name", type="text"),
+            DatastoreField(name="type", type="text"),
             DatastoreField(name="description", type="text"),
             DatastoreField(name="weight", type="float"),
-            DatastoreField(name="in_id", type="keyword"),
-            DatastoreField(name="out_id", type="keyword"), 
+            DatastoreField(name="in_id", type="text"),
+            DatastoreField(name="out_id", type="text"), 
         ],
     )
 
