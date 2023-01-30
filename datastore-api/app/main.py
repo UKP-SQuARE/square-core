@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from .core.wikidata import WikiDataMiddleware
 from .core.bing import BingMiddleware
 from .core.startup import startup_event_handler
 from .core.config import settings
@@ -22,6 +23,8 @@ def get_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    app.add_middleware(WikiDataMiddleware)
     app.add_middleware(BingMiddleware)
 
     app.include_router(api.router, prefix=settings.API_PREFIX)

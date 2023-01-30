@@ -76,12 +76,12 @@ def conceptnet_kg(kg_name):
     return Datastore(
         name=kg_name,
         fields=[
-            DatastoreField(name="name", type="keyword"),
-            DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="name", type="text"),
+            DatastoreField(name="type", type="text"),
             DatastoreField(name="description", type="text"),
-            DatastoreField(name="weight", type="double"),
-            DatastoreField(name="in_id", type="keyword"),
-            DatastoreField(name="out_id", type="keyword"), 
+            DatastoreField(name="weight", type="float"),
+            DatastoreField(name="in_id", type="text"),
+            DatastoreField(name="out_id", type="text"), 
         ],
     )
 
@@ -90,11 +90,54 @@ def test_node() -> Document:
     return Document(
         __root__={
             "id": "n111",
+            "name": "obama",
             'type': 'node',
             'description': 'obama',
             'weight': None,
             'in_id': None,
             'out_id': None,
+        }
+    )
+
+@pytest.fixture(scope="package")
+def test_node_lower() -> Document:
+    return Document(
+        __root__={
+            "id": "n1010",
+            "name": 'barack_obama',
+            'type': 'node',
+            'description': '44th president of USA',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+        }
+    )
+
+@pytest.fixture(scope="package")
+def test_node_michelle() -> Document:
+    return Document(
+        __root__={
+            "id": "n1234",
+            "name": 'michelle_obama',
+            'type': 'node',
+            'description': 'First Lady of 44th president of USA',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+        }
+    )
+
+@pytest.fixture(scope="package")
+def test_edge_married() -> Document:
+    return Document(
+        __root__={
+            "id": "e737",
+            "name": 'related_to',
+            'type': 'node',
+            'description': 'First Lady of 44th president of USA',
+            'weight': 1.0,
+            'in_id': "n1010",
+            'out_id': "n1234",
         }
     )
 
@@ -112,6 +155,26 @@ def bing_search_datastore(bing_search_datastore_name):
             DatastoreField(name="title", type="text"),
         ],
     )
+
+# Wikidata-KG test preparations
+@pytest.fixture(scope="package")
+def wikidata_kg_name():
+    return "wikidata-kg"
+
+@pytest.fixture(scope="package")
+def wikidata_kg(wikidata_kg_name):
+    return Datastore(
+        name=wikidata_kg_name,
+        fields=[
+            DatastoreField(name="text", type="text"),
+            DatastoreField(name="title", type="text"),
+        ],
+    )
+
+@pytest.fixture(scope="package")
+def wikidata_expected_nodes() -> dict:
+    # This return is expected for ["Barack Obama", "Bill Clinton"] 
+    return {'Q76': {'name': 'Barack Obama', 'type': 'node', 'description': 'president of the United States from 2009 to 2017', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q76'}, 'Q1124': {'name': 'Bill Clinton', 'type': 'node', 'description': '42nd President of the United States', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q1124'}, 'Q2903164': {'name': 'Bill Clinton', 'type': 'node', 'description': 'Wikimedia disambiguation page', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q2903164'}, 'Q47508810': {'name': 'Bill Clinton', 'type': 'node', 'description': 'painting by Christopher Fox Payne', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q47508810'}, 'Q47513276': {'name': 'Bill Clinton', 'type': 'node', 'description': 'painting by Nelson Shanks', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q47513276'}, 'Q47513347': {'name': 'Bill Clinton', 'type': 'node', 'description': 'painting by Nancy Fleming Harris', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q47513347'}, 'Q47513588': {'name': 'Barack Obama', 'type': 'node', 'description': 'painting by Michael A. Glier', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q47513588'}, 'Q61909968': {'name': 'Barack Obama', 'type': 'node', 'description': 'Wikimedia disambiguation page', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q61909968'}, 'Q77009656': {'name': 'Bill Clinton', 'type': 'node', 'description': 'print in the National Gallery of Art (NGA 170818)', 'weight': None, 'in_id': None, 'out_id': None, 'id': 'Q77009656'}}
 
 @pytest.fixture(scope="package")
 def dpr_index(datastore_name: str) -> Index:
@@ -170,9 +233,13 @@ def user_id() -> str:
 @pytest.fixture(scope="package")
 def es_container(
     wiki_datastore: Datastore,
+    wikidata_kg: Datastore,
     bing_search_datastore: Datastore,
     conceptnet_kg: Datastore,
     test_node: Document,
+    test_node_lower: Document,
+    test_node_michelle: Document,
+    test_edge_married: Document,
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -190,6 +257,8 @@ def es_container(
     )
     es_container.start()
     host_ip = get_container_ip("es")
+    # print(f"ip of es :{host_ip}")
+    # host_ip = "localhost"
     host_url = f"http://{host_ip}:9200"
     wait_for_up(host_url)
     try:
@@ -211,40 +280,26 @@ def es_container(
                     wiki_datastore.name, query_document.id, query_document
                 )
             ),
+            loop.create_task(kg_connector.add_kg(wikidata_kg)),
             loop.create_task(kg_connector.add_kg(conceptnet_kg)),
-            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node ))
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node )),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node_lower.id, test_node_lower )),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node_michelle.id, test_node_michelle )),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_edge_married.id, test_edge_married ))
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
-        # add binding
-        datastore_name = wiki_datastore.name
-        mongo_client = build_mongo_client(*mongo_container)
-        mongo_client.user_datastore_bindings.insert_one(
-            {
-                "user_id": user_id,
-                mongo_client.item_keys["datastore"]: datastore_name,
-            }
-        )
-
-        # add conceptnet kg binding
-        datastore_name = conceptnet_kg.name
-        mongo_client = build_mongo_client(*mongo_container)
-        mongo_client.user_datastore_bindings.insert_one(
-            {
-                "user_id": user_id,
-                mongo_client.item_keys["datastore"]: datastore_name,
-            }
-        )
-        
-        # add wikidata kg binding
-        datastore_name = bing_search_datastore.name
-        mongo_client = build_mongo_client(*mongo_container)
-        mongo_client.user_datastore_bindings.insert_one(
-            {
-                "user_id": user_id,
-                mongo_client.item_keys["datastore"]: datastore_name,
-            }
-        )
+        # Add bindings for wiki datastore, bing search, wikidata:
+        datastore_names = [wiki_datastore.name, bing_search_datastore.name, wikidata_kg.name, conceptnet_kg.name]
+        for datastore_name in datastore_names:
+            mongo_client = build_mongo_client(*mongo_container)
+            mongo_client.user_datastore_bindings.insert_one(
+                {
+                    "user_id": user_id,
+                    mongo_client.item_keys["datastore"]: datastore_name,
+                }
+            )
+            
         yield host_url
     finally:
         es_container.stop()

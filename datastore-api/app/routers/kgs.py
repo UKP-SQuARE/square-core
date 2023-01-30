@@ -277,8 +277,6 @@ async def post_kg_nodes(
         return UploadResponse(message=f"Successfully uploaded {successes} documents.", successful_uploads=successes)
 
 
-
-
 ###    QUERIES    ###
 @router.post(
     "/{kg_name}/nodes/query_by_name",
@@ -293,7 +291,7 @@ async def post_kg_nodes(
     },
 )
 async def get_node_by_name(
-    kg_name: str = Path(..., description="The name of the node"),
+    kg_name: str = Path(..., description="The name of the kg"),
     doc_id: set = Body(..., description="The name of the node to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
@@ -303,6 +301,28 @@ async def get_node_by_name(
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
 
+@router.post(
+    "/{kg_name}/nodes/query_by_ids",
+    summary="Get nodes from a knowledge graph",
+    description="Get nodes from the knowledge graph by a list of ids",
+    responses={
+        200: {
+            "description": "List of node ids",
+            #"model": Document,
+        },
+        404: {"description": "The nodes could not be retrieved"},
+    },
+)
+async def get_node_by_name(
+    kg_name: str = Path(..., description="The name of the KG"),
+    doc_id: set = Body(..., description="The name of the node to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.get_object_by_id_msearch(kg_name, doc_id)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
 
 @router.get(
     "/{kg_name}/nodes/query_nodes_inbetween",
@@ -381,7 +401,7 @@ async def subgraph_by_ids(
     else:
         raise HTTPException(status_code=404)
 
-@router.get(
+@router.post(
     "/{kg_name}/edges/query_by_ids",
     summary="Get edges between given node_ids",
     description="Get edges between node_pairs for a given list of node_id_pairs from the knowledge.",
@@ -429,7 +449,7 @@ async def get_relationinfo(
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find nodes.")    
 
-@router.get(
+@router.post(
     "/{kg_name}/edges/query_by_name",
     summary="Get a edge from a knowledge graph",
     description="Get a edge from the knowledge graph by name",

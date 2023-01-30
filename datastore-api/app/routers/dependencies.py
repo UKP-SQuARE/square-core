@@ -8,6 +8,8 @@ from ..core.kgs.connector import KnowledgeGraphConnector
 from ..core.faiss import FaissClient
 from ..core.model_api import ModelAPIClient
 from ..core.mongo import MongoClient
+# from ..core.bing import BingSearch
+from ..core.wikidata import WikiData
 from ..core.bing import BingSearch
 
 from square_auth.client_credentials import ClientCredentials
