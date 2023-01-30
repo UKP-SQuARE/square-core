@@ -401,7 +401,7 @@ async def subgraph_by_ids(
     else:
         raise HTTPException(status_code=404)
 
-@router.get(
+@router.post(
     "/{kg_name}/edges/query_by_ids",
     summary="Get edges between given node_ids",
     description="Get edges between node_pairs for a given list of node_id_pairs from the knowledge.",
