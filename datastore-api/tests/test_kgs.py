@@ -43,6 +43,50 @@ class TestKGs:
         assert response.status_code == expected_code
         assert response.json()[test_node.id] == test_node
 
+    def test_get_node_by_name(self, client: TestClient, conceptnet_kg: Datastore, test_node_lower: Document, token: str):
+        # Given:
+        url_post = f"/datastores/kg/{conceptnet_kg.name}/nodes/query_by_name"
+        expected_code_post = 200
+        
+        nodes_upper = ["Barack_Obama"]
+        nodes_lower = ["barack_obama"]
+
+        # When:
+        response_post_upper = client.post(
+            url_post, 
+            json=nodes_upper,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        response_post_lower = client.post(
+            url_post, 
+            json=nodes_lower,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        # Then:
+        assert response_post_lower.status_code == expected_code_post
+        assert response_post_upper.status_code == expected_code_post
+        assert response_post_lower.json()[test_node_lower.id] == test_node_lower
+        assert response_post_upper.json()[test_node_lower.id] == test_node_lower
+
+    def test_get_nodes_by_id(self, client: TestClient, conceptnet_kg: Datastore, test_node_lower: Document, token: str):
+        # Given:
+        url_post = f"/datastores/kg/{conceptnet_kg.name}/nodes/query_by_ids"
+        expected_code_post = 200
+        
+        nodes_upper = ["n1010", "n1234"]
+
+        # When:
+        response_post = client.post(
+            url_post, 
+            json=nodes_upper,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        # Then:
+        assert response_post.status_code == expected_code_post
+        assert response_post.json()[test_node_lower.id] == test_node_lower
 
     def test_get_kg_not_found(self, client: TestClient):
         # Given:
@@ -264,3 +308,18 @@ class TestKGs:
         assert response_post.status_code == 201
         assert response_get.status_code == 200
         assert response_get.json() == nodes
+
+    def test_get_subgraph(self, client: TestClient, kg_name: str, test_node_lower: Document, token: str):
+        # Given:
+        url_post = f"/datastores/kg/{kg_name}/subgraph/query_by_node_name"
+
+        # When:
+        response_post = client.post(
+            url_post, 
+            json= {"nids": [test_node_lower["name"]], "hops": 2 },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        # Then:
+        assert response_post.status_code == 200
+        assert len(response_post.json()) > 0

@@ -291,7 +291,7 @@ async def post_kg_nodes(
     },
 )
 async def get_node_by_name(
-    kg_name: str = Path(..., description="The name of the node"),
+    kg_name: str = Path(..., description="The name of the kg"),
     doc_id: set = Body(..., description="The name of the node to retrieve"),
     conn=Depends(get_kg_storage_connector),
 ):
@@ -301,6 +301,28 @@ async def get_node_by_name(
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
 
+@router.post(
+    "/{kg_name}/nodes/query_by_ids",
+    summary="Get nodes from a knowledge graph",
+    description="Get nodes from the knowledge graph by a list of ids",
+    responses={
+        200: {
+            "description": "List of node ids",
+            #"model": Document,
+        },
+        404: {"description": "The nodes could not be retrieved"},
+    },
+)
+async def get_node_by_name(
+    kg_name: str = Path(..., description="The name of the KG"),
+    doc_id: set = Body(..., description="The name of the node to retrieve"),
+    conn=Depends(get_kg_storage_connector),
+):
+    result = await conn.get_object_by_id_msearch(kg_name, doc_id)
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find node.")
 
 @router.get(
     "/{kg_name}/nodes/query_nodes_inbetween",

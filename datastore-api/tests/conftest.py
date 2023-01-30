@@ -76,12 +76,12 @@ def conceptnet_kg(kg_name):
     return Datastore(
         name=kg_name,
         fields=[
-            DatastoreField(name="name", type="keyword"),
-            DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="name", type="text"),
+            DatastoreField(name="type", type="text"),
             DatastoreField(name="description", type="text"),
-            DatastoreField(name="weight", type="double"),
-            DatastoreField(name="in_id", type="keyword"),
-            DatastoreField(name="out_id", type="keyword"), 
+            DatastoreField(name="weight", type="float"),
+            DatastoreField(name="in_id", type="text"),
+            DatastoreField(name="out_id", type="text"), 
         ],
     )
 
@@ -90,11 +90,54 @@ def test_node() -> Document:
     return Document(
         __root__={
             "id": "n111",
+            "name": "obama",
             'type': 'node',
             'description': 'obama',
             'weight': None,
             'in_id': None,
             'out_id': None,
+        }
+    )
+
+@pytest.fixture(scope="package")
+def test_node_lower() -> Document:
+    return Document(
+        __root__={
+            "id": "n1010",
+            "name": 'barack_obama',
+            'type': 'node',
+            'description': '44th president of USA',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+        }
+    )
+
+@pytest.fixture(scope="package")
+def test_node_michelle() -> Document:
+    return Document(
+        __root__={
+            "id": "n1234",
+            "name": 'michelle_obama',
+            'type': 'node',
+            'description': 'First Lady of 44th president of USA',
+            'weight': None,
+            'in_id': None,
+            'out_id': None,
+        }
+    )
+
+@pytest.fixture(scope="package")
+def test_edge_married() -> Document:
+    return Document(
+        __root__={
+            "id": "e737",
+            "name": 'related_to',
+            'type': 'node',
+            'description': 'First Lady of 44th president of USA',
+            'weight': 1.0,
+            'in_id': "n1010",
+            'out_id': "n1234",
         }
     )
 
@@ -194,6 +237,9 @@ def es_container(
     bing_search_datastore: Datastore,
     conceptnet_kg: Datastore,
     test_node: Document,
+    test_node_lower: Document,
+    test_node_michelle: Document,
+    test_edge_married: Document,
     mongo_container: Tuple[str, str],
     user_id: str,
     dpr_index: Index,
@@ -236,7 +282,10 @@ def es_container(
             ),
             loop.create_task(kg_connector.add_kg(wikidata_kg)),
             loop.create_task(kg_connector.add_kg(conceptnet_kg)),
-            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node ))
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node )),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node_lower.id, test_node_lower )),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node_michelle.id, test_node_michelle )),
+            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_edge_married.id, test_edge_married ))
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
