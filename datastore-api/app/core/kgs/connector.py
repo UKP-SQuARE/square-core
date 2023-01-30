@@ -427,17 +427,23 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         index = f'{kg_name}{self.datastore_suffix}'
         body = []
         for name in names:
-            body.append({'index': index})
+            body.append({'index': index})               
             body.append({
                 "query": {
                     "bool": {
-                        "must": [
-                            {"match": {"name": name.lower()}},
-                            {"match": {"name": name}}
-                        ],
-                    }},
-                "size": 10000})
-                
+                        "filter": {
+                            "bool" : {
+                                "must" : [
+                                    {"term" : { "name" : name.lower() } },
+                                    {"term" : { "type" : "node" } },
+                                ]
+                            }
+                        }
+                    }
+                },
+                "size": 10000
+            })  # 'must' for AND clause
+
         responses = await self.es.msearch(body=body)              
         
         nodes = {}
