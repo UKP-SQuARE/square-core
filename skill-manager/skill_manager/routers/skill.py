@@ -283,9 +283,9 @@ async def query_skill(
     # to store the preds in mongodb without bertviz (too large)
     list_bertviz = []
     for prediction in predictions.predictions:
-        if "bertviz" in prediction:
-            list_bertviz.append(prediction["bertviz"])
-            prediction.pop("bertviz", None)
+        if prediction.bertviz is not None:
+            list_bertviz.append(prediction.bertviz)
+            prediction.bertviz = None
         else:
             list_bertviz.append(None)
     # save prediction to mongodb
@@ -312,5 +312,5 @@ async def query_skill(
     # get bertviz data
     for i in range(len(predictions.predictions)):
         if list_bertviz[i]:
-            predictions.predictions[i]["bertviz"] = list_bertviz[i]
+            predictions.predictions[i].bertviz = list_bertviz[i]
     return predictions
