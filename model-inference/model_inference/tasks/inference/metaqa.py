@@ -37,6 +37,7 @@ class MetaQA(Model):
 
         '''
         question = request.input["question"] # str
+        topk = request.task_kwargs.get("topk", 1)
         agents_predictions = request.input["agents_predictions"] # list[[str, float]]
         # agents_predictions =  [["Utah", 0.1442876160144806],
         #      ["DOC] [TLE] 1886", 0.10822545737028122],
@@ -53,28 +54,48 @@ class MetaQA(Model):
             for i in range(16 - len(agents_predictions)):
                 agents_predictions.append(["", 0.0])
         # agent_predictions = self._get_agents_prediction(question,context)
-        (model_answer, agent_name, metaqa_score, agent_score) = self._predict(question,agents_predictions)
+        pred_list = self._predict(question,agents_predictions,topk)
+        # pred_list: list of (pred, agent_name, metaqa_score, agent_score)
         # (pred:str, agent_name:str, metaqa_score:float, agent_score:float)
+
+        # task_outputs = {
+        #     "answers":
+        #     [
+        #         [
+        #             {
+        #                 "answer": model_answer,
+        #                 "agent_name": agent_name,
+        #                 "metaqa_score": metaqa_score,
+        #                 "agent_score": agent_score
+        #
+        #             }
+        #         ]
+        #
+        #     ]
+        #
+        # }
 
         task_outputs = {
             "answers":
             [
                 [
-                    {
-                        "answer": model_answer,
-                        "agent_name": agent_name,
-                        "metaqa_score": metaqa_score,
-                        "agent_score": agent_score
 
-                    }
                 ]
 
             ]
 
-
-
-
         }
+
+        for i in pred_list:
+            pred = {}
+            output_name = ["answer", "agent_name", "metaqa_score", "agent_score"]
+            for key, value in zip(output_name, i):
+                pred[key] = value
+
+            task_outputs['answers'][0].append(pred)
+
+        print(task_outputs)
+
         predictions={}
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
@@ -97,7 +118,7 @@ class MetaQA(Model):
     #
     #     return  list_preds
 
-    def _predict(self,question:str,agents_predictions:list[(str, float)]):
+    def _predict(self,question:str,agents_predictions:list[(str, float)],topk):
         '''
                Runs MetaQA on a single instance.
                '''
@@ -106,9 +127,8 @@ class MetaQA(Model):
         # Run model
         logits = self.metaqa_model(input_ids, token_ids, attention_masks, ans_sc).logits
         # Get predictions
-        (pred, agent_name, metaqa_score, agent_score) = self._get_metaqa_predictions(logits.detach().numpy(),
-                                                                              agents_predictions)
-        return (pred, agent_name, metaqa_score, agent_score)
+        pred_list = self._get_metaqa_predictions(logits.detach().numpy(),agents_predictions,k=topk)
+        return pred_list
 
     def _encode_metaQA_instance(self, question:str,agents_predictions:list[(str, float)], max_len=512):
         '''
@@ -173,22 +193,37 @@ class MetaQA(Model):
         else:
             return (list_input_ids, list_token_ids, list_attention_masks, list_ans_sc)
 
-    def _get_metaqa_predictions(self, logits, agents_predictions):
+    # def _get_metaqa_predictions(self, logits, agents_predictions):
+    #     top_k = lambda a, k: np.argsort(-a)[:k]
+    #     for idx in top_k(logits[0][:, 1], self.metaqa_model.num_agents):
+    #         pred = agents_predictions[idx][0]
+    #         if pred != '':
+    #             agent_name = self.metaqa_model.config.agents[idx]
+    #             metaqa_score = logits[0][idx][1]
+    #             agent_score = agents_predictions[idx][1]
+    #             return (pred, agent_name, metaqa_score, agent_score)
+    #     # no valid prediction found, return the best prediction
+    #     idx = top_k(logits[0][:, 1], 1)[0]
+    #     pred = agents_predictions[idx][0]
+    #     metaqa_score = logits[0][idx][1]
+    #     agent_name = self.metaqa_model.config.agents[idx]
+    #     agent_score = agents_predictions[idx][1]
+    #     return (pred, agent_name, metaqa_score, agent_score)
+
+    def _get_metaqa_predictions(self, logits, agents_predictions,k):
         top_k = lambda a, k: np.argsort(-a)[:k]
+        list_preds = []
         for idx in top_k(logits[0][:, 1], self.metaqa_model.num_agents):
             pred = agents_predictions[idx][0]
-            if pred != '':
+            if pred != "":
                 agent_name = self.metaqa_model.config.agents[idx]
                 metaqa_score = logits[0][idx][1]
                 agent_score = agents_predictions[idx][1]
-                return (pred, agent_name, metaqa_score, agent_score)
-        # no valid prediction found, return the best prediction
-        idx = top_k(logits[0][:, 1], 1)[0]
-        pred = agents_predictions[idx][0]
-        metaqa_score = logits[0][idx][1]
-        agent_name = self.metaqa_model.config.agents[idx]
-        agent_score = agents_predictions[idx][1]
-        return (pred, agent_name, metaqa_score, agent_score)
+                list_preds.append((pred, agent_name, metaqa_score, agent_score))
+                if len(list_preds) == k:
+                    break
+        return list_preds
+
 
 
 
