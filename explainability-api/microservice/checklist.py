@@ -125,16 +125,3 @@ def predict(model_inputs: dict, skill_id: str) -> list:
     return model_outputs
 
 
-# ############           Code from notebook           ###################
-
-with open("../checklists/extractive_model_tests.json") as f:
-    extractive_model_tests = json.load(f)
-
-skills_response = requests.get("https://square.ukp-lab.de/api/skill-manager/skill")
-skills = skills_response.json()
-
-query = create_query(skills[-1], extractive_model_tests['tests'])
-query_min = query.copy()
-query_min['request'] = query_min['request'][:1]
-
-predict(query_min, skills[-1]['id'])
