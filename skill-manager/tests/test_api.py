@@ -486,7 +486,6 @@ def test_query_skill(
             p.pop("attributions")
             p.pop("prediction_graph")
             p.pop("skill_id")
-            p.pop("bertviz")
 
         TestCase().assertDictEqual(
             response, {"predictions": saved_prediction["predictions"]}
