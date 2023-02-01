@@ -69,6 +69,11 @@ class ModelTask(Task, ABC):
 
             MODEL_MAPPING = {"graph": GraphTransformers}
 
+        if model_config.model_type == "metaqa":
+            from .inference.metaqa import MetaQA
+
+            MODEL_MAPPING = {"metaqa": MetaQA}
+
         if not self.model:
             logger.info(model_config)
             model_instance = MODEL_MAPPING[model_config.model_type]()
@@ -84,4 +89,5 @@ def prediction_task(self, prediction_request, task, model_config):
     logger.info(f"Prediction Request: {prediction_request} for task {task}")
     logger.info(model_config)
     prediction = self.model.predict(PredictionRequest(**prediction_request), task)
+    logger.info(f"Prediction: {prediction}")
     return prediction.dict()

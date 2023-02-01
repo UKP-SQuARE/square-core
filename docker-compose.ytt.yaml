@@ -444,6 +444,37 @@ services:
       - maintaining
       - rabbit
       - redis
+  metaqa_worker:
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      args:
+        - MODEL_TYPE=transformer
+    command: celery -A tasks worker -Q metaqa --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./model-inference/model_configurations/.env.metaqa
+      - ./rabbitmq/.env
+      - ./redis/.env
+      - ./mongodb/.env
+    environment:
+      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
+      ONNX_VOLUME: onnx_models
+      REALM: #@ data.values.realm
+      CONFIG_PATH: /model_configs
+      QUEUE: metaqa 
+    depends_on:
+      - maintaining
+      - rabbit
+      - redis
+
 
   roberta_worker:
     image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
