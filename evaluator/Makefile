@@ -43,6 +43,8 @@ build:
 logs:
 	docker compose --env-file .local.env logs -f evaluator
 
+logs-worker:
+	docker compose --env-file .local.env logs -f evaluation_worker
 
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)

@@ -277,6 +277,8 @@ async def query_skill(
     )
     query_request.skill = json.loads(skill.json())
 
+    if skill.default_skill_args is None:
+        skill.default_skill_args = {}
     # merge kargs with kwargs in request
     for kwargs_key in [
         "model_kwargs",

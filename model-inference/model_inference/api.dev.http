@@ -1,0 +1,319 @@
+###
+
+# @name get_token
+POST {{domain_prod}}/auth/realms/square/protocol/openid-connect/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_secret}}
+
+> {% client.global.set("auth_token", response.body.access_token); %}
+
+
+###
+
+## @name dpr
+#POST {{domain_dev}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    "Do aliens exist?"
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+
+###
+
+## @name qagnn
+#POST {{domain_dev}}/api/main/qagnn/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    ["Crabs live in what sort of environment?", "saltwater"],
+#    ["Crabs live in what sort of environment?", "galapagos"],
+#    ["Crabs live in what sort of environment?", "fish market"]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {"output_lm_subgraph": true, "output_attn_subgraph": true},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+###
+
+# @name bert_qa
+POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "input": [
+  ["Who stars in The Matrix?",
+     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {"average_adapters": false},
+  "task_kwargs": {},
+  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
+}
+
+###
+
+## @name roberta_qa
+#POST {{domain_dev}}/api/main/roberta-base/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#   "input": [
+#    ["Who is the Loreds?",
+#      "Architecturally, the school has a Catholic character. Atop the Main Building's gold dome is a golden statue of the Virgin Mary. Immediately in front of the Main Building and facing it, is a copper statue of Christ with arms upraised with the legend 'Venite Ad Me Omnes'."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": "AdapterHub/roberta-base-pf-squad"
+#}
+
+
+###
+
+## @name bert_explain
+#POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "explain_kwargs": {"method": "integrated_grads", "top_k":5, "mode":"all"},
+#  "adapter_name": "AdapterHub/bert-base-uncased-pf-squad_v2"
+#}
+
+###
+
+## @name roberta_explain
+#POST {{domain_dev}}/api/main/roberta-base/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action film written and directed by The Wachowskis, starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
+#  "adapter_name": "AdapterHub/roberta-base-pf-squad_v2"
+#}
+
+
+###
+
+## @name bert_seq
+#POST {{domain_dev}}/api/main/bert-base-uncased/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    [
+#        "Good Samaritan laws offer legal protection to people who give reasonable assistance ",
+#        "do good samaritan laws protect those who help at an accident?"
+#     ]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {"return_all_scores": true},
+#  "adapter_name": "AdapterHub/bert-base-uncased-pf-boolq"
+#}
+
+
+###
+
+## @name bert_mcq
+#POST {{domain_dev}}/api/main/bert-base-uncased/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    ["Kendall worked the weekend at the steakhouse and made bank on tips.", "How would you describe Kendall? Save the money"],
+#    ["Kendall worked the weekend at the steakhouse and made bank on tips.", "How would you describe Kendall? get hired at the steakhouse"],
+#    ["Kendall worked the weekend at the steakhouse and made bank on tips.", "How would you describe Kendall? Quit her job"]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "attack_kwargs":{"method":"input_reduction", "saliency_method": "attention", "max_reductions":5},
+#  "adapter_name": "AdapterHub/bert-base-uncased-pf-social_i_qa"
+#}
+
+
+###
+
+## @name roberta_seq
+#POST {{domain_dev}}/api/main/roberta-base/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#    [
+#        "Good Samaritan laws offer legal protection to people who give reasonable assistance to those who are, or who they believe to be, injured, ill, in peril, or otherwise incapacitated. The protection is intended to reduce bystanders' hesitation to assist, for fear of being sued or prosecuted for unintentional injury or wrongful death. An example of such a law in common-law areas of Canada: a good Samaritan doctrine is a legal principle that prevents a rescuer who has voluntarily helped a victim in distress from being successfully sued for wrongdoing. Its purpose is to keep people from being reluctant to help a stranger in need for fear of legal repercussions should they make some mistake in treatment. By contrast, a duty to rescue law requires people to offer assistance and holds those who fail to do so liable.",
+#        "do good samaritan laws protect those who help at an accident?"
+#     ]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": "AdapterHub/roberta-base-pf-boolq"
+#}
+
+
+###
+
+## @name deploy_model
+#POST {{domain_dev}}/api/models/deploy
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "identifier": "roberta-base",
+#  "model_name": "roberta-base",
+#  "model_type": "transformer",
+#  "disable_gpu": true,
+#  "batch_size": 32,
+#  "max_input": 1024,
+#  "model_class": "from_config",
+#  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+#  "return_plaintext_arrays": false
+#}
+
+###
+
+## @name test_deployed_model
+#POST {{domain_dev}}/api/main/deepset/roberta-base-squad2/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#  ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+###
+
+## @name remove_model
+#DELETE {{domain_dev}}/api/models/remove/UKP-SQuARE/tweac_16
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name list_models
+#GET {{domain_dev}}/api/models/deployed-models
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name deploy_from_db
+#POST {{domain_dev}}/api/models/db/deploy
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name update_db
+#PUT {{domain_dev}}/api/models/db/update
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+## @name deploy_model
+#POST {{domain_dev}}/api/models/deploy
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "identifier": "tweac_16",
+#  "model_name": "UKP-SQuARE/tweac_16",
+#  "model_type": "transformer",
+#  "disable_gpu": true,
+#  "batch_size": 32,
+#  "max_input": 512,
+#  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+#  "model_class": "from_config",
+#  "return_plaintext_arrays": false
+#}
+
+
+###
+
+## @name tweac
+#POST {{domain_dev}}/api/main/tweac/sequence-classification
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input":
+#  ["do iran and afghanistan speak the same language?"],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {"return_all_scores": true},
+#  "adapter_name": ""
+#}
+
+
+###
+
+## @name task_output
+#GET {{domain_dev}}/api/main/task_result/23bc9deb-fda0-426f-a33d-020465073604
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+
+
+###
+
+## @name get_model_health
+#GET {{domain_dev}}/api/models/deployed-model-workers
+#Authorization: Bearer {{auth_token}}
+
+###
+
+## @name get_model_stats
+#GET {{domain_dev}}/api/main/bert-base-uncased/stats
+#Authorization: Bearer {{auth_token}}
