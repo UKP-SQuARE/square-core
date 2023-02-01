@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import datasets
-from evaluator.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
+from evaluator.app.core.dataset_handler import DatasetDoesNotExistError, DatasetHandler
 
 
 @pytest.fixture(scope="module")
