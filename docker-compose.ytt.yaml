@@ -55,30 +55,11 @@ CLIENT_ID: #@ skill.author + "-" + skill.name
 #@  ]
 #@ end
 
-#@ def model_environment():
-WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-KEYCLOAK_BASE_URL: #@  data.values.keycloak_base_url_https[data.values.environment]
-#@ end
-
-#@ def model_management_environment():
-WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
-VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
-VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
-KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
-DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-MODEL_API_IMAGE: #@ "ukpsquare/model-inference:" + data.values.tag
-ONNX_VOLUME: square-model-inference-api_onnx-models
-REALM: #@ data.values.realm
-MONGO_HOST: mongodb
-MONGO_PORT: 27017
-#@ end
-
 version: "3.4"
 
 services:
   traefik:
-    image: traefik:v2.8.1
+    image: traefik:v2.8.7
     container_name: traefik
     command:
       - --api.insecure=true
@@ -304,9 +285,9 @@ services:
       - rabbit
 
   maintaining_worker:
-    image: #@ "ukpsquare/model-management:" + data.values.tag
+    image: #@ "ukpsquare/model-manager:" + data.values.tag
     build:
-      context: ./square-model-inference-api/management_server
+      context: ./model-manager
       target: build
     command: celery -A tasks worker --loglevel=info
     volumes:
@@ -316,14 +297,13 @@ services:
       - ./mongodb/.env
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/management_server/.env
+      - ./model-manager/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: model-inference_onnx-models
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
@@ -334,10 +314,10 @@ services:
       - redis
 
   maintaining:
-    image: #@ "ukpsquare/model-management:" + data.values.tag
-    command: uvicorn main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
+    image: #@ "ukpsquare/model-manager:" + data.values.tag
+    command: uvicorn model_manager.main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
     build: 
-      context: ./square-model-inference-api/management_server
+      context: ./model-manager
       target: build
     ports:
       - 9001:9001
@@ -347,18 +327,19 @@ services:
       - ./mongodb/.env
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/management_server/.env
+      - ./model-manager/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
-      ONNX_VOLUME: square-model-inference-api_onnx-models
+      ONNX_VOLUME: model-inference_onnx-models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      MODEL_API_IMAGE: ukpsquare/model-inference
+      MODEL_API_IMAGE_TAG: #@ data.values.tag
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("maintaining"))
@@ -368,14 +349,18 @@ services:
       - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
 
   main_model:
-    image: #@ "ukpsquare/model-inference:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
     build:
-      context: ./square-model-inference-api/inference_server
+      context: ./model-inference
       target: build
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
+      args:
+        - MODEL_TYPE=transformer
+    command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --log-config logging.conf
     env_file:
+      - ./model-inference/model_configurations/.env.dpr
       - ./rabbitmq/.env
       - ./redis/.env
+      - ./mongodb/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
@@ -399,22 +384,27 @@ services:
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
   dpr_worker:
-    image: #@ "ukpsquare/model-inference:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
     env_file:
+      - ./model-inference/model_configurations/.env.dpr
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/inference_server/.env.dpr
+      - ./mongodb/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -425,22 +415,27 @@ services:
       - redis
 
   bert_worker:
-    image: #@ "ukpsquare/model-inference:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
     env_file:
+      - ./model-inference/model_configurations/.env.bert_adapter
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/inference_server/.env.bert_adapter
+      - ./mongodb/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -451,22 +446,27 @@ services:
       - redis
 
   roberta_worker:
-    image: #@ "ukpsquare/model-inference:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
+    build:
+      context: ./model-inference
+      target: build
+      args:
+        - MODEL_TYPE=transformer
     command: celery -A tasks worker -Q roberta-base --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
     env_file:
+      - ./model-inference/model_configurations/.env.roberta_adapter
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/inference_server/.env.roberta_adapter
+      - ./mongodb/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
@@ -477,10 +477,12 @@ services:
       - redis
 
   qagnn_worker:
-    image: #@ "ukpsquare/model-inference:" + data.values.tag
+    image: #@ "ukpsquare/model-inference-graph-transformer:" + data.values.tag
     build:
-      context: ./square-model-inference-api/inference_server
+      context: ./model-inference
       target: build
+      args:
+        - MODEL_TYPE=graph_transformer
     command: celery -A tasks worker -Q qagnn --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -488,15 +490,15 @@ services:
       - model_configs:/model_configs
       - model_storage:/model_storage
     env_file:
+      - ./model-inference/model_configurations/.env.qagnn
       - ./rabbitmq/.env
       - ./redis/.env
-      - ./square-model-inference-api/inference_server/.env.qagnn
+      - ./mongodb/.env
     environment:
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]
-      MODEL_API_image: #@ "ukpsquare/model-inference:" + data.values.tag
       ONNX_VOLUME: onnx_models
       REALM: #@ data.values.realm
       CONFIG_PATH: /model_configs
