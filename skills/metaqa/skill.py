@@ -107,7 +107,8 @@ def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
         "input": {
             "question": request.query,
             "agents_predictions": list_preds,
-        }
+        },
+        "task_kwargs": {"topk": request.task_kwargs.get("topk", 1)},
     }
 
     return model_request
@@ -124,7 +125,8 @@ def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
         "input": {
             "question": request.query,
             "agents_predictions": list_preds,
-        }
+        },
+        "task_kwargs": {"topk": request.task_kwargs.get("topk", 1)},
     }
 
     return model_request
