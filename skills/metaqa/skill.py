@@ -3,7 +3,12 @@ import os
 import requests
 import asyncio
 
-from square_skill_api.models import QueryOutput, QueryRequest
+from square_skill_api.models import (
+    QueryOutput,
+    QueryRequest,
+    PredictionOutput,
+    Prediction,
+)
 from square_model_client import SQuAREModelClient
 from square_auth.client_credentials import ClientCredentials
 
@@ -18,59 +23,36 @@ async def predict(request: QueryRequest) -> QueryOutput:
     it calls the Skill agents to get the predictions,
     and then calls MetaQA Model to get the final prediction.
     """
-    task_dict_skill_id2skill_type = asyncio.create_task(_get_skill_types())
     list_skills = request.skill_args["list_skills"]
 
-    query = request.query
+    # 1) call the skills in parallel
+    list_skill_responses = await _call_skills(list_skills, request)
+    # 2) prepare MetaQA input
     qa_format = _get_qa_format(request)
-
-    # 1) get the skills we can use for this question
-    list_valid_skills = []
-    list_idx_valid_skills = []
-    dict_skill_id2skill_type = await task_dict_skill_id2skill_type
-    for skill_idx, skill_id in enumerate(list_skills):
-        skill_type = dict_skill_id2skill_type[skill_id]
-        if qa_format == skill_type:
-            list_valid_skills.append(skill_id)
-            list_idx_valid_skills.append(skill_idx)
-
-    # 2) call the skills in parallel
-    list_skill_responses = await _call_skills(list_valid_skills, request)
-    # 3) get the predictions
-    list_preds = [("", 0.0)] * len(list_skills)
-    for (skill_idx, skill_response) in zip(list_idx_valid_skills, list_skill_responses):
-        pred = skill_response["predictions"][0]["prediction_output"]["output"]
-        score = skill_response["predictions"][0]["prediction_output"]["output_score"]
-        list_preds[skill_idx] = (pred, score)
-
-    # 4) Call MetaQA Model API
-    model_request = {
-        "input": [[query, list_preds]],
-    }
-
+    if qa_format == "span-extraction":
+        model_request = _create_metaqa_request_for_span_extraction(
+            request, list_skill_responses
+        )
+    elif qa_format == "multiple-choice":
+        model_request = _create_metaqa_request_for_multiple_choice(
+            request, list_skill_responses
+        )
+    else:
+        # raise error
+        logger.info(f"Unsopported Skill Type:\n{qa_format}")
+    # 3) Call MetaQA Model API
     model_response = await square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="question-answering",
         model_request=model_request,
     )
     logger.info(f"Model response:\n{model_response}")
-
-    return _prepare_output(request, model_response)
+    # 4) Prepare MetaQA output
+    return _create_metaqa_output(request, model_response)
 
 
 def _get_qa_format(request):
     return request.skill["skill_type"]
-
-
-async def _get_skill_types():
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
-    token = client_credentials()
-    response = requests.get(
-        url=skill_manager_api_url + "/skill",
-        headers={"Authorization": f"Bearer {token}"},
-        verify=os.getenv("VERIFY_SSL") == "1",
-    )
-    return {skill["id"]: skill["skill_type"] for skill in response.json()}
 
 
 async def _call_skills(list_skills, request):
@@ -114,17 +96,51 @@ async def _call_skill(skill_id, request):
     return response.json()
 
 
-def _prepare_output(request, model_response):
-    if _get_qa_format(request) == "span-extraction":
-        return QueryOutput.from_question_answering(
-            questions=request.query,
-            model_api_output=model_response,
-            context=request.skill_args["context"],
+def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
+    list_preds = [["", 0.0]] * 16
+    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+        pred = skill_response["predictions"][0]["prediction_output"]["output"]
+        score = skill_response["predictions"][0]["prediction_output"]["output_score"]
+        list_preds[skill_idx] = (pred, score)
+
+    model_request = {
+        "input": {
+            "question": request.query,
+            "agents_predictions": list_preds,
+        }
+    }
+
+    return model_request
+
+
+def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
+    list_preds = [("", 0.0)] * 16
+    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+        pred = skill_response["predictions"][0]["prediction_output"]["output"]
+        score = skill_response["predictions"][0]["prediction_output"]["output_score"]
+        list_preds[8 + skill_idx] = (pred, score)
+
+    model_request = {
+        "input": {
+            "question": request.query,
+            "agents_predictions": list_preds,
+        }
+    }
+
+    return model_request
+
+
+def _create_metaqa_output(request, model_response):
+    list_predictions = []
+    for answer in model_response["answers"][0]:
+        list_predictions.append(
+            Prediction(
+                question=request.query,
+                prediction_score=answer["metaqa_score"],
+                prediction_output=PredictionOutput(
+                    output=answer["answer"], output_score=answer["agent_score"]
+                ),
+                skill_id=answer["agent_name"],
+            )
         )
-    elif _get_qa_format(request) == "multiple-choice":
-        return QueryOutput.from_sequence_classification(
-            questions=request.query,
-            answers=request.skill_args["choices"],
-            model_api_output=model_response,
-            context=request.skill_args["context"],
-        )
+    return QueryOutput(predictions=list_predictions)
