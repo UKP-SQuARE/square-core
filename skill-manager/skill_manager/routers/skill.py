@@ -241,6 +241,8 @@ async def query_skill(
     )
     query_request.skill = json.loads(skill.json())
 
+    if skill.default_skill_args is None:
+        skill.default_skill_args = {}
     # merge kargs with kwargs in request
     for kwargs_key in [
         "model_kwargs",
@@ -251,13 +253,13 @@ async def query_skill(
     ]:
         # overwrite kwargs from query_request with default kwargs
         kwargs = merge_dicts(
-            skill.get("default_skill_args", {}).pop(kwargs_key, {}),
+            skill.default_skill_args.pop(kwargs_key, {}),
             getattr(query_request, kwargs_key),
         )
         # set kwargs in query_request
         setattr(query_request, kwargs_key, kwargs)
     query_request.skill_args = merge_dicts(
-        skill.get("default_skill_args", {}), query_request.skill_args
+        skill.default_skill_args, query_request.skill_args
     )
 
     headers = {"Authorization": f"Bearer {token}"}
