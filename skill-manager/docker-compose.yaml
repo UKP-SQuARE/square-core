@@ -35,6 +35,8 @@ services:
     - mongo-data:/data/db
     expose:
     - 27017
+    ports:
+    - 27017:27017
     env_file:
     - .local.env
   redis:
@@ -64,8 +66,10 @@ services:
       SQUARE_PRIVATE_KEY_FILE: /app/private_key.pem
     volumes:
       - ./private_key.pem:/app/private_key.pem
+    expose:
+      - 8001
     ports:
-      - 8001:80
+      - 8001:8001
 
 volumes:
   mongo-data:

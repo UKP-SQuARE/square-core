@@ -1,6 +1,6 @@
 @hostname = localhost:8000
 @path_prefix = /api
-@token = <ENTER TOKEN>
+@token = 
 ### GET TOKEN
 # @name get_token
 # @prompt username

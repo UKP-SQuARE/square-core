@@ -96,39 +96,51 @@ def do_predict(
     headers = {"Authorization": f"Bearer {token}"}
     predictions: List[Prediction] = []
     start_time = datetime.datetime.now()
-    for i in range(8):
-        reference_data = dataset[i]
 
-        if dataset_metadata["skill-type"] == "extractive-qa":
-            query_request = {
-                "query": reference_data["question"],
-                "skill_args": {"context": reference_data["context"]},
-                "num_results": 1,
-            }
-        elif dataset_metadata["skill-type"] == "multiple-choice":
-            query_request = {
-                "query": reference_data["question"],
-                "skill_args": {"choices": reference_data["choices"]},
-                "num_results": 1,
-            }
-        else:
-            skill_type = dataset_metadata["skill-type"]
-            raise ValueError(
-                f"Predictions on '{skill_type}' datasets are currently not supported."
-            )
-
-        response = requests.post(
-            f"{base_url}/skill-manager/skill/{skill_id}/query",
-            headers=headers,
-            data=json.dumps(query_request),
+    if dataset_metadata["skill-type"] == "extractive-qa":
+        # 62c1ae1b536b1bb18ff91ce3 # squad
+        qa_type = "context"
+    elif dataset_metadata["skill-type"] == "multiple-choice":
+        # 62c1ae19536b1bb18ff91cde # commonsense_qa
+        qa_type = "choices"
+    else:
+        skill_type = dataset_metadata["skill-type"]
+        raise HTTPException(
+            400,
+            f"Predictions on '{skill_type}' datasets is currently not supported.",
         )
-        prediction_response = response.json()["predictions"][0]
 
+    dataset = dataset[:2]
+
+    query_request = {
+        "query": json.dumps(
+            [datapoint["question"] for datapoint in dataset if "question" in datapoint]
+        ),
+        "skill_args": {
+            "context": [
+                datapoint[qa_type] for datapoint in dataset if qa_type in datapoint
+            ]
+        },
+        "num_results": 1,
+    }
+
+    response = requests.post(
+        f"http://square-core-skill-manager-1:8000/api/skill/{skill_id}/query",
+        # f"{base_url}/skill-manager/skill/{skill_id}/query",
+        headers=headers,
+        data=json.dumps(query_request),
+    )
+
+    response.raise_for_status()
+    prediction_response = response.json()["predictions"]
+
+    for datapoint, output in zip(dataset, prediction_response):
+        assert datapoint["question"] == output["question"]
         predictions.append(
             Prediction(
-                id=reference_data["id"],
-                output=prediction_response["prediction_output"]["output"],
-                output_score=prediction_response["prediction_output"]["output_score"],
+                id=datapoint["id"],
+                output=output["prediction_output"]["output"],
+                output_score=output["prediction_output"]["output_score"],
             )
         )
 

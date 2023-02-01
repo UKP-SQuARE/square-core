@@ -242,8 +242,9 @@ async def query_skill(
             query=query_request.json(), id=id
         )
     )
-
+    logger.debug(query_request)
     query = query_request.query
+    query_request.query = json.loads(query_request.query)
     user_id = query_request.user_id
 
     skill: Skill = await get_skill_if_authorized(
@@ -275,18 +276,24 @@ async def query_skill(
         headers["Cache-Control"] = request.headers.get("Cache-Control")
 
     logger.debug(f"query json={query_request.dict()}")
-    response = session_cache.session.post(
-        f"{skill.url}/query",
-        headers=headers,
-        json=query_request.dict(),
-    )
-    if response.status_code > 201:
-        logger.exception(response.content)
-        response.raise_for_status()
-    predictions = QueryOutput.parse_obj(response.json())
+    # response = session_cache.session.post(
+    #    f"{skill.url}/query",
+    #    headers=headers,
+    #    json=query_request.dict(),
+    # )
+
+    response = get_skill_response()
+    response = json.dumps(response)
+    response = json.loads(response)
+    predictions = QueryOutput.parse_obj(response)
+
+    # if response.status_code > 201:
+    #    logger.exception(response.content)
+    #    response.raise_for_status()
+    # predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
         "predictions from skill: {predictions}".format(
-            predictions=str(predictions.json())[:100]
+            predictions=str(predictions.json())
         )
     )
 
@@ -303,7 +310,7 @@ async def query_skill(
     ).inserted_id
     logger.debug(
         "prediction saved {mongo_prediction}".format(
-            mongo_prediction=str(mongo_prediction.json())[:100],
+            mongo_prediction=str(mongo_prediction.json()),
         )
     )
 
@@ -331,3 +338,53 @@ async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
         logger.error(
             f"Triggering evaluation for dataset '{dataset_name}' failed: {response.json()}"
         )
+
+
+def get_skill_response():
+    return {
+        "predictions": [
+            {
+                "question": "Which NFL team represented the AFC at Super Bowl 50?",
+                "prediction_score": 0.8567973375320435,
+                "prediction_output": {
+                    "output": "Denver Broncos",
+                    "output_score": 0.8567973375320435,
+                },
+                "prediction_documents": [
+                    {
+                        "index": "",
+                        "document_id": "",
+                        "document": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24–10 to earn their third Super Bowl title.",
+                        "span": [177, 191],
+                        "url": "",
+                        "source": "",
+                        "document_score": 1,
+                    }
+                ],
+                "prediction_graph": None,
+                "attributions": None,
+            },
+            {
+                "question": "Which NFL team represented the NFC at Super Bowl 50?",
+                "prediction_score": 0.8632825613021851,
+                "prediction_output": {
+                    "output": "Carolina Panthers",
+                    "output_score": 0.8632825613021851,
+                },
+                "prediction_documents": [
+                    {
+                        "index": "",
+                        "document_id": "",
+                        "document": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24–10 to earn their third Super Bowl title.",
+                        "span": [249, 266],
+                        "url": "",
+                        "source": "",
+                        "document_score": 1,
+                    }
+                ],
+                "prediction_graph": None,
+                "attributions": None,
+            },
+        ],
+        "adversarial": {"indices": []},
+    }
