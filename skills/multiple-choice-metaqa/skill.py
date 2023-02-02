@@ -83,7 +83,11 @@ async def _call_skill(skill_id, request):
         },
         "skill": {},
         "user_id": "",
-        "explain_kwargs": {},
+        "explain_kwargs": request.explain_kwargs or {},
+        "attack_kwargs": request.attack_kwargs or {},
+        "model_kwargs": request.model_kwargs or {},
+        "task_kwargs": request.task_kwargs or {},
+        "preprocessing_kwargs": request.preprocessing_kwargs or {},
     }
 
     response = requests.post(
