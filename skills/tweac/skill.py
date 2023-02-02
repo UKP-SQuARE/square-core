@@ -26,7 +26,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     """
     logger.info("Request: {}".format(request))
     qa_format = _get_qa_format(request)
-
+    
     predicted_dataset, tweac_conf = await _call_tweac(request)
     list_predicted_skills = await _retrieve_skills(predicted_dataset, qa_format)
     if len(list_predicted_skills) == 0:
@@ -134,7 +134,11 @@ async def _call_skill(skill_id, request):
         },
         "skill": {},
         "user_id": "",
-        "explain_kwargs": {},
+        "explain_kwargs": request.explain_kwargs or {},
+        "attack_kwargs": request.attack_kwargs or {},
+        "model_kwargs": request.model_kwargs or {},
+        "task_kwargs": request.task_kwargs or {},
+        "preprocessing_kwargs": request.preprocessing_kwargs or {},
     }
 
     response = requests.post(
