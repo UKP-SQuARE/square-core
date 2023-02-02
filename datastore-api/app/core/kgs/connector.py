@@ -8,7 +8,7 @@ from elasticsearch.helpers import async_bulk, async_scan
 
 
 from ...core.config import settings
-from ...models.datastore import Datastore
+from ...models.datastore import Datastore, DatastoreField
 from ...models.document import Document
 from ...models.index import Index
 from ...models.query import QueryResult
@@ -47,14 +47,34 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
             kg_name (str): Name of the knowledge graph.
         """
         return await self.get_datastore(kg_name)
-
-    async def add_kg(self, kg_name: Datastore) -> bool:
+    
+    async def add_kg(self, name: str) -> bool:
         """Adds a new knowledge graph.
 
         Args:
-            Knowledge graph (Datastore): Knowledge graph to add.
+            name (str): Knowledge Graph name to add.
         """
-        return await self.add_datastore(kg_name)
+        kg_predefined = Datastore(name=name,fields=[
+            DatastoreField(name="name", type="keyword"),
+            DatastoreField(name="type", type="keyword"),
+            DatastoreField(name="description", type="text"),
+            DatastoreField(name="weight", type="double"),
+            DatastoreField(name="in_id", type="keyword"),
+            DatastoreField(name="out_id", type="keyword"), 
+        ],
+    )
+        try:
+            # The ES index that holds the documents
+            resp1 = await self.es.indices.create(
+                index=self._datastore_docs_index_name(name),
+                body=self.converter.convert_from_datastore(kg_predefined),
+            )
+            # The ES index that holds the (FAISS) search index config
+            resp2 = await self.es.indices.create(index=self._datastore_search_index_name(name), body={})
+            return resp1["acknowledged"] and resp2["acknowledged"]
+        except elasticsearch.exceptions.RequestError as e:
+            logger.info(e)
+            return False
 
     async def delete_kg(self, kg_name: Datastore) -> bool:
         """Deletes a knowledge graph.
