@@ -14,13 +14,13 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 from evaluator.app.core.task_helper import task_id
 from evaluator.app.models import (
     Evaluation,
     EvaluationStatus,
     Prediction,
     PredictionResult,
-    get_dataset_metadata,
 )
 from evaluator.app.routers import client_credentials
 from evaluator.tasks import evaluate_task
@@ -52,7 +52,13 @@ def predict(
             "dataset_name": dataset_name,
         }
         mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
+            evaluation_filter,
+            {
+                "$set": {
+                    "prediction_status": EvaluationStatus.failed,
+                    "prediction_error": f"{e}",
+                }
+            },
         )
         raise e
 
@@ -75,44 +81,32 @@ def do_predict(
     dataset_metadata = get_dataset_metadata(dataset_name)
     # get the dataset
     dataset_handler = DatasetHandler()
-    try:
-        dataset = dataset_handler.get_dataset(dataset_name)
-    except DatasetDoesNotExistError:
-        logger.error("Dataset does not exist!")
-        mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
-        )
-        raise DatasetDoesNotExistError(dataset_name)
+    dataset = dataset_handler.get_dataset(dataset_name)
     # format the dataset into universal format for its skill-type
-    try:
-        dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
-    except ValueError as e:
-        logger.error(f"{e}")
-        mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
-        )
-        raise ValueError(f"{e}")
+    dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
 
     headers = {"Authorization": f"Bearer {token}"}
     predictions: List[Prediction] = []
     start_time = datetime.datetime.now()
-    for i in range(8):
+    num_samples = 8  # len(dataset)
+    for i in range(num_samples):
+        logger.debug(f"Predicting sample {i + 1}/{num_samples}")
         reference_data = dataset[i]
 
-        if dataset_metadata["skill-type"] == "extractive-qa":
+        if dataset_metadata.skill_type == "extractive-qa":
             query_request = {
                 "query": reference_data["question"],
                 "skill_args": {"context": reference_data["context"]},
                 "num_results": 1,
             }
-        elif dataset_metadata["skill-type"] == "multiple-choice":
+        elif dataset_metadata.skill_type == "multiple-choice":
             query_request = {
                 "query": reference_data["question"],
                 "skill_args": {"choices": reference_data["choices"]},
                 "num_results": 1,
             }
         else:
-            skill_type = dataset_metadata["skill-type"]
+            skill_type = dataset_metadata.skill_type
             raise ValueError(
                 f"Predictions on '{skill_type}' datasets are currently not supported."
             )
@@ -122,6 +116,7 @@ def do_predict(
             headers=headers,
             data=json.dumps(query_request),
         )
+        response.raise_for_status()
         prediction_response = response.json()["predictions"][0]
 
         predictions.append(
@@ -150,7 +145,13 @@ def do_predict(
     )
 
     mongo_client.client.evaluator.evaluations.update_many(
-        evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.finished}}
+        evaluation_filter,
+        {
+            "$set": {
+                "prediction_status": EvaluationStatus.finished,
+                "prediction_error": None,
+            }
+        },
     )
 
     # trigger evaluation task specified metric

@@ -3,18 +3,14 @@ import logging
 from bson import ObjectId
 
 from evaluator.app import mongo_client
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 from evaluator.app.core.task_helper import (
     dataset_exists,
     metric_exists,
     skill_exists,
     task_id,
 )
-from evaluator.app.models import (
-    Evaluation,
-    EvaluationStatus,
-    PredictionResult,
-    get_dataset_metadata,
-)
+from evaluator.app.models import Evaluation, EvaluationStatus, PredictionResult
 from evaluator.tasks import evaluate_task, predict_task
 
 logger = logging.getLogger(__name__)
@@ -39,7 +35,7 @@ class EvaluationHandler:
         # choose default metric if no metric was specified
         if metric_name is None:
             metadata = get_dataset_metadata(dataset_name)
-            metric_name = metadata["metric"]
+            metric_name = metadata.metric
             logger.info(f"Going to use default metric '{metric_name}' for evaluation.")
 
         evaluation = Evaluation(
@@ -49,6 +45,8 @@ class EvaluationHandler:
             metric_name=metric_name,
             prediction_status=EvaluationStatus.requested,
             metric_status=EvaluationStatus.requested,
+            prediction_error=None,
+            metric_error=None,
         )
 
         # check if metric/predictions are already computed (or already requested)
