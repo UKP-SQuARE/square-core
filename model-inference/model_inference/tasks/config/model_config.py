@@ -25,10 +25,6 @@ class ModelConfig(Mapping):
     # See square_model_inference.core.event_handlers.MODEL_MAPPING for all available names with corresponding model
     model_type: str = None
 
-    # Path to the onnx file of the model (this is necessary for onnx models)
-    model_path: str = None
-    decoder_path: str = None
-
     # data paths to store additional data
     data_path: str = None
 
@@ -54,6 +50,12 @@ class ModelConfig(Mapping):
     # the base64 string back to the numpy array
     return_plaintext_arrays: bool = False
 
+    # Flag that decides if quantized ONNX model should be used for inference
+    onnx_use_quantized: bool = False
+
+    # Flag that decides if ONNX model is encoder-decoder model
+    is_encoder_decoder: bool = False
+
     def __getitem__(self, key):
         return self.__dict__[key]
 
@@ -75,11 +77,11 @@ class ModelConfig(Mapping):
             max_input=self.max_input_size,
             disable_gpu=self.disable_gpu,
             return_plaintext_arrays=self.return_plaintext_arrays,
-            model_path=self.model_path,
             data_path=self.data_path,
-            decoder_path=self.decoder_path,
             preloaded_adapters=self.preloaded_adapters,
             transformers_cache=self.transformers_cache,
+            is_encoder_decoder=self.is_encoder_decoder,
+            onnx_use_quantized=self.onnx_use_quantized,
         )
 
     def update(self, identifier: str=IDENTIFIER):
@@ -88,9 +90,8 @@ class ModelConfig(Mapping):
 
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
-        self.model_path = config["model_path"]
+        self.is_encoder_decoder = config["is_encoder_decoder"]
         self.data_path = config["data_path"]
-        self.decoder_path = config["decoder_path"]
         self.preloaded_adapters = config["preloaded_adapters"]
         self.disable_gpu = config["disable_gpu"]
         self.batch_size = config["batch_size"]
@@ -105,9 +106,8 @@ class ModelConfig(Mapping):
         model_config = ModelConfig(
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
-            model_path=config("MODEL_PATH", default=None),
+            is_encoder_decoder=config("IS_ENCODER_DECODER", cast=bool, default=False),
             data_path=config("DATA_PATH", default=None),
-            decoder_path=config("DECODER_PATH", default=None),
             preloaded_adapters=config("PRELOADED_ADAPTERS", cast=bool, default=True),
             disable_gpu=config("DISABLE_GPU", cast=bool, default=False),
             batch_size=config("BATCH_SIZE", cast=int, default=32),
@@ -115,6 +115,7 @@ class ModelConfig(Mapping):
             transformers_cache=config("TRANSFORMERS_CACHE", default=None),
             model_class=config("MODEL_CLASS", default="base"),
             return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
+            onnx_use_quantized=config("ONNX_USE_QUANTIZED", cast=bool, default=False),
         )
         model_config.save(IDENTIFIER)
         return model_config
@@ -152,9 +153,9 @@ def set_test_config(
     model_class="base",
     cache="./.cache",
     preloaded_adapters=False,
-    onnx_path="",
-    decoder_path="",
+    is_encoder_decoder=False,
     data_path="",
+    onnx_use_quantized=False,
 ):
     global model_config
     model_config.model_name = model_name
@@ -166,8 +167,8 @@ def set_test_config(
     model_config.transformers_cache = cache
     model_config.preloaded_adapters = preloaded_adapters
     model_config.data_path = data_path
-    model_config.model_path = onnx_path
-    model_config.decoder_path = decoder_path
+    model_config.is_encoder_decoder = is_encoder_decoder
+    model_config.onnx_use_quantized = onnx_use_quantized
 
 
 if os.getenv("TEST", 0) == "1":
