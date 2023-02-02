@@ -57,12 +57,14 @@
                     >{{ index + 1 }}. {{ datastore.name }}
                   </span>
                 </label>
+               
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    
   </div>
 </template>
 
@@ -78,198 +80,198 @@ export default Vue.component("compare-datastores", {
       options: {
         selectedDatastores: [],
       },
-      mock_allIndices:{
-        "bioasq":[
-            {
-              datastore_name: "bioasq",
-              name: "distilbert",
-              doc_encoder_model: "msmarco-distilbert-base-tas-b",
-              doc_encoder_adapter: null,
-              query_encoder_model:
-                "sentence-transformers/msmarco-distilbert-base-tas-b",
-              query_encoder_adapter: null,
-              embedding_size: 768,
-              embedding_mode: "cls",
-              index_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
-              index_ids_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
-              index_description: "QT_8bit-IVF65536",
-              collection_url: "http://www.bioasq.org/",
-            },
-            {
-              datastore_name: "bioasq",
-              name: "distilbert",
-              doc_encoder_model: "msmarco-distilbert-base-tas-b",
-              doc_encoder_adapter: null,
-              query_encoder_model:
-                  "sentence-transformers/msmarco-distilbert-base-tas-b",
-              query_encoder_adapter: null,
-              embedding_size: 768,
-              embedding_mode: "cls",
-              index_url:
-                  "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
-              index_ids_url:
-                  "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
-              index_description: "QT_8bit-IVF65536",
-              collection_url: "http://www.bioasq.org/",
-            },
-          ],
-          "conceptnet-kg":[],
-          "msmarco":[
-            {
-              datastore_name: "msmarco",
-              name: "distilbert",
-              doc_encoder_model: "msmarco-distilbert-base-tas-b",
-              doc_encoder_adapter: null,
-              query_encoder_model:
-                "sentence-transformers/msmarco-distilbert-base-tas-b",
-              query_encoder_adapter: null,
-              embedding_size: 768,
-              embedding_mode: "cls",
-              index_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.index",
-              index_ids_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.txt",
-              index_description: "QT_8bit-IVF65536",
-              collection_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip",
-            },
-          ],
-          "nq":[{
-              datastore_name: "nq",
-              name: "dpr",
-              doc_encoder_model: "facebook/dpr-ctx_encoder-single-nq-base",
-              doc_encoder_adapter: null,
-              query_encoder_model:
-                "facebook/dpr-question_encoder-single-nq-base",
-              query_encoder_adapter: null,
-              embedding_size: 768,
-              embedding_mode: "pooler",
-              index_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.index",
-              index_ids_url:
-                "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.txt",
-              index_description:
-                "It uses Faiss-IVF-SQ with nlist = 2^18, nprobe = 512 and 8bit uniform. For the indexing script, please refer to https://gist.github.com/kwang2049/d23550604059ed1576ac6cffb7e09fb2",
-              collection_url:
-                "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
-            },],
+      // mock_allIndices:{
+      //   "bioasq":[
+      //       {
+      //         datastore_name: "bioasq",
+      //         name: "distilbert",
+      //         doc_encoder_model: "msmarco-distilbert-base-tas-b",
+      //         doc_encoder_adapter: null,
+      //         query_encoder_model:
+      //           "sentence-transformers/msmarco-distilbert-base-tas-b",
+      //         query_encoder_adapter: null,
+      //         embedding_size: 768,
+      //         embedding_mode: "cls",
+      //         index_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
+      //         index_ids_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
+      //         index_description: "QT_8bit-IVF65536",
+      //         collection_url: "http://www.bioasq.org/",
+      //       },
+      //       {
+      //         datastore_name: "bioasq",
+      //         name: "distilbert",
+      //         doc_encoder_model: "msmarco-distilbert-base-tas-b",
+      //         doc_encoder_adapter: null,
+      //         query_encoder_model:
+      //             "sentence-transformers/msmarco-distilbert-base-tas-b",
+      //         query_encoder_adapter: null,
+      //         embedding_size: 768,
+      //         embedding_mode: "cls",
+      //         index_url:
+      //             "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
+      //         index_ids_url:
+      //             "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
+      //         index_description: "QT_8bit-IVF65536",
+      //         collection_url: "http://www.bioasq.org/",
+      //       },
+      //     ],
+      //     "conceptnet-kg":[],
+      //     "msmarco":[
+      //       {
+      //         datastore_name: "msmarco",
+      //         name: "distilbert",
+      //         doc_encoder_model: "msmarco-distilbert-base-tas-b",
+      //         doc_encoder_adapter: null,
+      //         query_encoder_model:
+      //           "sentence-transformers/msmarco-distilbert-base-tas-b",
+      //         query_encoder_adapter: null,
+      //         embedding_size: 768,
+      //         embedding_mode: "cls",
+      //         index_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.index",
+      //         index_ids_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.txt",
+      //         index_description: "QT_8bit-IVF65536",
+      //         collection_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip",
+      //       },
+      //     ],
+      //     "nq":[{
+      //         datastore_name: "nq",
+      //         name: "dpr",
+      //         doc_encoder_model: "facebook/dpr-ctx_encoder-single-nq-base",
+      //         doc_encoder_adapter: null,
+      //         query_encoder_model:
+      //           "facebook/dpr-question_encoder-single-nq-base",
+      //         query_encoder_adapter: null,
+      //         embedding_size: 768,
+      //         embedding_mode: "pooler",
+      //         index_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.index",
+      //         index_ids_url:
+      //           "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.txt",
+      //         index_description:
+      //           "It uses Faiss-IVF-SQ with nlist = 2^18, nprobe = 512 and 8bit uniform. For the indexing script, please refer to https://gist.github.com/kwang2049/d23550604059ed1576ac6cffb7e09fb2",
+      //         collection_url:
+      //           "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
+      //       },],
 
-      },
+      // },
 
-      mock_datastores: [
-        {
-          name: "bioasq",
-          fields: [
-            { name: "text", type: "text" },
-            { name: "title", type: "text" },
-          ],
-          // indices: [
-          //   {
-          //     datastore_name: "bioasq",
-          //     name: "distilbert",
-          //     doc_encoder_model: "msmarco-distilbert-base-tas-b",
-          //     doc_encoder_adapter: null,
-          //     query_encoder_model:
-          //       "sentence-transformers/msmarco-distilbert-base-tas-b",
-          //     query_encoder_adapter: null,
-          //     embedding_size: 768,
-          //     embedding_mode: "cls",
-          //     index_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
-          //     index_ids_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
-          //     index_description: "QT_8bit-IVF65536",
-          //     collection_url: "http://www.bioasq.org/",
-          //   },
-          //   {
-          //     datastore_name: "bioasq",
-          //     name: "distilbert",
-          //     doc_encoder_model: "msmarco-distilbert-base-tas-b",
-          //     doc_encoder_adapter: null,
-          //     query_encoder_model:
-          //         "sentence-transformers/msmarco-distilbert-base-tas-b",
-          //     query_encoder_adapter: null,
-          //     embedding_size: 768,
-          //     embedding_mode: "cls",
-          //     index_url:
-          //         "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
-          //     index_ids_url:
-          //         "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
-          //     index_description: "QT_8bit-IVF65536",
-          //     collection_url: "http://www.bioasq.org/",
-          //   },
-          // ],
-        },
-        {
-          name: "conceptnet-kg",
-          fields: [
-            { name: "description", type: "text" },
-            { name: "in_id", type: "keyword" },
-            { name: "name", type: "keyword" },
-            { name: "out_id", type: "keyword" },
-            { name: "type", type: "keyword" },
-            { name: "weight", type: "double" },
-          ],
-         // indices: [],
-        },
-        {
-          name: "msmarco",
-          fields: [
-            { name: "text", type: "text" },
-            { name: "title", type: "text" },
-          ],
-          // indices: [
-          //   {
-          //     datastore_name: "msmarco",
-          //     name: "distilbert",
-          //     doc_encoder_model: "msmarco-distilbert-base-tas-b",
-          //     doc_encoder_adapter: null,
-          //     query_encoder_model:
-          //       "sentence-transformers/msmarco-distilbert-base-tas-b",
-          //     query_encoder_adapter: null,
-          //     embedding_size: 768,
-          //     embedding_mode: "cls",
-          //     index_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.index",
-          //     index_ids_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.txt",
-          //     index_description: "QT_8bit-IVF65536",
-          //     collection_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip",
-          //   },
-          // ],
-        },
-        {
-          name: "nq",
-          fields: [
-            { name: "text", type: "text" },
-            { name: "title", type: "text" },
-          ],
-          // indices: [
-          //   {
-          //     datastore_name: "nq",
-          //     name: "dpr",
-          //     doc_encoder_model: "facebook/dpr-ctx_encoder-single-nq-base",
-          //     doc_encoder_adapter: null,
-          //     query_encoder_model:
-          //       "facebook/dpr-question_encoder-single-nq-base",
-          //     query_encoder_adapter: null,
-          //     embedding_size: 768,
-          //     embedding_mode: "pooler",
-          //     index_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.index",
-          //     index_ids_url:
-          //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.txt",
-          //     index_description:
-          //       "It uses Faiss-IVF-SQ with nlist = 2^18, nprobe = 512 and 8bit uniform. For the indexing script, please refer to https://gist.github.com/kwang2049/d23550604059ed1576ac6cffb7e09fb2",
-          //     collection_url:
-          //       "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
-          //   },
-          // ],
-        },
-      ],
+      // mock_datastores: [
+      //   {
+      //     name: "bioasq",
+      //     fields: [
+      //       { name: "text", type: "text" },
+      //       { name: "title", type: "text" },
+      //     ],
+      //     // indices: [
+      //     //   {
+      //     //     datastore_name: "bioasq",
+      //     //     name: "distilbert",
+      //     //     doc_encoder_model: "msmarco-distilbert-base-tas-b",
+      //     //     doc_encoder_adapter: null,
+      //     //     query_encoder_model:
+      //     //       "sentence-transformers/msmarco-distilbert-base-tas-b",
+      //     //     query_encoder_adapter: null,
+      //     //     embedding_size: 768,
+      //     //     embedding_mode: "cls",
+      //     //     index_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
+      //     //     index_ids_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
+      //     //     index_description: "QT_8bit-IVF65536",
+      //     //     collection_url: "http://www.bioasq.org/",
+      //     //   },
+      //     //   {
+      //     //     datastore_name: "bioasq",
+      //     //     name: "distilbert",
+      //     //     doc_encoder_model: "msmarco-distilbert-base-tas-b",
+      //     //     doc_encoder_adapter: null,
+      //     //     query_encoder_model:
+      //     //         "sentence-transformers/msmarco-distilbert-base-tas-b",
+      //     //     query_encoder_adapter: null,
+      //     //     embedding_size: 768,
+      //     //     embedding_mode: "cls",
+      //     //     index_url:
+      //     //         "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.index",
+      //     //     index_ids_url:
+      //     //         "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/bioasq-distilbert-base-tas-b.size-full/bioasq-QT_8bit_uniform-ivf262144.txt",
+      //     //     index_description: "QT_8bit-IVF65536",
+      //     //     collection_url: "http://www.bioasq.org/",
+      //     //   },
+      //     // ],
+      //   },
+      //   {
+      //     name: "conceptnet-kg",
+      //     fields: [
+      //       { name: "description", type: "text" },
+      //       { name: "in_id", type: "keyword" },
+      //       { name: "name", type: "keyword" },
+      //       { name: "out_id", type: "keyword" },
+      //       { name: "type", type: "keyword" },
+      //       { name: "weight", type: "double" },
+      //     ],
+      //    // indices: [],
+      //   },
+      //   {
+      //     name: "msmarco",
+      //     fields: [
+      //       { name: "text", type: "text" },
+      //       { name: "title", type: "text" },
+      //     ],
+      //     // indices: [
+      //     //   {
+      //     //     datastore_name: "msmarco",
+      //     //     name: "distilbert",
+      //     //     doc_encoder_model: "msmarco-distilbert-base-tas-b",
+      //     //     doc_encoder_adapter: null,
+      //     //     query_encoder_model:
+      //     //       "sentence-transformers/msmarco-distilbert-base-tas-b",
+      //     //     query_encoder_adapter: null,
+      //     //     embedding_size: 768,
+      //     //     embedding_mode: "cls",
+      //     //     index_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.index",
+      //     //     index_ids_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/msmarco-distilbert-base-tas-b.size-full/msmarco-QT_8bit_uniform-ivf65536.txt",
+      //     //     index_description: "QT_8bit-IVF65536",
+      //     //     collection_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/msmarco.zip",
+      //     //   },
+      //     // ],
+      //   },
+      //   {
+      //     name: "nq",
+      //     fields: [
+      //       { name: "text", type: "text" },
+      //       { name: "title", type: "text" },
+      //     ],
+      //     // indices: [
+      //     //   {
+      //     //     datastore_name: "nq",
+      //     //     name: "dpr",
+      //     //     doc_encoder_model: "facebook/dpr-ctx_encoder-single-nq-base",
+      //     //     doc_encoder_adapter: null,
+      //     //     query_encoder_model:
+      //     //       "facebook/dpr-question_encoder-single-nq-base",
+      //     //     query_encoder_adapter: null,
+      //     //     embedding_size: 768,
+      //     //     embedding_mode: "pooler",
+      //     //     index_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.index",
+      //     //     index_ids_url:
+      //     //       "https://public.ukp.informatik.tu-darmstadt.de/kwang/faiss-instant/dpr-single-nq-base.size-full/nq-QT_8bit_uniform-ivf262144.txt",
+      //     //     index_description:
+      //     //       "It uses Faiss-IVF-SQ with nlist = 2^18, nprobe = 512 and 8bit uniform. For the indexing script, please refer to https://gist.github.com/kwang2049/d23550604059ed1576ac6cffb7e09fb2",
+      //     //     collection_url:
+      //     //       "https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz",
+      //     //   },
+      //     // ],
+      //   },
+      // ],
     };
   },
   computed: {
@@ -279,19 +281,24 @@ export default Vue.component("compare-datastores", {
       });
     },
     getAllAvailablDatastores() {
-      // return this.$store.state.availableDatastores
-      //console.log(this.$store.state.getAllAvailablDatastores)
-      // console.log(this.$store.state.availableIndices)
-      this.mock_datastores.forEach(datastore=>{datastore.indices=this.mock_allIndices[datastore.name]})
-      console.log(Object.values(this.mock_datastores))
-      // console.log(Object.values(this.mock_allIndices))
-      return this.mock_datastores;
+  
+      console.log(this.$store.state.availableDatastores)
+
+
+
+      
+      return this.$store.state.availableDatastores 
+      
+ 
     },
+        getAllAvailableIndices() {
+
+      return this.$store.state.availableIndices;
+    },
+   
+ 
   },
-    getAllAvailableIndices() {
-      return this.mock_allIndices;
-      // return this.$store.state.getAllAvailableIndices;
-    },
+
   methods: {
     selectDatastore(datastore_name) {
       let index = this.options.selectedDatastores.findIndex(obj => obj.name === datastore_name);
@@ -305,10 +312,19 @@ export default Vue.component("compare-datastores", {
       }
       this.$emit("input", this.options);
     },
+ 
+  },
+  mounted (){
+
+
   },
   beforeMount() {
     this.waiting = true;
-    this.$store.dispatch("updateDatastores").then();
+    this.$store.dispatch("updateDatastores").then(
+      ()=>{this.$store.dispatch("updateIndices")}).then(
+        console.log("before mount finish")
+    );
+  
   },
 });
 </script>

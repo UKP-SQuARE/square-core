@@ -33,6 +33,7 @@ export default new Vuex.Store({
     currentSkills: [],
     availableSkills: [],
     availableDatastores:[],
+    availableDatastoresName:[],
     availableIndices:[],
     mySkills: [],
     skillOptions: {
@@ -69,8 +70,14 @@ export default new Vuex.Store({
       state.availableDatastores = payload.datastores
 
     },
+
     setIndices(state, payload) {
-      state.availableIndices = payload.indices
+      state.availableDatastores.forEach(datastore=>{
+        if (datastore.name==payload.dataStoreId){
+          datastore.indices=payload.indices
+
+        }
+      })
 
     },
     setAuthentication(state, payload) {
@@ -161,9 +168,19 @@ export default new Vuex.Store({
       return getDatastores(context.getters.authenticationHeader())
           .then((response) => context.commit('setDatastores', { datastores: response.data }))
     },
-    updateIndices(context,datastoreId) {
-      return getDatastoreIndices(context.getters.authenticationHeader(), {datastoreId})
-          .then((response) => context.commit('setIndices', { datastores: response.data }))
+    updateIndices(context) {
+      //console.log(context.state.availableDatastores)
+      context.state.availableDatastores.forEach(datastore=>{context.state.availableDatastoresName.push(datastore.name)} )
+      //console.log(context.state.availableDatastoresName)
+      context.state.availableDatastoresName.forEach(datastoreName=>{getDatastoreIndices(context.getters.authenticationHeader(), datastoreName)
+          .then((response) => {
+            context.commit('setIndices', { indices: response.data, dataStoreId:datastoreName })
+          }
+          ) })
+   
+      //console.log("Update indices")   
+   
+      
     },
     updateSkill(context, { skill }) {
       return putSkill(context.getters.authenticationHeader(), skill.id, skill)
@@ -183,7 +200,8 @@ export default new Vuex.Store({
       if (state.token) {
         return {'Authorization': `Bearer ${state.token}`}
       } else {
-        return {'Authorization': `Bearer "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIyUmE2VkdrUTdSNkJ3STk5WVpBLVJVQWhaaS12TlJmcTVLam11SXVMbkVZIn0.eyJleHAiOjE2NzM2MTk1NTYsImlhdCI6MTY3MzYxOTI1NiwianRpIjoiYzFmZmY1MTYtNzgyMy00NTg2LWI2M2EtMDc0N2QzZTk3ZjRkIiwiaXNzIjoiaHR0cHM6Ly9zcXVhcmUudWtwLWxhYi5kZS9hdXRoL3JlYWxtcy9zcXVhcmUiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiYjhmZWNlMTEtYWM0Yi00ZDRhLWJiYzktMWU5OGMzNzMzOWFiIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoibW9kZWxzIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXNxdWFyZSIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJjbGllbnRJZCI6Im1vZGVscyIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiY2xpZW50SG9zdCI6IjUuMTQ3LjI1MS4xODYiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzZXJ2aWNlLWFjY291bnQtbW9kZWxzIiwiY2xpZW50QWRkcmVzcyI6IjUuMTQ3LjI1MS4xODYifQ.cDOoM1LffBWQmqBX40OSpDPgMLTa_i12ZQAdFGZdAw3gSrWQ_51oJw8rcUNb_foO0LOe0rtboPX84Yvno0V-nUdbSZARkiNQNG0nCyMqbtzs4F7hGATWGZwdpDR7LWea5d-nBQLsJo3djkDwPc6UABmj0nxlqIJQ2S4vlbnj8V0nmGvcCFjwfvWLgw38A7OMPfO1NspO6EhCGpqHUY9IAOtCZMN7_iNC5ouGrZL9fadcEWoKZfpJTEGu_SFcau_Ytvu-qeLxDNJLj8Rot2UXf_BDkm8Y9yLbCv5nsnspYG9Selm0-EhQyLyleKcu73-dN8VU4Jbw9igdSwQHvBhpFg"`}
+        return {'Authorization': `Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIyUmE2VkdrUTdSNkJ3STk5WVpBLVJVQWhaaS12TlJmcTVLam11SXVMbkVZIn0.eyJleHAiOjE2NzUzNDYxOTAsImlhdCI6MTY3NTM0NTg5MCwianRpIjoiYjM5N2QyZTAtNjE1Ny00NjcyLWFjZjMtMWM5N2FkNDZlMGYzIiwiaXNzIjoiaHR0cHM6Ly9zcXVhcmUudWtwLWxhYi5kZS9hdXRoL3JlYWxtcy9zcXVhcmUiLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiYjhmZWNlMTEtYWM0Yi00ZDRhLWJiYzktMWU5OGMzNzMzOWFiIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoibW9kZWxzIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXNxdWFyZSIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJjbGllbnRJZCI6Im1vZGVscyIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiY2xpZW50SG9zdCI6IjEwLjE2Ny4xLjI1NCIsInByZWZlcnJlZF91c2VybmFtZSI6InNlcnZpY2UtYWNjb3VudC1tb2RlbHMiLCJjbGllbnRBZGRyZXNzIjoiMTAuMTY3LjEuMjU0In0.dxJ_ASFPmU5ojzDDAptdV2tODwqSlnrvZAU01IuTEIXVhsdEu2QED3cXjJMklMCW9xitwThhGDEDB4Cp3Lr2H8Iv-bEZ1XM5zEBfUka01ZOBv8JSZBQyCzGx42cHdhiM24jP-zvVwyhfVrL6XiuzeGdglaug9RLGzuhpsqIoT4RwYk4g34Hj3k7hSbx2ZV1J8PD6F69qTZcHrTzMgZoZkE2ctXC5V0XnAyP_XyoelvctcePcch9knIOjnCzygUoZ42yKx6pAOVuhlvQ9imZF9HeQcKhIKFKjFis1G2q1R2tchXs7S_bX9jQfAtv984cz0hHselO90r2oI6CgBYRv8w`}
+
       }
     }
   }
