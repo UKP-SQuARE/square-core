@@ -34,6 +34,8 @@ from model_manager.tasks.celery import app as celery_app
 import json
 from bson import json_util
 
+from model_manager.app.models.onnx_export import onnx_export
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -193,15 +195,32 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     """
     deploy a new model to the platform
     """
+    model_name = model_params.model_name
+    model_type = model_params.model_type
+
+    if model_type == "onnx":
+        try:
+            model_name = onnx_export(model_params.model_name 
+                    ,model_params.model_class 
+                    ,model_params.hf_token
+                    ,model_params.adapter_id 
+                    ,model_params.custom_onnx_config
+                    ,model_params.onnx_use_quantized
+                    )
+        except Exception as e: 
+            # Use normal model if model can not be exported to onnx
+            logger.debug(f"Onnx export failed, using normal model instead: {str(e)}")
+            model_type = "transformer"
+
     user_id = await utils.get_user_id(request)
     env = {
         "USER_ID": user_id,
-        "IDENTIFIER": model_params.model_name,
+        "IDENTIFIER": model_name,
         "UUID": str(uuid.uuid1()),
-        "MODEL_NAME": model_params.model_name,
-        "MODEL_PATH": model_params.model_path,
-        "DECODER_PATH": model_params.decoder_path,
-        "MODEL_TYPE": model_params.model_type,
+        "MODEL_NAME": model_name,
+        "ONNX_USE_QUANTIZED": model_params.onnx_use_quantized,
+        "IS_ENCODER_DECODER": model_params.is_encoder_decoder,
+        "MODEL_TYPE": model_type,
         "MODEL_CLASS": model_params.model_class,
         "DISABLE_GPU": model_params.disable_gpu,
         "BATCH_SIZE": model_params.batch_size,
@@ -383,8 +402,8 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
                     "MODEL_CLASS": data["model_class"],
                     "RETURN_PLAINTEXT_ARRAYS": data["return_plaintext_arrays"],
                     "TRANSFORMERS_CACHE": data.get("transformers_cache", ""),
-                    "MODEL_PATH": data.get("model_path", ""),
-                    "DECODER_PATH": data.get("decoder_path", ""),
+                    "ONNX_USE_QUANTIZED": data.get("onnx_use_quantized"),
+                    "IS_ENCODER_DECODER": data.get("is_encoder_decoder"),
                     "CONTAINER": container,
                 }
             )
