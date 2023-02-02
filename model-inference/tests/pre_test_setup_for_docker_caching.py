@@ -98,6 +98,11 @@ if __name__ == "__main__":
         help="sentence transformer based model",
         action="store_true",
     )
+    parser.add_argument(
+        "--onnx",
+        help="onnx based model",
+        action="store_true",
+    )
     # parser.add_argument("y", type=int, help="the exponent")
 
     args = parser.parse_args()
