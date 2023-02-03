@@ -161,7 +161,7 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
 
             results.append(
                 EvaluationResult(
-                    evaluation_id=evaluation.id,
+                    evaluation_id=str(evaluation.id),
                     evaluation_status=status,
                     evaluation_error=error,
                     skill_name=skills[skill_id]["name"],
@@ -186,7 +186,7 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
             if metric_name == evaluation.metric_name:
                 results.append(
                     EvaluationResult(
-                        evaluation_id=evaluation.id,
+                        evaluation_id=str(evaluation.id),
                         evaluation_status=status,
                         evaluation_error="",
                         skill_name=skills[skill_id]["name"],

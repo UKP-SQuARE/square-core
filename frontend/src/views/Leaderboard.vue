@@ -5,7 +5,7 @@
         <h2>Leaderboard</h2>
         <p>Compare different skills and how they perform on different datasets.</p>
         <p>Missing some results? Start a new evaluation and results will appear on the leaderboard once the evaluation finishes.</p>
-        <router-link class="btn btn-primary" to="/evaluation" exact-active-class="active">Start new evaluation</router-link>
+        <router-link class="btn btn-primary" to="/evaluations" exact-active-class="active">Start new evaluation</router-link>
       </div>
     </div>
     
@@ -32,7 +32,7 @@
           <div class="text-center text-secondary my-4">
             <strong>There are no evaluation results for the selected dataset and metric</strong>
             <br>
-            <router-link to="/evaluation" exact-active-class="active" class="text-reset">Click here to start one yourself</router-link>
+            <router-link to="/evaluations" exact-active-class="active" class="text-reset">Click here to start one yourself</router-link>
           </div>
         </template>
         <template #cell(private)="data">
