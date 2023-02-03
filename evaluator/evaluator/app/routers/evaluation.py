@@ -7,7 +7,11 @@ from fastapi.exceptions import HTTPException
 from square_auth.auth import Auth
 
 from evaluator.app import mongo_client
-from evaluator.app.auth_utils import validate_access
+from evaluator.app.auth_utils import (
+    get_payload_from_token,
+    has_auth_header,
+    validate_access,
+)
 from evaluator.app.core.evaluation_handler import EvaluationHandler
 from evaluator.app.models import (
     Evaluation,
@@ -17,7 +21,6 @@ from evaluator.app.models import (
 )
 from evaluator.app.routers import client_credentials
 from evaluator.app.routers.router_utils.router_utils import get_skills
-from evaluator.auth_utils import get_payload_from_token, has_auth_header
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="")
