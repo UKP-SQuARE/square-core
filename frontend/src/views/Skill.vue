@@ -67,7 +67,7 @@
       <div class="row">
         <div class="col-6 mt-3">
           <label for="datasets" class="form-label">Skill Datasets</label>
-          <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false"
+          <multiselect v-model="value" :options="dataSets" :multiple="true" :close-on-select="false"
             placeholder="Select a dataset"></multiselect>
           <small class="text-muted">Select the dataset on which the Skill was trained.</small>
         </div>
@@ -649,7 +649,10 @@ export default Vue.component('edit-skill', {
       })
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
-        this.dataSets = response.data
+      for (let item_dataset = 0; item_dataset < response.data.length; item_dataset++){
+        this.dataSets.push(response.data[item_dataset].name);
+        }
+        console.log("leaderboard datasets: ", this.dataSets);
       })
     getDatastores(this.$store.getters.authenticationHeader())
       .then((response) => {
