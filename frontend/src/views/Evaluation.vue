@@ -1,4 +1,4 @@
-<!-- The Page of a Skill. The user can edit an existing skill or create a new skill here. -->
+<!-- The Page of a new evaluation. The user can create a new evaluation here. -->
 <template>
   <form v-on:submit.prevent="onSubmit">
     <Card title="New evaluation">
@@ -24,7 +24,7 @@
           &nbsp;Run evaluation
         </button>
       </template>
-      <Alert v-if="success" class="alert-success" dismissible>Skill was updated successfully.</Alert>
+      <Alert v-if="success" class="alert-success" dismissible>Evaluation started successfully.</Alert>
       <Alert v-if="failure" class="alert-danger" dismissible>An error occurred</Alert>
       <div class="row">
         <div class="col mt-3">

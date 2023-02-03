@@ -8,13 +8,7 @@ from square_auth.auth import Auth
 from starlette.requests import Request
 
 from evaluator.app import mongo_client
-from evaluator.app.models import (
-    Metric,
-    MetricResult,
-    Prediction,
-    PredictionResult,
-    get_dataset_metadata,
-)
+from evaluator.app.models import Metric, MetricResult, Prediction, PredictionResult
 
 
 def has_auth_header(request: Request) -> bool:

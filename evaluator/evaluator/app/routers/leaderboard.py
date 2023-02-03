@@ -15,9 +15,6 @@ from evaluator.app.routers.router_utils.router_utils import get_skills
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/leaderboard")
 auth = Auth()
-SKILL_MANAGER_API_URL = os.getenv(
-    "SKILL_MANAGER_API_URL", "https://square.ukp-lab.de/api/skill-manager"
-)
 
 
 @router.get(

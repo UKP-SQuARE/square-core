@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from square_auth.auth import Auth
 
 from evaluator.app import mongo_client
+from evaluator.app.auth_utils import validate_access
 from evaluator.app.core.dataset_handler import DatasetHandler
 from evaluator.app.core.dataset_metadata import (
     DatasetMetadataDoesNotExistError,
@@ -14,7 +15,6 @@ from evaluator.app.core.dataset_metadata import (
 )
 from evaluator.app.core.task_helper import dataset_name_exists, metric_exists
 from evaluator.app.models import SUPPORTED_SKILL_TYPES, DatasetMetadata
-from evaluator.app.routers.router_utils.router_utils import validate_access
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/dataset")

@@ -163,7 +163,7 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
 }
 
 /**
- * Get all user and public evaluations.
+ * Get all metrics. Not yet implemented in backend.
  * @param {Object} headers Authentication header
  */
  export function getMetrics(headers) {
@@ -171,9 +171,9 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
 }
 
 /**
- * Get all user and public evaluations.
+ * Run evaluation with skill_id, dataset_name and metric_name
  * @param {Object} headers Authentication header
  */
  export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
-    return axios.post(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, { headers: headers })
+    return axios.post(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, {}, { headers: headers })
 }
