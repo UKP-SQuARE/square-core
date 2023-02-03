@@ -18,7 +18,7 @@
         <div class="d-flex w-100 justify-content-between">
           <h5 class="mb-1">{{evaluation.skill_name}}</h5>
           <small>
-            <ExpandButton :evaluation="evaluation"></ExpandButton>
+            <ExpandButton v-if="evaluation.evaluation_status !== 'RUNNING'" :evaluation="evaluation"></ExpandButton>
           </small>
         </div>
         <div>
@@ -90,9 +90,6 @@ export default Vue.component('list-evaluations', {
             this.items = response.data
           })
       }.bind(this), 50)
-    },
-    deleteEvaluation(evaluationId) {
-      this.$store.dispatch('deleteEvaluation', { evaluationId: evaluationId })
     }
   },
   data() {

@@ -81,7 +81,7 @@ import Vue from 'vue'
 
 import Alert from '@/components/Alert.vue'
 import Card from '@/components/Card.vue'
-import { getSkills, runEvaluation } from '@/api'
+import { getSkills, runEvaluation, getDataSets } from '@/api'
 
 import VueTippy from "vue-tippy";
 Vue.use(VueTippy);
@@ -94,7 +94,7 @@ export default Vue.component('edit-skill', {
   data() {
     return {
       skills: [],
-      dataSets: ["squad", "quoref", "commonsense_qa", "cosmos_qa"],
+      dataSets: [],
       metrics: ["squad", "squad_v2", "exact_match"],
       skillsPublishedState: {},
       skillIDs: {},
@@ -103,7 +103,8 @@ export default Vue.component('edit-skill', {
       skillName: null,
       datasetName: null,
       metricName: null,
-      showOnlyPrivateSkills: false
+      showOnlyPrivateSkills: false,
+      header: null
     }
   },
   components: {
@@ -153,6 +154,12 @@ export default Vue.component('edit-skill', {
           this.skillsPublishedState[response.data[i].name] = response.data[i].published
           this.skillIDs[response.data[i].name] = response.data[i].id
           this.skills.push(response.data[i].name)
+        }
+      })
+    getDataSets(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        for (let i = 0; i < response.data.length; i++) {
+          this.dataSets.push(response.data[i].name)
         }
       })
   }

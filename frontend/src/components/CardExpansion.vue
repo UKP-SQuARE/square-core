@@ -1,8 +1,11 @@
 <template id="evaluation-item">
-    <div class="body" v-show="show">
+    <div v-if="evaluation_status=='FINISHED'" class="body" v-show="show">
         <li v-for="(value, single_metric)  in items" :key="single_metric">
             {{single_metric }}: {{value }}
         </li>
+    </div>
+    <div v-else class="body" v-show="show">
+        {{evaluation_error}}
     </div>
   </template>
   <script>
@@ -14,13 +17,17 @@
     data() {
         return {
             show: true,
-            items: []
+            items: [],
+            evaluation_status:  "",
+            evaluation_error: ""
         }
     },
     mounted() {
         this.$root.$on(this.evaluation.evaluation_id, data => {
             this.show = data
             this.items = this.evaluation.metric_result
+            this.evaluation_status = this.evaluation.evaluation_status
+            this.evaluation_error = this.evaluation.evaluation_error
         });
     }
   })

@@ -14,6 +14,7 @@ from evaluator.app.core.dataset_metadata import (
 )
 from evaluator.app.core.task_helper import dataset_name_exists, metric_exists
 from evaluator.app.models import SUPPORTED_SKILL_TYPES, DatasetMetadata
+from evaluator.app.routers.router_utils.router_utils import validate_access
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/dataset")
@@ -233,20 +234,6 @@ async def validate_mapping_and_skill_type(dataset_metadata: DatasetMetadata):
             400,
             f"The mapping does not match the skill type {dataset_metadata.skill_type}: {error.errors}",
         )
-
-
-def validate_access(token_payload: Dict):
-    """
-    Function to validate access. Currently SQuARE has no user roles, so we check for the statically defined user names.
-    """
-    ALLOWED_USER_NAMES = ["ukp", "local_square_user"]
-    try:
-        if token_payload["username"].lower() not in ALLOWED_USER_NAMES:
-            logger.info(f'Access denied for user_name={token_payload["username"]}')
-            raise KeyError
-        logger.info(f'Access granted for user_name={token_payload["username"]}')
-    except KeyError:
-        raise HTTPException(403, "Forbidden.")
 
 
 def validate_metric(metric: str):

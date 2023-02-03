@@ -10,6 +10,7 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.models import LeaderboardEntry, Metric, MetricResult
 from evaluator.app.routers import client_credentials
+from evaluator.app.routers.router_utils.router_utils import get_skills
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/leaderboard")
@@ -124,17 +125,6 @@ def get_ranking_key(leaderboard_entry: LeaderboardEntry):
     else:
         # only one computed value (or no F1 available) => choose first (and usually only) one for ranking
         return list(leaderboard_entry.result.keys())[0]
-
-
-def get_skills(token: str) -> dict:
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
-    response = requests.get(f"{SKILL_MANAGER_API_URL}/skill", headers=headers)
-
-    skills = dict()
-    for skill in response.json():
-        skills[skill["id"]] = skill
-
-    return skills
 
 
 def get_user_id(request: Request, token: str):
