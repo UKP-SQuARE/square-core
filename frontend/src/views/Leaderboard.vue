@@ -19,6 +19,7 @@
           <label for="dataset" class="form-label">Metric</label>
           <multiselect id="metric" v-model="metricName" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard('metric')"></multiselect>
         </div>
+
       </div>
       <b-table striped hover borderless show-empty :stacked="doStackTable" :busy="isLoading" :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc">
         <template #table-busy>
