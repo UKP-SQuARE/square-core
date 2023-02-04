@@ -196,7 +196,6 @@ export default Vue.component('compare-skills', {
         return availableSkills
       }
     },
-
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
     },

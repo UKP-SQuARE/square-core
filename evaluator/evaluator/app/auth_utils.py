@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 
 import jwt
@@ -8,6 +9,8 @@ from square_auth.auth import Auth
 from starlette.requests import Request
 
 from evaluator.app import mongo_client
+
+logger = logging.getLogger(__name__)
 
 
 def has_auth_header(request: Request) -> bool:
@@ -22,3 +25,17 @@ async def get_payload_from_token(request: Request) -> Dict[str, str]:
     realm = Auth.get_realm_from_token(token)
 
     return {"realm": realm, "username": payload["preferred_username"]}
+
+
+def validate_access(token_payload: Dict):
+    """
+    Function to validate access. Currently SQuARE has no user roles, so we check for the statically defined user names.
+    """
+    ALLOWED_USER_NAMES = ["ukp", "local_square_user"]
+    try:
+        if token_payload["username"].lower() not in ALLOWED_USER_NAMES:
+            logger.info(f'Access denied for user_name={token_payload["username"]}')
+            raise KeyError
+        logger.info(f'Access granted for user_name={token_payload["username"]}')
+    except KeyError:
+        raise HTTPException(403, "Forbidden.")

@@ -10,6 +10,7 @@ const QA = () => import('../views/QA')
 const BehavioralTests = () => import('../views/BehavioralTests')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
+const Evaluations = () => import('../views/Evaluations')
 const Evaluation = () => import('../views/Evaluation')
 const Leaderboard = () => import('../views/Leaderboard')
 const Feedback = () => import('../views/Feedback')
@@ -50,8 +51,16 @@ const routes = [
     }
   },
   {
-    path: '/evaluation',
-    name: 'evaluation',
+    path: '/evaluations',
+    name: 'evaluations',
+    component: Evaluations,
+    meta: {
+      requiresAuthentication: true
+    }
+  },
+  {
+    path: '/new_evaluation',
+    name: 'new_evaluation',
     component: Evaluation,
     meta: {
       requiresAuthentication: true
