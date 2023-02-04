@@ -17,6 +17,7 @@ class ModelStatistics(BaseModel):
     preloaded_adapters: bool
     transformers_cache: Optional[str] = ".cache"
     model_path: Optional[str] = None
+    decoder_path: Optional[str] = None
     onnx_use_quantized: Optional[bool] = None
     is_encoder_decoder: Optional[bool] = None
 

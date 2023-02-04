@@ -29,6 +29,7 @@ class ModelConfig(Mapping):
     data_path: str = None
     # model path
     model_path: str = None
+    decoder_path: str = None
 
     preloaded_adapters: bool = True
     # Disable CUDA even if available
@@ -80,6 +81,7 @@ class ModelConfig(Mapping):
             disable_gpu=self.disable_gpu,
             return_plaintext_arrays=self.return_plaintext_arrays,
             model_path=self.model_path,
+            decoder_path=self.decoder_path,
             data_path=self.data_path,
             preloaded_adapters=self.preloaded_adapters,
             transformers_cache=self.transformers_cache,
@@ -94,6 +96,7 @@ class ModelConfig(Mapping):
         self.model_name = config["model_name"]
         self.model_type = config["model_type"]
         self.model_path = config["model_path"]
+        self.decoder_path = config["decoder_path"]
         self.is_encoder_decoder = config["is_encoder_decoder"]
         self.data_path = config["data_path"]
         self.preloaded_adapters = config["preloaded_adapters"]
@@ -111,6 +114,7 @@ class ModelConfig(Mapping):
             model_name=config("MODEL_NAME", default=None),
             model_type=config("MODEL_TYPE", default=None),
             model_path=config("MODEL_PATH", default=None),
+            decoder_path=config("DECODER_PATH", default=None),
             is_encoder_decoder=config("IS_ENCODER_DECODER", cast=bool, default=False),
             data_path=config("DATA_PATH", default=None),
             preloaded_adapters=config("PRELOADED_ADAPTERS", cast=bool, default=True),
@@ -161,6 +165,7 @@ def set_test_config(
     is_encoder_decoder=False,
     data_path="",
     model_path="",
+    decoder_path="",
     onnx_use_quantized=False,
 ):
     global model_config
@@ -174,6 +179,7 @@ def set_test_config(
     model_config.preloaded_adapters = preloaded_adapters
     model_config.data_path = data_path
     model_config.model_path = model_path
+    model_config.decoder_path = decoder_path
     model_config.is_encoder_decoder = is_encoder_decoder
     model_config.onnx_use_quantized = onnx_use_quantized
 
