@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from square_auth.auth import Auth
 
 from evaluator.app import mongo_client
+from evaluator.app.auth_utils import validate_access
 from evaluator.app.core.dataset_handler import DatasetHandler
 from evaluator.app.core.dataset_metadata import (
     DatasetMetadataDoesNotExistError,
@@ -233,20 +234,6 @@ async def validate_mapping_and_skill_type(dataset_metadata: DatasetMetadata):
             400,
             f"The mapping does not match the skill type {dataset_metadata.skill_type}: {error.errors}",
         )
-
-
-def validate_access(token_payload: Dict):
-    """
-    Function to validate access. Currently SQuARE has no user roles, so we check for the statically defined user names.
-    """
-    ALLOWED_USER_NAMES = ["ukp", "local_square_user"]
-    try:
-        if token_payload["username"].lower() not in ALLOWED_USER_NAMES:
-            logger.info(f'Access denied for user_name={token_payload["username"]}')
-            raise KeyError
-        logger.info(f'Access granted for user_name={token_payload["username"]}')
-    except KeyError:
-        raise HTTPException(403, "Forbidden.")
 
 
 def validate_metric(metric: str):
