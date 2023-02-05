@@ -25,12 +25,15 @@ jobs:
     strategy:
       matrix:
         service: [
-          "datastore", 
-          "docs", 
-          "frontend", 
-          "model-management", 
-          "model-inference", 
-          "skill-manager", 
+          "datastore",
+          "docs",
+          "frontend",
+          "model-manager",
+          "model-inference-transformer",
+          "model-inference-onnx",
+          "model-inference-sentence-transformer",
+          "model-inference-graph-transformer",
+          "skill-manager",
           "skill-boolq",
           "skill-commonsense-qa",
           "skill-extractive-qa",
@@ -39,6 +42,9 @@ jobs:
           "skill-multiple-choice-qa",
           "skill-open-extractive-qa",
           "skill-qa-gnn",
+          "skill-metaqa",
+          "skill-extractive-metaqa",
+          "skill-multiple-choice-metaqa",
           "evaluator",
         ]
         include:
@@ -50,10 +56,20 @@ jobs:
           - service: frontend
             context: ./frontend
             build-args: "mode=${{ github.event.inputs.environment || 'test' }}"
-          - service: model-management
-            context: ./square-model-inference-api/management_server
-          - service: model-inference
-            context: ./square-model-inference-api/inference_server
+          - service: model-manager
+            context: ./model-manager
+          - service: model-inference-transformer
+            context: ./model-inference
+            build-args: "MODEL_TYPE=transformer"
+          - service: model-inference-onnx
+            context: ./model-inference
+            build-args: "MODEL_TYPE=onnx"
+          - service: model-inference-sentence-transformer
+            context: ./model-inference
+            build-args: "MODEL_TYPE=sentence_transformer"
+          - service: model-inference-graph-transformer
+            context: ./model-inference
+            build-args: "MODEL_TYPE=graph_transformer"
           - service: skill-manager
             context: ./skill-manager
           - service: skill-boolq
@@ -80,6 +96,15 @@ jobs:
           - service: skill-qa-gnn
             context: ./skills
             build-args: "skill=qa-gnn"
+          - service: skill-extractive-metaqa
+            context: ./skills
+            build-args: "skill=extractive-metaqa"
+          - service: skill-multiple-choice-metaqa
+            context: ./skills
+            build-args: "skill=multiple-choice-metaqa"
+          - service: skill-metaqa
+            context: ./skills
+            build-args: "skill=metaqa"
           - service: evaluator
             context: ./evaluator
     steps:
@@ -129,6 +154,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           target: build
           build-args: ${{ matrix.build-args }}
           push: ${{ github.event.inputs.environment == 'production' || github.event.inputs.environment == 'test' }}
