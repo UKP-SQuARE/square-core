@@ -5,7 +5,7 @@ version: "3.3"
 services:
   traefik:
     image: traefik:v2.8.7
-    container_name: traefik
+    #container_name: traefik
     command:
       - --api.insecure=true
       - --providers.docker=true
@@ -86,7 +86,7 @@ services:
     build:
       context: ./model-manager
       dockerfile: Dockerfile
-    container_name: maintaining_worker
+    #iner_name: maintaining_worker
     command: celery -A tasks worker --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -113,7 +113,7 @@ services:
   maintaining:
     #    image: ukpsquare/square-model-management-v2:latest
     command: uvicorn model_manager.main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
-    container_name: maintaining
+    #iner_name: maintaining
     build:
       context: ./model-manager
       dockerfile: Dockerfile
@@ -158,7 +158,7 @@ services:
       args:
         - MODEL_TYPE=transformer
         - TEST_SETUP=transformer
-    container_name: main_model
+    #container_name: main_model
     command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --reload
     env_file:
       - ./model-inference/model_configurations/.env.dpr
@@ -214,34 +214,37 @@ services:
       - rabbit
       - redis
 
-#  tweac_worker:
-#    build:
-#      context: ./model-inference
-#      dockerfile: ./dockerfiles/transformer/Dockerfile
-#    container_name: tweac_worker
-#    command: celery -A tasks worker -Q tweac --loglevel=info --concurrency=2
-#    volumes:
-#      - ./:/usr/src/app
-#      - /var/run/docker.sock:/var/run/docker.sock
-#      - model_configs:/model_configs
-#    env_file:
-#      - ./model-inference/model_configurations/.env.tweac
-#      - ./model-inference/.env
-#    environment:
-#      - DOCKER_HOST_URL=https://172.17.0.1:8443
-#      - VERIFY_SSL=0
-#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-#      - REALM=square
-#      - CLIENT_ID=models
-#      - QUEUE=tweac
-#      - CONFIG_PATH=/model_configs
-#    links:
-#      - rabbit
-#      - redis
-#    depends_on:
-#      - maintaining
-#      - rabbit
-#      - redis
+  metaqa_worker:
+    build:
+      context: ./model-inference
+      dockerfile: Dockerfile
+      args:
+        - MODEL_TYPE=transformer
+        - TEST_SETUP=transformer
+    command: celery -A tasks worker -Q metaqa --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ./model-inference/model_configurations/.env.metaqa
+      - ./model-inference/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=metaqa
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redis
+    depends_on:
+      - maintaining
+      - rabbit
+      - redis
+
 
 #  distilbert_sentence_transformer:
 #    build:
@@ -278,7 +281,7 @@ services:
       args:
         - MODEL_TYPE=transformer
         - TEST_SETUP=transformer
-    container_name: bert_worker
+    #container_name: bert_worker
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info --concurrency=2
     volumes:
       - ./:/usr/src/app

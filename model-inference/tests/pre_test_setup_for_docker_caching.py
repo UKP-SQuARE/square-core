@@ -84,9 +84,6 @@ def create_test_model_path(model_type: str):
 # -------------------------------------------------------------
 
 
-ONNX_MODEL = "bert-base-uncased"
-
-
 if __name__ == "__main__":
     # We pre-download all models needed for the tests.
     # We have to be careful to NOT import anything from square_model_inference because this script runs in the Dockerfile
@@ -99,6 +96,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sentence_transformer",
         help="sentence transformer based model",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--onnx",
+        help="onnx based model",
         action="store_true",
     )
     # parser.add_argument("y", type=int, help="the exponent")
@@ -140,3 +142,6 @@ if __name__ == "__main__":
         from transformers import BertConfig, BertModel, BertTokenizer
 
         SENTENCE_MODEL = create_test_model_path("sentence-transformer")
+
+    if args.onnx:
+        ONNX_MODEL = "bert-base-uncased"

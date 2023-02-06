@@ -10,5 +10,4 @@ python-keycloak>=0.26.1
 pytest-env>=0.6.2
 pyjwt>=2.3.0
 pytest-asyncio>=0.18.2
-httpx
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability

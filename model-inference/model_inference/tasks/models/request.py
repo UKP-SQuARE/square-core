@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional, Union,Tuple
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +30,8 @@ class PredictionRequest(BaseModel):
         "numpy arrays (as lists). For the numpy arrays, also set is_preprocessed=True. "
         "<br><br>"
         "Transformer/ Adapter:<br>"
-        "Task 'question_answering' expects the input to be in the (question, context) format.",
+        "Task 'question_answering' expects the input to be in the (question, context) format."
+        "Task 'question_answering' of meta expectsqa the input to be in the (question, prediction of agents) format.",
     )
     is_preprocessed: bool = Field(
         default=False,

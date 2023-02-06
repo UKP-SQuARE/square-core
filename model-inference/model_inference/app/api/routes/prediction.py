@@ -145,7 +145,7 @@ async def generation(
         (prediction_request.dict(), Task.generation, model_config.to_dict()),
         queue=identifier.replace("/", "-"),
     )
-    return AsyncTaskResult(message="Queued token classification", task_id=res.id)
+    return AsyncTaskResult(message="Queued generation", task_id=res.id)
 
 
 @router.get("/task_result/{task_id}")
