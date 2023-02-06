@@ -19,8 +19,8 @@ run:
 	echo $(SKILL)
 	mkdir -p skill
 	echo "from skill.skill import predict" > skill/__init__.py
-	cp $(SKILL)/skill.py ./skill/skill.py
-	bash -c "SQUARE_PRIVATE_KEY_FILE=private_key.pem uvicorn main:app; rm -rf skill"
+	cp -r $(SKILL)/. ./skill/
+	bash -c "SQUARE_PRIVATE_KEY_FILE=private_key.pem uvicorn main:app; rm -rf ./skill/"
 
 ##			Setup authentication for local development.
 auth:
