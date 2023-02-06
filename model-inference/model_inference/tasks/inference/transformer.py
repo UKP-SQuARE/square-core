@@ -548,7 +548,6 @@ class Transformer(Model):
             task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
 
         if request.task_kwargs.get("normalize", False):
-            print("*****Normalize the embedding*****")
             emb = torch.nn.functional.normalize(emb)
         predictions["embeddings"] = emb
         return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
