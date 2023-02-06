@@ -10,12 +10,17 @@ WORKDIR /app
 RUN pip install --upgrade pip
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
+ARG skill
+COPY ./$skill/. .
+COPY ./$skill/requirements.txt* .
+RUN if [ -f "./requirements.txt" ] ; then pip install -r requirements.txt ; fi
 
 COPY main.py main.py
 COPY utils.py utils.py
-ARG skill
-COPY ./$skill/skill.py skill.py 
 COPY logging.conf logging.conf
+
+
+
 
 EXPOSE 80
 

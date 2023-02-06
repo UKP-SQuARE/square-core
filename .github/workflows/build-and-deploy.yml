@@ -45,6 +45,7 @@ jobs:
           "skill-metaqa",
           "skill-extractive-metaqa",
           "skill-multiple-choice-metaqa",
+          "skill-kgqa-kqapro",
           "evaluator",
         ]
         include:
@@ -105,6 +106,9 @@ jobs:
           - service: skill-metaqa
             context: ./skills
             build-args: "skill=metaqa"
+          - service: "skill-kgqa-kqapro"
+            context: ./skills
+            build-args: "skill=kgqa-kqapro"
           - service: evaluator
             context: ./evaluator
     steps:
