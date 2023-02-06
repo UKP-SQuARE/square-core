@@ -1,0 +1,157 @@
+@domain_dev = square.ukp-lab.localhost
+
+### GET TOKEN
+# @name get_token
+# @prompt username
+# @prompt password
+POST {{domain_dev}}/auth/realms/square/protocol/openid-connect/token HTTP/1.1
+content-type: application/x-www-form-urlencoded
+
+client_id=square-api&grant_type=password&username={{username}}&password={{password}}
+
+@token = {{get_token.response.body.access_token}}
+
+###
+# @name get_deployed_models
+GET /api/models/deployed-models HTTP/1.1
+Host: {{domain_dev}}
+Authorization: Bearer {{token}}
+
+###
+# @name remove_model
+# @prompt model_name
+DELETE /api/models/remove/{{model_name}} HTTP/1.1
+Host: {{domain_dev}}
+Authorization: Bearer {{token}}
+
+
+###
+# @name deploy_adapter_model
+# @prompt hf_token
+POST /api/models/deploy HTTP/1.1
+Host: {{domain_dev}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "identifier": "bert-base-uncased",
+  "model_name": "bert-base-uncased",
+  "onnx_use_quantized": true,
+  "is_encoder_decoder": false,
+  "model_type": "onnx",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformers_cache": "../.cache",
+  "model_class": "question-answering",
+  "return_plaintext_arrays": false,
+  "hf_token": "{{hf_token}}",
+  "adapter_id": "hotpotqa",
+  "custom_onnx_config": ""
+} 
+
+###
+# @name deploy_custom
+# @prompt hf_token
+POST /api/models/deploy HTTP/1.1
+Host: {{domain_dev}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "identifier": "SpanBERT/spanbert-base-cased",
+  "model_name": "SpanBERT/spanbert-base-cased",
+  "onnx_use_quantized": true,
+  "is_encoder_decoder": false,
+  "model_type": "onnx",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformers_cache": "../.cache",
+  "model_class": "default",
+  "return_plaintext_arrays": false,
+  "hf_token": "{{hf_token}}",
+  "adapter_id": "",
+  "custom_onnx_config": "{\"input_ids\": {\"0\": \"batch\", \"1\": \"sequence\"}, \"attention_mask\": {\"0\": \"batch\", \"1\": \"sequence\"}, \"token_type_ids\": {\"0\": \"batch\", \"1\": \"sequence\"}}"
+} 
+
+###
+# @name deploy_auto
+# @prompt hf_token
+POST /api/models/deploy HTTP/1.1
+Host: {{domain_dev}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "identifier": "distilbert-base-uncased",
+  "model_name": "distilbert-base-uncased",
+  "onnx_use_quantized": true,
+  "is_encoder_decoder": false,
+  "model_type": "onnx",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformers_cache": "../.cache",
+  "model_class": "default",
+  "return_plaintext_arrays": false,
+  "hf_token": "{{hf_token}}",
+  "adapter_id": "",
+  "custom_onnx_config": ""
+} 
+
+
+
+###
+# @name hotpotqa_inference
+POST {{domain_dev}}/api/main/UKP-SQuARE/bert-base-uncased-pf-hotpotqa-onnx/question-answering
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+ "input": [
+ ["Who stars in The Matrix?",
+    "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+ ],
+ "is_preprocessed": false,
+ "preprocessing_kwargs": {},
+ "model_kwargs": {},
+ "task_kwargs": {},
+ "adapter_name": ""
+}
+
+###
+# @name spanbert_inference
+POST {{domain_dev}}/api/main/UKP-SQuARE/spanbert-base-cased-onnx/embedding
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+ "input": [
+ ["Who stars in The Matrix?",
+    "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+ ],
+ "is_preprocessed": false,
+ "preprocessing_kwargs": {},
+ "model_kwargs": {},
+ "task_kwargs": {},
+ "adapter_name": ""
+}
+
+###
+# @name distilbert_inference
+POST {{domain_dev}}/api/main/UKP-SQuARE/distilbert-base-uncased-onnx/embedding
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+ "input": [
+ ["Who stars in The Matrix?",
+    "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+ ],
+ "is_preprocessed": false,
+ "preprocessing_kwargs": {},
+ "model_kwargs": {},
+ "task_kwargs": {},
+ "adapter_name": ""
+}

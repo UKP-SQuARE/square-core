@@ -1,0 +1,19 @@
+uvicorn==0.13.4                 # ASGI server
+fastapi>=0.73.0                 # REST API Framework
+pydantic==1.8.2                 # models
+requests>=2.26.0                # requests
+docker                          # docker client
+square-auth==0.0.14              # keycloak authentication
+celery==5.1.2                   # queue requests
+redis==4.1.4
+pymongo>=3.12.1
+square-elk-json-formatter==0.0.3    # elk-json logger
+importlib-metadata<5.0 # https://github.com/celery/celery/issues/7783
+
+# included for onnx export
+adapter-transformers==3.1.0
+onnxruntime==1.12.0
+huggingface_hub==0.10.1
+onnx==1.12.0
+torch==1.12.0                   # pytorch libs
+-f https://data.pyg.org/whl/torch-1.12.0+cpu.html
