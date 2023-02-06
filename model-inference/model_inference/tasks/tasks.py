@@ -87,7 +87,6 @@ class ModelTask(Task, ABC):
 )
 def prediction_task(self, prediction_request, task, model_config):
     logger.info(f"Prediction Request: {prediction_request} for task {task}")
-    logger.info(model_config)
     prediction = self.model.predict(PredictionRequest(**prediction_request), task)
     logger.info(f"Prediction: {prediction}")
     return prediction.dict()
