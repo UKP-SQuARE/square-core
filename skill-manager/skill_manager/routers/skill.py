@@ -281,7 +281,15 @@ async def query_skill(
             predictions=str(predictions.json())[:100]
         )
     )
-
+    # remove bertviz from predictions
+    # to store the preds in mongodb without bertviz (too large)
+    list_bertviz = []
+    for prediction in predictions.predictions:
+        if prediction.bertviz is not None:
+            list_bertviz.append(prediction.bertviz)
+            prediction.bertviz = None
+        else:
+            list_bertviz.append(None)
     # save prediction to mongodb
     mongo_prediction = Prediction(
         skill_id=skill.id,
@@ -298,10 +306,13 @@ async def query_skill(
             mongo_prediction=str(mongo_prediction.json())[:100],
         )
     )
-
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(
             query_request=query_request.json(), predictions=str(predictions)[:100]
         )
     )
+    # get bertviz data
+    for i in range(len(predictions.predictions)):
+        if list_bertviz[i]:
+            predictions.predictions[i].bertviz = list_bertviz[i]
     return predictions
