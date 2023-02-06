@@ -27,7 +27,8 @@ skills:
   - name: extractive-metaqa
     author: ukp
   - name: multiple-choice-metaqa
-  - name: KQAPro-KGQA
+    author: ukp
+  - name: kgqa-kqapro
     author: ukp
 
 web_concurrency: 8
