@@ -26,7 +26,7 @@ async def predict(
         pipeline="generation",
         model_request=model_request,
     )
-    sparql: str = model_response["result"]["generated_texts"][0]
+    sparql: str = model_response["generated_texts"][0][0]
 
     # process generated sparql before querying KG.
     sparql = post_process(sparql)
