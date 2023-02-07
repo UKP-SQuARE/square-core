@@ -486,7 +486,7 @@ services:
       target: build
       args:
         - MODEL_TYPE=graph_transformer
-    command: celery -A tasks worker -Q qagnn --loglevel=info
+    command: celery -A tasks worker -Q qagnn --loglevel=info --concurrency=1
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
@@ -498,7 +498,7 @@ services:
       - ./redis/.env
       - ./mongodb/.env
     environment:
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      WEB_CONCURRENCY: "1"
       VERIFY_SSL: #@ str(data.values.verify_ssl[data.values.environment])
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       DOCKER_HOST_URL: #@ data.values.docker_host_url[data.values.os]

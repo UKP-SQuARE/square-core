@@ -339,12 +339,12 @@ services:
       args:
         - MODEL_TYPE=graph_transformer
         - TEST_SETUP=transformer
-    command: celery -A tasks worker -Q qagnn --loglevel=info
+    command: celery -A tasks worker -Q qagnn --loglevel=info --concurrency=1
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - model_configs:/model_configs
-      - models:/models
+      - model_data:/models
     env_file:
       - ./model-inference/model_configurations/.env.qagnn
       - ./model-inference/.env
@@ -356,6 +356,7 @@ services:
       - CLIENT_ID=models
       - QUEUE=qagnn
       - CONFIG_PATH=/model_configs
+      - WEB_CONCURRENCY=1
     links:
       - rabbit
       - redis
@@ -508,7 +509,7 @@ volumes:
   model_configs:
     driver: local
 
-  models:
+  model_data:
     driver: local
     driver_opts:
       o: bind
