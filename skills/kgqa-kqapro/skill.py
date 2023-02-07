@@ -16,13 +16,13 @@ async def predict(
     # prepare the request to the Model API. For details, see Model API docs
     model_request = {
         "input": [request.query],
-        "task_kwargs": {"max_length": 500},
+        "task_kwargs": {"max_length": 512},
         "adapter_name": "",
     }
 
     # Call Model using the `model_api` object
     model_response = await square_model_client(
-        model_name="BART_SPARQL_KQAPro",
+        model_name="UKP-SQuARE/BART_SPARQL_KQAPro",
         pipeline="generation",
         model_request=model_request,
     )
