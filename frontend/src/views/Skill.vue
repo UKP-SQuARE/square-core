@@ -375,7 +375,6 @@ export default Vue.component('edit-skill', {
       dataSets: [],
       datastores: [],
       indices: [],
-      value: '',
       url: '',
       extern_url: '', // skill.url will be overwritten by this value if it is not empty
       avail_urls: [],

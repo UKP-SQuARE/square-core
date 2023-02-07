@@ -32,7 +32,7 @@
           <div class="text-center text-secondary my-4">
             <strong>There are no evaluation results for the selected dataset and metric</strong>
             <br>
-            <router-link to="/evaluation" exact-active-class="active" class="text-reset">Click here to start one yourself</router-link>
+            <router-link to="/evaluations" exact-active-class="active" class="text-reset">Click here to start one yourself</router-link>
           </div>
         </template>
         <template #cell(private)="data">
