@@ -67,7 +67,7 @@
       <div class="row">
         <div class="col-6 mt-3">
           <label for="datasets" class="form-label">Skill Datasets</label>
-          <multiselect v-model="value" :options="dataSets" :multiple="false" :close-on-select="true"
+          <multiselect v-model="skill.data_sets" :options="dataSets" :multiple="true" :close-on-select="false"
             placeholder="Select a dataset"></multiselect>
           <small class="text-muted">Select the dataset on which the Skill was trained.</small>
         </div>
