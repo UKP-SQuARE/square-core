@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter
 
-from evaluator.models import DataSet
+from evaluator.app.models import DataSet
 
 logger = logging.getLogger(__name__)
 

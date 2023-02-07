@@ -160,15 +160,15 @@ By passing all environment information that would normally be in the `.env` file
 {
   "identifier": <model_prefix>,
   "model_name": <model_name>,
-  "model_path": <model_path>,
-  "decoder_path": <decoder_path>,
   "model_type": <model_type>,
   "disable_gpu": true,
   "batch_size": 32,
   "max_input": 1024,
   "transformer_cache": "../.cache",
   "model_class": <model_class>,
-  "return_plaintext_arrays": false
+  "return_plaintext_arrays": false,
+  "onnx_use_quantized": false,
+  "is_encoder_decoder": false
 }
 ```
 
@@ -226,6 +226,7 @@ curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
 }'
 ```
 
+
 #### Example prediction request 
 
 Get prediction from the deployed model.
@@ -272,33 +273,74 @@ services:
 And save the model configurations in the `.env.<model>` file. The `model-prefix` is the prefix under which the 
 corresponding instance of the model-api is reachable.
 
-#### Adding Onnx models 
-Onnx models require a path to the file containing the onnx models. On the VM there are the following files already uploaded:
-```
-└───onnx_models           
-    ├───facebook-bart-base
-    │   ├───decoder.onnx
-    │   └───model.onnx
-    ├───bert-base-uncased          
-    │   └───model.onnx
-    ├───roberta-base    
-    │   └───model.onnx            
-    └───t5
-        ├───decoder.onnx
-        └───model.onnx             
+### ONNX Deployment
+
+Set `model_type` to `onnx` for ONNX model deployment.
+- If the model has never been deployed as an ONNX model before, it needs to be exported to ONNX and uploaded to HF (this can take several minutes and requires a `hf_token` with write access to the UKP-SQuARE repository)
+
+
+Deploying a previously exported ONNX model (UKP-SQuARE/bert-base-uncased-onnx)
+
+```bash
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "identifier": "bert-base-uncased-onnx",
+  "model_name": "bert-base-uncased",
+  "model_type": "onnx",
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "default",
+  "return_plaintext_arrays": false,
+  "onnx_use_quantized": True,
+}'
+``` 
+To deploy ONNX models from other repos (e.g. optimum/t5-small), manually define the worker in the docker-compose file.
+
+
+If you want to deploy an [AdapterHub](https://adapterhub.ml/) model, specify the identifier of the active adapter head in `adapter_id`
+
+```bash
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "identifier": "bert-base-uncased-pf-hotpotqa-onnx",
+  "model_name": "bert-base-uncased",
+  "model_type": "onnx",
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "question-answering",
+  "return_plaintext_arrays": false,
+  "adapter_id": "hotpotqa"
+}'
 ```
 
-This is already configured as a volume in the `docker-compose` file. You have to add the following to your model container:
-```
-    volumes:
-      - onnx-models:/onnx_models
+If you want to export a model whose architecture is not natively supported by HF, you can use `custom_onnx_config` to pass the serialized input mapping.
+For more information on custom ONNX configs refer to the [HuggingFace Documentation](https://huggingface.co/docs/transformers/serialization#implementing-a-custom-onnx-configuration)
+
+```bash
+curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "identifier": "spanbert-base-cased-onnx",
+  "model_name": "SpanBERT/spanbert-base-cased",
+  "model_type": "onnx",
+  "batch_size": 32,
+  "max_input": 1024,
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "model_class": "default",
+  "return_plaintext_arrays": false,
+  "onnx_use_quantized": True,
+  "custom_onnx_config": "{\"input_ids\": {\"0\": \"batch\", \"1\": \"sequence\"}, \"attention_mask\": {\"0\": \"batch\", \"1\": \"sequence\"}, \"token_type_ids\": {\"0\": \"batch\", \"1\": \"sequence\"}}",
+  "hf_token": {{hf_token}}
+}'
 ```
 
-Then the model path in the `.env` file has the `onnx_models`folder as root. For example, loading
-the BERT model requires the following path `MODEL_PATH=/onnx_models/bert-base-cased/model.onnx`.
-
-In order to be able to start onnx models manually, make sure that the `ONNX_VOLUME` environment variable contains the name of the docker 
-volume with the onnx files. Then, simply specify the `model_path` and optionally the `decoder_path` to load a new onnx model. 
 
 ### Removing models via API
 Removing the deployed distilbert model.

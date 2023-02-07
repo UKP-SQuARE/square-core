@@ -50,22 +50,22 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
-## @name bert_qa
-#POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
-#Authorization: Bearer {{auth_token}}
-#Content-Type: application/json
-#
-#{
-#  "input": [
-#  ["Who stars in The Matrix?",
-#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
-#  ],
-#  "is_preprocessed": false,
-#  "preprocessing_kwargs": {},
-#  "model_kwargs": {"average_adapters": false},
-#  "task_kwargs": {},
-#  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
-#}
+# @name bert_qa
+POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "input": [
+  ["Who stars in The Matrix?",
+     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {"average_adapters": false},
+  "task_kwargs": {},
+  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
+}
 
 ###
 

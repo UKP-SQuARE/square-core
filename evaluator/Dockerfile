@@ -13,7 +13,8 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY ./evaluator evaluator
+COPY ./evaluator/app evaluator/app
+COPY ./evaluator/tasks tasks
 
 COPY logging.conf logging.conf
 
@@ -29,4 +30,4 @@ COPY pytest.ini pytest.ini
 FROM base as build
 EXPOSE 8081
 
-CMD ["uvicorn", "evaluator.main:app", "--host", "0.0.0.0", "--port", "8081", "--log-config", "logging.conf"]
+CMD ["uvicorn", "evaluator.app.main:app", "--host", "0.0.0.0", "--port", "8081", "--log-config", "logging.conf"]

@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List
 
-from evaluator.models import ExtractiveDatasetSample, MultipleChoiceDatasetSample
+from evaluator.app.models import ExtractiveDatasetSample, MultipleChoiceDatasetSample
 
 logger = logging.getLogger(__name__)
 

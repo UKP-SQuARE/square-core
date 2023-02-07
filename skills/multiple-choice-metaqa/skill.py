@@ -40,7 +40,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": {
             "question": query,
             "agents_predictions": list_preds,
-        }
+        },
+        "task_kwargs": {"topk": request.task_kwargs.get("topk", 1)},
     }
 
     model_response = await square_model_client(
