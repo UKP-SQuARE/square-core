@@ -73,7 +73,6 @@
         </div>
 
 
-
         <div class="col-6 mt-3">
           <label for="url_select" class="form-label">Skill URL</label>
           <select class="form-select" v-model="url" aria-label="Default select example" id="url_select">
@@ -649,7 +648,9 @@ export default Vue.component('edit-skill', {
       })
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
-        this.dataSets = response.data
+      for (let item_dataset = 0; item_dataset < response.data.length; item_dataset++){
+        this.dataSets.push(response.data[item_dataset].name);
+        }
       })
     getDatastores(this.$store.getters.authenticationHeader())
       .then((response) => {
