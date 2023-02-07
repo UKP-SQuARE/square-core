@@ -39,7 +39,7 @@ async def predict(
     )
 
 
-def get_sparql_answer(sparql: str, rel2type="./skill/relation2type.json"):
+def get_sparql_answer(sparql: str, rel2type="./relation2type.json"):
     """
     this function has two componets: post-process sparql and query it against a KG.
     """
