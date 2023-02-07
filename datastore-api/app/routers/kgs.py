@@ -65,9 +65,8 @@ async def get_kg(
     summary="Create a knowledge graph",
     description="Create a new knowledge graph",
     responses={
-        200: {
-            "model": Datastore,
-            "description": "The knowledge graph information",
+        201: {
+            "description": "KG added successfully.",
         },
         400: {
             "description": "Failed to create the knowledge graph in the API database",
@@ -75,39 +74,28 @@ async def get_kg(
         500: {
             "description": "Failed to create the knowledge graph in the storage backend.",
         },
-    },
-    response_model=Datastore,
+    }
 )
 async def put_kg(
     request: Request,
     kg_name: str = Path(..., description="The knowledge graph name"),
-    fields: DatastoreRequest = Body(..., description="The knowledge graph fields"),
     conn: KnowledgeGraphConnector = Depends(get_kg_storage_connector),
     response: Response = None,
     mongo: MongoClient = Depends(get_mongo_client)
 ):
-    # Update if existing, otherwise add new
-    schema = await conn.get_datastore(kg_name)
+    kg_schema = await conn.get_kg(kg_name)
     success = False
-    if schema is None:
+    if kg_schema is None:
         # creating a new datastore
-        schema = fields.to_datastore(kg_name)
-        success = await conn.add_datastore(schema)
+        success = await conn.add_kg(kg_name)
         response.status_code = status.HTTP_201_CREATED
         if success:
-            await mongo.new_binding(request, kg_name, binding_item_type)  # It should be placed after conn.add_datastore to make sure the status consistent between conn.add_datastore and mongo.new_binding
+            await mongo.new_binding(request, kg_name, binding_item_type)
+            await conn.commit_changes()
+        else:
+            raise HTTPException(status_code=400, detail="Cannot create KG.")
     else:
-        # updating an existing datastore
-        await mongo.autonomous_access_checking(request, kg_name, binding_item_type)
-        schema = fields.to_datastore(kg_name)
-        success = await conn.update_datastore(schema)
-        response.status_code = status.HTTP_200_OK
-
-    if success:
-        await conn.commit_changes()
-        return schema
-    else:
-        raise HTTPException(status_code=400)
+        raise HTTPException(status_code=400, detail=f"KG {kg_name} already exists.")
 
 
 @router.delete(

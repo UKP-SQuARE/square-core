@@ -4,6 +4,23 @@ from app.models.document import Document
 import json
 
 class TestKGs:
+    def test_put_kg(self, client: TestClient, token: str):
+        # Given:
+        new_kg_name = "kg-test-new_kg"
+        new_kg_url = f"/datastores/kg/{new_kg_name}"
+
+        # When:
+        response = client.put(
+            new_kg_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        # Then:
+        assert response.status_code == 201
+        response = client.get(new_kg_url)
+        assert response.status_code == 200
+        assert response.json()["name"] == new_kg_name
+
     def test_get_all_kgs(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
         url = "/datastores/kg"
@@ -14,8 +31,14 @@ class TestKGs:
         
         # Then:
         assert response.status_code == expected_code
-        assert len(response.json()) == 1
-        assert sorted(response.json()[0]['fields'], key=lambda x: x['name']) == sorted(conceptnet_kg.dict()['fields'], key=lambda x: x['name'])
+        kgs_preset = list(filter(lambda kg: kg["name"] == conceptnet_kg.name, response.json()))
+        assert len(kgs_preset) == 1
+        kg_preset = kgs_preset[0]
+        conceptnet_kg_json = json.loads(conceptnet_kg.json())
+        for field in kg_preset["fields"]:
+            assert field in conceptnet_kg_json["fields"]
+        for field in conceptnet_kg_json["fields"]:
+            assert field in kg_preset["fields"]
 
     def test_get_conceptnet(self, client: TestClient, conceptnet_kg: Datastore):
         # Given:
