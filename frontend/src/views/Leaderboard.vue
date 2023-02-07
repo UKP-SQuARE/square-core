@@ -13,8 +13,7 @@
       <div class="row">
         <div class="col-sm-8 col-12 mb-3">
           <label for="dataset" class="form-label">Dataset</label>
-          <multiselect id="dataset" v-model="value" :options="datasets" :disabled=isLoading placeholder="Select a dataset" @select="refreshLeaderboard('dataset')"></multiselect>
-        </div>
+          <multiselect id="dataset" v-model="datasetName" :options="datasetNames" :disabled=isLoading placeholder="Select a dataset" @select="refreshLeaderboard('dataset')"></multiselect>        </div>
         <div class="col-sm-4 col-12 mb-3">
           <label for="dataset" class="form-label">Metric</label>
           <multiselect id="metric" v-model="metricName" :options="metrics" :disabled=isLoading placeholder="Select a metric" @select="refreshLeaderboard('metric')"></multiselect>
@@ -117,10 +116,7 @@ export default Vue.component("show-leaderboard", {
     window.addEventListener("resize", this.handleResize)
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
-        for (let item_dataset = 0; item_dataset < response.data.length; item_dataset++){
-        this.datasets.push(response.data[item_dataset].name);
-        }
-        console.log("leaderboard datasets: ", this.options);
+        this.datasets = response.data;
       })
     this.refreshLeaderboard()
   },
@@ -129,7 +125,7 @@ export default Vue.component("show-leaderboard", {
   },
   computed: {
     datasetNames: function() {
-      return this.datasets.map(dataset => dataset.name);
+    return this.datasets.map(dataset => dataset.name);
     }
   },
   methods: {
