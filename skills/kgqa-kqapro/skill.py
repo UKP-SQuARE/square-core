@@ -1,9 +1,12 @@
 import json
+import logging
 
 from kg_utils import Predicate, post_process, query_virtuoso
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
 from value_class import ValueClass
+
+logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
 
@@ -26,12 +29,14 @@ async def predict(
         pipeline="generation",
         model_request=model_request,
     )
+    # model_response = {"model_outputs":{},"generated_texts": [["SELECT DISTINCT ?qpv WHERE { ?e_1 <pred:name> \"Mrs. Miniver\" . ?e_2 <pred:name> \"Academy Award for Best Writing, Adapted Screenplay\" . ?e_1 <award_received> ?e_2 . [ <pred:fact_h> ?e_1 ; <pred:fact_r> <award_received> ; <pred:fact_t> ?e_2 ] <statement_is_subject_of> ?qpv . }"]]}
     sparql: str = model_response["generated_texts"][0][0]
 
     # process generated sparql before querying KG.
     sparql = post_process(sparql)
     answer = get_sparql_answer(sparql)
-    model_response["answer"] = [answer]
+    if answer:
+        model_response["generated_texts"][0] = [answer]
     model_response["question"] = [request.query]
 
     return QueryOutput.from_generation(
@@ -138,4 +143,4 @@ def get_sparql_answer(sparql: str, rel2type="./relation2type.json"):
             parsed_answer = parsed_answer.replace("_", " ")
         return parsed_answer
     except Exception as e:
-        raise e
+        logger.error(f"Error from virtuoso: {e}")
