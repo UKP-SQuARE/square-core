@@ -34,8 +34,13 @@ async def predict(
 
     # process generated sparql before querying KG.
     sparql = post_process(sparql)
+    logger.info(f"cleaned sparql is {sparql}")
+
     answer = get_sparql_answer(sparql)
+    logger.info(f"the answer is {answer}")
+
     if answer:
+        logger.info(f"the answer returned from virtuoso is {answer}")
         model_response["generated_texts"][0] = [answer]
     model_response["question"] = [request.query]
 
@@ -144,3 +149,4 @@ def get_sparql_answer(sparql: str, rel2type="./relation2type.json"):
         return parsed_answer
     except Exception as e:
         logger.error(f"Error from virtuoso: {e}")
+        raise e
