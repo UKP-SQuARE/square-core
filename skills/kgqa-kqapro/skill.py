@@ -29,7 +29,7 @@ async def predict(
         pipeline="generation",
         model_request=model_request,
     )
-    # model_response = {"model_outputs":{},"generated_texts": [["SELECT DISTINCT ?qpv WHERE { ?e_1 <pred:name> \"Mrs. Miniver\" . ?e_2 <pred:name> \"Academy Award for Best Writing, Adapted Screenplay\" . ?e_1 <award_received> ?e_2 . [ <pred:fact_h> ?e_1 ; <pred:fact_r> <award_received> ; <pred:fact_t> ?e_2 ] <statement_is_subject_of> ?qpv . }"]]}
+
     sparql: str = model_response["generated_texts"][0][0]
 
     # process generated sparql before querying KG.
@@ -37,7 +37,6 @@ async def predict(
     logger.info(f"cleaned sparql is {sparql}")
 
     answer = get_sparql_answer(sparql)
-    logger.info(f"the answer is {answer}")
 
     if answer:
         logger.info(f"the answer returned from virtuoso is {answer}")
@@ -56,6 +55,10 @@ def get_sparql_answer(sparql: str, rel2type="./relation2type.json"):
     with open(rel2type, "r") as f:
         relation2type = json.load(f)
 
+    # remove extra whitespace
+    sparql = [tok for tok in sparql.split() if tok]
+    sparql = " ".join(sparql)
+
     try:
         # infer the parse_type based on sparql
         if sparql.startswith("SELECT DISTINCT ?e") or sparql.startswith("SELECT ?e"):
@@ -67,12 +70,15 @@ def get_sparql_answer(sparql: str, rel2type="./relation2type.json"):
         elif sparql.startswith("ASK"):
             parse_type = "bool"
         else:
+            key = None
             tokens = sparql.split()
             tgt = tokens[2]
             for i in range(len(tokens) - 1, 1, -1):
                 if tokens[i] == "." and tokens[i - 1] == tgt:
                     key = tokens[i - 2]
                     break
+            if not key:
+                return None
             key = key[1:-1].replace("_", " ")
             t = relation2type[key]
             parse_type = "attr_{}".format(t)
