@@ -20,7 +20,7 @@ jobs:
       - name: Set Deployment Message (deployment)
         if: github.event_name == 'deployment'
         run: |
-          echo "MSG=Deployment to **${{ github.event.deployment.environment }}** was **${{ github.event.deployment_status.state }}**." >> $GITHUB_ENV
+          echo "MSG=Deployment to **${{ github.event.deployment.environment }}** triggered." >> $GITHUB_ENV
 
       - name: Send message to square-github channel
         id: matrix-chat-message
