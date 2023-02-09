@@ -183,7 +183,7 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
             and item.dataset_name == evaluation.dataset_name
         )
 
-        for (metric_name, metric_data) in metric_result.metrics.items():
+        for metric_name, metric_data in metric_result.metrics.items():
             if metric_name == evaluation.metric_name:
                 results.append(
                     EvaluationResult(

@@ -267,7 +267,7 @@ services:
     build:
       context: ./evaluator
       target: build
-    command: celery -A evaluator.tasks worker --loglevel=info
+    command: celery -A evaluator.tasks worker -Q evaluation --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
@@ -288,6 +288,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       DATASET_DIR: /app/datasets/
+      QUEUE: evaluation
     depends_on:
       - mongodb
       - redis
