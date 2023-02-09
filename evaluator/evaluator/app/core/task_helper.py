@@ -4,10 +4,13 @@ import os
 import requests
 from evaluate import list_evaluation_modules
 
-from evaluator.app.models import get_dataset_metadata
+from datasets import list_datasets
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 
 logger = logging.getLogger(__name__)
-base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
+skill_manager_url = os.getenv(
+    "SKILL_MANAGER_API_URL", "https://square.ukp-lab.de/api/skill-manager"
+)
 
 
 def task_id(task_name, skill_id, dataset_name, metric_name=None) -> str:
@@ -43,15 +46,29 @@ def skill_exists(skill_id, token) -> bool:
         headers = {"Authorization": f"Bearer {token}"}
 
     response = requests.get(
-        f"{base_url}/skill-manager/skill/{skill_id}", headers=headers
+        f"{skill_manager_url}/skill/{skill_id}",
+        headers=headers,
+        timeout=30,
     )
 
     return response.status_code == 200
 
 
+def dataset_name_exists(dataset_name: str) -> bool:
+    """
+    Checks if the dataset name exists in Huggingface.
+
+    Args:
+        dataset_name (str): Name of the dataset.
+
+    Returns: True if the dataset exists. Otherwise False.
+    """
+    return dataset_name in list_datasets()
+
+
 def dataset_exists(dataset_name) -> bool:
     """
-    Checks if the dataset exists.
+    Checks if the dataset entry exists in the SQuARE project.
 
     Args:
         dataset_name (str): Name of the dataset.

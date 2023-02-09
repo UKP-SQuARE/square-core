@@ -188,6 +188,7 @@ services:
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EVALUATOR_API_URL: #@ data.values.square_api_url + "/evaluator"
     depends_on:
       - mongodb
       - redis
@@ -218,6 +219,7 @@ services:
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       DATASET_DIR: /app/datasets/
+      SKILL_MANAGER_API_URL: #@ data.values.square_api_url + "/skill-manager"
     depends_on:
       - mongodb
     labels:
