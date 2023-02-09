@@ -1,0 +1,44 @@
+[
+    {
+        "MFT": {
+            "Temporal": {
+                "successful": 0,
+                "failure": 30
+            },
+            "Coref": {
+                "successful": 0,
+                "failure": 80
+            },
+            "Negation": {
+                "successful": 0,
+                "failure": 40
+            },
+            "Fairness": {
+                "successful": 0,
+                "failure": 10
+            },
+            "SRL": {
+                "successful": 0,
+                "failure": 100
+            },
+            "Taxonomy": {
+                "successful": 0,
+                "failure": 242
+            },
+            "Vocabulary": {
+                "successful": 0,
+                "failure": 70
+            }
+        },
+        "INV": {
+            "Robustness": {
+                "successful": 0,
+                "failure": 20
+            },
+            "NER": {
+                "successful": 0,
+                "failure": 100
+            }
+        }
+    }
+]

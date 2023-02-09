@@ -96,6 +96,7 @@ def predict(model_inputs: dict, skill_id: str) -> list:
 
         # calculate success rate
         success_rate = [pred == gold for pred, gold in zip(model_predictions, model_inputs["answers"])]
+        # overall_success_rate = sum(success_rate) / len(success_rate)
 
         for test_type, capability, test_name, request, answer, prediction, success in zip(
             model_inputs["test_type"],
@@ -125,3 +126,54 @@ def predict(model_inputs: dict, skill_id: str) -> list:
     return model_outputs
 
 
+def test_name_analysis(model_outputs):
+    types_of_tests = {}
+    for element in list(set([result["test_type"] for result in model_outputs])):
+        types_of_tests[element] = dict()
+    for test in types_of_tests.keys():
+        test_names = list(set([result["test_name"] for result in model_outputs if result["test_type"] == test]))
+        for name in test_names:
+            successful = 0
+            failure = 0
+            for result in model_outputs:
+                if result["test_name"] == name:
+                    if result["success"]:
+                        successful += 1
+                    else:
+                        failure += 1
+            types_of_tests[test][name] = dict({"successful": successful, "failure": failure})
+    return [types_of_tests]
+
+
+def capability_analysis(model_outputs):
+    types_of_tests = {}
+    for element in list(set([result["test_type"] for result in model_outputs])):
+        types_of_tests[element] = dict()
+    for test in types_of_tests.keys():
+        test_capabilities = list(set([result["capability"] for result in model_outputs if result["test_type"] == test]))
+        for cap in test_capabilities:
+            successful = 0
+            failure = 0
+            for result in model_outputs:
+                if result["capability"] == cap:
+                    if result["success"]:
+                        successful += 1
+                    else:
+                        failure += 1
+            types_of_tests[test][cap] = dict({"successful": successful, "failure": failure})
+    return [types_of_tests]
+
+
+def test_type_analysis(model_outputs):
+    types_of_tests = {}
+    for element in list(set([result["test_type"] for result in model_outputs])):
+        successful = 0
+        failure = 0
+        for result in model_outputs:
+            if result['test_type'] == element:
+                if result['success']:
+                    successful += 1
+                else:
+                    failure += 1
+        types_of_tests[element] = dict({"successful": successful, "failure": failure})
+    return [types_of_tests]
