@@ -14,7 +14,7 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 COPY ./evaluator/app evaluator/app
-COPY ./evaluator/tasks tasks
+COPY ./evaluator/tasks evaluator/tasks
 
 COPY logging.conf logging.conf
 
