@@ -1,0 +1,25 @@
+on: [deployment_status, workflow_dispatch]
+
+jobs:
+  send-message:
+    runs-on: ubuntu-latest
+    name: Send message via Matrix
+    steps:
+      - name: Set Deployment Message (workflow_dispatch)
+        if: github.event.action == "workflow_dispatch"
+        run: |
+          echo "MSG=This is a test message from github." >> $GITHUB_ENV
+
+      - name: Set Deployment Message (deployment_status)
+        if: github.event.action == "deployment_status"
+        run: |
+          echo "MSG=Deployment to **${{ github.event.deployment.environment }}** was **${{ github.event.deployment_status.state }}**." >> $GITHUB_ENV
+
+      - name: Send message to square-github channel
+        id: matrix-chat-message
+        uses: fadenb/matrix-chat-message@v0.0.6
+        with:
+          homeserver: ${{ secrets.ELEMENT_HOME_SERVER }}
+          token: ${{ secrets.ELEMENT_ACCESS_TOKEN }}
+          channel: ${{ secrets.ELEMENT_ROOM_ID }}
+          message: ${{ env.MSG }}
