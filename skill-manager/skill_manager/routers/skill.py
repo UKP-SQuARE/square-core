@@ -286,7 +286,7 @@ async def query_skill(
     predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
         "predictions from skill: {predictions}".format(
-            predictions=str(predictions.json())
+            predictions=str(predictions.json())[:100]
         )
     )
 
