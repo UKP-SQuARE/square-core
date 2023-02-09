@@ -207,6 +207,7 @@ services:
     expose:
       - 8081
     env_file:
+      - ./redis/.env
       - ./mongodb/.env
       - ./evaluator/.env
     environment:
@@ -216,6 +217,8 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       DATASET_DIR: /app/datasets/
@@ -269,6 +272,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - evaluation-datasets:/app/datasets/
     env_file:
+      - ./evaluator/.env
       - ./mongodb/.env
       - ./rabbitmq/.env
       - ./redis/.env
@@ -280,6 +284,8 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       DATASET_DIR: /app/datasets/
     depends_on:
       - mongodb
