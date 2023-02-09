@@ -7,13 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     name: Send message via Matrix
     steps:
+      - name: Echo event
+        run: |
+          echo ${{ github.event_name }}
+          echo ${{ github.event.action }}
+
       - name: Set Deployment Message (workflow_dispatch)
-        if: github.event.action == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           echo "MSG=This is a test message from github." >> $GITHUB_ENV
 
       - name: Set Deployment Message (deployment_status)
-        if: github.event.action == 'deployment_status'
+        if: github.event_name == 'deployment_status'
         run: |
           echo "MSG=Deployment to **${{ github.event.deployment.environment }}** was **${{ github.event.deployment_status.state }}**." >> $GITHUB_ENV
 
