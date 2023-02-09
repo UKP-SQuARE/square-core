@@ -22,8 +22,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     prepared_input = [[query, context]]
 
     model_request_kwargs = extract_model_kwargs_from_request(request)
-    logger.debug(model_request_kwargs)
-    logger.debug("-------------------------------------")
+
     model_request = {"input": prepared_input, **model_request_kwargs}
 
     if request.skill_args.get("adapter"):

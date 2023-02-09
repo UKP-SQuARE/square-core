@@ -242,7 +242,7 @@ async def query_skill(
             query=query_request.json(), id=id
         )
     )
-    logger.debug(query_request)
+
     queries = query_request.query
     user_id = query_request.user_id
 
