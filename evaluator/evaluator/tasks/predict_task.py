@@ -90,9 +90,9 @@ def do_predict(
     start_time = datetime.datetime.now()
 
     if dataset_metadata.skill_type == "extractive-qa":
-        qa_type = "context"
+        context_type = "context"
     elif dataset_metadata.skill_type == "multiple-choice":
-        qa_type = "choices"
+        context_type = "choices"
     else:
         skill_type = dataset_metadata.skill_type
         raise ValueError(
@@ -106,7 +106,9 @@ def do_predict(
         ],
         "skill_args": {
             "context": [
-                datapoint[qa_type] for datapoint in dataset if qa_type in datapoint
+                datapoint[context_type]
+                for datapoint in dataset
+                if context_type in datapoint
             ]
         },
         "num_results": 1,
