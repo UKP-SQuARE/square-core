@@ -243,8 +243,7 @@ async def query_skill(
         )
     )
     logger.debug(query_request)
-    query = query_request.query
-    query_request.query = json.loads(query_request.query)
+    queries = query_request.query
     user_id = query_request.user_id
 
     skill: Skill = await get_skill_if_authorized(
@@ -276,43 +275,51 @@ async def query_skill(
         headers["Cache-Control"] = request.headers.get("Cache-Control")
 
     logger.debug(f"query json={query_request.dict()}")
-    # response = session_cache.session.post(
-    #    f"{skill.url}/query",
-    #    headers=headers,
-    #    json=query_request.dict(),
-    # )
-
-    response = get_skill_response()
-    response = json.dumps(response)
-    response = json.loads(response)
-    predictions = QueryOutput.parse_obj(response)
-
-    # if response.status_code > 201:
-    #    logger.exception(response.content)
-    #    response.raise_for_status()
-    # predictions = QueryOutput.parse_obj(response.json())
+    response = session_cache.session.post(
+        f"{skill.url}/query",
+        headers=headers,
+        json=query_request.dict(),
+    )
+    if response.status_code > 201:
+        logger.exception(response.content)
+        response.raise_for_status()
+    predictions = QueryOutput.parse_obj(response.json())
     logger.debug(
         "predictions from skill: {predictions}".format(
             predictions=str(predictions.json())
         )
     )
 
+    mongo_predictions = []
+    step = (
+        query_request.task_kwargs["topk"] if "topk" in query_request.task_kwargs else 1
+    )
+
     # save prediction to mongodb
-    mongo_prediction = Prediction(
-        skill_id=skill.id,
-        skill_name=skill.name,
-        query=query,
-        user_id=user_id,
-        predictions=predictions.predictions,
-    )
-    _ = mongo_client.client.skill_manager.predictions.insert_one(
-        mongo_prediction.mongo()
-    ).inserted_id
-    logger.debug(
-        "prediction saved {mongo_prediction}".format(
-            mongo_prediction=str(mongo_prediction.json()),
+    assert len(predictions.predictions) == len(queries) * step
+    for idx, query in enumerate(queries):
+        # indices for topk predictions for each query
+        predictions_start_idx = idx * step
+        predictions_end_idx = idx * step + step
+
+        mongo_prediction = Prediction(
+            skill_id=skill.id,
+            skill_name=skill.name,
+            query=query,
+            user_id=user_id,
+            predictions=predictions.predictions[
+                predictions_start_idx:predictions_end_idx
+            ],
         )
-    )
+        mongo_predictions.append(mongo_prediction.mongo())
+        logger.debug(
+            "prediction saved {mongo_prediction}".format(
+                mongo_prediction=str(mongo_prediction.json()),
+            )
+        )
+    _ = mongo_client.client.skill_manager.predictions.insert_many(
+        mongo_predictions
+    ).inserted_ids
 
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(

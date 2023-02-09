@@ -113,9 +113,9 @@ def do_predict(
     dataset = dataset[:2]
 
     query_request = {
-        "query": json.dumps(
-            [datapoint["question"] for datapoint in dataset if "question" in datapoint]
-        ),
+        "query": [
+            datapoint["question"] for datapoint in dataset if "question" in datapoint
+        ],
         "skill_args": {
             "context": [
                 datapoint[qa_type] for datapoint in dataset if qa_type in datapoint

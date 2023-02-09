@@ -8,14 +8,17 @@ RUN apt-get -y update && apt-get -y install git
 WORKDIR /app
 
 RUN pip install --upgrade pip
-COPY requirements.txt ./
+COPY square-core/skills/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY main.py main.py
-COPY utils.py utils.py
-ARG skill
-COPY ./$skill/skill.py skill.py 
-COPY logging.conf logging.conf
+COPY square-skill-api square-skill-api
+RUN pip install --editable square-skill-api
+
+COPY square-core/skills/main.py main.py
+COPY square-core/skills/utils.py utils.py
+
+COPY square-core/skills/extractive-qa/skill.py skill.py 
+COPY square-core/skills/logging.conf logging.conf
 
 EXPOSE 80
 
