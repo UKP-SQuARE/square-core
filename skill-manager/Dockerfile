@@ -10,15 +10,12 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
-COPY square-core/skill-manager/requirements.txt requirements.txt
+COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY square-skill-api square-skill-api
-RUN pip install --editable square-skill-api
+COPY ./skill_manager skill_manager
 
-COPY square-core/skill-manager skill_manager
-
-COPY square-core/skill-manager/logging.conf logging.conf
+COPY logging.conf logging.conf
 
 FROM base as test
 RUN apt update && apt -y install docker.io

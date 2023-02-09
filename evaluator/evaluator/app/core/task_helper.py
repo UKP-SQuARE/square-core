@@ -44,7 +44,7 @@ def skill_exists(skill_id, token) -> bool:
     headers = {}
     if token:
         headers = {"Authorization": f"Bearer {token}"}
-    skill_manager_url = "http://square-core-skill-manager-1:8000/api"
+
     response = requests.get(
         f"{skill_manager_url}/skill/{skill_id}",
         headers=headers,

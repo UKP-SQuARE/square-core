@@ -55,9 +55,9 @@ export default Vue.component('app', {
       // Users do not have a visible link to protected sites so they usually will never see this redirect
       // Using browser history or entering a direct URL can result in this view
       // The redirect to an intermediate site is required to protect against some infinite redirect cycles
-      //if (!this.keycloak.authenticated && 'requiresAuthentication' in this.$route.meta && this.$route.meta.requiresAuthentication) {
-      //  this.$router.push('/signin')
-      //}
+      if (!this.keycloak.authenticated && 'requiresAuthentication' in this.$route.meta && this.$route.meta.requiresAuthentication) {
+        this.$router.push('/signin')
+      }
     }
   },
   beforeMount() {

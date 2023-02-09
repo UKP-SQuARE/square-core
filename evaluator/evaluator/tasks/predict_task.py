@@ -102,8 +102,6 @@ def do_predict(
             f"Predictions on '{skill_type}' datasets is currently not supported.",
         )
 
-    dataset = dataset[:2]
-
     query_request = {
         "query": [
             datapoint["question"] for datapoint in dataset if "question" in datapoint
@@ -117,8 +115,7 @@ def do_predict(
     }
 
     response = requests.post(
-        f"http://square-core-skill-manager-1:8000/api/skill/{skill_id}/query",
-        # f"{base_url}/skill-manager/skill/{skill_id}/query",
+        f"{base_url}/skill-manager/skill/{skill_id}/query",
         headers=headers,
         data=json.dumps(query_request),
     )
