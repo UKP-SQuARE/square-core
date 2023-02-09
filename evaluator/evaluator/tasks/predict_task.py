@@ -89,15 +89,13 @@ def do_predict(
     predictions: List[Prediction] = []
     start_time = datetime.datetime.now()
 
-    if dataset_metadata["skill-type"] == "extractive-qa":
-        # 62c1ae1b536b1bb18ff91ce3 # squad
+    if dataset_metadata.skill_type == "extractive-qa":
         qa_type = "context"
-    elif dataset_metadata["skill-type"] == "multiple-choice":
-        # 62c1ae19536b1bb18ff91cde # commonsense_qa
+    elif dataset_metadata.skill_type == "multiple-choice":
         qa_type = "choices"
     else:
-        skill_type = dataset_metadata["skill-type"]
-        raise HTTPException(
+        skill_type = dataset_metadata.skill_type
+        raise ValueError(
             400,
             f"Predictions on '{skill_type}' datasets is currently not supported.",
         )
@@ -124,7 +122,6 @@ def do_predict(
     prediction_response = response.json()["predictions"]
 
     for datapoint, output in zip(dataset, prediction_response):
-        assert datapoint["question"] == output["question"]
         predictions.append(
             Prediction(
                 id=datapoint["id"],

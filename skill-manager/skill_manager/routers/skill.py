@@ -291,16 +291,19 @@ async def query_skill(
     )
 
     mongo_predictions = []
-    step = (
+    topk = (
         query_request.task_kwargs["topk"] if "topk" in query_request.task_kwargs else 1
     )
 
+    if isinstance(queries, str):
+        queries = [queries]
+
     # save prediction to mongodb
-    assert len(predictions.predictions) == len(queries) * step
+    assert len(predictions.predictions) == len(queries) * topk
     for idx, query in enumerate(queries):
         # indices for topk predictions for each query
-        predictions_start_idx = idx * step
-        predictions_end_idx = idx * step + step
+        predictions_start_idx = idx * topk
+        predictions_end_idx = idx * topk + topk
 
         mongo_prediction = Prediction(
             skill_id=skill.id,
@@ -314,7 +317,7 @@ async def query_skill(
         mongo_predictions.append(mongo_prediction.mongo())
         logger.debug(
             "prediction saved {mongo_prediction}".format(
-                mongo_prediction=str(mongo_prediction.json()),
+                mongo_prediction=str(mongo_prediction.json())[:100],
             )
         )
     _ = mongo_client.client.skill_manager.predictions.insert_many(
