@@ -9,24 +9,42 @@ from evaluator.app.mongo.mongo_model import MongoModel
 from evaluator.app.mongo.py_object_id import PyObjectId
 
 
-class DataSet(str, Enum):
-    """Enum for different data sets."""
+class ExtractiveQADatasetMapping(BaseModel):
+    id_column: str = Field(...)
+    question_column: str = Field(...)
+    context_column: str = Field(...)
+    answers_column: str = Field(...)
 
-    CommonSenseQA = "CommonSenseQA"
-    CosmosQA = "CosmosQA"
-    DROP = "DROP"
-    HotpotQA = "HotpotQA"
-    MultiRC = "MultiRC"
-    NarrativeQA = "NarrativeQA"
-    NewsQA = "NewsQA"
-    OpenBioASQ = "OpenBioASQ"
-    QuAIL = "QuAIL"
-    QuaRTz = "QuaRTz"
-    Quoref = "Quoref"
-    RACE = "RACE"
-    SQuAD = "SQuAD"
-    Social_IQA = "Social-IQA"
-    BoolQ = "BoolQ"
+
+class MultipleChoiceQADatasetMapping(BaseModel):
+    id_column: str = Field(...)
+    question_column: str = Field(...)
+    choices_columns: list[str] = Field(...)
+    choices_key_mapping_column: Optional[str] = Field(...)
+    answer_index_column: str = Field(...)
+
+
+SUPPORTED_SKILL_TYPES = {
+    "extractive-qa": ExtractiveQADatasetMapping,
+    "multiple-choice": MultipleChoiceQADatasetMapping,
+}
+"""
+This constant contains all skill types that are supported during evaluation.
+It is a dictionary that maps the skill types to their mapping classes.
+This dictionary is used to automatically check the schema of the selected skill type.
+"""  # pylint: disable=W0105
+
+
+class DatasetMetadata(MongoModel):
+    name: str = Field(...)
+    skill_type: str = Field(
+        ...,
+        description="Name of the skill type. The name must be defined by the application (validated by the constant `SUPPORTED_SKILL_TYPES`).",
+    )
+    metric: str = Field(..., description="Name of the default metric.")
+    mapping: Union[ExtractiveQADatasetMapping, MultipleChoiceQADatasetMapping] = Field(
+        ...
+    )
 
 
 class Prediction(BaseModel):
@@ -78,8 +96,16 @@ class Evaluation(MongoModel):
     prediction_status: EvaluationStatus = Field(
         ..., description="Current status of the prediction task."
     )
+    prediction_error: Optional[str] = Field(
+        None,
+        description="Error message of the error that lead to failure of the prediction task.",
+    )
     metric_status: EvaluationStatus = Field(
         ..., description="Current status of the evaluation (metric computation) task."
+    )
+    metric_error: Optional[str] = Field(
+        None,
+        description="Error message of the error that lead to failure of the evaluation (metric computation) task.",
     )
 
 
@@ -105,6 +131,24 @@ class MetricResult(MongoModel):
     )
     dataset_name: str = Field(..., description="Name of the dataset")
     metrics: dict = Field(..., description="Dictionary of all Metric objects")
+
+
+class EvaluationResult(BaseModel):
+    evaluation_id: str = Field(..., description="Skill Id + metric name")
+    evaluation_status: str = Field(..., description="Evaluation status.")
+    evaluation_error: str = Field(None, description="Description of error")
+    skill_name: str = Field(..., description="Model name")
+    dataset: str = Field(..., description="Dataset used for evaluation")
+    public: bool = Field(
+        ...,
+        description="Describes wether it's a public evaluation or a private evaluation for the user.",
+    )
+    metric_name: str = Field(..., description="Metric name")
+    metric_result: dict = Field(..., description="List with single metric results")
+    skill_url: str = Field(
+        ...,
+        description="Skill url, used to check if skill is available to compute evaluations",
+    )
 
 
 class ExtractiveDatasetSample(BaseModel):
@@ -147,58 +191,3 @@ class LeaderboardEntry(BaseModel):
         description="Whether the skill is only visible to the currently logged in user.",
     )
     result: dict = Field(..., description="Evaluation results of the metric.")
-
-
-# Mocked function. Remove after https://github.com/nclskfm/square-core/issues/7 is implemented.
-def get_dataset_metadata(dataset_name):
-    if dataset_name == "squad":
-        return {
-            "name": "squad",
-            "skill-type": "extractive-qa",
-            "metric": "squad",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "context-column": "context",
-                "answer-text-column": "answers.text",
-            },
-        }
-    elif dataset_name == "quoref":
-        return {
-            "name": "quoref",
-            "skill-type": "extractive-qa",
-            "metric": "squad",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "context-column": "context",
-                "answer-text-column": "answers.text",
-            },
-        }
-    elif dataset_name == "commonsense_qa":
-        return {
-            "name": "commonsense_qa",
-            "skill-type": "multiple-choice",
-            "metric": "accuracy",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "choices-columns": ["choices.text"],
-                "choices-key-mapping-column": "choices.label",
-                "answer-index-column": "answerKey",
-            },
-        }
-    elif dataset_name == "cosmos_qa":
-        return {
-            "name": "cosmos_qa",
-            "skill-type": "multiple-choice",
-            "mapping": {
-                "id-column": "id",
-                "question-column": "question",
-                "choices-columns": ["answer0", "answer1", "answer2", "answer3"],
-                "choices-key-mapping-column": None,
-                "answer-index-column": "label",
-            },
-        }
-    else:
-        raise HTTPException(400, "Unsupported dataset!")

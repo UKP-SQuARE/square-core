@@ -14,13 +14,13 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 from evaluator.app.core.task_helper import task_id
 from evaluator.app.models import (
     Evaluation,
     EvaluationStatus,
     Prediction,
     PredictionResult,
-    get_dataset_metadata,
 )
 from evaluator.app.routers import client_credentials
 from evaluator.tasks import evaluate_task
@@ -52,7 +52,13 @@ def predict(
             "dataset_name": dataset_name,
         }
         mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
+            evaluation_filter,
+            {
+                "$set": {
+                    "prediction_status": EvaluationStatus.failed,
+                    "prediction_error": f"{e}",
+                }
+            },
         )
         raise e
 
@@ -75,23 +81,9 @@ def do_predict(
     dataset_metadata = get_dataset_metadata(dataset_name)
     # get the dataset
     dataset_handler = DatasetHandler()
-    try:
-        dataset = dataset_handler.get_dataset(dataset_name)
-    except DatasetDoesNotExistError:
-        logger.error("Dataset does not exist!")
-        mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
-        )
-        raise DatasetDoesNotExistError(dataset_name)
+    dataset = dataset_handler.get_dataset(dataset_name)
     # format the dataset into universal format for its skill-type
-    try:
-        dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
-    except ValueError as e:
-        logger.error(f"{e}")
-        mongo_client.client.evaluator.evaluations.update_many(
-            evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.failed}}
-        )
-        raise ValueError(f"{e}")
+    dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
 
     headers = {"Authorization": f"Bearer {token}"}
     predictions: List[Prediction] = []
@@ -162,7 +154,13 @@ def do_predict(
     )
 
     mongo_client.client.evaluator.evaluations.update_many(
-        evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.finished}}
+        evaluation_filter,
+        {
+            "$set": {
+                "prediction_status": EvaluationStatus.finished,
+                "prediction_error": None,
+            }
+        },
     )
 
     # trigger evaluation task specified metric
