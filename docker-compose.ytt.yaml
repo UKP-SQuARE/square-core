@@ -210,6 +210,7 @@ services:
       - ./redis/.env
       - ./mongodb/.env
       - ./evaluator/.env
+      - ./rabbitmq/.env
     environment:
       API_PREFIX: evaluator
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
