@@ -158,6 +158,7 @@ async def get_evaluations(request: Request, token: str = Depends(client_credenti
                 )
             else:
                 status = "RUNNING"
+                error = ""
 
             results.append(
                 EvaluationResult(
