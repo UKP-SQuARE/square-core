@@ -1,3 +1,5 @@
+name: Element
+
 on: [deployment_status, workflow_dispatch]
 
 jobs:
