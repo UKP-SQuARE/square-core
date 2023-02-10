@@ -30,6 +30,7 @@ from .celery import app as celery_app
 logger = get_task_logger(__name__)
 base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
 batch_size = int(os.getenv("BATCH_SIZE", 1000))
+QUEUE = os.getenv("QUEUE", "evaluation")
 
 
 @celery_app.task
@@ -171,6 +172,7 @@ def do_predict(
         task = evaluate_task.evaluate.apply_async(
             args=(skill_id, dataset_name, metric_name),
             task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
+            queue=QUEUE,
         )
         logger.info(
             f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"

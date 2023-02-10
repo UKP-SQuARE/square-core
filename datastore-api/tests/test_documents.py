@@ -145,7 +145,6 @@ class TestDocuments:
         response = client.get(f"/datastores/{datastore_name}/documents")
         assert response.status_code == 200
         for item in response.iter_lines():
-            print(item)
             data = json.loads(item)
             assert "id" in data
             assert "title" in data

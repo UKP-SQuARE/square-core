@@ -104,18 +104,23 @@ export function postQuery(headers, question, context, choices, options) {
         data.skill_args.choices = choices
     }
     if (options.explain_kwargs) {
-        data.explain_kwargs = {"method": options.explain_kwargs.method,
-                                "top_k": options.explain_kwargs.top_k,
-                                "mode": options.explain_kwargs.mode}
+        data.explain_kwargs = {
+            "method": options.explain_kwargs.method,
+            "top_k": options.explain_kwargs.top_k,
+            "mode": options.explain_kwargs.mode
+        }
     }
     if (options.attack_kwargs) {
-        data.attack_kwargs = {"method": options.attack_kwargs.method,
-                              "saliency_method": options.attack_kwargs.saliency_method,
-                              "max_flips": options.attack_kwargs.max_flips,
-                              "max_reductions": options.attack_kwargs.max_reductions,
-                              "max_tokens": options.attack_kwargs.max_tokens,
-                            }
+        data.attack_kwargs = {
+            "method": options.attack_kwargs.method,
+            "saliency_method": options.attack_kwargs.saliency_method,
+            "max_flips": options.attack_kwargs.max_flips,
+            "max_reductions": options.attack_kwargs.max_reductions,
+            "max_tokens": options.attack_kwargs.max_tokens,
+        }
     }
+    data.preprocessing_kwargs = { "max_length": 512 }
+
     if (options.feedback_documents) {
         data.skill_args.feedback_documents = options.feedback_documents
     }

@@ -1,4 +1,5 @@
 import logging
+import os
 
 from bson import ObjectId
 
@@ -14,6 +15,7 @@ from evaluator.app.models import Evaluation, EvaluationStatus, PredictionResult
 from evaluator.tasks import evaluate_task, predict_task
 
 logger = logging.getLogger(__name__)
+QUEUE = os.getenv("QUEUE", "evaluation")
 
 
 class EvaluationHandler:
@@ -109,6 +111,7 @@ class EvaluationHandler:
         task = predict_task.predict.apply_async(
             args=(skill_id, dataset_name, metric_name, token),
             task_id=task_id("predict", skill_id, dataset_name),
+            queue=QUEUE,
         )
         logger.info(
             f"Created prediction-task for skill '{skill_id}' on dataset '{dataset_name}'. Task-ID: '{task.id}'"
@@ -147,6 +150,7 @@ class EvaluationHandler:
         task = evaluate_task.evaluate.apply_async(
             args=(skill_id, dataset_name, metric_name),
             task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
+            queue=QUEUE,
         )
         logger.info(
             f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"

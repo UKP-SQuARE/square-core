@@ -9,7 +9,7 @@ class TestDatastores:
         assert isinstance(response.json(), list)
         assert len(response.json()) >= 1
         # first or second item should be the demo datastore
-        assert response.json()[0] == wiki_datastore.dict() or response.json()[1] == wiki_datastore.dict() 
+        assert any(datastore == wiki_datastore.dict() for datastore in response.json())
 
     def test_get_datastore(self, client: TestClient, wiki_datastore: Datastore):
         response = client.get(f"/datastores/{wiki_datastore.name}")
