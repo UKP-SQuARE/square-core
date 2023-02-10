@@ -188,6 +188,7 @@ services:
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EVALUATOR_API_URL: #@ data.values.square_api_url[data.values.environment] + "/evaluator"
     depends_on:
       - mongodb
       - redis
@@ -206,8 +207,10 @@ services:
     expose:
       - 8081
     env_file:
+      - ./redis/.env
       - ./mongodb/.env
       - ./evaluator/.env
+      - ./rabbitmq/.env
     environment:
       API_PREFIX: evaluator
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
@@ -215,9 +218,12 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       DATASET_DIR: /app/datasets/
+      SKILL_MANAGER_API_URL: #@ data.values.square_api_url[data.values.environment] + "/skill-manager"
     depends_on:
       - mongodb
     labels:
@@ -261,12 +267,13 @@ services:
     build:
       context: ./evaluator
       target: build
-    command: celery -A evaluator.tasks worker --loglevel=info
+    command: celery -A evaluator.tasks worker -Q evaluation --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - evaluation-datasets:/app/datasets/
     env_file:
+      - ./evaluator/.env
       - ./mongodb/.env
       - ./rabbitmq/.env
       - ./redis/.env
@@ -278,7 +285,10 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       DATASET_DIR: /app/datasets/
+      QUEUE: evaluation
     depends_on:
       - mongodb
       - redis

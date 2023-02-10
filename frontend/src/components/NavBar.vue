@@ -20,6 +20,9 @@
                 <router-link class="nav-link" to="/behavioral_tests" exact-active-class="active">Behavioral Tests</router-link>
               </li>
               <li class="nav-item">
+                <router-link class="nav-link" to="/leaderboard" exact-active-class="active">Leaderboard</router-link>
+              </li>
+              <li class="nav-item">
                 <router-link class="nav-link" to="/publications" exact-active-class="active">Publications</router-link>
               </li>
               <li class="nav-item">
@@ -50,6 +53,7 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
+                <li><router-link class="dropdown-item" to="/evaluations">Evaluate skills</router-link></li>
                 <li><a v-on:click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a v-on:click.prevent="$emit('sign-out')" href="#" class="dropdown-item">Sign out</a></li>

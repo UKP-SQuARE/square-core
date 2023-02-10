@@ -1,6 +1,6 @@
 name: Element
 
-on: [deployment_status, workflow_dispatch]
+on: [deployment, workflow_dispatch]
 
 jobs:
   send-message:
@@ -17,10 +17,10 @@ jobs:
         run: |
           echo "MSG=This is a test message from github." >> $GITHUB_ENV
 
-      - name: Set Deployment Message (deployment_status)
-        if: github.event_name == 'deployment_status'
+      - name: Set Deployment Message (deployment)
+        if: github.event_name == 'deployment'
         run: |
-          echo "MSG=Deployment to **${{ github.event.deployment.environment }}** was **${{ github.event.deployment_status.state }}**." >> $GITHUB_ENV
+          echo "MSG=Deployment to **${{ github.event.deployment.environment }}** triggered." >> $GITHUB_ENV
 
       - name: Send message to square-github channel
         id: matrix-chat-message
