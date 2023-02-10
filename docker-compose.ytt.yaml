@@ -283,6 +283,7 @@ services:
       MONGO_PORT: 27017
       DATASET_DIR: /app/datasets/
       QUEUE: evaluation
+      BATCH_SIZE: 1000
     depends_on:
       - mongodb
       - redis
