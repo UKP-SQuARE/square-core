@@ -29,6 +29,7 @@ from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
 base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
+batch_size = os.getenv("BATCH_SIZE", 1000)
 
 
 @celery_app.task
@@ -100,37 +101,40 @@ def do_predict(
             f"Predictions on '{skill_type}' datasets is currently not supported.",
         )
 
-    query_request = {
-        "query": [
-            datapoint["question"] for datapoint in dataset if "question" in datapoint
-        ],
-        "skill_args": {
-            "context": [
-                datapoint[context_type]
-                for datapoint in dataset
-                if context_type in datapoint
-            ]
-        },
-        "num_results": 1,
-    }
+    for i in range(0, len(dataset), batch_size):
+        query_request = {
+            "query": [
+                datapoint["question"]
+                for datapoint in dataset[i : min(i + batch_size, len(dataset))]
+                if "question" in datapoint
+            ],
+            "skill_args": {
+                "context": [
+                    datapoint[context_type]
+                    for datapoint in dataset[i : min(i + batch_size, len(dataset))]
+                    if context_type in datapoint
+                ]
+            },
+            "num_results": 1,
+        }
 
-    response = requests.post(
-        f"{base_url}/skill-manager/skill/{skill_id}/query",
-        headers=headers,
-        data=json.dumps(query_request),
-    )
-
-    response.raise_for_status()
-    prediction_response = response.json()["predictions"]
-
-    for datapoint, output in zip(dataset, prediction_response):
-        predictions.append(
-            Prediction(
-                id=datapoint["id"],
-                output=output["prediction_output"]["output"],
-                output_score=output["prediction_output"]["output_score"],
-            )
+        response = requests.post(
+            f"{base_url}/skill-manager/skill/{skill_id}/query",
+            headers=headers,
+            data=json.dumps(query_request),
         )
+
+        response.raise_for_status()
+        prediction_response = response.json()["predictions"]
+
+        for datapoint, output in zip(dataset, prediction_response):
+            predictions.append(
+                Prediction(
+                    id=datapoint["id"],
+                    output=output["prediction_output"]["output"],
+                    output_score=output["prediction_output"]["output_score"],
+                )
+            )
 
     calculation_time = (datetime.datetime.now() - start_time).total_seconds()
     logger.info(f"Prediction finished after {calculation_time} seconds")
