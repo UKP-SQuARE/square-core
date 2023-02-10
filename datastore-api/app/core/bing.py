@@ -131,6 +131,7 @@ class BingMiddleware(BaseHTTPMiddleware):
         allowed_paths = [
             {'verb': 'GET', 'path': f'/datastores/{BingSearch.datastore_name}/search'},
             {'verb': 'GET', 'path': f'/datastores/{BingSearch.datastore_name}'},
+            {'verb': 'GET', 'path': f'/datastores/{BingSearch.datastore_name}/indices'},
         ]
         if path.startswith(f"/datastores/{BingSearch.datastore_name}") \
         and not any([path == p['path'] and request.method == p['verb'] for p in allowed_paths]):
