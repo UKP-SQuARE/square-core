@@ -35,6 +35,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         pipeline="question-answering",
         model_request=model_request,
     )
+
     logger.info(f"Model response:\n{model_response}")
 
     return QueryOutput.from_question_answering(

@@ -243,7 +243,7 @@ async def query_skill(
         )
     )
 
-    query = query_request.query
+    queries = query_request.query
     user_id = query_request.user_id
 
     skill: Skill = await get_skill_if_authorized(
@@ -290,22 +290,39 @@ async def query_skill(
         )
     )
 
+    mongo_predictions = []
+    topk = (
+        query_request.task_kwargs["topk"] if "topk" in query_request.task_kwargs else 1
+    )
+
+    if isinstance(queries, str):
+        queries = [queries]
+
     # save prediction to mongodb
-    mongo_prediction = Prediction(
-        skill_id=skill.id,
-        skill_name=skill.name,
-        query=query,
-        user_id=user_id,
-        predictions=predictions.predictions,
-    )
-    _ = mongo_client.client.skill_manager.predictions.insert_one(
-        mongo_prediction.mongo()
-    ).inserted_id
-    logger.debug(
-        "prediction saved {mongo_prediction}".format(
-            mongo_prediction=str(mongo_prediction.json())[:100],
+    assert len(predictions.predictions) == len(queries) * topk
+    for idx, query in enumerate(queries):
+        # indices for topk predictions for each query
+        predictions_start_idx = idx * topk
+        predictions_end_idx = idx * topk + topk
+
+        mongo_prediction = Prediction(
+            skill_id=skill.id,
+            skill_name=skill.name,
+            query=query,
+            user_id=user_id,
+            predictions=predictions.predictions[
+                predictions_start_idx:predictions_end_idx
+            ],
         )
-    )
+        mongo_predictions.append(mongo_prediction.mongo())
+        logger.debug(
+            "prediction saved {mongo_prediction}".format(
+                mongo_prediction=str(mongo_prediction.json())[:100],
+            )
+        )
+    _ = mongo_client.client.skill_manager.predictions.insert_many(
+        mongo_predictions
+    ).inserted_ids
 
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(
