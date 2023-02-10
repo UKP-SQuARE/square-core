@@ -29,7 +29,7 @@ from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
 base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
-batch_size = os.getenv("BATCH_SIZE", 1000)
+batch_size = int(os.getenv("BATCH_SIZE", 1000))
 
 
 @celery_app.task
