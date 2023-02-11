@@ -23,15 +23,9 @@ jobs:
           BRANCH=${{ github.event.deployment.ref }}
           SHA=${{ github.event.deployment.sha }}
           USER=${{ github.event.deployment.creator.login }}
-          ENV=${{ github.event.deployment.environment }}
+          ENVIRONMENT=${{ github.event.deployment.environment }}
           TIMESTAMP=${{ github.event.deployment.created_at }}
-          MSG="
-          Deployment of branch [$BRANCH](https://github.com/ukp-square/square-core/tree/$BRANCH) 
-          with commit [$SHA](https://github.com/UKP-SQuARE/square-core/commit/$SHA) 
-          deployed to **$ENV** 
-          by [$USER](https://github.com/$USER) 
-          at $TIMESTAMP.
-          "
+          MSG="Deployment of branch [$BRANCH](https://github.com/ukp-square/square-core/tree/$BRANCH) with commit [$SHA](https://github.com/UKP-SQuARE/square-core/commit/$SHA) deployed to **$ENVIRONMENT** by [$USER](https://github.com/$USER) at $TIMESTAMP."
           echo "MSG=$MSG" >>$GITHUB_ENV
 
       - name: Send message to square-github channel
