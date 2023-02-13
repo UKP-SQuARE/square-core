@@ -4,7 +4,7 @@
 # @name get_token
 # @prompt username
 # @prompt password
-POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+POST https://{{hostname}}/auth/realms/square/protocol/openid-connect/token HTTP/1.1
 Host: {{hostname}}
 content-type: application/x-www-form-urlencoded
 
@@ -13,7 +13,7 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 ###
 # @name get_deployed_models
 @token =  {{get_token.response.body.access_token}}
-GET /api/models/deployed-models HTTP/1.1
+GET https://{{hostname}}/api/models/deployed-models HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
@@ -22,7 +22,7 @@ Authorization: Bearer {{token}}
 # @name remove_model
 @token =  {{get_token.response.body.access_token}}
 @prompt model_name
-DELETE /api/models/remove/{{model_name}} HTTP/1.1
+DELETE https://{{hostname}}/api/models/remove/{{model_name}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
@@ -37,13 +37,13 @@ Authorization: Bearer {{token}}
 ###
 # @name get_datastores
 @token =  {{get_token.response.body.access_token}}
-GET https://square.ukp-lab.de/api/datastores HTTP/1.1
+GET https://{{hostname}}/api/datastores HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name get_datastores_indices
 @token =  {{get_token.response.body.access_token}}
-GET https://square.ukp-lab.de/api/datastores/nq/indices HTTP/1.1
+GET https://{{hostname}}/api/datastores/nq/indices HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
