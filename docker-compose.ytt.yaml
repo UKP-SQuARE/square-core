@@ -137,25 +137,27 @@ services:
       - ./postgres/init:/docker-entrypoint-initdb.d/
   
   virtuoso:
-    image: tenforce/virtuoso:latest
+    image: tenforce/virtuoso:virtuoso7.2.5
     environment: 
-      SPARQL_UPDATE: "true"
-      VIRT_$Database_DatabaseFile: /data/virtuoso_db/virtuoso.db
-      VIRT_$Database_ErrorLogFile: /data/virtuoso.log
-      VIRT_$Database_LockFile: /data/virtuoso.lck
-      VIRT_$Database_ErrorLogLevel: 7
-      VIRT_$Database_FileExtend: 200
-      VIRT_$Database_MaxCheckpointRemap: 2000
-      VIRT_$Database_Striping: 0
-      VIRT_$Database_TempStorage: TempDatabase
-      VIRT_$Parameters_O_DIRECT: 1
-      VIRT_$Parameters_ServerThreads: 100
-      VIRT_$HTTPServer_ServerThreads: 15
-      VIRT_$SPARQL_MaxQueryCostEstimationTime: 600
-      VIRT_$SPARQL_MaxQueryExecutionTime: 180
-
+      VIRT_Database_DatabaseFile: /data/virtuoso.db
+      VIRT_Database_ErrorLogFile: /data/virtuoso.log
+      VIRT_Database_LockFile: /data/virtuoso.lck
+      VIRT_TransactionFile_LockFile: /data/virtuoso.trx
+      VIRT_xa_persistent_file: /data/virtuoso.pxa
+      VIRT_Database_ErrorLogLevel: 7
+      VIRT_Database_FileExtend: 200
+      VIRT_Database_MaxCheckpointRemap: 2000
+      VIRT_Database_Striping: 0
+      VIRT_Database_TempStorage: TempDatabase
+      VIRT_TempDatabase_DatabaseFile: /data/virtuoso-temp.db
+      VIRT_TempDatabase_TransactionFile: /data/virtuoso-temp.trx
+      VIRT_Parameters_O_DIRECT: 1
+      VIRT_Parameters_ServerThreads: 100
+      VIRT_HTTPServer_ServerThreads: 15
+      VIRT_SPARQL_MaxQueryCostEstimationTime: 600
+      VIRT_SPARQL_MaxQueryExecutionTime: 180
     volumes:
-      - ./virtuoso_db:/data/virtuoso_db
+      - ./virtuoso_db:/data/
     ports:
       - 8890:8890
 
@@ -684,4 +686,6 @@ volumes:
   onnx_models:
     driver: local
   evaluation-datasets:
+    driver: local
+  virtuoso-db: 
     driver: local
