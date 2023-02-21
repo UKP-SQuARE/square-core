@@ -1,11 +1,11 @@
 @hostname = localhost:8000
-@path_prefix = /api
+@path_prefix = api/skill-manager
 @token = <ENTER TOKEN>
 ### GET TOKEN
 # @name get_token
 # @prompt username
 # @prompt password
-POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+POST https://{{hostname}}/auth/realms/square/protocol/openid-connect/token HTTP/1.1
 Host: {{hostname}}
 content-type: application/x-www-form-urlencoded
 
@@ -14,7 +14,7 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 
 ### 
 # @name get_skill_manager_heartbeat
-GET {{path_prefix}}/health/heartbeat HTTP/1.1
+GET https://{{hostname}}/{{path_prefix}}/health/heartbeat HTTP/1.1
 Host: {{hostname}}
 
 ### 
@@ -25,7 +25,7 @@ Host: {{hostname}}
 ### 
 # @name get_skill_heartbeat
 # @prompt skill_url
-GET {{path_prefix}}/health/skill-heartbeat?skill_url={{skill_url}} HTTP/1.1
+GET https://{{hostname}}/{{path_prefix}}/health/skill-heartbeat?skill_url={{skill_url}} HTTP/1.1
 Host: {{hostname}}
 content-type: application/x-www-form-urlencoded
 
@@ -37,20 +37,20 @@ Host: {{hostname}}
 ###
 # @name get_all_user_skills
 # @token =  {{get_token.response.body.access_token}}
-GET {{path_prefix}}/skill HTTP/1.1
+GET https://{{hostname}}/{{path_prefix}}/skill HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name get_skill_by_id
 # @prompt id {skill_id}
-GET {{path_prefix}}/skill/{{id}} HTTP/1.1
+GET https://{{hostname}}/{{path_prefix}}/skill/{{id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name create_skill
-POST {{path_prefix}}/skill HTTP/1.1
+POST https://{{hostname}}/{{path_prefix}}/skill HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
@@ -78,7 +78,7 @@ content-type: application/json
 ###
 # @name update_skill_by_id
 # @prompt id {skill_id}
-PUT {{path_prefix}}/skill/{{id}} HTTP/1.1
+PUT https://{{hostname}}/{{path_prefix}}/skill/{{id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
@@ -90,7 +90,7 @@ content-type: application/json
 ###
 # @name delete_skill_by_id
 # @prompt id {skill_id}
-DELETE {{path_prefix}}/skill/{{id}} HTTP/1.1
+DELETE https://{{hostname}}/{{path_prefix}}/skill/{{id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
@@ -98,21 +98,21 @@ Authorization: Bearer {{token}}
 ###
 # @name publish_skill_by_id
 # @prompt id {skill_id}
-POST {{path_prefix}}/skill/{{id}}/publish HTTP/1.1
+POST https://{{hostname}}/{{path_prefix}}/skill/{{id}}/publish HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name unpublish_skill_by_id
 # @prompt id {skill_id}
-POST {{path_prefix}}/skill/{{id}}/unpublish HTTP/1.1
+POST https://{{hostname}}/{{path_prefix}}/skill/{{id}}/unpublish HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name query_skill_by_id
 # @prompt id {skill_id}
-POST {{path_prefix}}/skill/{{id}}/query HTTP/1.1
+POST https://{{hostname}}/{{path_prefix}}/skill/{{id}}/query HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json

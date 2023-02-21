@@ -54,15 +54,17 @@ class KnowledgeGraphConnector(ElasticsearchConnector):
         Args:
             name (str): Knowledge Graph name to add.
         """
-        kg_predefined = Datastore(name=name,fields=[
-            DatastoreField(name="name", type="keyword"),
-            DatastoreField(name="type", type="keyword"),
-            DatastoreField(name="description", type="text"),
-            DatastoreField(name="weight", type="double"),
-            DatastoreField(name="in_id", type="keyword"),
-            DatastoreField(name="out_id", type="keyword"), 
-        ],
-    )
+        kg_predefined = Datastore(
+            name=name,
+            fields=[
+                DatastoreField(name="name", type="keyword"),
+                DatastoreField(name="type", type="keyword"),
+                DatastoreField(name="description", type="text"),
+                DatastoreField(name="weight", type="double"),
+                DatastoreField(name="in_id", type="keyword"),
+                DatastoreField(name="out_id", type="keyword"), 
+            ],
+        )
         try:
             # The ES index that holds the documents
             resp1 = await self.es.indices.create(
