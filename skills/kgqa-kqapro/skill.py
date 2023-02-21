@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
 
+
 # this is the standard input that will be given to every predict function.
 # See the details in the `square_skill_api` package for all available inputs.
 async def predict(
@@ -40,10 +41,6 @@ async def predict(
     if answer:
         logger.info(f"the answer returned from virtuoso is {answer}")
         model_response["generated_texts"][0] = [answer]
-    else:
-        model_response["generated_texts"][0] = sparql.replace("<", "\<").replace(
-            ">", "\>"
-        )
 
     model_response["question"] = [request.query]
 
