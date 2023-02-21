@@ -28,6 +28,8 @@ skills:
     author: ukp
   - name: multiple-choice-metaqa
     author: ukp
+  - name: kgqa-kqapro
+    author: ukp
 
 web_concurrency: 8
 
