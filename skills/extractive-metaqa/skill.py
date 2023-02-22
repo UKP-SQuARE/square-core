@@ -67,7 +67,6 @@ async def _call_skills(list_skills, request):
 
 
 async def _call_skill(skill_id, request):
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
 
     input_data = {
         "query": request.query,
@@ -83,15 +82,16 @@ async def _call_skill(skill_id, request):
         "user_id": "",
         "explain_kwargs": {},
     }
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            url=skill_manager_api_url + "/skill/" + skill_id + "/query",
+            url="http://skill-manager/api/skill/" + skill_id + "/query",
             json=input_data,
             headers={"Content-Type": "application/json"},
             verify_ssl=os.getenv("VERIFY_SSL") == "1",
         ) as response:
-            result = await response.text()
-            return json.loads(result)
+            response.raise_for_status()
+            return await response.json()
 
 
 def _create_metaqa_output_from_question_answering(request, model_response):

@@ -70,7 +70,6 @@ async def _call_skills(list_skills, request):
 
 
 async def _call_skill(skill_id, request):
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     token = client_credentials()
 
     input_data = {
@@ -87,9 +86,10 @@ async def _call_skill(skill_id, request):
         "user_id": "",
         "explain_kwargs": {},
     }
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            url=skill_manager_api_url + "/skill/" + skill_id + "/query",
+            url="http://skill-manager/api/skill/" + skill_id + "/query",
             json=input_data,
             headers={
                 "Content-Type": "application/json",
