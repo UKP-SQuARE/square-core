@@ -107,9 +107,9 @@ def start_new_model_container(identifier: str, uid: str, env):
 
 
     try:
-        random_cpus = random.sample(list(range(cpu_count())), k=os.getenv("CPU_COUNT", 8))
+        random_cpus = random.sample(list(range(cpu_count())), k=os.getenv("CPU_COUNT", cpu_count() // 8))
         random_cpus = ",".join(map(str, random_cpus))
-        cpuset_cpus = os.getenv("CPUS", random_cpus)
+        cpuset_cpus = env.get("CPUS", random_cpus)
         logger.info(f"Deploying {identifier} using CPUS={cpuset_cpus}")
         logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
