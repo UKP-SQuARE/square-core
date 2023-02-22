@@ -1,21 +1,20 @@
+import asyncio
 import logging
 import os
-import requests
-import asyncio
+import time
 
+import aiohttp
+from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
+    Prediction,
+    PredictionOutput,
     QueryOutput,
     QueryRequest,
-    PredictionOutput,
-    Prediction,
 )
-from square_model_client import SQuAREModelClient
-from square_auth.client_credentials import ClientCredentials
 
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
-# client_credentials = ClientCredentials()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -30,7 +29,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     list_skill_responses = await _call_skills(list_skills, request)
     # 2) get the predictions
     list_preds = [["", 0.0]] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[skill_idx] = (pred, score)
@@ -45,7 +44,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     }
 
     model_response = await square_model_client(
-        model_name="metaqa",  # request.skill_args["base_model"],
+        model_name="metaqa",
         pipeline="question-answering",
         model_request=model_request,
     )
@@ -58,19 +57,20 @@ async def _call_skills(list_skills, request):
     """
     Calls the skills in parallel
     """
+    t1 = time.time()
     list_skill_responses = []
     for skill_id in list_skills:
         # how to call the skill without waiting
         skill_response = _call_skill(skill_id, request)  # only 1 answer per skill
         list_skill_responses.append(skill_response)
     list_skill_responses = await asyncio.gather(*list_skill_responses)
+    t2 = time.time()
+    logger.info(f"TOTAL TIME={t2-t1:.2f}")
     return list_skill_responses
 
 
 async def _call_skill(skill_id, request):
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
-    # token = client_credentials()
-
+    t1 = time.time()
     input_data = {
         "query": request.query,
         "skill_args": {
@@ -85,14 +85,19 @@ async def _call_skill(skill_id, request):
         "user_id": "",
         "explain_kwargs": {},
     }
-
-    response = requests.post(
-        url=skill_manager_api_url + "/skill/" + skill_id + "/query",
-        json=input_data,
-        # headers={"Authorization": f"Bearer {token}"},
-        verify=os.getenv("VERIFY_SSL") == "1",
-    )
-    return response.json()
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
+            json=input_data,
+            headers={"Content-Type": "application/json"},
+            verify_ssl=os.getenv("VERIFY_SSL") == "1",
+        ) as response:
+            response.raise_for_status()
+            result = await response.json()
+            t2 = time.time()
+            logger.info(f"TIME={t2-t1:.2f} skill_id={skill_id}")
+            return result
 
 
 def _create_metaqa_output_from_question_answering(request, model_response):
