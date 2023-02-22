@@ -82,6 +82,10 @@ class Onnx(Transformer):
                 raise
             return model_path
 
+        so = onnxruntime.SessionOptions()
+        # enable all graph optimizations
+        so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+
         # check whether a decoder model is available
         self.is_encoder_decoder = is_encoder_decoder
         if is_encoder_decoder:
@@ -90,17 +94,14 @@ class Onnx(Transformer):
             decoder = "decoder_model.onnx"
 
             model_path = download_model(repo_id=model_name, filename=decoder)
-            self.decoder_session = onnxruntime.InferenceSession(model_path)
+            self.decoder_session = onnxruntime.InferenceSession(model_path, sess_options=so)
         else:
             filename = "model_quant.onnx" if load_quantized else "model.onnx" 
 
         # load model and create onnx session
         model_path = download_model(repo_id=model_name, filename=filename)
-        self.session = onnxruntime.InferenceSession(model_path)
-
-        # enable all graph optimizations
-        so = onnxruntime.SessionOptions()
-        so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+        
+        self.session = onnxruntime.InferenceSession(model_path, )
 
         try:
             # load tokenizer from model repository
