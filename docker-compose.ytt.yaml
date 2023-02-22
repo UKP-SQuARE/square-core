@@ -179,7 +179,7 @@ services:
       - ./skill-manager/.env
     environment:
       API_PREFIX: skill-manager
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      WEB_CONCURRENCY: 8
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb

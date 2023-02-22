@@ -1,16 +1,17 @@
+import asyncio
+import json
 import logging
 import os
-import requests
-import asyncio
 
+import aiohttp
+from square_auth.client_credentials import ClientCredentials
+from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
+    Prediction,
+    PredictionOutput,
     QueryOutput,
     QueryRequest,
-    PredictionOutput,
-    Prediction,
 )
-from square_model_client import SQuAREModelClient
-from square_auth.client_credentials import ClientCredentials
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,6 @@ async def _call_skills(list_skills, request):
 
 
 async def _call_skill(skill_id, request):
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     token = client_credentials()
 
     input_data = {
@@ -90,19 +90,25 @@ async def _call_skill(skill_id, request):
         "task_kwargs": request.task_kwargs or {},
         "preprocessing_kwargs": request.preprocessing_kwargs or {},
     }
-
-    response = requests.post(
-        url=skill_manager_api_url + "/skill/" + skill_id + "/query",
-        json=input_data,
-        headers={"Authorization": f"Bearer {token}"},
-        verify=os.getenv("VERIFY_SSL") == "1",
-    )
-    return response.json()
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
+            json=input_data,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+            verify=os.getenv("VERIFY_SSL") == "1",
+        ) as response:
+            response.raise_for_status()
+            result = await response.json()
+            return result
 
 
 def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
     list_preds = [["", 0.0]] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[skill_idx] = (pred, score)
@@ -120,7 +126,7 @@ def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
 
 def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
     list_preds = [("", 0.0)] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[8 + skill_idx] = (pred, score)

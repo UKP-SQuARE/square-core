@@ -11,7 +11,6 @@ square_model_client = SQuAREModelClient()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
-
     query = request.query
     choices = request.skill_args["choices"]
     prepared_input = [[query, choice] for choice in choices]

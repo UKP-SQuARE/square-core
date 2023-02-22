@@ -33,7 +33,7 @@ skills:
   - name: kgqa-kqapro
     author: ukp
 
-web_concurrency: 8
+web_concurrency: 4
 
 verify_ssl:
   production: 1
