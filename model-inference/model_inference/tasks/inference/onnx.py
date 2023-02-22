@@ -104,7 +104,7 @@ class Onnx(Transformer):
         # load model and create onnx session
         model_path = download_model(repo_id=model_name, filename=filename)
         
-        self.session = onnxruntime.InferenceSession(model_path, )
+        self.session = onnxruntime.InferenceSession(model_path, sess_options=so)
 
         try:
             # load tokenizer from model repository
