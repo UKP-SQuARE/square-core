@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 
@@ -89,7 +90,8 @@ async def _call_skill(skill_id, request):
             headers={"Content-Type": "application/json"},
             verify_ssl=os.getenv("VERIFY_SSL") == "1",
         ) as response:
-            return await response.json()
+            result = await response.test()
+            return json.loads(result)
 
 
 def _create_metaqa_output_from_question_answering(request, model_response):
