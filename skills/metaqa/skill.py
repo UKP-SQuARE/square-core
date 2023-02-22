@@ -97,7 +97,7 @@ async def _call_skill(skill_id, request):
             },
             verify=os.getenv("VERIFY_SSL") == "1",
         ) as response:
-            result = await response.test()
+            result = await response.text()
             return json.loads(result)
 
 

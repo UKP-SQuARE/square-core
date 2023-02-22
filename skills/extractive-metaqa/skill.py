@@ -90,7 +90,7 @@ async def _call_skill(skill_id, request):
             headers={"Content-Type": "application/json"},
             verify_ssl=os.getenv("VERIFY_SSL") == "1",
         ) as response:
-            result = await response.test()
+            result = await response.text()
             return json.loads(result)
 
 
