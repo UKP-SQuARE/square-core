@@ -3,6 +3,7 @@ import os
 import requests
 import asyncio
 
+import aiohttp
 from square_skill_api.models import (
     QueryOutput,
     QueryRequest,
@@ -86,14 +87,17 @@ async def _call_skill(skill_id, request):
         "user_id": "",
         "explain_kwargs": {},
     }
-
-    response = requests.post(
-        url=skill_manager_api_url + "/skill/" + skill_id + "/query",
-        json=input_data,
-        headers={"Authorization": f"Bearer {token}"},
-        verify=os.getenv("VERIFY_SSL") == "1",
-    )
-    return response.json()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            url=skill_manager_api_url + "/skill/" + skill_id + "/query",
+            json=input_data,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+            verify=os.getenv("VERIFY_SSL") == "1",
+        ) as response:
+            return await response.json()
 
 
 def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
