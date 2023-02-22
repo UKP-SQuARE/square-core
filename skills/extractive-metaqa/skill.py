@@ -91,7 +91,8 @@ async def _call_skill(skill_id, request):
             verify_ssl=os.getenv("VERIFY_SSL") == "1",
         ) as response:
             response.raise_for_status()
-            return await response.json()
+            result = await response.json()
+            return result
 
 
 def _create_metaqa_output_from_question_answering(request, model_response):
