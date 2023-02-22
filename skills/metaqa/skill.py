@@ -1,17 +1,16 @@
+import asyncio
 import logging
 import os
-import requests
-import asyncio
 
 import aiohttp
+from square_auth.client_credentials import ClientCredentials
+from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
+    Prediction,
+    PredictionOutput,
     QueryOutput,
     QueryRequest,
-    PredictionOutput,
-    Prediction,
 )
-from square_model_client import SQuAREModelClient
-from square_auth.client_credentials import ClientCredentials
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +101,7 @@ async def _call_skill(skill_id, request):
 
 def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
     list_preds = [["", 0.0]] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[skill_idx] = (pred, score)
@@ -120,7 +119,7 @@ def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
 
 def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
     list_preds = [("", 0.0)] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[8 + skill_idx] = (pred, score)

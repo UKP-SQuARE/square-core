@@ -1,22 +1,19 @@
+import asyncio
 import logging
 import os
-import requests
-import asyncio
 
 import aiohttp
+from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
+    Prediction,
+    PredictionOutput,
     QueryOutput,
     QueryRequest,
-    PredictionOutput,
-    Prediction,
 )
-from square_model_client import SQuAREModelClient
-from square_auth.client_credentials import ClientCredentials
 
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
-# client_credentials = ClientCredentials()
 
 
 async def predict(request: QueryRequest) -> QueryOutput:
@@ -31,7 +28,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     list_skill_responses = await _call_skills(list_skills, request)
     # 2) get the predictions
     list_preds = [["", 0.0]] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[skill_idx] = (pred, score)
@@ -46,7 +43,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     }
 
     model_response = await square_model_client(
-        model_name="metaqa",  # request.skill_args["base_model"],
+        model_name="metaqa",
         pipeline="question-answering",
         model_request=model_request,
     )
@@ -70,7 +67,6 @@ async def _call_skills(list_skills, request):
 
 async def _call_skill(skill_id, request):
     skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
-    # token = client_credentials()
 
     input_data = {
         "query": request.query,
