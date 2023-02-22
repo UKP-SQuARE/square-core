@@ -1,0 +1,39 @@
+name: Element
+
+on: [deployment, workflow_dispatch]
+
+jobs:
+  send-message:
+    runs-on: ubuntu-latest
+    name: Send message via Matrix
+    steps:
+      - name: Echo event
+        run: |
+          echo ${{ github.event_name }}
+          echo ${{ github.event.action }}
+
+      - name: Set Deployment Message (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "MSG=This is a test message from github." >> $GITHUB_ENV
+
+      - name: Set Deployment Message (deployment)
+        if: github.event_name == 'deployment'
+        run: |
+          BRANCH=${{ github.event.deployment.ref }}
+          SHA=${{ github.event.deployment.sha }}
+          USER=${{ github.event.deployment.creator.login }}
+          ENVIRONMENT=${{ github.event.deployment.environment }}
+          TIMESTAMP=${{ github.event.deployment.created_at }}
+          TIMESTAMP=$(date -d "$TIMESTAMP" "+%Y-%m-%d %H:%M:%S")
+          MSG="Deployment of branch [$BRANCH](https://github.com/ukp-square/square-core/tree/$BRANCH) with commit [$SHA](https://github.com/UKP-SQuARE/square-core/commit/$SHA) to **$ENVIRONMENT** by [$USER](https://github.com/$USER) at $TIMESTAMP."
+          echo "MSG=$MSG" >>$GITHUB_ENV
+
+      - name: Send message to square-github channel
+        id: matrix-chat-message
+        uses: fadenb/matrix-chat-message@v0.0.6
+        with:
+          homeserver: ${{ secrets.ELEMENT_HOME_SERVER }}
+          token: ${{ secrets.ELEMENT_ACCESS_TOKEN }}
+          channel: ${{ secrets.ELEMENT_ROOM_ID }}
+          message: ${{ env.MSG }}

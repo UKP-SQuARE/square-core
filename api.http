@@ -1,10 +1,10 @@
-@hostname = square.ukp-lab.de
+@hostname = test.square.ukp-lab.de
 
 ### GET TOKEN
 # @name get_token
 # @prompt username
 # @prompt password
-POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+POST https://{{hostname}}/auth/realms/square/protocol/openid-connect/token HTTP/1.1
 Host: {{hostname}}
 content-type: application/x-www-form-urlencoded
 
@@ -13,74 +13,37 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 ###
 # @name get_deployed_models
 @token =  {{get_token.response.body.access_token}}
-GET /api/models/deployed-models HTTP/1.1
+GET https://{{hostname}}/api/models/deployed-models HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 
 ###
 # @name remove_model
-# @prompt model_name {model_name}
 @token =  {{get_token.response.body.access_token}}
-DELETE /api/models/remove/{{model_name}} HTTP/1.1
+@prompt model_name
+DELETE https://{{hostname}}/api/models/remove/{{model_name}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
-
 
 ###
-# @name deploy_model
+# @name deploy_all_models
 @token =  {{get_token.response.body.access_token}}
-POST /api/models/deploy HTTP/1.1
+POST https://{{hostname}}/api/models/db/deploy HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
-content-type: application/json
-
-{
-  "identifier": "tweac_new",
-  "model_name": "UKP-SQuARE/tweac_16",
-  "model_type": "transformer",
-  "disable_gpu": true,
-  "batch_size": 1,
-  "max_input": 512,
-  "transformer_cache": "\/etc\/huggingface\/.cache\/",
-  "model_class": "from_config",
-  "return_plaintext_arrays": false
-}
-
-
-###
-# @name query_model
-# @prompt model_name {model_name}
-@token =  {{get_token.response.body.access_token}}
-POST /api/main/{{model_name}}/sequence-classification HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
-
-{
-  "input": ["Do aliens exist?"],
-  "task_kwargs": {"return_all_scores": true}
-}
-
-
-###
-# @prompt task_id
-GET /api/models/task_result/{{task_id}} HTTP/1.1
-Host: {{hostname}}
-Authorization: Bearer {{token}}
-content-type: application/json
 
 
 ###
 # @name get_datastores
 @token =  {{get_token.response.body.access_token}}
-GET /api/datastores HTTP/1.1
+GET https://{{hostname}}/api/datastores HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 
 ###
 # @name get_datastores_indices
 @token =  {{get_token.response.body.access_token}}
-GET /api/datastores/nq/indices HTTP/1.1
+GET https://{{hostname}}/api/datastores/nq/indices HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}

@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 import logging
@@ -6,6 +7,7 @@ from datetime import timedelta
 from threading import Thread
 from typing import Dict, List, Union
 
+import requests
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
@@ -27,6 +29,9 @@ from skill_manager.routers import client_credentials
 from skill_manager.utils import merge_dicts
 
 logger = logging.getLogger(__name__)
+evaluator_url = os.getenv(
+    "EVALUATOR_API_URL", "https://square.ukp-lab.de/api/evaluator"
+)
 
 router = APIRouter(prefix="/skill")
 
@@ -164,6 +169,8 @@ async def create_skill(
     # returned, but not logged and not persisted.
     skill.client_secret = client["secret"]
 
+    trigger_evaluations(skill_id, skill.data_sets, request.headers)
+
     return skill
 
 
@@ -201,6 +208,9 @@ async def update_skill(
             skill=skill, updated_skill=updated_skill
         )
     )
+
+    trigger_evaluations(id, skill.data_sets, request.headers)
+
     return skill
 
 
@@ -319,7 +329,15 @@ async def query_skill(
             predictions=str(predictions.json())[:100]
         )
     )
-
+    # remove bertviz from predictions
+    # to store the preds in mongodb without bertviz (too large)
+    list_bertviz = []
+    for prediction in predictions.predictions:
+        if prediction.bertviz is not None:
+            list_bertviz.append(prediction.bertviz)
+            prediction.bertviz = None
+        else:
+            list_bertviz.append(None)
     # save prediction to mongodb
     mongo_prediction = Prediction(
         skill_id=skill.id,
@@ -336,10 +354,31 @@ async def query_skill(
             mongo_prediction=str(mongo_prediction.json())[:100],
         )
     )
-
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(
             query_request=query_request.json(), predictions=str(predictions)[:100]
         )
     )
+    # get bertviz data
+    for i in range(len(predictions.predictions)):
+        if list_bertviz[i]:
+            predictions.predictions[i].bertviz = list_bertviz[i]
     return predictions
+
+
+def trigger_evaluations(skill_id: str, dataset_names: List[str], headers={}):
+    for dataset_name in dataset_names:
+        asyncio.create_task(trigger_evaluation(skill_id, dataset_name, headers))
+
+
+async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
+    loop = asyncio.get_event_loop()
+    url = f"{evaluator_url}/evaluate/{skill_id}/{dataset_name.lower()}"
+    future = loop.run_in_executor(
+        None, lambda: requests.post(url, headers=headers, timeout=30)
+    )
+    response = await future
+    if not response.ok:
+        logger.error(
+            f"Triggering evaluation for dataset '{dataset_name}' failed: {response.json()}"
+        )

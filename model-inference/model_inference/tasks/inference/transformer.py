@@ -548,7 +548,6 @@ class Transformer(Model):
             task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
 
         if request.task_kwargs.get("normalize", False):
-            print("*****Normalize the embedding*****")
             emb = torch.nn.functional.normalize(emb)
         predictions["embeddings"] = emb
         return PredictionOutputForEmbedding(model_outputs=predictions, **task_outputs)
@@ -803,16 +802,25 @@ class Transformer(Model):
 
             # word attributions
             if request.explain_kwargs or request.attack_kwargs:
-                start_idx = torch.argmax(predictions["start_logits"])
-                end_idx = torch.argmax(predictions["end_logits"])
-                answer_start = torch.tensor([start_idx])
-                answer_end = torch.tensor([end_idx])
+                # if explain kwargs are passed, we need to check if the method is
+                # bertviz and compute accordingly
+                if request.explain_kwargs and request.explain_kwargs.get("method", None) == "bertviz":
+                    attention = predictions["attentions"]
+                    tokens = self.decode(features["input_ids"][0].tolist(), skip_special_tokens=False)
+                    # get sentence_b_start
+                    sentence_b_start = features["input_ids"].tolist()[0].index(self.tokenizer.sep_token_id) + 1
+                    head_view_html = head_view(attention, tokens, sentence_b_start, html_action='return')
+                    task_outputs["bertviz"] = [head_view_html.data]
+                else:
+                    start_idx = torch.argmax(predictions["start_logits"])
+                    end_idx = torch.argmax(predictions["end_logits"])
+                    answer_start = torch.tensor([start_idx])
+                    answer_end = torch.tensor([end_idx])
 
-                grad_kwargs = {
-                    "start_positions": answer_start.to(self.model.device),
-                    "end_positions": answer_end.to(self.model.device),
-                }
-                if request.explain_kwargs["method"] != "bertviz":
+                    grad_kwargs = {
+                        "start_positions": answer_start.to(self.model.device),
+                        "end_positions": answer_end.to(self.model.device),
+                    }
                     attributions = self._interpret(
                         request=request,
                         prediction=predictions,
@@ -821,31 +829,20 @@ class Transformer(Model):
                         else request.attack_kwargs["saliency_method"],
                         **grad_kwargs,
                     )
-                    # new added section start
                     # to extract the name of the attack method
                     attack_method = None
                     if request.attack_kwargs:
                         for k, v in request.attack_kwargs.items():
                             if k == "method":
                                 attack_method = v
-                    # new added section end
                     word_imp = self.process_outputs(
                         attributions=attributions,
                         top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
                         mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
                         task="question_answering",
-                        # new added paramter in process_ourput method
                         attack_method=attack_method,
                     )
                     task_outputs["attributions"] = word_imp
-                else:  # bertviz case
-                    attention = predictions["attentions"]  # get attention
-                    # get tokens
-                    tokens = self.decode(features["input_ids"][0].tolist(), skip_special_tokens=False)
-                    # get sentence_b_start
-                    sentence_b_start = features["input_ids"].tolist()[0].index(self.tokenizer.sep_token_id) + 1
-                    head_view_html = head_view(attention, tokens, sentence_b_start, html_action='return')  # get html_object of head_view
-                    task_outputs["bertviz"] = [head_view_html.data]
                     
             if (
                 not request.attack_kwargs

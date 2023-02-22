@@ -14,8 +14,14 @@ from square_auth.auth import Auth
 from evaluator.app import mongo_client
 from evaluator.app.core import DatasetHandler
 from evaluator.app.core.dataset_handler import DatasetDoesNotExistError
+from evaluator.app.core.dataset_metadata import get_dataset_metadata
 from evaluator.app.core.task_helper import task_id
-from evaluator.app.models import Prediction, PredictionResult, get_dataset_metadata
+from evaluator.app.models import (
+    Evaluation,
+    EvaluationStatus,
+    Prediction,
+    PredictionResult,
+)
 from evaluator.app.routers import client_credentials
 from evaluator.tasks import evaluate_task
 
@@ -23,53 +29,85 @@ from .celery import app as celery_app
 
 logger = get_task_logger(__name__)
 base_url = os.getenv("SQUARE_API_URL", "https://square.ukp-lab.de/api")
+QUEUE = os.getenv("QUEUE", "evaluation")
 
 
 @celery_app.task
 def predict(
     skill_id: str,
     dataset_name: str,
+    metric_name: str = None,
     token: str = Depends(client_credentials),
 ):
-    logger.info(
-        f"Started prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
+    try:
+        logger.info(
+            f"Started prediction-task for skill '{skill_id}' on dataset '{dataset_name}'"
+        )
+        if hasattr(mongo_client, "client") == False:
+            mongo_client.connect()
+        do_predict(skill_id, dataset_name, metric_name, token)
+    except Exception as e:
+        logger.error(f"{e}")
+        evaluation_filter = {
+            "skill_id": ObjectId(skill_id),
+            "dataset_name": dataset_name,
+        }
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter,
+            {
+                "$set": {
+                    "prediction_status": EvaluationStatus.failed,
+                    "prediction_error": f"{e}",
+                }
+            },
+        )
+        raise e
+
+
+def do_predict(
+    skill_id: str,
+    dataset_name: str,
+    metric_name: str = None,
+    token: str = Depends(client_credentials),
+):
+    if hasattr(mongo_client, "client") == False:
+        mongo_client.connect()
+
+    evaluation_filter = {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name}
+    mongo_client.client.evaluator.evaluations.update_many(
+        evaluation_filter, {"$set": {"prediction_status": EvaluationStatus.started}}
     )
+
     # get dataset metadata
     dataset_metadata = get_dataset_metadata(dataset_name)
     # get the dataset
     dataset_handler = DatasetHandler()
-    try:
-        dataset = dataset_handler.get_dataset(dataset_name)
-    except DatasetDoesNotExistError:
-        logger.error("Dataset does not exist!")
-        raise DatasetDoesNotExistError(dataset_name)
+    dataset = dataset_handler.get_dataset(dataset_name)
     # format the dataset into universal format for its skill-type
-    try:
-        dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
-    except ValueError as e:
-        logger.error(f"{e}")
-        raise ValueError(f"{e}")
+    dataset = dataset_handler.to_generic_format(dataset, dataset_metadata)
 
     headers = {"Authorization": f"Bearer {token}"}
     predictions: List[Prediction] = []
     start_time = datetime.datetime.now()
-    for i in range(8):
+    num_samples = 8  # len(dataset)
+    for i in range(num_samples):
+        logger.debug(f"Predicting sample {i + 1}/{num_samples}")
         reference_data = dataset[i]
 
-        if dataset_metadata["skill-type"] == "extractive-qa":
+        if dataset_metadata.skill_type == "extractive-qa":
             query_request = {
                 "query": reference_data["question"],
                 "skill_args": {"context": reference_data["context"]},
                 "num_results": 1,
             }
-        elif dataset_metadata["skill-type"] == "multiple-choice":
+        elif dataset_metadata.skill_type == "multiple-choice":
             query_request = {
                 "query": reference_data["question"],
                 "skill_args": {"choices": reference_data["choices"]},
                 "num_results": 1,
             }
         else:
-            skill_type = dataset_metadata["skill-type"]
+            skill_type = dataset_metadata.skill_type
             raise ValueError(
                 f"Predictions on '{skill_type}' datasets are currently not supported."
             )
@@ -79,6 +117,7 @@ def predict(
             headers=headers,
             data=json.dumps(query_request),
         )
+        response.raise_for_status()
         prediction_response = response.json()["predictions"][0]
 
         predictions.append(
@@ -100,29 +139,37 @@ def predict(
         predictions=predictions,
     )
 
-    if hasattr(mongo_client, "client") == False:
-        mongo_client.connect()
-
     mongo_client.client.evaluator.predictions.replace_one(
         {"skill_id": ObjectId(skill_id), "dataset_name": dataset_name},
         prediction_result.dict(),
         upsert=True,
     )
 
-    # Trigger evaluation task with default metric
-    try:
-        metric_name = dataset_metadata["metric"]
+    mongo_client.client.evaluator.evaluations.update_many(
+        evaluation_filter,
+        {
+            "$set": {
+                "prediction_status": EvaluationStatus.finished,
+                "prediction_error": None,
+            }
+        },
+    )
+
+    # trigger evaluation task specified metric
+    if metric_name is not None:
+        mongo_client.client.evaluator.evaluations.update_many(
+            evaluation_filter, {"$set": {"metric_status": EvaluationStatus.requested}}
+        )
         task = evaluate_task.evaluate.apply_async(
             args=(skill_id, dataset_name, metric_name),
             task_id=task_id("evaluate", skill_id, dataset_name, metric_name),
+            queue=QUEUE,
         )
         logger.info(
             f"Created evaluation-task for skill '{skill_id}' on dataset '{dataset_name}' and metric '{metric_name}'. Task-ID: '{task.id}'"
         )
-    except AttributeError:
-        logger.warn(
-            f"Not creating evaluation-task, because dataset metadata does not have a default 'metric' specified: {dataset_metadata}"
-        )
+    else:
+        logger.info(f"Not creating evaluation-task, because no metric was specified")
 
     prediction_result = prediction_result.dict()
     prediction_result["skill_id"] = skill_id

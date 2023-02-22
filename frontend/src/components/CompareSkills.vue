@@ -49,10 +49,10 @@
               <div class="row">
                 <div class="col text-start">
                   <h4>Datasets</h4>
-                  <div v-for="dataset in availableDatasets" :key="dataset" style="display:inline;">
-                    <span role="button" v-on:click="addRemoveDatasetFilter(dataset)" :id="dataset"
+                  <div v-for="dataset in availableDatasets" :key="dataset.name" style="display:inline;">
+                    <span role="button" v-on:click="addRemoveDatasetFilter(dataset)" :id="dataset.name"
                       class="btn btn-outline-primary btn-sm  mb-1 me-1">
-                      {{ dataset }}
+                      {{ dataset.name }}
                     </span>
                   </div>
 
@@ -196,7 +196,6 @@ export default Vue.component('compare-skills', {
         return availableSkills
       }
     },
-
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
     },

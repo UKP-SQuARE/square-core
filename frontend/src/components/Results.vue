@@ -59,6 +59,14 @@
           <ExplainOutput id="modalExplain" />
         </div>
       </div>
+      <div class="col mt-3" v-if="showExplainability">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a data-bs-toggle="modal" data-bs-target="#modalBertViz" role="button" class="btn btn-primary shadow">
+            Bertviz
+          </a>
+          <BertVizOutput id="modalBertViz" />
+        </div>
+      </div>
 
       <div class="col mt-3" v-if="this.$store.state.currentSkills.includes('62eb8f7765872e7b65ea5c8b')">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
@@ -81,6 +89,7 @@ import MetaSkill from '@/components/results/MetaSkill.vue'
 import InformationRetrieval from '@/components/results/InformationRetrieval.vue'
 import AttackOutput from '../components/modals/AttackOutput.vue'
 import ExplainOutput from '../components/modals/ExplainOutput'
+import BertVizOutput from '../components/modals/BertVizOutput'
 import GraphViz from '../components/modals/GraphViz'
 
 export default Vue.component('skill-results', {
@@ -101,6 +110,7 @@ export default Vue.component('skill-results', {
     MetaSkill,
     AttackOutput,
     ExplainOutput,
+    BertVizOutput,
     GraphViz
   },
   computed: {

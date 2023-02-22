@@ -17,10 +17,10 @@ SKILL := $(if $(skill),$(skill),local)
 ##			Run Skill. Provide skill=<skill_name> to run a specific skill. Default is local.
 run:
 	echo $(SKILL)
-	mkdir -p skill
-	echo "from skill.skill import predict" > skill/__init__.py
-	cp $(SKILL)/skill.py ./skill/skill.py
-	bash -c "SQUARE_PRIVATE_KEY_FILE=private_key.pem uvicorn main:app; rm -rf skill"
+	mkdir -p tmp
+	cp main.py ./tmp
+	cp -r $(SKILL)/. ./tmp/
+	cd ./tmp && pwd && bash -c "SQUARE_PRIVATE_KEY_FILE=private_key.pem uvicorn main:app;rm -rf ../tmp"
 
 ##			Setup authentication for local development.
 auth:

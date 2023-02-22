@@ -15,6 +15,8 @@
     "@popperjs/core": "^2.11.5",
     "axios": "^0.24.0",
     "bootstrap": "^5.2.3",
+    "bootstrap-vue": "^2.23.1",
+    "bootstrap-icons-vue": "^1.8.1",
     "core-js": "^3.19.1",
     "cytoscape": "^3.22.1",
     "cytoscape-dagre": "^2.4.0",
