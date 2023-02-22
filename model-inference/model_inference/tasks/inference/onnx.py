@@ -1,5 +1,7 @@
+import os
 from collections import defaultdict
 from typing import Tuple, Union
+from multiprocessing import cpu_count
 
 import logging
 import numpy as np
@@ -83,6 +85,7 @@ class Onnx(Transformer):
             return model_path
 
         so = onnxruntime.SessionOptions()
+        so.intra_op_num_threads = os.getenv("CPU_COUNT", cpu_count() // 8)
         # enable all graph optimizations
         so.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
 
