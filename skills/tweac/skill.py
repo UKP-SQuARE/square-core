@@ -31,7 +31,8 @@ async def predict(request: QueryRequest) -> QueryOutput:
     list_predicted_skills = await _retrieve_skills(predicted_dataset, qa_format)
     if len(list_predicted_skills) == 0:
         return _create_no_skill_response(request.query)
-
+    # shuffle the skills for now. TODO: sort Skills by leaderboard score
+    np.random.shuffle(list_predicted_skills)
     list_predicted_skills = list_predicted_skills[
         : request.skill_args["max_skills_per_dataset"]
     ]
