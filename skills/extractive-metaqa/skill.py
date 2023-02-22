@@ -1,7 +1,7 @@
 import asyncio
-import json
 import logging
 import os
+import time
 
 import aiohttp
 from square_model_client import SQuAREModelClient
@@ -57,17 +57,20 @@ async def _call_skills(list_skills, request):
     """
     Calls the skills in parallel
     """
+    t1 = time.time()
     list_skill_responses = []
     for skill_id in list_skills:
         # how to call the skill without waiting
         skill_response = _call_skill(skill_id, request)  # only 1 answer per skill
         list_skill_responses.append(skill_response)
     list_skill_responses = await asyncio.gather(*list_skill_responses)
+    t2 = time.time()
+    logger.info(f"TOTAL TIME={t2-t1:.2f}")
     return list_skill_responses
 
 
 async def _call_skill(skill_id, request):
-
+    t1 = time.time()
     input_data = {
         "query": request.query,
         "skill_args": {
@@ -92,6 +95,8 @@ async def _call_skill(skill_id, request):
         ) as response:
             response.raise_for_status()
             result = await response.json()
+            t2 = time.time()
+            logger.info(f"TIME={t2-t1:.2f} skill_id={skill_id}")
             return result
 
 
