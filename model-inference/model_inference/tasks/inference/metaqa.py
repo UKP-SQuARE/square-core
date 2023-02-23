@@ -1,5 +1,5 @@
 import torch
-from typing import List,Tuple
+from typing import List, Tuple
 import numpy as np
 from transformers import AutoTokenizer
 from .metaqa_utils.MetaQA_Model import MetaQA_Model
@@ -24,7 +24,6 @@ class MetaQA(Model):
         """
         Cover the function in parent model to run predict
         """
-
         if task == Task.question_answering:
             return self._question_answering(request)
 
@@ -44,18 +43,16 @@ class MetaQA(Model):
             for i in range(16 - len(agents_predictions)):
                 agents_predictions.append(["", 0.0])
         # agent_predictions = self._get_agents_prediction(question,context)
-        pred_list = self._predict(question,agents_predictions,topk)
+        pred_list = self._predict(question, agents_predictions, topk)
 
-        task_outputs = {
-            "answers": [[]]
-        }
+        task_outputs = {"answers": [[]]}
         for i in pred_list:
             pred = {}
             output_name = ["answer", "agent_name", "metaqa_score", "agent_score"]
             for key, value in zip(output_name, i):
                 pred[key] = value
-            task_outputs['answers'][0].append(pred)
-        predictions={}
+            task_outputs["answers"][0].append(pred)
+        predictions = {}
         return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
 
     def _predict(self, question: str, agents_predictions: List[Tuple[str, float]], topk):
@@ -63,8 +60,7 @@ class MetaQA(Model):
         Runs MetaQA on a single instance.
         """
         # Encode instance
-        input_ids, token_ids, attention_masks, ans_sc = self._encode_metaQA_instance(
-            question, agents_predictions)
+        input_ids, token_ids, attention_masks, ans_sc = self._encode_metaQA_instance(question, agents_predictions)
 
         # Run model
         logits = self.metaqa_model(input_ids, token_ids, attention_masks, ans_sc).logits
@@ -86,9 +82,7 @@ class MetaQA(Model):
 
         # Process question
         list_input_ids.extend(self.tokenizer.encode("[CLS]", add_special_tokens=False))  # [CLS]
-        list_input_ids.extend(
-            self.tokenizer.encode(question, add_special_tokens=False)
-        )  # Query token ids
+        list_input_ids.extend(self.tokenizer.encode(question, add_special_tokens=False))  # Query token ids
         list_input_ids.extend(self.tokenizer.encode("[SEP]", add_special_tokens=False))  # [SEP]
         list_token_ids.extend(len(list_input_ids) * [0])
         list_ans_sc.extend(len(list_input_ids) * [0])
@@ -121,9 +115,9 @@ class MetaQA(Model):
         if len(list_input_ids) > max_len:
             return None
         else:
-            return (list_input_ids, list_token_ids, list_attention_masks, list_ans_sc)
+            return list_input_ids, list_token_ids, list_attention_masks, list_ans_sc
 
-    def _get_metaqa_predictions(self, logits, agents_predictions,k):
+    def _get_metaqa_predictions(self, logits, agents_predictions, k):
         top_k = lambda a, k: np.argsort(-a)[:k]
         list_preds = []
         for idx in top_k(logits[0][:, 1], self.metaqa_model.num_agents):
