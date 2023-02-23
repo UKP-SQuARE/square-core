@@ -84,6 +84,11 @@ async def _call_skill(skill_id, request):
         "skill": {},
         "user_id": "",
         "explain_kwargs": {},
+        "explain_kwargs": request.explain_kwargs or {},
+        "attack_kwargs": request.attack_kwargs or {},
+        "model_kwargs": request.model_kwargs or {},
+        "task_kwargs": request.task_kwargs or {},
+        "preprocessing_kwargs": request.preprocessing_kwargs or {},
     }
     # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     async with aiohttp.ClientSession() as session:
