@@ -200,13 +200,14 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
 
     if model_type == "onnx":
         try:
-            model_name = onnx_export(model_params.model_name 
-                    ,model_params.model_class 
-                    ,model_params.hf_token
-                    ,model_params.adapter_id 
-                    ,model_params.custom_onnx_config
-                    ,model_params.onnx_use_quantized
-                    )
+            model_name = onnx_export(
+                model_params.model_name,
+                model_params.model_class,
+                model_params.hf_token,
+                model_params.adapter_id,
+                model_params.custom_onnx_config,
+                model_params.onnx_use_quantized,
+            )
         except Exception as e: 
             # Use normal model if model can not be exported to onnx
             logger.debug(f"Onnx export failed, using normal model instead: {str(e)}")

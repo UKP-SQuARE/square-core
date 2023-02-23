@@ -2,9 +2,8 @@ import argparse
 import logging
 import os
 
-
-logger = logging.getLogger(__name__)
 from starlette.config import environ
+logger = logging.getLogger(__name__)
 
 
 TRANSFORMERS_TESTING_CACHE = "./.model_testing_cache"
@@ -75,8 +74,7 @@ def create_test_model_path(model_type: str):
 
     return local_dir
 
-
-################### Models used for testing ###################
+# ----------------- Models used for testing -------------------
 # TRANSFORMER_MODEL = "bert-base-uncased"
 # TRANSFORMER_MODEL =create_test_model_path("transformer")
 # TRANSFORMER_MODEL_ROBERTA= "roberta-base"
@@ -86,13 +84,17 @@ def create_test_model_path(model_type: str):
 
 if __name__ == "__main__":
     # We pre-download all models needed for the tests.
-    # We have to be careful to NOT import anything from square_model_inference because this script runs in the Dockerfile
+    # We have to be careful to NOT import anything from model_inference
+    # because this script runs in the Dockerfile
     # BEFORE any other of our code is copied (so that we do not have to re-download after every code change).
     device = "cpu"
 
     parser = argparse.ArgumentParser(description="indicate the pre-downloaded model")
-
-    parser.add_argument("--transformer", help="transformer based model", action="store_true")
+    parser.add_argument(
+        "--transformer",
+        help="transformer based model",
+        action="store_true"
+    )
     parser.add_argument(
         "--sentence_transformer",
         help="sentence transformer based model",
@@ -103,7 +105,6 @@ if __name__ == "__main__":
         help="onnx based model",
         action="store_true",
     )
-    # parser.add_argument("y", type=int, help="the exponent")
 
     args = parser.parse_args()
     if args.transformer:
@@ -114,11 +115,10 @@ if __name__ == "__main__":
         TRANSFORMER_MODEL = create_test_model_path("transformer")
 
         # Pre-download Huggingface model for tests
-
         _ = AutoTokenizer.from_pretrained(TRANSFORMER_MODEL)
         model = BertAdapterModel.from_pretrained(TRANSFORMER_MODEL).to(device)
 
-        adapters = set(["nli/rte@ukp", "ner/conll2003@ukp", "sts/sts-b@ukp", "qa/squad2@ukp"])
+        adapters = {"nli/rte@ukp", "ner/conll2003@ukp", "sts/sts-b@ukp", "qa/squad2@ukp"}
         for adapter in adapters:
             logger.debug(f"Loading adapter {adapter}")
             try:
@@ -132,7 +132,8 @@ if __name__ == "__main__":
             except RuntimeError as e:
                 if "Error(s) in loading state_dict" in e.args[0]:
                     logger.debug(
-                        f"Could not load {adapter} due to missing label_ids in config resulting in exception:\n{e.args[0]}"
+                        f"Could not load {adapter} due to missing label_ids in "
+                        f"config resulting in exception:\n{e.args[0]}"
                     )
                 else:
                     raise (e)
@@ -140,7 +141,6 @@ if __name__ == "__main__":
     if args.sentence_transformer:
         from sentence_transformers import SentenceTransformer, models
         from transformers import BertConfig, BertModel, BertTokenizer
-
         SENTENCE_MODEL = create_test_model_path("sentence-transformer")
 
     if args.onnx:
