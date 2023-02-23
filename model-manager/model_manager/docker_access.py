@@ -107,7 +107,7 @@ def start_new_model_container(identifier: str, uid: str, env):
 
 
     try:
-        random_cpus = random.sample(list(range(cpu_count())), k=os.getenv("CPU_COUNT", cpu_count() // 8))
+        random_cpus = random.sample(list(range(cpu_count())), k=os.getenv("CPU_COUNT", max(1,cpu_count() // 8)))
         random_cpus = ",".join(map(str, random_cpus))
         cpuset_cpus = env.get("CPUS", random_cpus)
         logger.info(f"Deploying {identifier} using CPUS={cpuset_cpus}")
