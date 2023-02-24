@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import requests
 from square_auth.client_credentials import ClientCredentials
-from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
     Prediction,
@@ -19,7 +18,6 @@ from utils import extract_model_kwargs_from_request
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
-square_datastore_client = SQuAREDatastoreClient()
 
 
 def predict(request: QueryRequest) -> QueryOutput:
