@@ -86,13 +86,13 @@ def _retrieve_skills(dataset_name, qa_format):
     """
     API call to Skill Manager to get the names of the skills trained on the dataset
     """
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     client_credentials = ClientCredentials()
     token = client_credentials()
-    api_call = f"{skill_manager_api_url}/skill/dataset/{dataset_name}"
-    logger.info("Calling: {}".format(api_call))
+    url = f"http://skill-manager:8000/api/dataset/{dataset_name}"
+    logger.info("Calling: {}".format(url))
     response = requests.get(
-        url=f"{skill_manager_api_url}/skill/dataset/{dataset_name}",
+        url=url,
         headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL") == "1",
     )
