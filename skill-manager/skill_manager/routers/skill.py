@@ -3,9 +3,8 @@ import datetime
 import json
 import logging
 import os
-from datetime import timedelta
 from threading import Thread
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import requests
 from bson import ObjectId
@@ -24,7 +23,7 @@ from skill_manager.auth_utils import (
 from skill_manager.core import ModelManagementClient
 from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
-from skill_manager.models import Prediction, Skill, SkillType
+from skill_manager.models import Prediction, Skill
 from skill_manager.routers import client_credentials
 from skill_manager.utils import merge_dicts
 
