@@ -3,7 +3,7 @@ from typing import Dict
 import jwt
 from bson import ObjectId
 from fastapi.exceptions import HTTPException
-from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security.utils import get_authorization_scheme_param
 from square_auth.auth import Auth
 from starlette.requests import Request
 
@@ -15,21 +15,20 @@ def has_auth_header(request: Request) -> bool:
     return request.headers.get("Authorization", "").lower().startswith("bearer")
 
 
-async def get_payload_from_token(request: Request) -> Dict[str, str]:
-    http_bearer = HTTPBearer()
-    auth_credentials: HTTPAuthorizationCredentials = await http_bearer(request)
-    token = auth_credentials.credentials
+def get_payload_from_token(request: Request) -> Dict[str, str]:
+    scheme, token = get_authorization_scheme_param(request.headers.get("Authorization"))
+    assert scheme.lower() == "bearer", f"Only bearer auth is supported. Got {scheme}."
     payload = jwt.decode(token, options=dict(verify_signature=False))
     realm = Auth.get_realm_from_token(token)
 
     return {"realm": realm, "username": payload["preferred_username"]}
 
 
-async def get_skill_if_authorized(
+def get_skill_if_authorized(
     request: Request, skill_id: str, write_access: bool
 ) -> Skill:
     if has_auth_header(request):
-        payload = await get_payload_from_token(request)
+        payload = get_payload_from_token(request)
     else:
         payload = {"username": None}
 
