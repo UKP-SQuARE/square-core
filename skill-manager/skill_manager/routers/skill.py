@@ -62,7 +62,7 @@ async def get_skills(request: Request):
 
     mongo_query = {"published": True}
     if has_auth_header(request):
-        payload = await get_payload_from_token(request)
+        payload = get_payload_from_token(request)
         user_id = payload["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
@@ -146,9 +146,7 @@ async def update_skill(
     models_client: ModelManagementClient = Depends(ModelManagementClient),
 ):
     """Updates a skill with the provided data."""
-    skill: Skill = get_skill_if_authorized(
-        request, skill_id=id, write_access=True
-    )
+    skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     for k, v in data.items():
         if hasattr(skill, k):
@@ -247,9 +245,7 @@ def query_skill(
     query = query_request.query
     user_id = query_request.user_id
 
-    skill: Skill = get_skill_if_authorized(
-        request, skill_id=id, write_access=False
-    )
+    skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=False)
     query_request.skill = json.loads(skill.json())
 
     if skill.default_skill_args is None:
