@@ -1,9 +1,8 @@
-import asyncio
 import logging
 import os
-import time
+from concurrent.futures import ThreadPoolExecutor
 
-import aiohttp
+import requests
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
     Prediction,
@@ -12,12 +11,14 @@ from square_skill_api.models import (
     QueryRequest,
 )
 
+from utils import extract_model_kwargs_from_request
+
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and (context), (answer),
     it calls the Skill agents to get the predictions,
     and then calls MetaQA Model to get the final prediction.
@@ -26,7 +27,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     list_skills = request.skill_args["list_skills"]
 
     # 1) call the skills in parallel
-    list_skill_responses = await _call_skills(list_skills, request)
+    list_skill_responses = _call_skills(list_skills, request)
     # 2) get the predictions
     list_preds = [["", 0.0]] * 16
     for skill_idx, skill_response in enumerate(list_skill_responses):
@@ -43,7 +44,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "task_kwargs": {"topk": request.task_kwargs.get("topk", 1)},
     }
 
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name="metaqa",
         pipeline="question-answering",
         model_request=model_request,
@@ -53,24 +54,19 @@ async def predict(request: QueryRequest) -> QueryOutput:
     return _create_metaqa_output_from_question_answering(request, model_response)
 
 
-async def _call_skills(list_skills, request):
+def _call_skills(list_skills, request):
     """
     Calls the skills in parallel
     """
-    t1 = time.time()
-    list_skill_responses = []
-    for skill_id in list_skills:
-        # how to call the skill without waiting
-        skill_response = _call_skill(skill_id, request)  # only 1 answer per skill
-        list_skill_responses.append(skill_response)
-    list_skill_responses = await asyncio.gather(*list_skill_responses)
-    t2 = time.time()
-    logger.info(f"TOTAL TIME={t2-t1:.2f}")
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        list_skill_responses = executor.map(
+            _call_skill, list_skills, [request] * len(list_skills)
+        )
+
     return list_skill_responses
 
 
-async def _call_skill(skill_id, request):
-    t1 = time.time()
+def _call_skill(skill_id, request):
     input_data = {
         "query": request.query,
         "skill_args": {
@@ -83,25 +79,21 @@ async def _call_skill(skill_id, request):
         },
         "skill": {},
         "user_id": "",
-        "explain_kwargs": request.explain_kwargs or {},
-        "attack_kwargs": request.attack_kwargs or {},
-        "model_kwargs": request.model_kwargs or {},
-        "task_kwargs": request.task_kwargs or {},
-        "preprocessing_kwargs": request.preprocessing_kwargs or {},
+        **extract_model_kwargs_from_request(request),
     }
     # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
-            json=input_data,
-            headers={"Content-Type": "application/json"},
-            verify_ssl=os.getenv("VERIFY_SSL") == "1",
-        ) as response:
-            response.raise_for_status()
-            result = await response.json()
-            t2 = time.time()
-            logger.info(f"TIME={t2-t1:.2f} skill_id={skill_id}")
-            return result
+    logger.debug(f"Calling skill {skill_id}.")
+    response = requests.post(
+        url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
+        json=input_data,
+        headers={"Content-Type": "application/json"},
+        verify=os.getenv("VERIFY_SSL") == "1",
+    )
+    response.raise_for_status()
+    result = response.json()
+    logger.debug(f"Skill {skill_id} responded.")
+
+    return result
 
 
 def _create_metaqa_output_from_question_answering(request, model_response):

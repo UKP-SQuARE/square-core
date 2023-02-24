@@ -1,34 +1,34 @@
-import asyncio
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import requests
 from square_auth.client_credentials import ClientCredentials
-from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
-    QueryOutput,
-    QueryRequest,
     Prediction,
     PredictionOutput,
+    QueryOutput,
+    QueryRequest,
 )
+
+from utils import extract_model_kwargs_from_request
 
 logger = logging.getLogger(__name__)
 
 square_model_client = SQuAREModelClient()
-square_datastore_client = SQuAREDatastoreClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """
     Given a question, calls the TWEAC model to identify the Skill to run.
     """
     logger.info("Request: {}".format(request))
     qa_format = _get_qa_format(request)
-    
-    predicted_dataset, tweac_conf = await _call_tweac(request)
-    list_predicted_skills = await _retrieve_skills(predicted_dataset, qa_format)
+
+    predicted_dataset, tweac_conf = _call_tweac(request)
+    list_predicted_skills = _retrieve_skills(predicted_dataset, qa_format)
     if len(list_predicted_skills) == 0:
         return _create_no_skill_response(request.query)
     # shuffle the skills for now. TODO: sort Skills by leaderboard score
@@ -36,7 +36,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     list_predicted_skills = list_predicted_skills[
         : request.skill_args["max_skills_per_dataset"]
     ]
-    list_skill_responses = await _call_skills(list_predicted_skills, request)
+    list_skill_responses = _call_skills(list_predicted_skills, request)
 
     list_predictions = []
     for skill_id, skill_response in zip(list_predicted_skills, list_skill_responses):
@@ -56,7 +56,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     return query_output
 
 
-async def _call_tweac(request):
+def _call_tweac(request):
     """
     Calls the TWEAC model and returns the predicted dataset and confidence score
     """
@@ -65,7 +65,7 @@ async def _call_tweac(request):
     }
     logger.debug("Request for model api:{}".format(model_request))
 
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="sequence-classification",
         model_request=model_request,
@@ -80,17 +80,17 @@ async def _call_tweac(request):
     return dataset_name, conf
 
 
-async def _retrieve_skills(dataset_name, qa_format):
+def _retrieve_skills(dataset_name, qa_format):
     """
     API call to Skill Manager to get the names of the skills trained on the dataset
     """
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     client_credentials = ClientCredentials()
     token = client_credentials()
-    api_call = f"{skill_manager_api_url}/skill/dataset/{dataset_name}"
-    logger.info("Calling: {}".format(api_call))
+    url = f"http://skill-manager:8000/api/dataset/{dataset_name}"
+    logger.info("Calling: {}".format(url))
     response = requests.get(
-        url=f"{skill_manager_api_url}/skill/dataset/{dataset_name}",
+        url=url,
         headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL") == "1",
     )
@@ -105,21 +105,19 @@ async def _retrieve_skills(dataset_name, qa_format):
     return list_predicted_skills
 
 
-async def _call_skills(list_predicted_skills, request):
+def _call_skills(list_skills, request):
     """
     Calls the skills in parallel
     """
-    list_skill_responses = []
-    for skill_id in list_predicted_skills:
-        # how to call the skill without waiting
-        skill_response = _call_skill(skill_id, request)  # only 1 answer per skill
-        list_skill_responses.append(skill_response)
-    list_skill_responses = await asyncio.gather(*list_skill_responses)
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        list_skill_responses = executor.map(
+            _call_skill, list_skills, [request] * len(list_skills)
+        )
+
     return list_skill_responses
 
 
-async def _call_skill(skill_id, request):
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+def _call_skill(skill_id, request):
     client_credentials = ClientCredentials()
     token = client_credentials()
 
@@ -135,15 +133,12 @@ async def _call_skill(skill_id, request):
         },
         "skill": {},
         "user_id": "",
-        "explain_kwargs": request.explain_kwargs or {},
-        "attack_kwargs": request.attack_kwargs or {},
-        "model_kwargs": request.model_kwargs or {},
-        "task_kwargs": request.task_kwargs or {},
-        "preprocessing_kwargs": request.preprocessing_kwargs or {},
+        **extract_model_kwargs_from_request(request),
     }
 
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     response = requests.post(
-        url=skill_manager_api_url + "/skill/" + skill_id + "/query",
+        url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
         json=input_data,
         headers={"Authorization": f"Bearer {token}"},
         verify=os.getenv("VERIFY_SSL") == "1",

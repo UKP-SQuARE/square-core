@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import QueryOutput, QueryRequest
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 square_model_client = SQuAREModelClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question, a set of answers and optional context, performs multiple-choice
     QA. This skill is a general skill, it can be used with any adapter for
     multiple-choice question answering. The adapter to use can be specified in the
@@ -43,7 +42,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
 
     logger.debug("Request for model api:{}".format(model_request))
 
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="sequence-classification",
         model_request=model_request,

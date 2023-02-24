@@ -32,6 +32,8 @@ skills:
     author: ukp
   - name: kgqa-kqapro
     author: ukp
+  - name: tweac
+    author: ukp
 
 web_concurrency: 4
 
