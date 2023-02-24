@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 square_model_client = SQuAREModelClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Predicts yes/no for a boolean question with context"""
     query = request.query
     context = request.skill_args["context"]
@@ -24,7 +24,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "adapter_name": request.skill_args["adapter"],
         **model_request_kwargs,
     }
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="sequence-classification",
         model_request=model_request,

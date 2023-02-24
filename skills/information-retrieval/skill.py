@@ -13,24 +13,23 @@ def softmax(x):
     return np.exp(x) / np.exp(x).sum()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question, performs open-domain, extractive QA. First, background
     knowledge is retrieved using a specified index and retrieval method. Next, the top k
     documents are used for span extraction. Finally, the extracted answers are returned.
     """
 
+    query = request.query
     if "feedback_documents" in request.skill_args:
         feedback_docs = request.skill_args["feedback_documents"]
-        query = request.query
-        data_response = await square_datastore_client(
+        data_response = square_datastore_client(
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
             query=query,
             feedback_documents=feedback_docs,
         )
     else:
-        query = request.query
-        data_response = await square_datastore_client(
+        data_response = square_datastore_client(
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
             query=query,

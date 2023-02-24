@@ -13,7 +13,7 @@ square_model_client = SQuAREModelClient()
 
 # this is the standard input that will be given to every predict function.
 # See the details in the `square_skill_api` package for all available inputs.
-async def predict(
+def predict(
     request: QueryRequest,
 ) -> QueryOutput:
     # prepare the request to the Model API. For details, see Model API docs
@@ -24,7 +24,7 @@ async def predict(
     }
 
     # Call Model using the `model_api` object
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name="UKP-SQuARE/BART_SPARQL_KQAPro",
         pipeline="generation",
         model_request=model_request,
