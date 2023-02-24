@@ -46,7 +46,7 @@ session_cache = SessionCache()
 )
 async def get_skill_by_id(request: Request, id: str = None):
     """Returns the saved skill information."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=False)
+    skill = get_skill_if_authorized(request, skill_id=id, write_access=False)
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
 
     return skill
@@ -62,7 +62,7 @@ async def get_skills(request: Request):
 
     mongo_query = {"published": True}
     if has_auth_header(request):
-        payload = await get_payload_from_token(request)
+        payload = get_payload_from_token(request)
         user_id = payload["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
@@ -146,9 +146,7 @@ async def update_skill(
     models_client: ModelManagementClient = Depends(ModelManagementClient),
 ):
     """Updates a skill with the provided data."""
-    skill: Skill = await get_skill_if_authorized(
-        request, skill_id=id, write_access=True
-    )
+    skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     for k, v in data.items():
         if hasattr(skill, k):
@@ -181,7 +179,7 @@ async def update_skill(
 @router.delete("/{id}", status_code=204, dependencies=[Depends(auth)])
 async def delete_skill(request: Request, id: str):
     """Deletes a skill."""
-    await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     delete_result = mongo_client.client.skill_manager.skills.delete_one(
         {"_id": ObjectId(id)}
@@ -201,7 +199,7 @@ async def delete_skill(request: Request, id: str):
 )
 async def publish_skill(request: Request, id: str):
     """Makes a skill publicly available."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
     skill.published = True
     skill = await update_skill(request, id, skill.dict())
 
@@ -217,7 +215,7 @@ async def publish_skill(request: Request, id: str):
 )
 async def unpublish_skill(request: Request, id: str):
     """Makes a skill private."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
     skill.published = False
     skill = await update_skill(request, id, skill.dict())
 
@@ -229,7 +227,7 @@ async def unpublish_skill(request: Request, id: str):
     "/{id}/query",
     response_model=QueryOutput,
 )
-async def query_skill(
+def query_skill(
     request: Request,
     query_request: QueryRequest,
     id: str,
@@ -237,6 +235,7 @@ async def query_skill(
     # sess=Depends(skill_query_session),
 ):
     """Sends a query to the respective skill and returns its prediction."""
+    logger.info(f"Got request for skill={id}")
     logger.info(
         "received query: {query} for skill {id}".format(
             query=query_request.json(), id=id
@@ -246,9 +245,7 @@ async def query_skill(
     query = query_request.query
     user_id = query_request.user_id
 
-    skill: Skill = await get_skill_if_authorized(
-        request, skill_id=id, write_access=False
-    )
+    skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=False)
     query_request.skill = json.loads(skill.json())
 
     if skill.default_skill_args is None:

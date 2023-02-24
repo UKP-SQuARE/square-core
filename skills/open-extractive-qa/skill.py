@@ -1,5 +1,4 @@
 import logging
-from typing import Iterable
 
 from square_datastore_client import SQuAREDatastoreClient
 from square_model_client import SQuAREModelClient
@@ -13,7 +12,7 @@ square_model_client = SQuAREModelClient()
 square_datastore_client = SQuAREDatastoreClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question, performs open-domain, extractive QA. First, background
     knowledge is retrieved using a specified index and retrieval method. Next, the top k
     documents are used for span extraction. Finally, the extracted answers are returned.
@@ -23,7 +22,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     context = request.skill_args.get("context")
 
     if not context:
-        data_response = await square_datastore_client(
+        data_response = square_datastore_client(
             datastore_name=request.skill_args["datastore"],
             index_name=request.skill_args.get("index", ""),
             top_k=request.skill_args.get("datastore_topk", 10),
@@ -44,7 +43,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
 
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="question-answering",
         model_request=model_request,
