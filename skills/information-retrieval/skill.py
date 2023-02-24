@@ -20,21 +20,18 @@ def predict(request: QueryRequest) -> QueryOutput:
     """
 
     query = request.query
+    kwargs = dict(
+        datastore_name=request.skill_args["datastore"],
+        index_name=request.skill_args.get("index", ""),
+        query=query,
+    )
     if "feedback_documents" in request.skill_args:
         feedback_docs = request.skill_args["feedback_documents"]
-        data_response = square_datastore_client(
-            datastore_name=request.skill_args["datastore"],
-            index_name=request.skill_args.get("index", ""),
-            query=query,
-            feedback_documents=feedback_docs,
-        )
-    else:
-        data_response = square_datastore_client(
-            datastore_name=request.skill_args["datastore"],
-            index_name=request.skill_args.get("index", ""),
-            query=query,
-        )
+        kwargs.update(feedback_documents=feedback_docs)
 
+    data_response = square_datastore_client(**kwargs)
+
+    # HACK: Add link to PubMed for BioASQ
     context = []
     if request.skill_args["datastore"] == "bioasq":
         for d in data_response:
