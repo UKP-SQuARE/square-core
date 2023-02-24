@@ -2,6 +2,8 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 
+import requests
+
 from square_auth.client_credentials import ClientCredentials
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
@@ -87,7 +89,7 @@ def _call_skill(skill_id, request):
     }
     # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     logger.debug(f"Calling skill {skill_id}.")
-    response = request.post(
+    response = requests.post(
         url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
         json=input_data,
         headers={"Content-Type": "application/json"},
