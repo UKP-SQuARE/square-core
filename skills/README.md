@@ -31,10 +31,10 @@ square_model_client = SQuAREModelClient()
 
 # this is the standard input that will be given to every predict function. 
 # See the details in the `square_skill_api` package for all available inputs.
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
 
     # Call the Datastores using the `data_api` object
-    data_response = await square_datastore_client(datastore_name="nq", index_name="dpr", query=request.query)
+    data_response = square_datastore_client(datastore_name="nq", index_name="dpr", query=request.query)
     context = [d["document"]["text"] for d in data_response]
     context_score = [d["score"] for d in data_response]
 
@@ -46,7 +46,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     }
 
     # Call Model using the `model_api` object
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name="bert-base-uncased", 
         pipeline="question-answering", 
         model_request=model_request

@@ -119,10 +119,10 @@ The `data_api` requires at least three parameters to obtain relevant documents:
 ```python
 async def predict(request: QueryRequest) -> QueryOutput:
 
-	data_api_output = await data_api(
+	data_api_output = data_api(
 		query=request.query,
-        datastore_name="nq",
-        index_name="dpr",
+    datastore_name="nq",
+    index_name="dpr",
 	)
 	context = [d["document"]["text"] for d in data_api_output]
 	context_score = [d["score"] for d in data_api_output]
@@ -151,7 +151,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         "input": [[request.query, c] for c in context],
         "adapter_name": "AdapterHub/roberta-base-pf-squad_v2",
     }
-    model_api_output = await model_api(
+    model_api_output = model_api(
     model_request=model_request,
         model_name="roberta-base",
     pipeline="question-answering",  
