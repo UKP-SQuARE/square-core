@@ -42,6 +42,7 @@ jobs:
           "skill-multiple-choice-qa",
           "skill-open-extractive-qa",
           "skill-qa-gnn",
+          "skill-tweac",
           "skill-metaqa",
           "skill-extractive-metaqa",
           "skill-multiple-choice-metaqa",
@@ -97,6 +98,9 @@ jobs:
           - service: skill-qa-gnn
             context: ./skills
             build-args: "skill=qa-gnn"
+          - service: skill-tweac
+            context: ./skills
+            build-args: "skill=tweac"
           - service: skill-extractive-metaqa
             context: ./skills
             build-args: "skill=extractive-metaqa"

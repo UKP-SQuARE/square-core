@@ -3,7 +3,6 @@ import datetime
 import json
 import logging
 import os
-from datetime import timedelta
 from threading import Thread
 from typing import Dict, List
 
@@ -24,7 +23,7 @@ from skill_manager.auth_utils import (
 from skill_manager.core import ModelManagementClient
 from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
-from skill_manager.models import Prediction, Skill, SkillType
+from skill_manager.models import Prediction, Skill
 from skill_manager.routers import client_credentials
 from skill_manager.utils import merge_dicts
 
@@ -282,7 +281,9 @@ def query_skill(
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
+
     predictions = QueryOutput.parse_obj(response.json())
+
     logger.debug(
         "predictions from skill: {predictions}".format(
             predictions=str(predictions.json())[:100]

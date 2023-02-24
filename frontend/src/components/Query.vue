@@ -5,30 +5,34 @@
       <div class="accordion" id="accordionExample">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingOne">
-            <button v-on:click="changeInputMode()" id="btn_collapseOne" class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-              Selected Skills: {{strSelectedSkills}}
+            <button v-on:click="changeInputMode()" id="btn_collapseOne" class="accordion-button" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              Selected Skills: {{ strSelectedSkills }}
             </button>
           </h2>
-          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+            data-bs-parent="#accordionExample">
             <div class="accordion-body">
               <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="" />
             </div>
           </div>
         </div>
-        
+
       </div>
     </div>
 
     <div class="row mb-2" v-if="!this.$store.state.inputMode">
       <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next"
+          data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
           Next
         </button>
       </div>
 
     </div>
     <!-- Input for span-extraction, categorical and abstractive (i.e., not multiple-choice) -->
-    <div class="row" v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
+    <div class="row"
+      v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -39,7 +43,9 @@
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
-              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{
+                example.query
+              }}</span>
           </div>
         </div>
       </div>
@@ -49,13 +55,8 @@
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="context" class="form-label">3. Provide context</label>
-            <textarea 
-                v-model="inputContext"
-                class="form-control mb-2"
-                style="resize: none; height: calc(38px * 7);"
-                id="context"
-                :placeholder="contextPlaceholder"
-                required />
+            <textarea v-model="inputContext" class="form-control mb-2" style="resize: none; height: calc(38px * 7);"
+              id="context" :placeholder="contextPlaceholder" required />
           </div>
         </div>
       </div>
@@ -63,8 +64,8 @@
     </div>
 
     <!-- Input for span-extraction open domain or IR -->
-    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && 
-                                        (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval'))">
+    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext &&
+    (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval'))">
       <!-- Question Input -->
       <div class="col-md-12 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -75,14 +76,16 @@
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
-              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{
+                example.query
+              }}</span>
           </div>
         </div>
       </div>
     </div>
-
     <!-- Input for multiple choice that requires context-->
-    <div class="row" v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row"
+      v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -93,7 +96,9 @@
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
-              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{
+                example.query
+              }}</span>
           </div>
         </div>
       </div>
@@ -102,15 +107,12 @@
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-warning rounded shadow h-100 p-3">
           <div class="w-100">
-            <label for="context" class="form-label">3. Provide context</label>
-            <textarea 
-                v-if="skillSettings.skillType == 'multiple-choice'"
-                v-model="inputContext"
-                class="form-control mb-2"
-                style="resize: none; height: calc(38px * 7);"
-                id="context"
-                :placeholder="contextPlaceholder"
-                required />
+            <label v-if="metaSkillSelected" for="context" class="form-label">3. Provide context (Optional)</label>
+            <label v-else for="context" class="form-label">3. Provide context</label>
+            <textarea v-if="metaSkillSelected" v-model="inputContext" class="form-control mb-2"
+              style="resize: none; height: calc(38px * 7);" id="context" :placeholder="contextPlaceholder" />
+            <textarea v-else v-model="inputContext" class="form-control mb-2"
+              style="resize: none; height: calc(38px * 7);" id="context" :placeholder="contextPlaceholder" required />
           </div>
         </div>
       </div>
@@ -120,11 +122,11 @@
         <div class="bg-light border border-danger rounded shadow h-100 p-3">
           <div class="w-100">
             <div class="row">
-              <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
+              <label for="choices_loop" class="form-label">{{ instructionChoices }}</label>
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
                   <div class="input-group input-group-sm mb-3">
-                    <span class="input-group-text" id="basic-addon1">{{index+1}}</span>
+                    <span class="input-group-text" id="basic-addon1">{{ index+ 1}}</span>
                     <input v-model="list_choices[index]" type="text" class="form-control form-control-sm">
                   </div>
                 </div>
@@ -133,7 +135,8 @@
               <div class="form-inline">
                 <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice">Add Choice</button>
                 <!-- button to remove one element of list_choices -->
-                <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove Choice</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove
+                  Choice</button>
               </div>
             </div>
           </div>
@@ -143,7 +146,8 @@
     </div>
 
     <!-- Input for multiple choice that DO NOT require context-->
-    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row"
+      v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -154,7 +158,9 @@
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
-              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{ example.query }}</span>
+              v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{
+                example.query
+              }}</span>
           </div>
         </div>
       </div>
@@ -165,11 +171,11 @@
         <div class="bg-light border border-danger rounded shadow h-100 p-3">
           <div class="w-100">
             <div class="row">
-              <label for="choices_loop" class="form-label">{{instructionChoices}}</label>
+              <label for="choices_loop" class="form-label">{{ instructionChoices }}</label>
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
                   <div class="input-group input-group-sm mb-3">
-                    <span class="input-group-text" id="basic-addon1">{{index+1}}</span>
+                    <span class="input-group-text" id="basic-addon1">{{ index+ 1}}</span>
                     <input v-model="list_choices[index]" type="text" class="form-control form-control-sm">
                   </div>
                 </div>
@@ -178,7 +184,8 @@
               <div class="form-inline">
                 <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice">Add Choice</button>
                 <!-- button to remove one element of list_choices -->
-                <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove Choice</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove
+                  Choice</button>
               </div>
             </div>
           </div>
@@ -187,7 +194,7 @@
 
     </div>
 
-      
+
     <div v-if="failure" class="row">
       <div class="col-md-4 mx-auto mt-4">
         <Alert class="bg-warning" :dismissible="true">An error occurred
@@ -291,13 +298,19 @@ export default Vue.component('query-skills', {
         return 'No context required'
       }
     },
-    instructionChoices(){
+    instructionChoices() {
       if (!this.skillSettings.requiresContext) {
         return "3. Provide a list of answer choices"
       } else {
         return "4. Provide a list of answer choices"
       }
     },
+    metaSkillSelected() {
+      // if any this.options.selectedSkills has meta_skill = true
+      return this.$store.state.availableSkills
+        .filter(skill => this.selectedSkills.includes(skill.id))
+        .some(skill => skill.meta_skill)
+    }
   },
   mounted() {
     this.$root.$on("addFeedbackDocument", (feedbackDoc) => {
@@ -323,7 +336,7 @@ export default Vue.component('query-skills', {
       } else {
         alert("You need at least 2 choices")
       }
-      
+
     },
     changeInputMode() {
       this.$store.commit('changeInputMode')
