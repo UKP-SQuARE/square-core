@@ -3,7 +3,6 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
-
 from square_auth.client_credentials import ClientCredentials
 from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
