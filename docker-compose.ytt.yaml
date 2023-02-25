@@ -157,7 +157,7 @@ services:
       VIRT_SPARQL_MaxQueryCostEstimationTime: 600
       VIRT_SPARQL_MaxQueryExecutionTime: 180
     volumes:
-      - ./virtuoso_db:/data/
+      - virtuoso-db:/data/
     ports:
       - 8890:8890
 
