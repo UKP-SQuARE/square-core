@@ -47,6 +47,11 @@ verify_issuer:
 
 realm: square
 
+square_url: 
+  production: https://square.ukp-lab.de/api
+  test: https://test.square.ukp-lab.de/api
+  local: https://host.docker.internal/api
+
 square_api_url: 
   production: https://square.ukp-lab.de/api
   test: https://test.square.ukp-lab.de/api
