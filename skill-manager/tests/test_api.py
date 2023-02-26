@@ -107,20 +107,54 @@ def test_heartbeat(client):
 
 @pytest.mark.parametrize("is_alive", (True, False), ids=["alive", "dead"])
 @responses.activate
-def test_skill_heartbeat(is_alive, client):
-    skill_url = "http://test_skill_url"
+def test_skill_heartbeat(
+    is_alive,
+    pers_client: TestClient,
+    skill_factory,
+    token_factory,
+    create_skill_via_api,
+):
+    response, skill = create_skill_via_api(
+        pers_client,
+        token_factory,
+        skill_factory,
+        published=True,
+    )
+    skill_id = response.json()["id"]
     responses.add(
         responses.GET,
-        url=f"{skill_url}/health/heartbeat",
+        url=f"{skill.url}/api/health/heartbeat",
         json={"is_alive": True},
         status=200 if is_alive else 404,
     )
-    response = client.get(
-        "/api/health/skill-heartbeat", params={"skill_url": skill_url}
-    )
+    url = f"/api/health/{skill_id}/heartbeat"
+    response = pers_client.get(url)
 
-    assert response.status_code == 200
-    assert response.json() == {"is_alive": is_alive}
+    assert response.status_code == 200, response.content
+    assert response.json() == {"is_alive": is_alive}, response.content
+
+
+@responses.activate
+def test_skill_model_heartbeat(
+    pers_client: TestClient, skill_factory, token_factory, create_skill_via_api
+):
+    models = ["test-model-1", "test-model-2"]
+    response, skill = create_skill_via_api(
+        pers_client, token_factory, skill_factory, published=True, models=models
+    )
+    skill_id = response.json()["id"]
+    for model in skill.models:
+        responses.add(
+            responses.GET,
+            url=f"/api/{model}/health/heartbeat",
+            json={"is_alive": True},
+            status=200,
+        )
+    url = f"/api/health/{skill_id}/heartbeat-models"
+    response = pers_client.get(url)
+
+    assert response.status_code == 200, response.content
+    assert response.json() == {m: {"is_alive": True} for m in models}, response.content
 
 
 def test_skill_types(client):

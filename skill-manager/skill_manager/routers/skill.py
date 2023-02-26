@@ -330,7 +330,7 @@ def trigger_evaluations(skill_id: str, dataset_names: List[str], headers={}):
 
 async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
     loop = asyncio.get_event_loop()
-    url = f"{settings.evaluator_url}/evaluate/{skill_id}/{dataset_name.lower()}"
+    url = f"{settings.square_url}/api/{settings.evauluator_api_prefix}/evaluate/{skill_id}/{dataset_name.lower()}"
     future = loop.run_in_executor(
         None, lambda: requests.post(url, headers=headers, timeout=30)
     )
