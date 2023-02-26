@@ -6,12 +6,12 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 from fastapi.testclient import TestClient
+from square_model_client import SQuAREModelClient
 from square_skill_api.models.request import QueryRequest
 from testcontainers.mongodb import MongoDbContainer
 from testcontainers.redis import RedisContainer
 
 from skill_manager import mongo_client
-from skill_manager.core.model_management_client import ModelManagementClient
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.main import app
 from skill_manager.routers import client_credentials
@@ -28,7 +28,7 @@ app.dependency_overrides[KeycloakAPI] = keycloak_api_override
 app.dependency_overrides[client_credentials] = lambda: "test-token"
 
 mock_model_management_client = lambda: MagicMock()
-app.dependency_overrides[ModelManagementClient] = mock_model_management_client
+app.dependency_overrides[SQuAREModelClient] = mock_model_management_client
 
 client = TestClient(app)
 
