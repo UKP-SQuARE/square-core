@@ -163,9 +163,10 @@ services:
     labels:
       - "traefik.enable=true"
       - #@ template.replace(traefik_tls("virtuoso"))
-      - traefik.http.routers.virtuoso.rule=PathPrefix(`/virtuoso`)
-      - traefik.http.routers.virtuoso.middlewares=virtuoso-stripprefix
-      - traefik.http.middlewares.virtuoso-stripprefix.stripprefix.prefixes=/virtuoso
+      - "traefik.http.routers.virtuoso.rule=PathPrefix(`/virtuoso`)"
+      - "traefik.http.routers.virtuoso.middlewares=virtuoso-stripprefix"
+      - "traefik.http.middlewares.virtuoso-stripprefix.stripprefix.prefixes=/virtuoso"
+      - "traefik.http.middlewares.virtuoso-addprefix.addPrefix.prefix=/virtuoso"
 
   frontend:
     build: 
