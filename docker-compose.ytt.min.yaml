@@ -113,7 +113,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
+      - "8081:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-public-certificates:/certificates
@@ -212,148 +212,148 @@ services:
       - rabbit
       - redis
 
-  onnx_bert_worker:
-    build:
-      context: ./model-inference
-      dockerfile: ./dockerfiles/onnx/Dockerfile
-    container_name: onnx_bert_worker
-    command: celery -A tasks worker -Q bert-base-uncased-pf-squad-onnx --loglevel=info
-    volumes:
-      - ./:/usr/src/app
-      - /var/run/docker.sock:/var/run/docker.sock
-      - model_configs:/model_configs
-      - ./local_deploy:/local_deploy
-    env_file:
-      - ./rabbitmq/.env
-      - ./redis/.env
-      - ./model-inference/model_configurations/.env.squad_bert_onnx
-    environment:
-      WEB_CONCURRENCY: "2"
-      VERIFY_SSL: "0"
-      KEYCLOAK_BASE_URL: http://keycloak:8080
-      DOCKER_HOST_URL: https://172.17.0.1
-      ONNX_VOLUME: onnx_models
-      REALM: square
-      CONFIG_PATH: /model_configs
-      QUEUE: bert-base-uncased-pf-squad-onnx
-      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
-    depends_on:
-      - rabbit
-      - redis
+#!  onnx_bert_worker:
+#!    build:
+#!      context: ./model-inference
+#!      dockerfile: ./dockerfiles/onnx/Dockerfile
+#!    container_name: onnx_bert_worker
+#!    command: celery -A tasks worker -Q bert-base-uncased-pf-squad-onnx --loglevel=info
+#!    volumes:
+#!      - ./:/usr/src/app
+#!      - /var/run/docker.sock:/var/run/docker.sock
+#!      - model_configs:/model_configs
+#!      - ./local_deploy:/local_deploy
+#!    env_file:
+#!      - ./rabbitmq/.env
+#!      - ./redis/.env
+#!      - ./model-inference/model_configurations/.env.squad_bert_onnx
+#!    environment:
+#!      WEB_CONCURRENCY: "2"
+#!      VERIFY_SSL: "0"
+#!      KEYCLOAK_BASE_URL: http://keycloak:8080
+#!      DOCKER_HOST_URL: https://172.17.0.1
+#!      ONNX_VOLUME: onnx_models
+#!      REALM: square
+#!      CONFIG_PATH: /model_configs
+#!      QUEUE: bert-base-uncased-pf-squad-onnx
+#!      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+#!    depends_on:
+#!      - rabbit
+#!      - redis
 
-### EXAMPLE ONNX MODELS
-#  onnx_roberta_worker:
-#    build:
-#      context: ./model-inference
-#      dockerfile: ./dockerfiles/onnx/Dockerfile
-#    container_name: onnx_roberta_worker
-#    command: celery -A tasks worker -Q roberta-base-pf-squad-onnx --loglevel=info
-#    volumes:
-#      - ./:/usr/src/app
-#      - /var/run/docker.sock:/var/run/docker.sock
-#      - model_configs:/model_configs
-#      - ./local_deploy:/local_deploy
-#    env_file:
-#      - ./rabbitmq/.env
-#      - ./redis/.env
-#      - ./model-inference/model_configurations/.env.squad_roberta_onnx
-#    environment:
-#      WEB_CONCURRENCY: "2"
-#      VERIFY_SSL: "0"
-#      KEYCLOAK_BASE_URL: http://keycloak:8080
-#      DOCKER_HOST_URL: https://172.17.0.1
-#      ONNX_VOLUME: onnx_models
-#      REALM: square
-#      CONFIG_PATH: /model_configs
-#      QUEUE: roberta-base-pf-squad-onnx
-#      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
-#    depends_on:
-#      - rabbit
-#      - redis
-#  boolq_roberta_worker:
-#    build:
-#      context: ./model-inference
-#      dockerfile: ./dockerfiles/onnx/Dockerfile
-#    container_name: boolq_roberta_worker
-#    command: celery -A tasks worker -Q roberta-base-pf-boolq-onnx --loglevel=info
-#    volumes:
-#    - ./:/usr/src/app
-#    - /var/run/docker.sock:/var/run/docker.sock
-#    - model_configs:/model_configs
-#    - ./local_deploy:/local_deploy
-#    env_file:
-#    - ./rabbitmq/.env
-#    - ./redis/.env
-#    - ./model-inference/model_configurations/.env.boolq_roberta_onnx
-#    environment:
-#      WEB_CONCURRENCY: "2"
-#      VERIFY_SSL: "0"
-#      KEYCLOAK_BASE_URL: http://keycloak:8080
-#      DOCKER_HOST_URL: https://172.17.0.1
-#      ONNX_VOLUME: onnx_models
-#      REALM: square
-#      CONFIG_PATH: /model_configs
-#      QUEUE: roberta-base-pf-boolq-onnx
-#      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
-#    depends_on:
-#    - rabbit
-#    - redis
-#  quartz_roberta_worker:
-#    build:
-#      context: ./model-inference
-#      dockerfile: ./dockerfiles/onnx/Dockerfile
-#    container_name: quartz_roberta_worker
-#    command: celery -A tasks worker -Q roberta-base-pf-quartz-onnx --loglevel=info
-#    volumes:
-#    - ./:/usr/src/app
-#    - /var/run/docker.sock:/var/run/docker.sock
-#    - model_configs:/model_configs
-#    - ./local_deploy:/local_deploy
-#    env_file:
-#    - ./rabbitmq/.env
-#    - ./redis/.env
-#    - ./model-inference/model_configurations/.env.quartz_roberta_onnx
-#    environment:
-#      WEB_CONCURRENCY: "2"
-#      VERIFY_SSL: "0"
-#      KEYCLOAK_BASE_URL: http://keycloak:8080
-#      DOCKER_HOST_URL: https://172.17.0.1
-#      ONNX_VOLUME: onnx_models
-#      REALM: square
-#      CONFIG_PATH: /model_configs
-#      QUEUE: roberta-base-pf-quartz-onnx
-#      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
-#    depends_on:
-#    - rabbit
-#    - redis
-#  narrativeqa_worker:
-#    build:
-#      context: ./model-inference
-#      dockerfile: ./dockerfiles/onnx/Dockerfile
-#    container_name: narrativeqa_worker
-#    command: celery -A tasks worker -Q narrativeqa-onnx --loglevel=info
-#    volumes:
-#    - ./:/usr/src/app
-#    - /var/run/docker.sock:/var/run/docker.sock
-#    - model_configs:/model_configs
-#    - ./local_deploy:/local_deploy
-#    env_file:
-#    - ./rabbitmq/.env
-#    - ./redis/.env
-#    - ./model-inference/model_configurations/.env.narrativeqa_bart_onnx
-#    environment:
-#      WEB_CONCURRENCY: "2"
-#      VERIFY_SSL: "0"
-#      KEYCLOAK_BASE_URL: http://keycloak:8080
-#      DOCKER_HOST_URL: https://172.17.0.1
-#      ONNX_VOLUME: onnx_models
-#      REALM: square
-#      CONFIG_PATH: /model_configs
-#      QUEUE: narrativeqa-onnx
-#      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
-#    depends_on:
-#    - rabbit
-#    - redis
+#! ## EXAMPLE ONNX MODELS
+#!  onnx_roberta_worker:
+#!    build:
+#!      context: ./model-inference
+#!      dockerfile: ./dockerfiles/onnx/Dockerfile
+#!    container_name: onnx_roberta_worker
+#!    command: celery -A tasks worker -Q roberta-base-pf-squad-onnx --loglevel=info
+#!    volumes:
+#!      - ./:/usr/src/app
+#!      - /var/run/docker.sock:/var/run/docker.sock
+#!      - model_configs:/model_configs
+#!      - ./local_deploy:/local_deploy
+#!    env_file:
+#!      - ./rabbitmq/.env
+#!      - ./redis/.env
+#!      - ./model-inference/model_configurations/.env.squad_roberta_onnx
+#!    environment:
+#!      WEB_CONCURRENCY: "2"
+#!      VERIFY_SSL: "0"
+#!      KEYCLOAK_BASE_URL: http://keycloak:8080
+#!      DOCKER_HOST_URL: https://172.17.0.1
+#!      ONNX_VOLUME: onnx_models
+#!      REALM: square
+#!      CONFIG_PATH: /model_configs
+#!      QUEUE: roberta-base-pf-squad-onnx
+#!      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+#!    depends_on:
+#!      - rabbit
+#!      - redis
+#!  boolq_roberta_worker:
+#!    build:
+#!      context: ./model-inference
+#!      dockerfile: ./dockerfiles/onnx/Dockerfile
+#!    container_name: boolq_roberta_worker
+#!    command: celery -A tasks worker -Q roberta-base-pf-boolq-onnx --loglevel=info
+#!    volumes:
+#!    - ./:/usr/src/app
+#!    - /var/run/docker.sock:/var/run/docker.sock
+#!    - model_configs:/model_configs
+#!    - ./local_deploy:/local_deploy
+#!    env_file:
+#!    - ./rabbitmq/.env
+#!    - ./redis/.env
+#!    - ./model-inference/model_configurations/.env.boolq_roberta_onnx
+#!    environment:
+#!      WEB_CONCURRENCY: "2"
+#!      VERIFY_SSL: "0"
+#!      KEYCLOAK_BASE_URL: http://keycloak:8080
+#!      DOCKER_HOST_URL: https://172.17.0.1
+#!      ONNX_VOLUME: onnx_models
+#!      REALM: square
+#!      CONFIG_PATH: /model_configs
+#!      QUEUE: roberta-base-pf-boolq-onnx
+#!      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+#!    depends_on:
+#!    - rabbit
+#!    - redis
+#!  quartz_roberta_worker:
+#!    build:
+#!      context: ./model-inference
+#!      dockerfile: ./dockerfiles/onnx/Dockerfile
+#!    container_name: quartz_roberta_worker
+#!    command: celery -A tasks worker -Q roberta-base-pf-quartz-onnx --loglevel=info
+#!    volumes:
+#!    - ./:/usr/src/app
+#!    - /var/run/docker.sock:/var/run/docker.sock
+#!    - model_configs:/model_configs
+#!    - ./local_deploy:/local_deploy
+#!    env_file:
+#!    - ./rabbitmq/.env
+#!    - ./redis/.env
+#!    - ./model-inference/model_configurations/.env.quartz_roberta_onnx
+#!    environment:
+#!      WEB_CONCURRENCY: "2"
+#!      VERIFY_SSL: "0"
+#!      KEYCLOAK_BASE_URL: http://keycloak:8080
+#!      DOCKER_HOST_URL: https://172.17.0.1
+#!      ONNX_VOLUME: onnx_models
+#!      REALM: square
+#!      CONFIG_PATH: /model_configs
+#!      QUEUE: roberta-base-pf-quartz-onnx
+#!      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+#!    depends_on:
+#!    - rabbit
+#!    - redis
+#!  narrativeqa_worker:
+#!    build:
+#!      context: ./model-inference
+#!      dockerfile: ./dockerfiles/onnx/Dockerfile
+#!    container_name: narrativeqa_worker
+#!    command: celery -A tasks worker -Q narrativeqa-onnx --loglevel=info
+#!    volumes:
+#!    - ./:/usr/src/app
+#!    - /var/run/docker.sock:/var/run/docker.sock
+#!    - model_configs:/model_configs
+#!    - ./local_deploy:/local_deploy
+#!    env_file:
+#!    - ./rabbitmq/.env
+#!    - ./redis/.env
+#!    - ./model-inference/model_configurations/.env.narrativeqa_bart_onnx
+#!    environment:
+#!      WEB_CONCURRENCY: "2"
+#!      VERIFY_SSL: "0"
+#!      KEYCLOAK_BASE_URL: http://keycloak:8080
+#!      DOCKER_HOST_URL: https://172.17.0.1
+#!      ONNX_VOLUME: onnx_models
+#!      REALM: square
+#!      CONFIG_PATH: /model_configs
+#!      QUEUE: narrativeqa-onnx
+#!      SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
+#!    depends_on:
+#!    - rabbit
+#!    - redis
 
     
   maintaining_worker:

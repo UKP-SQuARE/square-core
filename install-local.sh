@@ -21,6 +21,7 @@ MONGO_PASSWORD=${2:-$(generate_password)}
 RABBITMQ_PASSWORD=${3:-$(generate_password)}
 REDIS_PASSWORD=${4:-$(generate_password)}
 SQUARE_ADMIN_PASSWORD=${5:-$(generate_password)}
+MODEL_MANAGER_PASSWORD=${6:-$(generate_password)}
 SQUARE_ADMIN_PASSWORD_HASHED=$(openssl passwd -apr1 $SQUARE_ADMIN_PASSWORD)
 SQUARE_ADMIN_PASSWORD_HASHED_ESCAPED=$(echo "$SQUARE_ADMIN_PASSWORD_HASHED" | sed 's/\//\\\//g')
 
@@ -50,6 +51,13 @@ if [ -f ./redis/.env ]; then
 	eval "$(grep ^REDIS_PASSWORD= ./redis/.env)"    
 else
 	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./redis/.env.template > ./redis/.env
+fi
+
+if [ -f ./model-manager/.env ]; then
+	echo "./model-manager/.env already exists. Skipping."
+	eval "$(grep ^MODEL_MANAGER_PASSWORD= ./model-manager/.env)"    
+else
+	sed -e "s/%%MODEL_MANAGER_PASSWORD%%/$MODEL_MANAGER_PASSWORD/g" ./model-manager/.env.template > ./model-manager/.env
 fi
 
 # create .env file for Datastores
