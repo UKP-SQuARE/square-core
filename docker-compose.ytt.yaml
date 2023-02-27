@@ -176,6 +176,10 @@ services:
       - "traefik.http.routers.frontend.priority=1"
       - #@ template.replace(traefik_tls("frontend"))
       - #@ template.replace(frontend_traefik_redirect())
+      - #@ template.replace(traefik_tls("virtuoso"))
+      - traefik.http.routers.virtuoso.rule=PathPrefix(`/virtuoso`)
+      - traefik.http.routers.virtuoso.middlewares=virtuoso-stripprefix
+      - traefik.http.middlewares.virtuoso-stripprefix.stripprefix.prefixes=/virtuoso
 
   docs:
     image: #@ "ukpsquare/docs:" + data.values.tag
