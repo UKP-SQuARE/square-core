@@ -139,18 +139,18 @@ services:
   virtuoso:
     image: tenforce/virtuoso:virtuoso7.2.5
     environment: 
-      VIRT_Database_DatabaseFile: /data/virtuoso.db
-      VIRT_Database_ErrorLogFile: /data/virtuoso.log
-      VIRT_Database_LockFile: /data/virtuoso.lck
-      VIRT_TransactionFile_LockFile: /data/virtuoso.trx
-      VIRT_xa_persistent_file: /data/virtuoso.pxa
+      VIRT_Database_DatabaseFile: /data/virtuoso-db/virtuoso.db
+      VIRT_Database_ErrorLogFile: /data/virtuoso-db/virtuoso.log
+      VIRT_Database_LockFile: /data/virtuoso-db/virtuoso.lck
+      VIRT_TransactionFile_LockFile: /data/virtuoso-db/virtuoso.trx
+      VIRT_xa_persistent_file: /data/virtuoso-db/virtuoso.pxa
       VIRT_Database_ErrorLogLevel: 7
       VIRT_Database_FileExtend: 200
       VIRT_Database_MaxCheckpointRemap: 2000
       VIRT_Database_Striping: 0
       VIRT_Database_TempStorage: TempDatabase
-      VIRT_TempDatabase_DatabaseFile: /data/virtuoso-temp.db
-      VIRT_TempDatabase_TransactionFile: /data/virtuoso-temp.trx
+      VIRT_TempDatabase_DatabaseFile: /data/virtuoso-db/virtuoso-temp.db
+      VIRT_TempDatabase_TransactionFile: /data/virtuoso-db/virtuoso-temp.trx
       VIRT_Parameters_O_DIRECT: 1
       VIRT_Parameters_ServerThreads: 100
       VIRT_HTTPServer_ServerThreads: 15
