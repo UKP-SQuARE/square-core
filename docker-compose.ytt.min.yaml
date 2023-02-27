@@ -406,6 +406,7 @@ services:
     - ./model-manager/.env
     - ./rabbitmq/.env
     - ./redis/.env
+    - ./mongodb/.env
     environment:
       WEB_CONCURRENCY: "2"
       VERIFY_SSL: "0"
@@ -416,6 +417,8 @@ services:
       SQUARE_PRIVATE_KEY_FILE: /local_deploy/private_key.pem
       REALM: square
       CLIENT_ID: models
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
     labels:
     - traefik.enable=true
     - traefidk.http.routers.maintaining.rule=PathPrefix(`/api/models`)
