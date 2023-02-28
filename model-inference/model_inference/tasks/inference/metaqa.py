@@ -123,10 +123,10 @@ class MetaQA(Model):
         for idx in top_k(logits[0][:, 1], self.metaqa_model.num_agents):
             pred = agents_predictions[idx][0]
             if pred != "":
-                agent_name = self.metaqa_model.config.agents[idx]
+                agent_idx = idx
                 metaqa_score = logits[0][idx][1]
                 agent_score = agents_predictions[idx][1]
-                list_preds.append((pred, agent_name, metaqa_score, agent_score))
+                list_preds.append((pred, agent_idx, metaqa_score, agent_score))
                 if len(list_preds) == k:
                     break
         return list_preds
