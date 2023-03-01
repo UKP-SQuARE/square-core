@@ -20,8 +20,7 @@
           </thead>
           <tbody>
             <tr v-for="row in currentResults[0].predictions.length" :key="row">
-              <th v-if="skillType.options.name !== 'categorical-results'" scope="row"
-                class="pt-4 text-primary text-end">
+              <th v-if="skillType.options.name !== 'categorical-results'" scope="row" class="pt-4 text-primary text-end">
                 {{ row }}.
               </th>
               <component v-for="(skillResult, index) in currentResults" :key="index" :is="skillType"
@@ -37,7 +36,7 @@
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
           <a v-on:click="showWithContext = !showWithContext" :class="{ 'active': showWithContext }" role="button"
             class="btn btn-primary shadow">
-            Show answers {{ showWithContext? 'without': 'with' }} context
+            Show answers {{ showWithContext ? 'without' : 'with' }} context
           </a>
         </div>
       </div>
@@ -85,6 +84,7 @@
 import Vue from 'vue'
 import Categorical from '@/components/results/Categorical.vue'
 import SpanExtraction from '@/components/results/SpanExtraction.vue'
+import Abstractive from '@/components/results/Abstractive.vue'
 import MetaSkill from '@/components/results/MetaSkill.vue'
 import InformationRetrieval from '@/components/results/InformationRetrieval.vue'
 import AttackOutput from '../components/modals/AttackOutput.vue'
@@ -107,6 +107,7 @@ export default Vue.component('skill-results', {
   components: {
     Categorical,
     SpanExtraction,
+    Abstractive,
     MetaSkill,
     AttackOutput,
     ExplainOutput,
@@ -123,7 +124,7 @@ export default Vue.component('skill-results', {
       }
       switch (this.$store.state.currentResults[0].skill.skill_type) {
         case 'abstractive':
-        // Fall through
+          return Abstractive
         case 'span-extraction':
         // Fall through
         case 'multiple-choice':
