@@ -13,7 +13,7 @@
           <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
             data-bs-parent="#accordionExample">
             <div class="accordion-body">
-              <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="" />
+              <CompareSkills ref="compareSkills" selector-target="qa" v-on:input="changeSelectedSkills" class="" />
             </div>
           </div>
         </div>
@@ -395,6 +395,26 @@ export default Vue.component('query-skills', {
       })
       this.$root.$emit('clearUpvotes');
       this.feedbackDocuments = []
+    },
+    prepareToExit: function () {
+      // set all data to default
+      this.waiting = false
+      this.options.selectedSkills = []
+      this.inputQuestion = ''
+      this.inputContext = ''
+      this.inputChoices = ''
+      this.list_choices = ["", "", ""]
+      this.failure = false
+      this.skillSettings = {
+        skillType: null,
+        requiresContext: false,
+        requiresMultipleChoices: 0
+      }
+      this.feedbackDocuments = []
+      this.feedback = false
+
+      this.$store.commit('setInputModeFalse')
+      this.$refs.compareSkills.prepareToExit()
     }
   }
 })

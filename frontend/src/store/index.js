@@ -69,6 +69,9 @@ export default new Vuex.Store({
     },
     changeInputMode(state) {
       state.inputMode = !state.inputMode
+    },
+    setInputModeFalse(state) {
+      state.inputMode = false
     }
   },
   /**
