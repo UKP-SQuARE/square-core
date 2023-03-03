@@ -63,12 +63,14 @@ import Vue from 'vue'
 import Card from '@/components/Card.vue'
 import ConfirmDestructiveAction from '@/components/modals/ConfirmDestructiveAction.vue'
 import Status from '@/components/Status.vue'
+import ModelStatus from '@/components/ModelStatus.vue'
 
 export default Vue.component('list-skills', {
   components: {
     Card,
     ConfirmDestructiveAction,
-    Status
+    Status,
+    ModelStatus
   },
   computed: {
     mySkills() {
