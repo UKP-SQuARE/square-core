@@ -76,7 +76,7 @@ async def heartbeat_models(
             model_status[model_key] = HeartbeatResult(is_alive=True)
         except requests.exceptions.RequestException as e:
             logger.debug(
-                f"An exception occured requesting the health of {model} at {url}. "
+                f"An exception occured requesting the health of {model_identifier} at {url}. "
                 f"Error: {str(e)}"
             )
             model_status[model_key] = HeartbeatResult(is_alive=True)
