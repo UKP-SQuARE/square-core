@@ -31,7 +31,7 @@
           <span style="font-size: 16px">{{evaluation.metric_name}}</span>
         </div>
         <span style="display:block; height: 5px;"></span>
-        <Status :url="evaluation.skill_url" /> 
+        <Status :id="evaluation.skill_id" /> 
         <span v-if=evaluation.public class="badge bg-info ms-1 p-2">Public</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Private</span>
         <span v-if="evaluation.evaluation_status == 'FINISHED'" class="badge bg-success ms-1 p-2">{{ evaluation.evaluation_status }}</span>
