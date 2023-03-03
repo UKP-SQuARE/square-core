@@ -68,17 +68,17 @@ async def heartbeat_models(
         request, skill_id=skill_id, write_access=False
     )
     model_status = {}
-    for model in skill.models:
-        url = f"{settings.square_url}/api/{model}/health/heartbeat"
+    for model_key, model_identifier in skill.models.items():
+        url = f"{settings.square_url}/api/{model_identifier}/health/heartbeat"
         try:
             response = requests.get(url, headers={"Authorization": f"Bearer {token}"})
             response.raise_for_status()
-            model_status[model] = HeartbeatResult(is_alive=True)
+            model_status[model_key] = HeartbeatResult(is_alive=True)
         except requests.exceptions.RequestException as e:
             logger.debug(
                 f"An exception occured requesting the health of {model} at {url}. "
                 f"Error: {str(e)}"
             )
-            model_status[model] = HeartbeatResult(is_alive=True)
+            model_status[model_key] = HeartbeatResult(is_alive=True)
 
     return model_status

@@ -138,7 +138,7 @@ def test_skill_heartbeat(
 def test_skill_model_heartbeat(
     pers_client: TestClient, skill_factory, token_factory, create_skill_via_api
 ):
-    models = ["test-model-1", "test-model-2"]
+    models = {"retriever": "test-model-1", "reader": "test-model-2"}
     response, skill = create_skill_via_api(
         pers_client, token_factory, skill_factory, published=True, models=models
     )
@@ -154,7 +154,7 @@ def test_skill_model_heartbeat(
     response = pers_client.get(url)
 
     assert response.status_code == 200, response.content
-    assert response.json() == {m: {"is_alive": True} for m in models}, response.content
+    assert response.json() == {m: {"is_alive": True} for m in models.keys()}, response.content
 
 
 def test_skill_types(client):

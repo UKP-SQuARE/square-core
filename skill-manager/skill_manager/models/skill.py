@@ -59,9 +59,9 @@ class Skill(MongoModel):
         None, description="Timestamp of skill creation."
     )
     skill_input_examples: Optional[List[SkillInputExample]]
-    models: Optional[List[str]] = Field(
-        [],
-        description="List of model identifiers that are used by the skill. This is used for model management.",
+    models: Optional[Dict[str, str]] = Field(
+        {},
+        description="Map of model identifiers that are used by the skill. This is used for model management.",
     )
     description: Optional[str] = Field(
         None,
