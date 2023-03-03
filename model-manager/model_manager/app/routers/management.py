@@ -113,11 +113,11 @@ async def list_exp_methods():
 
 @router.get("/health", name="get-deployed-models-health", response_model=List[GetModelsHealth])
 async def get_all_models_health():
-    '''
+    """
     Check all worker's health (worker : inference model container)
     Return:
         result[list]: the health of deployed workers/models.
-    '''
+    """
 
     models = await mongo_client.get_models_db()
     result = []
@@ -142,16 +142,20 @@ async def get_all_models_health():
             )
     return result
 
-@router.get("/{identifier}/health", name="get-certain-model-health", response_model=List[GetModelsHealth])
-async def get_certain_models_health(identifier:str):
-    '''
-    Check certain worker's health (worker : inference model container)
+
+@router.get("/{identifier}/health", name="get-model-health", response_model=List[GetModelsHealth])
+@router.get("/{hf_username}/{identifier}/health", name="get-model-health", response_model=List[GetModelsHealth])
+async def get_model_health(identifier: str, hf_username: str = None):
+    """
+    Check worker's health (worker : inference model container)
     Return:
         result[list]: the health of one certain worker
-    '''
+    """
+
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
 
     models = await mongo_client.get_models_db()
-
     result = []
     docker_client = docker.from_env()
     container_id = mongo_client.get_container_id(identifier)
@@ -348,6 +352,7 @@ async def get_task_status(task_id):
     result = task.get()
     return {"task_id": str(task_id), "status": "Finished", "result": result}
 
+
 @router.get("/task", name="")
 async def get_all_tasks():
     # https://docs.celeryq.dev/en/latest/userguide/workers.html#inspecting-workers
@@ -368,7 +373,6 @@ async def get_all_tasks():
     }
 
     logger.info("/tasks: {}".format(tasks))
-
     return tasks
 
 
