@@ -10,6 +10,7 @@ import axios from 'axios'
 const SKILL_MANAGER_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`
 const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`
+const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
 
 /**
  * Get a list of available skill types.
@@ -180,4 +181,14 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  */
  export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
     return axios.post(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, {}, { headers: headers })
+}
+
+/**
+ * Check if model is available.
+ * @param {Object} headers Authentication header
+ * @param {String} model_identifier identifier of the model to check
+ */
+export function modelHeartbeat(headers, model_identifier) {
+    console.log(`${MODEL_MANAGER_URL}/${model_identifier}/health/heartbeat`)
+    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health/heartbeat`, headers)
 }
