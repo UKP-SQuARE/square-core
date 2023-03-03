@@ -123,7 +123,7 @@ def test_skill_heartbeat(
     skill_id = response.json()["id"]
     responses.add(
         responses.GET,
-        url=f"{skill.url}/api/health/heartbeat",
+        url=f"{skill.url}/health/heartbeat",
         json={"is_alive": True},
         status=200 if is_alive else 404,
     )

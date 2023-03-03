@@ -49,13 +49,13 @@
             <label class="form-check-label" for="requiresContext"
               content="If the Skill requires a question and a passage/context as input, please activate this switch."
               v-tippy>
-              <!-- <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
+            <!-- <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor"
                 class="bi bi-card-text" viewBox="0 0 16 16">
                 <path
                   d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" />
                 <path
                   d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z" />
-              </svg> -->
+                            </svg> -->
               Requires context
             </label>
           </div>
@@ -152,8 +152,7 @@
       <div class="row">
         <div class="col mt-3">
           <label for="description" class="form-label">Description</label>
-          <input v-model="skill.description" type="text" class="form-control" id="description"
-            placeholder="Description">
+          <input v-model="skill.description" type="text" class="form-control" id="description" placeholder="Description">
         </div>
       </div>
 
@@ -163,12 +162,12 @@
         </div>
       </div>
 
-      <div class="row" v-if="url != 'http://meta-qa'">
+      <div class="row" v-if="skill.url != 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa'">
         <div class="col-md-6">
           <label for="base_model" class="form-label">Base Model
             <small class="text-muted">(leave empty if not required)
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle" viewBox="0 0 20 20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle"
+                viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path
                   d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -187,8 +186,7 @@
           <label for="adapter" class="form-label">
             &nbsp;Use Adapter
             <small class="text-muted">
-              <svg
-                content="Check this box if your base model must use adapters, and write the name of the adapter below."
+              <svg content="Check this box if your base model must use adapters, and write the name of the adapter below."
                 v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -199,8 +197,8 @@
             </small>
           </label>
           &nbsp;
-          <input class="form-check-input" type="checkbox" id="average_adapters_flag" v-model="average_adapters"
-            value="1" :disabled="!adapter_flag">
+          <input class="form-check-input" type="checkbox" id="average_adapters_flag" v-model="average_adapters" value="1"
+            :disabled="!adapter_flag">
           <label class="form-check-label" for="average_adapters_flag">
             &nbsp; Combine Adapters
             <small class="text-muted">
@@ -233,7 +231,7 @@
 
         <div class="col-md-6">
           <label for="datasets" class="form-label">MetaQA's Agents</label>
-          <multiselect v-model="metaqa_agents" :options="list_skills" :multiple="true" :close-on-select="false"
+          <multiselect v-model="metaqa_agents" :options="list_skills_names" :multiple="true" :close-on-select="false"
             placeholder="Select the skills"></multiselect>
           <small class="text-muted">Select the Skills in the same order as MetaQA was trained.</small>
         </div>
@@ -246,9 +244,9 @@
             <label for="datastore" class="form-label">Datastore
               <small class="text-muted">(leave empty if not required)
                 <svg content="If your Skill requires the use of a datastore (i.e., a document collection) because
-                it is an open-domain Skill, write the name of the datastore here.
-                 eg: 'bioasq' Leave blank if unsure" v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                  fill="currentColor" class="bi bi-info-circle" viewBox="0 0 20 20">
+                              it is an open-domain Skill, write the name of the datastore here.
+                               eg: 'bioasq' Leave blank if unsure" v-tippy xmlns="http://www.w3.org/2000/svg" width="16"
+                  height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 20 20">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                   <path
                     d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -267,8 +265,8 @@
             <small class="text-muted">(leave empty if not required)
               <svg
                 content="If your Skill is using a datatore and you do not want to use the predefined index (i.e., bm25),
-                write the name of the index here.
-                 eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
+                              write the name of the index here.
+                               eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
                 v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -290,8 +288,8 @@
             <small
               content="Write any other additional argument you may need. The text should be a json document (i.e., {'key': 'value'}) Leave blank if unsure"
               v-tippy class="text-muted">(leave empty if not required)
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle" viewBox="0 0 20 20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle"
+                viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path
                   d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
@@ -329,8 +327,7 @@
             <div class="col-sm">
               <div class="input-group input-group-sm mb-3">
                 <span class="input-group-text" id="basic-addon1">{{ choice_idx + 1 }}</span>
-                <input v-model="list_answer_choices[index][choice_idx]" type="text"
-                  class="form-control form-control-sm">
+                <input v-model="list_answer_choices[index][choice_idx]" type="text" class="form-control form-control-sm">
               </div>
             </div>
           </div>
@@ -348,9 +345,7 @@
   </form>
 </template>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css">
-
-</style>
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
 <script>
 import Vue from 'vue'
@@ -663,8 +658,8 @@ export default Vue.component('edit-skill', {
       })
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
-      for (let item_dataset = 0; item_dataset < response.data.length; item_dataset++){
-        this.dataSets.push(response.data[item_dataset].name);
+        for (let item_dataset = 0; item_dataset < response.data.length; item_dataset++) {
+          this.dataSets.push(response.data[item_dataset].name);
         }
       })
     getDatastores(this.$store.getters.authenticationHeader())
