@@ -13,7 +13,7 @@
           <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
             data-bs-parent="#accordionExample">
             <div class="accordion-body">
-              <CompareSkills selector-target="qa" v-on:input="changeSelectedSkills" class="" />
+              <CompareSkills ref="compareSkills" selector-target="qa" v-on:input="changeSelectedSkills" class="" />
             </div>
           </div>
         </div>
@@ -63,16 +63,17 @@
 
     </div>
 
-    <!-- Input for span-extraction open domain or IR -->
-    <div class="row" v-if="this.$store.state.inputMode && (!skillSettings.requiresContext &&
-    (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval'))">
+    <!-- Input for span-extraction open domain or IR or abstractive -->
+    <div class="row"
+      v-if="this.$store.state.inputMode && (!skillSettings.requiresContext &&
+        (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval' || skillSettings.skillType == 'abstractive'))">
       <!-- Question Input -->
       <div class="col-md-12 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
           <div class="w-100">
             <label for="question" class="form-label">2. Enter you question</label>
             <textarea v-model="currentQuestion" @keydown.enter.exact.prevent class="form-control form-control-lg mb-2"
-              style="resize: none; height: calc(48px * 2.25);" id="question" placeholder="Question" required
+              style="height: calc(48px * 2.25);" id="question" placeholder="Question" required
               :disabled="!minSkillsSelected(1)" />
             <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
             <span role="button" v-for="(example, index) in currentExamples" :key="index"
@@ -126,7 +127,7 @@
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
                   <div class="input-group input-group-sm mb-3">
-                    <span class="input-group-text" id="basic-addon1">{{ index+ 1}}</span>
+                    <span class="input-group-text" id="basic-addon1">{{ index + 1 }}</span>
                     <input v-model="list_choices[index]" type="text" class="form-control form-control-sm">
                   </div>
                 </div>
@@ -175,7 +176,7 @@
               <div class="row g-0" v-for="(choice, index) in list_choices" :key="index" id="choices_loop">
                 <div class="col-sm">
                   <div class="input-group input-group-sm mb-3">
-                    <span class="input-group-text" id="basic-addon1">{{ index+ 1}}</span>
+                    <span class="input-group-text" id="basic-addon1">{{ index + 1 }}</span>
                     <input v-model="list_choices[index]" type="text" class="form-control form-control-sm">
                   </div>
                 </div>
@@ -394,6 +395,26 @@ export default Vue.component('query-skills', {
       })
       this.$root.$emit('clearUpvotes');
       this.feedbackDocuments = []
+    },
+    prepareToExit: function () {
+      // set all data to default
+      this.waiting = false
+      this.options.selectedSkills = []
+      this.inputQuestion = ''
+      this.inputContext = ''
+      this.inputChoices = ''
+      this.list_choices = ["", "", ""]
+      this.failure = false
+      this.skillSettings = {
+        skillType: null,
+        requiresContext: false,
+        requiresMultipleChoices: 0
+      }
+      this.feedbackDocuments = []
+      this.feedback = false
+
+      this.$store.commit('setInputModeFalse')
+      this.$refs.compareSkills.prepareToExit()
     }
   }
 })
