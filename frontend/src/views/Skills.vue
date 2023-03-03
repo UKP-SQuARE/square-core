@@ -21,6 +21,9 @@
         </div>
         <p class="mb-3">{{ skill.description }}</p>
         <Status :id="skill.id" />
+        <span v-for="(modelIdentifier, modelKey) in skill.models" :key="modelKey" class="p-2 ms-1">
+          <ModelStatus :modelIdentifier="modelIdentifier" :modelKey="modelKey" />
+        </span>
         <span v-if="skill.published" class="badge bg-info ms-1 p-2">Published</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
         <div class="d-grid gap-2 d-flex mt-2">
