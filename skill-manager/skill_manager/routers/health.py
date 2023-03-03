@@ -39,7 +39,7 @@ async def skill_heartbeat(
     logger.info(f"Checking skill health: {skill.url}")
     try:
         skill_heartbeat_response = requests.get(
-            f"{skill.url}/api/health/heartbeat",
+            f"{skill.url}/health/heartbeat",
             headers={"Authorization": f"Bearer {token}"},
         )
         skill_heartbeat_response.raise_for_status()
