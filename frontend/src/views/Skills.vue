@@ -20,7 +20,7 @@
           <small>{{ skill.url }}</small>
         </div>
         <p class="mb-3">{{ skill.description }}</p>
-        <Status :url="skill.url" />
+        <Status :id="skill.id" />
         <span v-if="skill.published" class="badge bg-info ms-1 p-2">Published</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
         <div class="d-grid gap-2 d-flex mt-2">

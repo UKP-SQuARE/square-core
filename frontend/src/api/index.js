@@ -144,9 +144,8 @@ export function postSkill(headers, newSkill) {
  * @param {Object} headers optional authentication header
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
-export function pingSkill(headers, skillUrl) {
-    headers.params = { skill_url: skillUrl }
-    return axios.get(`${SKILL_URL}/health/skill-heartbeat`, headers)
+export function skillHeartbeat(headers, id) {
+    return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, headers)
 }
 
 /**
