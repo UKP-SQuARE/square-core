@@ -31,7 +31,7 @@ def predict(request: QueryRequest) -> QueryOutput:
     # 1) call the skills in parallel
     list_skill_responses = _call_skills(list_skills, request)
     # 2) get the predictions
-    list_preds = [("", 0.0)] * 16
+    list_preds = [["", 0.0]] * 16
     for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
@@ -68,9 +68,7 @@ def _call_skills(list_skills, request):
     return list_skill_responses
 
 
-async def _call_skill(skill_id, request):
-    token = client_credentials()
-
+def _call_skill(skill_id, request):
     input_data = {
         "query": request.query,
         "skill_args": {
@@ -85,7 +83,6 @@ async def _call_skill(skill_id, request):
         "user_id": "",
         **extract_model_kwargs_from_request(request),
     }
-
     # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
     logger.debug(f"Calling skill {skill_id}.")
     response = requests.post(
