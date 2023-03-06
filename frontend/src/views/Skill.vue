@@ -55,7 +55,7 @@
                   d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" />
                 <path
                   d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z" />
-                                                                                                  </svg> -->
+                                                                                                                                      </svg> -->
               Requires context
             </label>
           </div>
@@ -245,8 +245,8 @@
               <small class="text-muted">(leave empty if not required)
                 <svg
                   content="If your Skill requires the use of a datastore (i.e., a document collection) because
-                                                                                                    it is an open-domain Skill, write the name of the datastore here.
-                                                                                                     eg: 'bioasq' Leave blank if unsure"
+                                                                                                                                        it is an open-domain Skill, write the name of the datastore here.
+                                                                                                                                         eg: 'bioasq' Leave blank if unsure"
                   v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                   class="bi bi-info-circle" viewBox="0 0 20 20">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -267,8 +267,8 @@
             <small class="text-muted">(leave empty if not required)
               <svg
                 content="If your Skill is using a datatore and you do not want to use the predefined index (i.e., bm25),
-                                                                                                    write the name of the index here.
-                                                                                                     eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
+                                                                                                                                        write the name of the index here.
+                                                                                                                                         eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
                 v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -382,7 +382,6 @@ export default Vue.component('edit-skill', {
       // metaqa
       list_skills: [],
       list_skills_names: [],
-      dict_skill_id2name: {},
       metaqa_agents: [],
       auxAdapter: "",
       skill: {
@@ -556,7 +555,6 @@ export default Vue.component('edit-skill', {
       this.list_skills.filter(skill => this.list_agents.includes(skill.name)).forEach(skill => {
         this.skill.default_skill_args['list_skills'].push(skill.id)
       })
-      console.log(this.skill.default_skill_args['list_skills'])
 
     },
     addInputExampleFields() {
@@ -680,7 +678,6 @@ export default Vue.component('edit-skill', {
         // iterate over the skills and add the name to the list
         for (let i = 0; i < response.data.length; i++) {
           this.list_skills.push(response.data[i])
-          this.dict_skill_id2name[response.data[i].id] = response.data[i].name
           this.list_skills_names.push(response.data[i].name)
         }
       })
@@ -715,9 +712,18 @@ export default Vue.component('edit-skill', {
             }
           }
           // adding metaqa agents
-          for (let i = 0; i < this.skill.default_skill_args['list_skills'].length; i++) {
-            this.metaqa_agents.push(this.dict_skill_id2name[this.skill.default_skill_args['list_skills'][i]])
-          }
+          getSkills(this.$store.getters.authenticationHeader()) // get the list of skills again
+            .then((response) => {
+              // iterate over the skills
+              for (let i = 0; i < response.data.length; i++) {
+                //if id in this.skill.default_skill_args['list_skills'] then add to metaqa_agents
+                if (this.skill.default_skill_args['list_skills'].includes(response.data[i].id)) {
+                  this.metaqa_agents.push(response.data[i].name)
+                }
+              }
+            })
+
+
 
 
           // adding datastore
