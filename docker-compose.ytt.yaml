@@ -166,7 +166,7 @@ services:
       - "traefik.http.routers.virtuoso.rule=PathPrefix(`/virtuoso`)"
       - "traefik.http.routers.virtuoso.middlewares=virtuoso-stripprefix"
       - "traefik.http.middlewares.virtuoso-stripprefix.stripprefix.prefixes=/virtuoso"
-      - "traefik.http.middlewares.virtuoso-addprefix.addPrefix.prefix=/virtuoso"
+      - "traefik.http.services.virtuoso.loadbalancer.server.port=8890"
 
   frontend:
     build: 
