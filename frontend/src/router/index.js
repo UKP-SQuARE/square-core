@@ -7,6 +7,7 @@ import VueRouter from 'vue-router'
 // Use lazy loading to improve page size
 const Home = () => import('../views/Home')
 const QA = () => import('../views/QA')
+const DataStore = () => import('../views/DataStore')
 const BehavioralTests = () => import('../views/BehavioralTests')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
@@ -33,6 +34,14 @@ const routes = [
     path: '/qa',
     name: 'qa',
     component: QA
+  },
+  {
+    path: '/datastore',
+    name: 'datastore',
+    component: DataStore,
+    meta: {
+      requiresAuthentication: true
+    }
   },
   {
     path: '/skills',
@@ -111,7 +120,7 @@ const routes = [
 const router = new VueRouter({
   routes,
   mode: 'history',
-  scrollBehavior (to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     } else {
