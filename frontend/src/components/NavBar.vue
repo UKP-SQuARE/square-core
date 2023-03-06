@@ -17,6 +17,9 @@
                 <router-link class="nav-link" to="/qa" exact-active-class="active">QA</router-link>
               </li>
               <li class="nav-item">
+                <router-link class="nav-link" to="/datastore" exact-active-class="active">Datastore</router-link>
+              </li>
+              <li class="nav-item">
                 <router-link class="nav-link" to="/behavioral_tests" exact-active-class="active">Behavioral Tests</router-link>
               </li>
               <li class="nav-item">

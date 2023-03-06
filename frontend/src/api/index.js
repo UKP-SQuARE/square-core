@@ -43,6 +43,7 @@ export function getDatastoreIndices(headers, datastoreId) {
     return axios.get(`${DATASTORES_URL}/${datastoreId}/indices`, { headers: headers })
 }
 
+
 /**
  * Get a list of available skills. 
  * The user name is only required for unpublished skills of the user. Published skills are available without.

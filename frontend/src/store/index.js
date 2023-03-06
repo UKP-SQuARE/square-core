@@ -5,7 +5,15 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { postQuery, getSkills, putSkill, deleteSkill, postSkill } from '../api'
+import {
+  postQuery,
+  getSkills,
+  putSkill,
+  deleteSkill,
+  postSkill,
+  getDatastoreIndices,
+  getDatastores
+} from '../api'
 
 Vue.use(Vuex)
 
@@ -24,6 +32,9 @@ export default new Vuex.Store({
     currentChoices: [],
     currentSkills: [],
     availableSkills: [],
+    availableDatastores:[],
+    availableDatastoresName:[],
+    availableIndices:[],
     mySkills: [],
     skillOptions: {
       qa: {
@@ -54,6 +65,19 @@ export default new Vuex.Store({
       if (state.userInfo.preferred_username) {
         state.mySkills = state.availableSkills.filter(skill => skill.user_id === state.userInfo.preferred_username)
       }
+    },
+    setDatastores(state, payload) {
+      state.availableDatastores = payload.datastores
+
+    },
+    setIndices(state, payload) {
+      state.availableDatastores.forEach(datastore=>{
+        if (datastore.name==payload.dataStoreId){
+          datastore.indices=payload.indices
+
+        }
+      })
+
     },
     setAuthentication(state, payload) {
       if (payload.userInfo) {
@@ -143,6 +167,24 @@ export default new Vuex.Store({
       return getSkills(context.getters.authenticationHeader())
         .then((response) => context.commit('setSkills', { skills: response.data }))
     },
+    updateDatastores(context) {
+      return getDatastores(context.getters.authenticationHeader())
+          .then((response) => context.commit('setDatastores', { datastores: response.data }))
+    },
+    updateIndices(context) {
+      //console.log(context.state.availableDatastores)
+      context.state.availableDatastores.forEach(datastore=>{context.state.availableDatastoresName.push(datastore.name)} )
+      //console.log(context.state.availableDatastoresName)
+      context.state.availableDatastoresName.forEach(datastoreName=>{getDatastoreIndices(context.getters.authenticationHeader(), datastoreName)
+          .then((response) => {
+            context.commit('setIndices', { indices: response.data, dataStoreId:datastoreName })
+          }
+          ) })
+   
+      //console.log("Update indices")   
+   
+      
+    },
     updateSkill(context, { skill }) {
       return putSkill(context.getters.authenticationHeader(), skill.id, skill)
         .then(() => context.dispatch('updateSkills'))
@@ -161,7 +203,8 @@ export default new Vuex.Store({
       if (state.token) {
         return { 'Authorization': `Bearer ${state.token}` }
       } else {
-        return {}
+        return { }
+
       }
     }
   }
