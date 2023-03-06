@@ -55,7 +55,7 @@
                   d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" />
                 <path
                   d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z" />
-                                                                                                                                      </svg> -->
+                                                                                                                                                  </svg> -->
               Requires context
             </label>
           </div>
@@ -162,7 +162,8 @@
         </div>
       </div>
 
-      <div class="row" v-if="skill.url != 'http://extractive-metaqa' && url != 'http://multiple-choice-metaqa'">
+      <div class="row"
+        v-if="skill.url != 'http://extractive-metaqa' && url != 'http://multiple-choice-metaqa' && url != 'http://meta-qa'">
         <div class="col-md-6">
           <label for="base_model" class="form-label">Base Model
             <small class="text-muted">(leave empty if not required)
@@ -222,7 +223,8 @@
       </div>
 
       <!-- MetaQA Input -->
-      <div class="row" v-if="url == 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa'">
+      <div class="row"
+        v-if="url == 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa' || url == 'http://meta-qa'">
         <div class="col-md-6">
           <label for="base_model" class="form-label">MetaQA Model</label>
           <input type="text" v-model="skill_args.base_model" class="form-control form-control-md" id="base_model"
@@ -238,15 +240,16 @@
 
       </div>
 
-      <div class="row" v-if="skill.url != 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa'">
+      <div class="row"
+        v-if="skill.url != 'http://extractive-metaqa' || url == 'http://multiple-choice-metaqa' || url == 'http://meta-qa'">
         <div class="col-md-6">
           <div>
             <label for="datastore" class="form-label">Datastore
               <small class="text-muted">(leave empty if not required)
                 <svg
                   content="If your Skill requires the use of a datastore (i.e., a document collection) because
-                                                                                                                                        it is an open-domain Skill, write the name of the datastore here.
-                                                                                                                                         eg: 'bioasq' Leave blank if unsure"
+                                                                                                                                                    it is an open-domain Skill, write the name of the datastore here.
+                                                                                                                                                     eg: 'bioasq' Leave blank if unsure"
                   v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                   class="bi bi-info-circle" viewBox="0 0 20 20">
                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -267,8 +270,8 @@
             <small class="text-muted">(leave empty if not required)
               <svg
                 content="If your Skill is using a datatore and you do not want to use the predefined index (i.e., bm25),
-                                                                                                                                        write the name of the index here.
-                                                                                                                                         eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
+                                                                                                                                                    write the name of the index here.
+                                                                                                                                                     eg: 'distilbert'. If you selected 'requires context', then you do not need a datastore. Leave blank if unsure"
                 v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-info-circle" viewBox="0 0 20 20">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
@@ -498,7 +501,7 @@ export default Vue.component('edit-skill', {
       }
       // add arguments to skill
       this.addSkillArgs2Skill()
-      if (this.skill.url == 'http://extractive-metaqa' || this.skill.url == 'http://multiple-choice-metaqa') {
+      if (this.skill.url == 'http://extractive-metaqa' || this.skill.url == 'http://multiple-choice-metaqa' || this.skill.url == 'http://meta-qa') {
         this.addSkillAgents()
       }
       // create skill
@@ -638,7 +641,7 @@ export default Vue.component('edit-skill', {
       this.setSelectIndices()
     },
     'url'() {
-      if (this.url == 'http://tweac' || this.url == 'http://extractive-metaqa' || this.url == 'http://multiple-choice-metaqa') {
+      if (this.url == 'http://tweac' || this.url == 'http://extractive-metaqa' || this.url == 'http://multiple-choice-metaqa' || this.url == 'http://meta-qa') {
         this.skill.meta_skill = true
         if (this.url == 'http://tweac') {
           this.skill_args.others = '{"max_skills_per_dataset": 2}'
