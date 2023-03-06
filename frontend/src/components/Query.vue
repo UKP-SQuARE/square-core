@@ -23,7 +23,7 @@
 
     <div class="row mb-2" v-if="!this.$store.state.inputMode">
       <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next"
+        <button ref="next" v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next"
           data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
           Next
         </button>
@@ -232,6 +232,10 @@
 import Vue from 'vue'
 import CompareSkills from '../components/CompareSkills'
 import Alert from '../components/Alert'
+import VueShepherd from 'vue-shepherd';
+import "shepherd.js/dist/css/shepherd.css";
+
+Vue.use(VueShepherd);
 
 export default Vue.component('query-skills', {
   data() {
@@ -251,7 +255,8 @@ export default Vue.component('query-skills', {
         requiresMultipleChoices: 0
       },
       feedbackDocuments: [],
-      feedback: false
+      feedback: false,
+      tour: null,
     }
   },
   components: {
@@ -318,8 +323,43 @@ export default Vue.component('query-skills', {
       this.feedbackDocuments.push(feedbackDoc)
       this.feedback = true
     })
+    this.$nextTick(() => {
+      this.createTour();
+    });
+
   },
   methods: {
+    createTour() {
+      this.tour = this.$shepherd({
+        useModalOverlay: true
+      });
+      this.tour.addStep({
+        attachTo: { element: this.$refs.compareSkills.value, on: 'bottom' },
+        text: 'Select the skills you want to compare',
+        buttons: [
+          {
+            action() {
+              return this.next();
+            },
+            text: 'Next',
+          },
+        ],
+      });
+      this.tour.addStep({
+        attachTo: { element: this.$refs.next.value, on: 'top' },
+        text: 'Test',
+        buttons: [
+          {
+            action() {
+              return this.next();
+            },
+            text: 'Next',
+          },
+        ],
+      });
+
+      this.tour.start();
+    },
     changeSelectedSkills(options, skillSettings) {
       this.options = options
       this.skillSettings = skillSettings
