@@ -1,16 +1,18 @@
 import logging
 import os
-import requests
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
+import requests
+from square_auth.client_credentials import ClientCredentials
+from square_model_client import SQuAREModelClient
 from square_skill_api.models import (
+    Prediction,
+    PredictionOutput,
     QueryOutput,
     QueryRequest,
-    PredictionOutput,
-    Prediction,
 )
-from square_model_client import SQuAREModelClient
-from square_auth.client_credentials import ClientCredentials
+
+from utils import extract_model_kwargs_from_request
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +20,7 @@ square_model_client = SQuAREModelClient()
 client_credentials = ClientCredentials()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and (context), (answer),
     it calls the Skill agents to get the predictions,
     and then calls MetaQA Model to get the final prediction.
@@ -26,7 +28,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     list_skills = request.skill_args["list_skills"]
 
     # 1) call the skills in parallel
-    list_skill_responses = await _call_skills(list_skills, request)
+    list_skill_responses = _call_skills(list_skills, request)
     # 2) prepare MetaQA input
     qa_format = _get_qa_format(request)
     if qa_format == "span-extraction":
@@ -41,7 +43,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
         # raise error
         logger.info(f"Unsopported Skill Type:\n{qa_format}")
     # 3) Call MetaQA Model API
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="question-answering",
         model_request=model_request,
@@ -55,21 +57,19 @@ def _get_qa_format(request):
     return request.skill["skill_type"]
 
 
-async def _call_skills(list_skills, request):
+def _call_skills(list_skills, request):
     """
     Calls the skills in parallel
     """
-    list_skill_responses = []
-    for skill_id in list_skills:
-        # how to call the skill without waiting
-        skill_response = _call_skill(skill_id, request)  # only 1 answer per skill
-        list_skill_responses.append(skill_response)
-    list_skill_responses = await asyncio.gather(*list_skill_responses)
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        list_skill_responses = executor.map(
+            _call_skill, list_skills, [request] * len(list_skills)
+        )
+
     return list_skill_responses
 
 
-async def _call_skill(skill_id, request):
-    skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+def _call_skill(skill_id, request):
     token = client_credentials()
 
     input_data = {
@@ -84,21 +84,26 @@ async def _call_skill(skill_id, request):
         },
         "skill": {},
         "user_id": "",
-        "explain_kwargs": {},
+        **extract_model_kwargs_from_request(request),
     }
-
+    # skill_manager_api_url = os.getenv("SQUARE_API_URL") + "/skill-manager"
+    logger.debug(f"Calling skill {skill_id}.")
     response = requests.post(
-        url=skill_manager_api_url + "/skill/" + skill_id + "/query",
+        url="http://skill-manager:8000/api/skill/" + skill_id + "/query",
         json=input_data,
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Content-Type": "application/json"},
         verify=os.getenv("VERIFY_SSL") == "1",
     )
-    return response.json()
+    response.raise_for_status()
+    result = response.json()
+    logger.debug(f"Skill {skill_id} responded.")
+
+    return result
 
 
 def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
     list_preds = [["", 0.0]] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[skill_idx] = (pred, score)
@@ -116,7 +121,7 @@ def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
 
 def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
     list_preds = [("", 0.0)] * 16
-    for (skill_idx, skill_response) in enumerate(list_skill_responses):
+    for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
         list_preds[8 + skill_idx] = (pred, score)

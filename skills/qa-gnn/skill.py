@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 square_model_client = SQuAREModelClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
-
+def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     choices = request.skill_args["choices"]
     prepared_input = [[query, choice] for choice in choices]
@@ -27,7 +26,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     model_request = {"input": prepared_input, **model_request_kwargs}
     logger.debug("Request for model api:{}".format(model_request))
 
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name="qagnn",
         pipeline="sequence-classification",
         model_request=model_request,

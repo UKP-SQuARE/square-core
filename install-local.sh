@@ -54,6 +54,7 @@ fi
 
 # create .env file for Datastores
 cp ./datastore-api/.env.template ./datastore-api/.env
+cp ./model-manager/.env.template ./model-manager/.env
 
 # bring up services required to setup authentication
 ytt -f docker-compose.ytt.min.yaml -f config.yaml --data-value environment=local > docker-compose.yaml

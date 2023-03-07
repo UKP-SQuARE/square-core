@@ -63,12 +63,13 @@ def test_no_auto_onnx_config(model_name) -> None:
     indirect=True
 )
 def test_onnx_export(hf_token, model_params) -> None:
-    model_name = onnx_export(model_params[1]["model_name"] 
-                    ,model_params[1]["model_class"] 
-                    ,hf_token
-                    ,model_params[1]["adapter_id"] 
-                    ,model_params[1]["custom_onnx_config"] 
-                    ,model_params[1]["onnx_use_quantized"] 
-                    )
+    model_name = onnx_export(
+        model_params[1]["model_name"],
+        model_params[1]["model_class"],
+        hf_token,
+        model_params[1]["adapter_id"],
+        model_params[1]["custom_onnx_config"],
+        model_params[1]["onnx_use_quantized"],
+    )
 
     assert model_name == model_params[0]

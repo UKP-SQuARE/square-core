@@ -15,8 +15,7 @@ square_model_client = SQuAREModelClient()
 square_datastore_client = SQuAREDatastoreClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
-
+def predict(request: QueryRequest) -> QueryOutput:
     return QueryOutput(
         predictions=[
             Prediction(
