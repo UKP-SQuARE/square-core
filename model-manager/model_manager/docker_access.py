@@ -193,7 +193,7 @@ def get_all_model_prefixes():
     lst_container_ids = []
     for container in lst_container:
         logger.debug("Found candidate model container: %s", container.name)
-        if "model" in container.name:
+        if "worker" in container.name:
             for env_var in container.attrs["Config"]["Env"]:
                 if "QUEUE" in env_var:
                     logger.info(env_var)
@@ -201,7 +201,6 @@ def get_all_model_prefixes():
                     if "QUEUE" == key:
                         lst_prefix.append(val)
                         lst_container_ids.append(container.id)
-                # maybe we can achieve this by finding the container with the same queue name
 
     logger.debug("Found model containers: %s on port %s", lst_prefix, port)
     return lst_prefix, lst_container_ids, port

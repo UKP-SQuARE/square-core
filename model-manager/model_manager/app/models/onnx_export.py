@@ -1,4 +1,14 @@
-from transformers import AutoAdapterModel, AutoModel, AutoTokenizer, AutoConfig
+from transformers import (
+    AutoConfig,
+    AutoModel,
+    AutoModelForCausalLM,
+    AutoModelForQuestionAnswering,
+    AutoModelForSequenceClassification,
+    AutoModelForTokenClassification,
+    AutoTokenizer,
+    AutoAdapterModel,
+)
+
 from transformers.onnx import OnnxConfig, export
 
 import onnx
@@ -20,6 +30,15 @@ from importlib import import_module
 
 import logging
 logger = logging.getLogger(__name__)
+
+CLASS_MAPPING = {
+    "base": AutoModel,
+    "default": AutoModel,
+    "sequence-classification": AutoModelForSequenceClassification,
+    "token-classification": AutoModelForTokenClassification,
+    "question-answering": AutoModelForQuestionAnswering,
+    "generation": AutoModelForCausalLM,
+}
 
 # Mappings from HF AutoConfig (prepended Onnx to get AutoOnnxConfig)
 CONFIG_MAPPING_NAMES = OrderedDict(
@@ -382,7 +401,11 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
         adapter_name = model.load_adapter(adapter, source="hf")
         model.active_adapters = adapter_name
     else:
-        model = AutoModel.from_pretrained(model_name)
+        if skill not in CLASS_MAPPING.keys():
+            raise RuntimeError(f"Unknown skill {skill}. Must be one of {CLASS_MAPPING.keys()}")
+        
+        model_cls = CLASS_MAPPING[skill]
+        model = model_cls.from_pretrained(model_name)
 
     if custom_onnx_config:
         logger.info("Using custom onnx config")
