@@ -64,7 +64,8 @@ class AdapterTransformer(Transformer):
                 adapters = set(
                     f"{adapter_info.adapter_id}"
                     for adapter_info in adapter_infos
-                    if adapter_info.adapter_id.startswith("AdapterHub")
+                    if adapter_info.adapter_id.startswith("AdapterHub") or
+                    adapter_info.adapter_id.startswith("UKP-SQuARE")
                 )
             for adapter in adapters:
                 logger.debug(f"Loading adapter {adapter}")
@@ -155,7 +156,10 @@ class AdapterTransformer(Transformer):
                 logger.info(f"missing parameters with requires_grad: {missing_new}")
             else:
                 adapter_name = adapter_name[0]
-                self.model.load_adapter(adapter_name, load_as=adapter_name, source=None)
+                # try deploying adapter from source hf or ah
+                # identify adapter source
+                source = "hf" if adapter_name.startswith("UKP-SQuARE") else None
+                self.model.load_adapter(adapter_name, load_as=adapter_name, source=source)
                 # check if the adapter is there in the hub
                 if not adapter_name or adapter_name not in self.model.config.adapters.adapters:
                     raise ValueError(
