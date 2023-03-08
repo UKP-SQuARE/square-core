@@ -105,7 +105,6 @@ def start_new_model_container(identifier: str, uid: str, env):
 
     logger.info("Starting container with image: {}".format(image))
 
-
     try:
         random_cpus = random.sample(list(range(cpu_count())), k=os.getenv("CPU_COUNT", max(1,cpu_count() // 8)))
         random_cpus = ",".join(map(str, random_cpus))
