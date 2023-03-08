@@ -155,12 +155,14 @@ async def get_model_health(identifier: str, hf_username: str = None):
     if hf_username:
         identifier = f"{hf_username}/{identifier}"
 
-    models = await mongo_client.get_models_db()
-    result = []
     docker_client = docker.from_env()
-    container_id = mongo_client.get_container_id(identifier)
-    container_obj = docker_client.containers.get(container_id)
-    if container_obj.status == "running":
+    containers = docker_client.containers.list(all=True)
+    # get the container name if identifier is in the container name
+    container_name = [c.name for c in containers if identifier.replace("/", "-") in c.name]
+    container_id = docker_client.containers.get(container_name[0])
+
+    result = []
+    if container_id.status == "running":
         result.append(
             GetModelsHealth(
                 identifier=identifier,

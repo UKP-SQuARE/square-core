@@ -103,7 +103,6 @@ def start_new_model_container(identifier: str, uid: str, env):
 
     logger.info("Starting container with image: {}".format(image))
 
-
     try:
         logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
