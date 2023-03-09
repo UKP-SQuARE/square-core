@@ -320,6 +320,9 @@ async def add_model_container(request: Request, identifier: str, num: int):
         raise HTTPException(
             status_code=406, detail="A model with the input identifier does not exist"
         )
+    """
+    Add another worker for a model
+    """
     # check if the user deployed this model
     if await mongo_client.check_user_id(request, identifier):
         env = await mongo_client.get_model_stats(identifier)
@@ -341,6 +344,9 @@ async def add_model_container(request: Request, identifier: str, num: int):
 
 @router.delete("/{identifier}/remove_worker/{num}")
 async def remove_model_container(request: Request, identifier: str, num: int):
+    """
+    Remove a model worker from the platform
+    """
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         raise HTTPException(
@@ -427,6 +433,9 @@ async def get_task_status(task_id):
 
 @router.get("/task", name="")
 async def get_all_tasks():
+    """
+    Get all scheduled tasks
+    """
     # https://docs.celeryq.dev/en/latest/userguide/workers.html#inspecting-workers
     i = celery_app.control.inspect()
     # Show the items that have an ETA or are scheduled for later processing
