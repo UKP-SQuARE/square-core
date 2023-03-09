@@ -43,7 +43,9 @@ router = APIRouter()
 mongo_client = MongoClass()
 
 
-@router.get("/deployed-models", name="get-deployed-models", response_model=List[GetModelsResult])
+@router.get(
+    "/deployed-models", name="get-deployed-models", response_model=List[GetModelsResult]
+)
 async def get_all_models():  # token: str = Depends(client_credentials)):
     """
     Get all the models deployed on the platform in list format
@@ -66,37 +68,47 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
     return result
 
 
-@router.get("/explainers", name="get-explanation-methods", response_model=List[GetExplainersResult])
+@router.get(
+    "/explainers",
+    name="get-explanation-methods",
+    response_model=List[GetExplainersResult],
+)
 async def list_exp_methods():
     """
     Get all the explanation methods for models
     """
     exp_methods = [
         {
-            "identifier": "simple_grads", "name": "Vanilla gradients",
+            "identifier": "simple_grads",
+            "name": "Vanilla gradients",
             "description": "The attributions are calculated considering the model "
-                           "gradients multiplied by the input text embeddings."
+            "gradients multiplied by the input text embeddings.",
         },
         {
-            "identifier": "integrated_grads", "name": "Integrated gradients",
+            "identifier": "integrated_grads",
+            "name": "Integrated gradients",
             "description": "The attributions are calculated considering the "
-                           "integral of the model gradients with respect to the word "
-                           "embedding layer along a straight path from a "
-                           "baseline instance  to the input instance  "},
+            "integral of the model gradients with respect to the word "
+            "embedding layer along a straight path from a "
+            "baseline instance  to the input instance  ",
+        },
         {
-            "identifier": "smooth_grads", "name": "Smooth gradients",
+            "identifier": "smooth_grads",
+            "name": "Smooth gradients",
             "description": "Take random samples in neighborhood of an input, "
-                           "and average the resulting saliency maps. These "
-                           "random samples are inputs with added noise."
+            "and average the resulting saliency maps. These "
+            "random samples are inputs with added noise.",
         },
         {
-            "identifier": "attention", "name": "Attention",
-            "description": "Based on the model attention weights from the last layer."
+            "identifier": "attention",
+            "name": "Attention",
+            "description": "Based on the model attention weights from the last layer.",
         },
         {
-            "identifier": "scaled_attention", "name": "Scaled attention",
+            "identifier": "scaled_attention",
+            "name": "Scaled attention",
             "description": "The attention weights are multiplied with their "
-                           "gradients to get the token attributions."
+            "gradients to get the token attributions.",
         },
     ]
     result = []
@@ -105,13 +117,15 @@ async def list_exp_methods():
             GetExplainersResult(
                 identifier=e["identifier"],
                 method_name=e["name"],
-                description=e["description"]
+                description=e["description"],
             )
         )
     return result
 
 
-@router.get("/health", name="get-deployed-models-health", response_model=List[GetModelsHealth])
+@router.get(
+    "/health", name="get-deployed-models-health", response_model=List[GetModelsHealth]
+)
 async def get_all_models_health():
     """
     Check all worker's health (worker : inference model container)
@@ -143,8 +157,16 @@ async def get_all_models_health():
     return result
 
 
-@router.get("/{identifier}/health", name="get-model-health", response_model=List[GetModelsHealth])
-@router.get("/{hf_username}/{identifier}/health", name="get-model-health", response_model=List[GetModelsHealth])
+@router.get(
+    "/{identifier}/health",
+    name="get-model-health",
+    response_model=List[GetModelsHealth],
+)
+@router.get(
+    "/{hf_username}/{identifier}/health",
+    name="get-model-health",
+    response_model=List[GetModelsHealth],
+)
 async def get_model_health(identifier: str, hf_username: str = None):
     """
     Check worker's health (worker : inference model container)
@@ -158,7 +180,9 @@ async def get_model_health(identifier: str, hf_username: str = None):
     docker_client = docker.from_env()
     containers = docker_client.containers.list(all=True)
     # get the container name if identifier is in the container name
-    container_name = [c.name for c in containers if identifier.replace("/", "-") in c.name]
+    container_name = [
+        c.name for c in containers if identifier.replace("/", "-") in c.name
+    ]
     container_id = docker_client.containers.get(container_name[0])
 
     result = []
@@ -179,7 +203,10 @@ async def get_model_health(identifier: str, hf_username: str = None):
     return result
 
 
-@router.get("/deployed-model-workers", name="get-deployed-models",)
+@router.get(
+    "/deployed-model-workers",
+    name="get-deployed-models",
+)
 async def get_model_containers():  # token: str = Depends(client_credentials)):
     """
     Get all the models deployed on the platform in list format
@@ -214,7 +241,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
                 model_params.custom_onnx_config,
                 model_params.onnx_use_quantized,
             )
-        except Exception as e: 
+        except Exception as e:
             # Use normal model if model can not be exported to onnx
             logger.debug(f"Onnx export failed, using normal model instead: {str(e)}")
             model_type = "transformer"
@@ -235,21 +262,33 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
         "TRANSFORMERS_CACHE": model_params.transformers_cache,
         "RETURN_PLAINTEXT_ARRAYS": model_params.return_plaintext_arrays,
         "PRELOADED_ADAPTERS": model_params.preloaded_adapters,
-        "WEB_CONCURRENCY": os.getenv("WEB_CONCURRENCY", 1),  # fixed processes, do not give the control to  end-user
-        "KEYCLOAK_BASE_URL": os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"),
-        "VERIFY_ISSUER": os.getenv("VERIFY_ISSUER", "1")
+        "WEB_CONCURRENCY": os.getenv(
+            "WEB_CONCURRENCY", 1
+        ),  # fixed processes, do not give the control to  end-user
+        "KEYCLOAK_BASE_URL": os.getenv(
+            "KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"
+        ),
+        "VERIFY_ISSUER": os.getenv("VERIFY_ISSUER", "1"),
     }
 
     identifier_new = await (mongo_client.check_identifier_new(env["IDENTIFIER"]))
     if not identifier_new:
-        raise HTTPException(status_code=406, detail="A model with that identifier already exists")
+        raise HTTPException(
+            status_code=406, detail="A model with that identifier already exists"
+        )
     res = tasks.deploy_task.delay(env)
     logger.info(res.id)
     return {"message": f"Queued deploying {env['IDENTIFIER']}", "task_id": res.id}
 
 
-@router.delete("/remove/{identifier}", name="remove-model", response_model=TaskGenericModel)
-@router.delete("/remove/{hf_username}/{identifier}", name="remove-model", response_model=TaskGenericModel)
+@router.delete(
+    "/remove/{identifier}", name="remove-model", response_model=TaskGenericModel
+)
+@router.delete(
+    "/remove/{hf_username}/{identifier}",
+    name="remove-model",
+    response_model=TaskGenericModel,
+)
 async def remove_model(request: Request, identifier: str, hf_username: str = None):
     """
     Remove a model from the platform
@@ -261,12 +300,16 @@ async def remove_model(request: Request, identifier: str, hf_username: str = Non
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
         logger.info("The model is already saved in the database.")
-        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+        raise HTTPException(
+            status_code=406, detail="A model with the input identifier does not exist"
+        )
     # check if the user deployed this model
     if await mongo_client.check_user_id(request, identifier):
         res = tasks.remove_model_task.delay(identifier)
     else:
-        raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
+        raise HTTPException(
+            status_code=403, detail="Cannot remove a model deployed by another user."
+        )
     return {"message": "Queued removing model.", "task_id": res.id}
 
 
@@ -274,7 +317,9 @@ async def remove_model(request: Request, identifier: str, hf_username: str = Non
 async def add_model_container(request: Request, identifier: str, num: int):
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
-        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+        raise HTTPException(
+            status_code=406, detail="A model with the input identifier does not exist"
+        )
     # check if the user deployed this model
     if await mongo_client.check_user_id(request, identifier):
         env = await mongo_client.get_model_stats(identifier)
@@ -282,39 +327,54 @@ async def add_model_container(request: Request, identifier: str, num: int):
         models = await mongo_client.get_model_containers()
         for m in models:
             if m["_id"] == identifier:
-                res = tasks.add_worker.delay(identifier, env, m["count"]+1, num)
-                return {"message": f"Queued adding worker for {identifier}", "task_id": res.id}
+                res = tasks.add_worker.delay(identifier, env, m["count"] + 1, num)
+                return {
+                    "message": f"Queued adding worker for {identifier}",
+                    "task_id": res.id,
+                }
         return {"message": f"No model with that identifier"}
     else:
-        raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
+        raise HTTPException(
+            status_code=403, detail="Cannot remove a model deployed by another user."
+        )
 
 
 @router.delete("/{identifier}/remove_worker/{num}")
 async def remove_model_container(request: Request, identifier: str, num: int):
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
-        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+        raise HTTPException(
+            status_code=406, detail="A model with the input identifier does not exist"
+        )
     if await mongo_client.check_user_id(request, identifier):
         models = await mongo_client.get_model_containers()
         for m in models:
             if m["_id"] == identifier:
                 if m["count"] <= num:
-                    return HTTPException(status_code=403, detail=f"Only {m['count']} worker left. To remove that remove the whole model.")
+                    return HTTPException(
+                        status_code=403,
+                        detail=f"Only {m['count']} worker left. To remove that remove the whole model.",
+                    )
         containers = await mongo_client.get_containers(identifier, num)
         res = tasks.remove_worker.delay(containers)
-        return {"message": f"Queued removing worker for {identifier}", "task_id": res.id}
+        return {
+            "message": f"Queued removing worker for {identifier}",
+            "task_id": res.id,
+        }
     else:
-        raise HTTPException(status_code=403, detail="Cannot remove a model deployed by another user.")
+        raise HTTPException(
+            status_code=403, detail="Cannot remove a model deployed by another user."
+        )
 
 
 @router.patch("/update/{identifier}")
 @router.patch("/update/{hf_username}/{identifier}")
 async def update_model(
-        request: Request,
-        identifier: str,
-        update_parameters: UpdateModel,
-        hf_username: str = None,
-        token: str = Depends(client_credentials),
+    request: Request,
+    identifier: str,
+    update_parameters: UpdateModel,
+    hf_username: str = None,
+    token: str = Depends(client_credentials),
 ):
     """
     update the model parameters
@@ -324,11 +384,15 @@ async def update_model(
     logger.info("Updating model: {}".format(identifier))
     check_model_id = await (mongo_client.check_identifier_new(identifier))
     if check_model_id:
-        raise HTTPException(status_code=406, detail="A model with the input identifier does not exist")
+        raise HTTPException(
+            status_code=406, detail="A model with the input identifier does not exist"
+        )
     if await mongo_client.check_user_id(request, identifier):
         await (mongo_client.update_model_db(identifier, update_parameters))
         logger.info(
-            "Update parameters Type %s,dict  %s", type(update_parameters.dict()), update_parameters.dict()
+            "Update parameters Type %s,dict  %s",
+            type(update_parameters.dict()),
+            update_parameters.dict(),
         )
         response = requests.post(
             url=f"{settings.API_URL}/api/{identifier}/update",
@@ -340,17 +404,23 @@ async def update_model(
 
         return {"status_code": response.status_code, "content": response.json()}
 
-    raise HTTPException(status_code=403, detail="Cannot update a model deployed by another user")
+    raise HTTPException(
+        status_code=403, detail="Cannot update a model deployed by another user"
+    )
 
 
-@router.get("/task_result/{task_id}", name="task-status", response_model=TaskResultModel)
+@router.get(
+    "/task_result/{task_id}", name="task-status", response_model=TaskResultModel
+)
 async def get_task_status(task_id):
     """
     Get results from a celery task
     """
     task = AsyncResult(task_id)
     if not task.ready():
-        return JSONResponse(status_code=202, content={"task_id": str(task_id), "status": "Processing"})
+        return JSONResponse(
+            status_code=202, content={"task_id": str(task_id), "status": "Processing"}
+        )
     result = task.get()
     return {"task_id": str(task_id), "status": "Finished", "result": result}
 
@@ -422,7 +492,11 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
 
 @router.post("/db/deploy")
 @router.post("/db/deploy/{hf_username}/{identifier}")
-async def start_from_db(identifier: str=None, hf_username: str=None, token: str = Depends(client_credentials)):
+async def start_from_db(
+    identifier: str = None,
+    hf_username: str = None,
+    token: str = Depends(client_credentials),
+):
     """
     deploy models from the database
     """

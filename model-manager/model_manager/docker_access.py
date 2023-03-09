@@ -24,8 +24,14 @@ def create_docker_labels(identifier: str, uid: str) -> dict:
     traefik_identifier = identifier.replace("/", "-") + uid
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers.model-" + traefik_identifier + ".rule": "PathPrefix(`/api/" + identifier + "`)",
-        "traefik.http.routers.model-" + traefik_identifier + ".entrypoints": "websecure",
+        "traefik.http.routers.model-"
+        + traefik_identifier
+        + ".rule": "PathPrefix(`/api/"
+        + identifier
+        + "`)",
+        "traefik.http.routers.model-"
+        + traefik_identifier
+        + ".entrypoints": "websecure",
         "traefik.http.routers.model-" + traefik_identifier + ".tls": "true",
         "traefik.http.routers.model-" + traefik_identifier + ".tls.certresolver": "le",
         "traefik.http.routers.model-"
@@ -36,8 +42,13 @@ def create_docker_labels(identifier: str, uid: str) -> dict:
         + "model-"
         + traefik_identifier
         + "-addprefix",
-        "traefik.http.middlewares.model-" + traefik_identifier + "-stripprefix.stripprefix.prefixes": "/api/" + identifier,
-        "traefik.http.middlewares.model-" + traefik_identifier + "-addprefix.addPrefix.prefix": "/api",
+        "traefik.http.middlewares.model-"
+        + traefik_identifier
+        + "-stripprefix.stripprefix.prefixes": "/api/"
+        + identifier,
+        "traefik.http.middlewares.model-"
+        + traefik_identifier
+        + "-addprefix.addPrefix.prefix": "/api",
     }
     return labels
 
@@ -66,7 +77,9 @@ def start_new_model_container(identifier: str, uid: str, env):
     # get the traefik container and read out the information
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
     logger.info("Reference Container: {}".format(reference_container))
-    network_id = list(reference_container.attrs["NetworkSettings"]["Networks"].values())[0]["NetworkID"]
+    network_id = list(
+        reference_container.attrs["NetworkSettings"]["Networks"].values()
+    )[0]["NetworkID"]
 
     # path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
     # logger.info("Path: {}".format(path))
@@ -75,10 +88,14 @@ def start_new_model_container(identifier: str, uid: str, env):
     # path = os.path.dirname(os.path.dirname(path))
 
     network = docker_client.networks.get(network_id)
-    worker_name = network.name + "-model-" + identifier.replace("/", "-") + "-worker-" + uid
+    worker_name = (
+        network.name + "-model-" + identifier.replace("/", "-") + "-worker-" + uid
+    )
 
     env["WEB_CONCURRENCY"] = 1
-    env["KEYCLOAK_BASE_URL"] = os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de")
+    env["KEYCLOAK_BASE_URL"] = os.getenv(
+        "KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"
+    )
     env["QUEUE"] = identifier.replace("/", "-")
     env["RABBITMQ_DEFAULT_USER"] = os.getenv("RABBITMQ_DEFAULT_USER", "ukp")
     env["RABBITMQ_DEFAULT_PASS"] = os.getenv("RABBITMQ_DEFAULT_PASS", "secret")
@@ -92,7 +109,7 @@ def start_new_model_container(identifier: str, uid: str, env):
 
     image = ""
     # select the image based on the model type
-    if env["MODEL_TYPE"] in ["transformer","adapter","metaqa"]:
+    if env["MODEL_TYPE"] in ["transformer", "adapter", "metaqa"]:
         image = f"{model_api_base_image}-transformer:{image_tag}"
     if env["MODEL_TYPE"] in ["sentence-transformer"]:
         image = f"{model_api_base_image}-sentence-transformer:{image_tag}"
@@ -114,13 +131,21 @@ def start_new_model_container(identifier: str, uid: str, env):
             network=network.name,
             volumes=["/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
             mounts=[
-                Mount(target=env["CONFIG_PATH"], source=CONFIG_VOLUME,),
+                Mount(
+                    target=env["CONFIG_PATH"],
+                    source=CONFIG_VOLUME,
+                ),
                 # Mount(target="/onnx_models", source=ONNX_VOLUME,)   # shouldn't be necessary for new ONNX version
             ],
         )
         logger.info(f"Worker container {container}")
         network.reload()
-        entries_to_remove = ["RABBITMQ_DEFAULT_USER", "RABBITMQ_DEFAULT_PASS", "REDIS_USER", "REDIS_PASSWORD"]
+        entries_to_remove = [
+            "RABBITMQ_DEFAULT_USER",
+            "RABBITMQ_DEFAULT_PASS",
+            "REDIS_USER",
+            "REDIS_PASSWORD",
+        ]
         for k in entries_to_remove:
             env.pop(k, None)
     except Exception as e:
@@ -179,7 +204,9 @@ def get_all_model_prefixes():
     # assumes square is somewhere in the container name
     lst_container = docker_client.containers.list(filters={"name": "square"})
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
-    port = list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
+    port = list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0][
+        "HostPort"
+    ]
 
     lst_prefix = []
     lst_container_ids = []
@@ -200,4 +227,6 @@ def get_all_model_prefixes():
 
 def get_port():
     reference_container = docker_client.containers.list(filters={"name": "traefik"})[0]
-    return list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0]["HostPort"]
+    return list(reference_container.attrs["NetworkSettings"]["Ports"].items())[0][1][0][
+        "HostPort"
+    ]

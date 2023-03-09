@@ -8,7 +8,10 @@ from celery import Task
 from model_manager.app.routers import client_credentials
 from model_manager.app.db.database import MongoClass
 
-from model_manager.docker_access import remove_model_container, start_new_model_container
+from model_manager.docker_access import (
+    remove_model_container,
+    start_new_model_container,
+)
 
 from .celery import app
 
@@ -58,7 +61,9 @@ def deploy_task(self, env, allow_overwrite=False):
         logger.exception(e)
         return {"success": False, "message": "Connection to the database failed."}
     try:
-        deployment_result = start_new_model_container(identifier, uid=env["UUID"], env=env)
+        deployment_result = start_new_model_container(
+            identifier, uid=env["UUID"], env=env
+        )
         logger.info(deployment_result)
         container = deployment_result["container"]
         # models = asyncio.run(self.client.get_models_db())
@@ -67,7 +72,8 @@ def deploy_task(self, env, allow_overwrite=False):
             result = {
                 "success": True,
                 "container": container.id,
-                "message": "Model deployed. Check the `/api/models/deployed-models` " "endpoint for more info.",
+                "message": "Model deployed. Check the `/api/models/deployed-models` "
+                "endpoint for more info.",
             }
 
             env["CONTAINER"] = container.id
@@ -116,7 +122,7 @@ def add_worker(self, identifier, env, id, num):
     try:
         containers = []
         for i in range(num):
-            deployment_result = start_new_model_container(identifier, env, id+i)
+            deployment_result = start_new_model_container(identifier, env, id + i)
             logger.info(deployment_result)
             container = deployment_result["container"]
             if containers is None:
