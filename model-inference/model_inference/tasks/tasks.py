@@ -31,21 +31,27 @@ class ModelTask(Task, ABC):
         model_type = model_config.model_type
         if model_type == "transformer":
             from .inference.transformer import Transformer
+
             return Transformer()
         elif model_type == "adapter":
             from .inference.adaptertransformer import AdapterTransformer
+
             return AdapterTransformer()
         elif model_type == "sentence-transformer":
             from .inference.sentencetransformer import SentenceTransformer
+
             return SentenceTransformer()
         elif model_type == "onnx":
             from .inference.onnx import Onnx
+
             return Onnx()
         elif model_type == "graph":
             from .inference.graph_transformers import GraphTransformers
+
             return GraphTransformers()
         elif model_type == "metaqa":
             from .inference.metaqa import MetaQA
+
             return MetaQA()
         else:
             raise ValueError(f"Invalid model type: {model_type}")

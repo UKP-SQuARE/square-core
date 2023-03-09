@@ -89,7 +89,7 @@ class ModelConfig(Mapping):
             onnx_use_quantized=self.onnx_use_quantized,
         )
 
-    def update(self, identifier: str=IDENTIFIER):
+    def update(self, identifier: str = IDENTIFIER):
         with open(f"{CONFIG_PATH}/{identifier}.json", "r") as f:
             config = json.load(f)
 
@@ -123,7 +123,9 @@ class ModelConfig(Mapping):
             max_input_size=config("MAX_INPUT_SIZE", cast=int, default=1024),
             transformers_cache=config("TRANSFORMERS_CACHE", default=None),
             model_class=config("MODEL_CLASS", default="base"),
-            return_plaintext_arrays=config("RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False),
+            return_plaintext_arrays=config(
+                "RETURN_PLAINTEXT_ARRAYS", cast=bool, default=False
+            ),
             onnx_use_quantized=config("ONNX_USE_QUANTIZED", cast=bool, default=False),
         )
         model_config.save(IDENTIFIER)

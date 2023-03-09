@@ -9,7 +9,11 @@ from pre_test_setup_for_docker_caching import (
 SENTENCE_MODEL = os.getenv("TEST_MODEL_PATH", "./model4test")
 from model_inference.app.models.request import PredictionRequest
 from model_inference.main import auth, get_app
-from model_inference.tasks.config.model_config import ModelConfig, model_config, set_test_config
+from model_inference.tasks.config.model_config import (
+    ModelConfig,
+    model_config,
+    set_test_config,
+)
 from model_inference.tasks.inference.sentencetransformer import SentenceTransformer
 
 

@@ -95,7 +95,9 @@ def get_LM_score(cids, question, model, tokenizer):
         scores += _scores
         cur_idx += batch_size
     assert len(sents) == len(scores) == len(cids)
-    cid2score = OrderedDict(sorted(list(zip(cids, scores)), key=lambda x: -x[1]))  # score: from high to low
+    cid2score = OrderedDict(
+        sorted(list(zip(cids, scores)), key=lambda x: -x[1])
+    )  # score: from high to low
 
     return cid2score
 
@@ -108,7 +110,9 @@ def concepts_to_adj_matrices_part1(data):
     for qid in qa_nodes:
         for aid in qa_nodes:
             if qid != aid and qid in cpnet_simple.nodes and aid in cpnet_simple.nodes:
-                extra_nodes |= set(cpnet_simple[qid]) & set(cpnet_simple[aid])  # list of node ids
+                extra_nodes |= set(cpnet_simple[qid]) & set(
+                    cpnet_simple[aid]
+                )  # list of node ids
     extra_nodes = extra_nodes - qa_nodes
 
     return (sorted(qc_ids), sorted(ac_ids), question, sorted(extra_nodes))
@@ -116,7 +120,9 @@ def concepts_to_adj_matrices_part1(data):
 
 def concepts_to_adj_matrices_part3(data):
     qc_ids, ac_ids, question, extra_nodes, cid2score = data
-    schema_graph = qc_ids + ac_ids + sorted(extra_nodes, key=lambda x: -cid2score[x])  # score: from high to low
+    schema_graph = (
+        qc_ids + ac_ids + sorted(extra_nodes, key=lambda x: -cid2score[x])
+    )  # score: from high to low
     arange = np.arange(len(schema_graph))
     qmask = arange < len(qc_ids)
     amask = (arange >= len(qc_ids)) & (arange < (len(qc_ids) + len(ac_ids)))
@@ -185,13 +191,17 @@ def generate_adj_data_from_grounded_concepts__use_LM(
 
     # start = time.time()
     with Pool(num_processes) as p:
-        res1 = list(tqdm(p.imap(concepts_to_adj_matrices_part1, qa_data), total=len(qa_data)))
+        res1 = list(
+            tqdm(p.imap(concepts_to_adj_matrices_part1, qa_data), total=len(qa_data))
+        )
 
     global concepts_to_adj_matrices_part2
 
     def concepts_to_adj_matrices_part2(data):
         qc_ids, ac_ids, question, extra_nodes = data
-        cid2score = get_LM_score(qc_ids + ac_ids + extra_nodes, question, model, tokenizer)
+        cid2score = get_LM_score(
+            qc_ids + ac_ids + extra_nodes, question, model, tokenizer
+        )
         return (qc_ids, ac_ids, question, extra_nodes, cid2score)
 
     workers = 5

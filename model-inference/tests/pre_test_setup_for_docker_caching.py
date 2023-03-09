@@ -3,6 +3,7 @@ import logging
 import os
 
 from starlette.config import environ
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,11 +69,14 @@ def create_test_model_path(model_type: str):
         model.save_pretrained(local_dir)
         word_embedding_model = models.Transformer(local_dir)
 
-        pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension())
+        pooling_model = models.Pooling(
+            word_embedding_model.get_word_embedding_dimension()
+        )
         smodel = SentenceTransformer(modules=[word_embedding_model, pooling_model])
         smodel.save(local_dir)
 
     return local_dir
+
 
 # ----------------- Models used for testing -------------------
 # TRANSFORMER_MODEL = "bert-base-uncased"
@@ -91,9 +95,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="indicate the pre-downloaded model")
     parser.add_argument(
-        "--transformer",
-        help="transformer based model",
-        action="store_true"
+        "--transformer", help="transformer based model", action="store_true"
     )
     parser.add_argument(
         "--sentence_transformer",
@@ -118,7 +120,12 @@ if __name__ == "__main__":
         _ = AutoTokenizer.from_pretrained(TRANSFORMER_MODEL)
         model = BertAdapterModel.from_pretrained(TRANSFORMER_MODEL).to(device)
 
-        adapters = {"nli/rte@ukp", "ner/conll2003@ukp", "sts/sts-b@ukp", "qa/squad2@ukp"}
+        adapters = {
+            "nli/rte@ukp",
+            "ner/conll2003@ukp",
+            "sts/sts-b@ukp",
+            "qa/squad2@ukp",
+        }
         for adapter in adapters:
             logger.debug(f"Loading adapter {adapter}")
             try:
@@ -136,11 +143,12 @@ if __name__ == "__main__":
                         f"config resulting in exception:\n{e.args[0]}"
                     )
                 else:
-                    raise (e)
+                    raise e
 
     if args.sentence_transformer:
         from sentence_transformers import SentenceTransformer, models
         from transformers import BertConfig, BertModel, BertTokenizer
+
         SENTENCE_MODEL = create_test_model_path("sentence-transformer")
 
     if args.onnx:

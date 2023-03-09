@@ -10,7 +10,11 @@ TRANSFORMER_MODEL = os.getenv("TEST_MODEL_PATH", "./model4test")
 import torch
 from model_inference.app.models.request import PredictionRequest
 from model_inference.main import auth, get_app
-from model_inference.tasks.config.model_config import ModelConfig, model_config, set_test_config
+from model_inference.tasks.config.model_config import (
+    ModelConfig,
+    model_config,
+    set_test_config,
+)
 from model_inference.tasks.inference.adaptertransformer import AdapterTransformer
 from model_inference.tasks.inference.transformer import Transformer
 

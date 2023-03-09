@@ -14,11 +14,15 @@ class TestTransformerAdapter:
         ],
         ids=["single", "batch"],
     )
-    async def test_sequence_classification(self, prediction_request, test_adapter, input):
+    async def test_sequence_classification(
+        self, prediction_request, test_adapter, input
+    ):
         prediction_request.input = input
         prediction_request.adapter_name = "nli/rte@ukp"
 
-        prediction = test_adapter.predict(prediction_request, Task.sequence_classification)
+        prediction = test_adapter.predict(
+            prediction_request, Task.sequence_classification
+        )
         np.testing.assert_allclose(
             np.sum(prediction.model_outputs["logits"], axis=-1),
             [1.0] * len(input),
@@ -29,11 +33,15 @@ class TestTransformerAdapter:
         assert "logits" in prediction.model_outputs
 
     @pytest.mark.asyncio
-    async def test_sequence_classification_output_attention(self, prediction_request, test_adapter):
+    async def test_sequence_classification_output_attention(
+        self, prediction_request, test_adapter
+    ):
         prediction_request.model_kwargs = {"output_attentions": True}
         prediction_request.adapter_name = "nli/rte@ukp"
 
-        prediction = test_adapter.predict(prediction_request, Task.sequence_classification)
+        prediction = test_adapter.predict(
+            prediction_request, Task.sequence_classification
+        )
         assert "attentions" in prediction.model_outputs
 
     @pytest.mark.asyncio
@@ -45,12 +53,16 @@ class TestTransformerAdapter:
         ],
         ids=["single", "batch"],
     )
-    async def test_sequence_classification_regression(self, prediction_request, test_adapter, input):
+    async def test_sequence_classification_regression(
+        self, prediction_request, test_adapter, input
+    ):
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
         prediction_request.adapter_name = "nli/rte@ukp"
 
-        prediction = test_adapter.predict(prediction_request, Task.sequence_classification)
+        prediction = test_adapter.predict(
+            prediction_request, Task.sequence_classification
+        )
         assert not np.array_equal(
             np.sum(prediction.model_outputs["logits"], axis=-1) - 1, [0.0] * len(input)
         ), "logits are not softmax"
@@ -71,7 +83,9 @@ class TestTransformerAdapter:
         ],
         ids=["single", "batch"],
     )
-    async def test_token_classification(self, prediction_request, test_adapter, input, word_ids):
+    async def test_token_classification(
+        self, prediction_request, test_adapter, input, word_ids
+    ):
         prediction_request.input = input
         prediction_request.adapter_name = "ner/conll2003@ukp"
 
@@ -82,7 +96,9 @@ class TestTransformerAdapter:
             atol=1e-6,
             err_msg="logits should be softmax",
         )
-        assert all(len(prediction.labels[i]) == len(word_ids[i]) for i in range(len(input)))
+        assert all(
+            len(prediction.labels[i]) == len(word_ids[i]) for i in range(len(input))
+        )
         assert "logits" in prediction.model_outputs
         assert prediction.word_ids == word_ids
 
@@ -101,7 +117,9 @@ class TestTransformerAdapter:
         ],
         ids=["single", "batch"],
     )
-    async def test_token_classification_regression(self, prediction_request, test_adapter, input, word_ids):
+    async def test_token_classification_regression(
+        self, prediction_request, test_adapter, input, word_ids
+    ):
         prediction_request.input = input
         prediction_request.task_kwargs = {"is_regression": True}
         prediction_request.adapter_name = "ner/conll2003@ukp"
@@ -155,14 +173,18 @@ class TestTransformerAdapter:
         ],
         ids=["single", "batch"],
     )
-    async def test_embedding_token(self, prediction_request, test_adapter, input, word_ids):
+    async def test_embedding_token(
+        self, prediction_request, test_adapter, input, word_ids
+    ):
         prediction_request.input = input
         prediction_request.task_kwargs = {"embedding_mode": "token"}
         prediction_request.adapter_name = "sts/sts-b@ukp"
 
         prediction = test_adapter.predict(prediction_request, Task.embedding)
         assert np.array(prediction.model_outputs["embeddings"]).shape[2] == 768
-        assert np.array(prediction.model_outputs["embeddings"]).shape[1] == len(word_ids[0])
+        assert np.array(prediction.model_outputs["embeddings"]).shape[1] == len(
+            word_ids[0]
+        )
         assert np.array(prediction.model_outputs["embeddings"]).shape[0] == len(input)
         assert "hidden_states" not in prediction.model_outputs
         assert prediction.embedding_mode == "token"
@@ -215,11 +237,17 @@ class TestTransformerAdapter:
 
         prediction = test_adapter.predict(prediction_request, Task.question_answering)
         answers = [
-            input[i][1][prediction.answers[i][0].start : prediction.answers[i][0].end] for i in range(len(input))
+            input[i][1][prediction.answers[i][0].start : prediction.answers[i][0].end]
+            for i in range(len(input))
         ]
-        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
+        assert (
+            "start_logits" in prediction.model_outputs
+            and "end_logits" in prediction.model_outputs
+        )
         assert len(prediction.answers) == len(input)
-        assert all(prediction.answers[i][0].answer == answers[i] for i in range(len(input)))
+        assert all(
+            prediction.answers[i][0].answer == answers[i] for i in range(len(input))
+        )
 
     @pytest.mark.asyncio
     async def test_question_answering_topk(self, prediction_request, test_adapter):
@@ -229,13 +257,21 @@ class TestTransformerAdapter:
         prediction_request.adapter_name = "qa/squad2@ukp"
 
         prediction = test_adapter.predict(prediction_request, Task.question_answering)
-        answers = [input[0][1][prediction.answers[0][i].start : prediction.answers[0][i].end] for i in range(2)]
-        assert "start_logits" in prediction.model_outputs and "end_logits" in prediction.model_outputs
+        answers = [
+            input[0][1][prediction.answers[0][i].start : prediction.answers[0][i].end]
+            for i in range(2)
+        ]
+        assert (
+            "start_logits" in prediction.model_outputs
+            and "end_logits" in prediction.model_outputs
+        )
         assert len(prediction.answers) == len(input)
         assert prediction.answers[0][0].score >= prediction.answers[0][1].score
         assert all(prediction.answers[0][i].answer == answers[i] for i in range(2))
 
-    @pytest.mark.skip("No generation adapter for bert-base-uncased available currently.")
+    @pytest.mark.skip(
+        "No generation adapter for bert-base-uncased available currently."
+    )
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "input",
@@ -245,11 +281,17 @@ class TestTransformerAdapter:
         prediction_request.input = input
 
         prediction = test_adapter.predict(prediction_request, Task.generation)
-        assert all(isinstance(prediction.generated_texts[i][0], str) for i in range(len(input)))
+        assert all(
+            isinstance(prediction.generated_texts[i][0], str) for i in range(len(input))
+        )
 
-    @pytest.mark.skip("No generation adapter for bert-base-uncased available currently.")
+    @pytest.mark.skip(
+        "No generation adapter for bert-base-uncased available currently."
+    )
     @pytest.mark.asyncio
-    async def test_generation_output_attention_and_scores(self, prediction_request, test_adapter):
+    async def test_generation_output_attention_and_scores(
+        self, prediction_request, test_adapter
+    ):
         prediction_request.model_kwargs = {
             "output_attentions": True,
             "output_scores": True,
@@ -259,9 +301,13 @@ class TestTransformerAdapter:
         assert "scores" in prediction.model_outputs
         assert "attentions" in prediction.model_outputs
 
-    @pytest.mark.skip("No generation adapter for bert-base-uncased available currently.")
+    @pytest.mark.skip(
+        "No generation adapter for bert-base-uncased available currently."
+    )
     @pytest.mark.asyncio
-    async def test_generation_beam_sample_multiple_seqs(self, prediction_request, test_adapter):
+    async def test_generation_beam_sample_multiple_seqs(
+        self, prediction_request, test_adapter
+    ):
         prediction_request.task_kwargs = {
             "num_beams": 2,
             "do_sample": True,
