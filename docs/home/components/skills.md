@@ -88,7 +88,7 @@ An example repository can also be found at [UKP-SQuARE/cloud-example-azure](http
 SQuARE v3 provides a new key functionality to combine Skills. The current high-speed development of NLP is yielding thousands of QA models. Researches have discovered that combining them can yield to substantial gains w.r.t. models trained on multiple datasets [(Puerto et al., 2023)](https://arxiv.org/abs/2112.01922). Thus, given all the QA Skills available in SQuARE, it becomes natural to analyze the possibilities of combining them. To do this, SQuARE provides three methods: i) Automatic Skill selection, ii) Early-fusion of Skills, and iii) Late-fusion of Skills.
 
 
-## Automatic Skill Selection
+### Automatic Skill Selection
 This approach aims to identify the Skill with the highest likelihood of returning the correct answer to the input question and then route the input to that Skill. [Geigle et al., (2021)](https://arxiv.org/abs/2104.07081) proposed TWEAC, a Transformer model with a classification head for each Skill that maps questions to Skills. The Figure below illustrates how it works.
 ![tweac](../../static/img/tweac.png)
 
