@@ -13,6 +13,7 @@ SQuARE is an **open-source** QA platform that enables researchers and developers
 - Investigate the robustness to **Adversarial Attacks**.
 - Visualize **graphs** for *Skills* using graphs.
 - Study the behavior of the *Skills* through [behavioral tests](https://github.com/marcotcr/checklist).
+- Combine multiple *Skills* with [Meta-Skills](../components/skills.md#combining-skills-meta-skills).
 
 
 > **_NOTE:_**  To try out SQuARE directly, please visit the [SQuARE Website](https://square.ukp-lab.de/qa).
