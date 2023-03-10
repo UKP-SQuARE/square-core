@@ -23,7 +23,9 @@ class RobertaForMaskedLMwithLoss(RobertaForMaskedLM):
             position_ids=position_ids,
             head_mask=head_mask,
         )
-        sequence_output = outputs[0]  # hidden_states of final layer (batch_size, sequence_length, hidden_size)
+        sequence_output = outputs[
+            0
+        ]  # hidden_states of final layer (batch_size, sequence_length, hidden_size)
         prediction_scores = self.lm_head(sequence_output)
         outputs = (prediction_scores, sequence_output) + outputs[2:]
         if masked_lm_labels is not None:

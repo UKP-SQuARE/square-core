@@ -64,7 +64,9 @@ class InputReduction(Attacker):
             inputs_after_smallest = instance[smallest + 1 :]
             reduced_instance = np.append(inputs_before_smallest, inputs_after_smallest)
 
-            reduced_instances_and_smallest.append((" ".join(list(reduced_instance)), smallest))
+            reduced_instances_and_smallest.append(
+                (" ".join(list(reduced_instance)), smallest)
+            )
             # decrement top k counter
             beam -= 1
             if beam == 0:

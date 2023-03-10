@@ -75,7 +75,9 @@ class Transformer(Model):
 
             CLASS_MAPPING["from_config"] = _class
         elif model_config.model_class not in CLASS_MAPPING:
-            raise RuntimeError(f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}")
+            raise RuntimeError(
+                f"Unknown MODEL_CLASS. Must be one of {CLASS_MAPPING.keys()}"
+            )
         self._load_model(
             CLASS_MAPPING[model_config.model_class],
             model_config.model_name,
@@ -99,7 +101,9 @@ class Transformer(Model):
         self.model = model
         self.tokenizer = tokenizer
 
-    def encode(self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None):
+    def encode(
+        self, inputs: list = None, add_special_tokens: bool = True, return_tensors=None
+    ):
         """
         Encode inputs using the model tokenizer
         Args:
@@ -125,7 +129,9 @@ class Transformer(Model):
             input_ids (torch.Tensor): Input ids representing
             word tokens for a sentence/document.
         """
-        return self.tokenizer.convert_ids_to_tokens(input_ids, skip_special_tokens=skip_special_tokens)
+        return self.tokenizer.convert_ids_to_tokens(
+            input_ids, skip_special_tokens=skip_special_tokens
+        )
 
     def _ensure_tensor_on_device(self, **inputs):
         """
@@ -138,7 +144,9 @@ class Transformer(Model):
         """
         return {name: tensor.to(self.model.device) for name, tensor in inputs.items()}
 
-    def get_model_embeddings(self, embedding_type: str = "word_embeddings") -> Module or ModuleList:
+    def get_model_embeddings(
+        self, embedding_type: str = "word_embeddings"
+    ) -> Module or ModuleList:
         """
         Get the model embedding layer
         Args:
@@ -177,7 +185,9 @@ class Transformer(Model):
         """
 
         def forward_hook(module, inputs, output):
-            attentions_list.append(output[1][:, :, 0, :].mean(1).squeeze(0).clone().detach())
+            attentions_list.append(
+                output[1][:, :, 0, :].mean(1).squeeze(0).clone().detach()
+            )
 
         handles = []
         attn_layer = self.get_model_attentions()
@@ -267,7 +277,9 @@ class Transformer(Model):
         else:
             hooks: List = self._register_embedding_gradient_hooks(gradients)
         with torch.backends.cudnn.flags(enabled=False):
-            features = self.tokenizer(request.input, return_tensors="pt", **request.preprocessing_kwargs)
+            features = self.tokenizer(
+                request.input, return_tensors="pt", **request.preprocessing_kwargs
+            )
             input_features = self._ensure_tensor_on_device(**features)
             outputs = self.model(**input_features, **kwargs, **request.model_kwargs)
             loss = outputs.loss
@@ -302,7 +314,9 @@ class Transformer(Model):
 
         return grad_dict
 
-    def _predict(self, request: PredictionRequest, output_features=False) -> Union[dict, Tuple[dict, dict]]:
+    def _predict(
+        self, request: PredictionRequest, output_features=False
+    ) -> Union[dict, Tuple[dict, dict]]:
         """
         Inference on the input.
         Args:
@@ -314,20 +328,44 @@ class Transformer(Model):
         """
 
         all_predictions = []
-        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
-        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get("truncation", True)
-        self.model.to("cuda" if torch.cuda.is_available() and not model_config.disable_gpu else "cpu")
+        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get(
+            "padding", True
+        )
+        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get(
+            "truncation", True
+        )
+        self.model.to(
+            "cuda"
+            if torch.cuda.is_available() and not model_config.disable_gpu
+            else "cpu"
+        )
 
-        features = self.tokenizer(request.input, return_tensors="pt", **request.preprocessing_kwargs)
+        features = self.tokenizer(
+            request.input, return_tensors="pt", **request.preprocessing_kwargs
+        )
         if request.explain_kwargs or request.attack_kwargs:
-            self.decoded_texts = [self.decode(tokens, skip_special_tokens=False) for tokens in features["input_ids"]]
+            self.decoded_texts = [
+                self.decode(tokens, skip_special_tokens=False)
+                for tokens in features["input_ids"]
+            ]
             # remove padding tokens in MCQ
-            self.num_pad_tokens = [text.count(self.tokenizer.pad_token) for text in self.decoded_texts]
-            self.decoded_texts = [list(filter(self.tokenizer.pad_token.__ne__, text)) for text in self.decoded_texts]
-            self.word_mappings = [features.word_ids(i) for i in range(len(features["input_ids"]))]
+            self.num_pad_tokens = [
+                text.count(self.tokenizer.pad_token) for text in self.decoded_texts
+            ]
+            self.decoded_texts = [
+                list(filter(self.tokenizer.pad_token.__ne__, text))
+                for text in self.decoded_texts
+            ]
+            self.word_mappings = [
+                features.word_ids(i) for i in range(len(features["input_ids"]))
+            ]
 
         if request.explain_kwargs:
-            if request.explain_kwargs["method"] in ["attention", "scaled_attention", "bertviz"]:
+            if request.explain_kwargs["method"] in [
+                "attention",
+                "scaled_attention",
+                "bertviz",
+            ]:
                 request.model_kwargs["output_attentions"] = True
         if request.attack_kwargs:
             if request.attack_kwargs["saliency_method"] in [
@@ -339,7 +377,8 @@ class Transformer(Model):
         for start_idx in range(0, len(request.input), model_config.batch_size):
             with torch.no_grad():
                 input_features = {
-                    k: features[k][start_idx : start_idx + model_config.batch_size] for k in features.keys()
+                    k: features[k][start_idx : start_idx + model_config.batch_size]
+                    for k in features.keys()
                 }
                 input_features = self._ensure_tensor_on_device(**input_features)
                 predictions = self.model(**input_features, **request.model_kwargs)
@@ -357,20 +396,29 @@ class Transformer(Model):
                 tuple_of_lists = list(
                     zip(
                         *[
-                            [torch.stack(p).cpu() if isinstance(p, tuple) else p.cpu() for p in tpl[key]]
+                            [
+                                torch.stack(p).cpu()
+                                if isinstance(p, tuple)
+                                else p.cpu()
+                                for p in tpl[key]
+                            ]
                             for tpl in all_predictions
                         ]
                     )
                 )
                 final_prediction[key] = tuple(torch.cat(l) for l in tuple_of_lists)
             else:
-                final_prediction[key] = torch.cat([p[key].cpu() for p in all_predictions])
+                final_prediction[key] = torch.cat(
+                    [p[key].cpu() for p in all_predictions]
+                )
         if output_features:
             return final_prediction, features
 
         return final_prediction
 
-    def _interpret(self, request: PredictionRequest, prediction: Dict, method: str, **kwargs):
+    def _interpret(
+        self, request: PredictionRequest, prediction: Dict, method: str, **kwargs
+    ):
         """
         gets the word attributions
         """
@@ -382,7 +430,9 @@ class Transformer(Model):
 
         if method == "simple_grads":
             # Hook used for saving embeddings
-            handles: List = self._register_hooks(embeddings_list, alpha=0, method=method)
+            handles: List = self._register_hooks(
+                embeddings_list, alpha=0, method=method
+            )
             try:
                 grads = self.get_gradients(request, method, **kwargs)
             finally:
@@ -394,7 +444,9 @@ class Transformer(Model):
             # Gradients come back in the reverse order that they
             # were sent into the network
             embeddings_list.reverse()
-            embeddings_list = [embedding.cpu().detach().numpy() for embedding in embeddings_list]
+            embeddings_list = [
+                embedding.cpu().detach().numpy() for embedding in embeddings_list
+            ]
 
         elif method == "integrated_grads":
             # Use 10 terms in the summation approximation of the
@@ -428,7 +480,9 @@ class Transformer(Model):
             # Gradients come back in the reverse order that they
             # were sent into the network
             embeddings_list.reverse()
-            embeddings_list = [embedding.cpu().detach().numpy() for embedding in embeddings_list]
+            embeddings_list = [
+                embedding.cpu().detach().numpy() for embedding in embeddings_list
+            ]
             # Element-wise multiply average gradient by the input
             for idx, input_embedding in enumerate(embeddings_list):
                 key = "grad_input_" + str(idx + 1)
@@ -497,7 +551,9 @@ class Transformer(Model):
                 input_idx = int(key[-1]) - 1
                 emb_grad = np.sum(grad[0] * attentions_list[input_idx][0], axis=1)
             else:
-                raise ValueError("Method not allowed. Please enter another explanation method.")
+                raise ValueError(
+                    "Method not allowed. Please enter another explanation method."
+                )
             norm = np.linalg.norm(emb_grad, ord=1)
             normalized_grad = [math.fabs(e) / norm for e in emb_grad]
             grads[key] = normalized_grad
@@ -517,7 +573,9 @@ class Transformer(Model):
         elif "decoder_hidden_states" in predictions:
             hidden_state = predictions.get("decoder_hidden_states")[-1]
         else:
-            raise ValueError("No hidden state available in keys: {}".format(predictions.keys()))
+            raise ValueError(
+                "No hidden state available in keys: {}".format(predictions.keys())
+            )
         attention_mask = features["attention_mask"]
 
         embedding_mode = request.task_kwargs.get("embedding_mode", "mean")
@@ -525,7 +583,8 @@ class Transformer(Model):
 
         if embedding_mode not in self.SUPPORTED_EMBEDDING_MODES:
             raise ValueError(
-                f"Embedding mode {embedding_mode} not in list " f"of supported modes {self.SUPPORTED_EMBEDDING_MODES}"
+                f"Embedding mode {embedding_mode} not in list "
+                f"of supported modes {self.SUPPORTED_EMBEDDING_MODES}"
             )
 
         if embedding_mode == "cls":
@@ -534,18 +593,26 @@ class Transformer(Model):
             emb = predictions["pooler_output"]
         # copied from sentence-transformers pooling
         elif embedding_mode == "max":
-            input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
-            hidden_state[input_mask_expanded == 0] = -1e9  # Set padding tokens to large negative value
+            input_mask_expanded = (
+                attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+            )
+            hidden_state[
+                input_mask_expanded == 0
+            ] = -1e9  # Set padding tokens to large negative value
             emb = torch.max(hidden_state, 1)[0]
         # copied from sentence-transformers pooling
         elif embedding_mode == "mean":
-            input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+            input_mask_expanded = (
+                attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+            )
             sum_embeddings = torch.sum(hidden_state * input_mask_expanded, 1)
             sum_mask = input_mask_expanded.sum(1)
             emb = sum_embeddings / sum_mask
         elif embedding_mode == "token":
             emb = hidden_state
-            task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
+            task_outputs["word_ids"] = [
+                features.word_ids(i) for i in range(len(request.input))
+            ]
 
         if request.task_kwargs.get("normalize", False):
             emb = torch.nn.functional.normalize(emb)
@@ -562,12 +629,18 @@ class Transformer(Model):
             "id2label": id2label,
             "word_ids": [features.word_ids(i) for i in range(len(request.input))],
         }
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
+        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get(
+            "is_regression", False
+        ):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
-            task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
+            task_outputs["labels"] = torch.argmax(
+                predictions["logits"], dim=-1
+            ).tolist()
 
-        return PredictionOutputForTokenClassification(model_outputs=predictions, **task_outputs)
+        return PredictionOutputForTokenClassification(
+            model_outputs=predictions, **task_outputs
+        )
 
     def _sequence_classification(self, request: PredictionRequest) -> PredictionOutput:
         request.preprocessing_kwargs["truncation"] = "only_second"
@@ -583,7 +656,9 @@ class Transformer(Model):
 
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
+        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get(
+            "is_regression", False
+        ):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             labels = torch.argmax(predictions["logits"], dim=-1)
@@ -613,7 +688,9 @@ class Transformer(Model):
             word_imp = self.process_outputs(
                 attributions=attributions,
                 top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
-                mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+                mode=request.explain_kwargs["mode"]
+                if request.explain_kwargs
+                else "all",
                 task="sequence_classification",
                 # new added parameter in process_output method
                 attack_method=attack_method,
@@ -625,19 +702,25 @@ class Transformer(Model):
             new_predictions = self._model_attacks(request, task_outputs)
             return new_predictions
 
-        return PredictionOutputForSequenceClassification(model_outputs=predictions, **task_outputs)
+        return PredictionOutputForSequenceClassification(
+            model_outputs=predictions, **task_outputs
+        )
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
-        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", False)
-        request.preprocessing_kwargs["add_special_tokens"] = request.preprocessing_kwargs.get(
-            "add_special_tokens", False
+        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get(
+            "padding", False
         )
+        request.preprocessing_kwargs[
+            "add_special_tokens"
+        ] = request.preprocessing_kwargs.get("add_special_tokens", False)
         task_outputs = {"generated_texts": []}
         model_outputs = defaultdict(list)
 
         # We cannot batch generate, so we have to do it separately for each input prompt.
         for prompt in request.input:
-            features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
+            features = self.tokenizer(
+                prompt, return_tensors="pt", **request.preprocessing_kwargs
+            )
             input_ids = features["input_ids"]
             input_ids = self._ensure_tensor_on_device(input_ids=input_ids)["input_ids"]
             request.model_kwargs.update(request.task_kwargs)
@@ -648,7 +731,9 @@ class Transformer(Model):
             for key in res.keys():
                 if isinstance(res[key], tuple):
                     if isinstance(res[key][0], tuple):
-                        res[key] = tuple((tuple(tensor.cpu() for tensor in tpl)) for tpl in res[key])
+                        res[key] = tuple(
+                            (tuple(tensor.cpu() for tensor in tpl)) for tpl in res[key]
+                        )
                     else:
                         res[key] = tuple(tensor.cpu() for tensor in res[key])
                 else:
@@ -659,12 +744,16 @@ class Transformer(Model):
                 self.tokenizer.decode(
                     seq,
                     skip_special_tokens=True,
-                    clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False),
+                    clean_up_tokenization_spaces=request.task_kwargs.get(
+                        "clean_up_tokenization_spaces", False
+                    ),
                 )
                 for seq in res["sequences"]
             ]
             task_outputs["generated_texts"].append(generated_texts)
-        return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
+        return PredictionOutputForGeneration(
+            model_outputs=model_outputs, **task_outputs
+        )
 
     def _question_answering(self, request: PredictionRequest) -> PredictionOutput:
         """
@@ -728,7 +817,9 @@ class Transformer(Model):
                 idx_sort = idx[np.argsort(-scores_flat[idx])]
 
             starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
-            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
+            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(
+                ends_, undesired_tokens_.nonzero()
+            )
             starts_ = starts_[desired_spans]
             ends_ = ends_[desired_spans]
             scores_ = candidates[0, starts_, ends_]
@@ -752,7 +843,9 @@ class Transformer(Model):
             end = end.numpy()
             # Ensure padded tokens & question tokens cannot
             # belong to the set of candidate answers.
-            question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
+            question_tokens = np.abs(
+                np.array([s != 1 for s in features.sequence_ids(idx)]) - 1
+            )
             # Unmask CLS token for 'no answer'
             question_tokens[0] = 1
             undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
@@ -765,7 +858,9 @@ class Transformer(Model):
             start = np.where(undesired_tokens_mask, -10000.0, start)
             end = np.where(undesired_tokens_mask, -10000.0, end)
 
-            start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
+            start = np.exp(
+                start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True))
+            )
             end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
 
             # Get score for 'no answer' then mask for decoding step (CLS token
@@ -785,31 +880,49 @@ class Transformer(Model):
             answers = [
                 {
                     "score": score.item(),
-                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0],
+                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[
+                        0
+                    ],
                     "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
                     "answer": context[
-                        enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0] : enc.word_to_chars(
-                            enc.token_to_word(e), sequence_index=1
-                        )[1]
+                        enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[
+                            0
+                        ] : enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]
                     ],
                 }
                 for s, e, score in zip(starts, ends, scores)
             ]
             if request.task_kwargs.get("show_null_answers", True):
-                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
-            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
+                answers.append(
+                    {"score": no_answer_score, "start": 0, "end": 0, "answer": ""}
+                )
+            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[
+                : request.task_kwargs.get("topk", 1)
+            ]
             task_outputs["answers"].append(answers)
 
             # word attributions
             if request.explain_kwargs or request.attack_kwargs:
                 # if explain kwargs are passed, we need to check if the method is
                 # bertviz and compute accordingly
-                if request.explain_kwargs and request.explain_kwargs.get("method", None) == "bertviz":
+                if (
+                    request.explain_kwargs
+                    and request.explain_kwargs.get("method", None) == "bertviz"
+                ):
                     attention = predictions["attentions"]
-                    tokens = self.decode(features["input_ids"][0].tolist(), skip_special_tokens=False)
+                    tokens = self.decode(
+                        features["input_ids"][0].tolist(), skip_special_tokens=False
+                    )
                     # get sentence_b_start
-                    sentence_b_start = features["input_ids"].tolist()[0].index(self.tokenizer.sep_token_id) + 1
-                    head_view_html = head_view(attention, tokens, sentence_b_start, html_action='return')
+                    sentence_b_start = (
+                        features["input_ids"]
+                        .tolist()[0]
+                        .index(self.tokenizer.sep_token_id)
+                        + 1
+                    )
+                    head_view_html = head_view(
+                        attention, tokens, sentence_b_start, html_action="return"
+                    )
                     task_outputs["bertviz"] = [head_view_html.data]
                 else:
                     start_idx = torch.argmax(predictions["start_logits"])
@@ -837,13 +950,17 @@ class Transformer(Model):
                                 attack_method = v
                     word_imp = self.process_outputs(
                         attributions=attributions,
-                        top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
-                        mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+                        top_k=request.explain_kwargs["top_k"]
+                        if request.explain_kwargs
+                        else 10,
+                        mode=request.explain_kwargs["mode"]
+                        if request.explain_kwargs
+                        else "all",
                         task="question_answering",
                         attack_method=attack_method,
                     )
                     task_outputs["attributions"] = word_imp
-                    
+
             if (
                 not request.attack_kwargs
                 and not request.explain_kwargs
@@ -855,9 +972,13 @@ class Transformer(Model):
                 new_predictions = self._model_attacks(request, task_outputs)
                 return new_predictions
 
-        return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
+        return PredictionOutputForQuestionAnswering(
+            model_outputs=predictions, **task_outputs
+        )
 
-    def _model_attacks(self, request: PredictionRequest, task_outputs) -> PredictionOutput:
+    def _model_attacks(
+        self, request: PredictionRequest, task_outputs
+    ) -> PredictionOutput:
         """
         Perform attacks on the model output.
         """
@@ -886,17 +1007,25 @@ class Transformer(Model):
                 word_mappings=self.word_mappings,
             )
 
-            batch_request, indices = attack.attack_instance(ans_start=ans_start, ans_end=ans_end)
+            batch_request, indices = attack.attack_instance(
+                ans_start=ans_start, ans_end=ans_end
+            )
             contexts = batch_request.pop("contexts")
-            predictions = self.predict(PredictionRequest(**batch_request), task=self.task)
+            predictions = self.predict(
+                PredictionRequest(**batch_request), task=self.task
+            )
             predictions.contexts = contexts
             predictions.adversarial["indices"] = indices
 
         elif request.attack_kwargs["method"] == "input_reduction":
-            attack = input_reduction.InputReduction(task=self.task, request=request, model_outputs=task_outputs)
+            attack = input_reduction.InputReduction(
+                task=self.task, request=request, model_outputs=task_outputs
+            )
             batch_request, indices = attack.attack_instance()
             questions = batch_request.pop("questions")
-            predictions = self.predict(PredictionRequest(**batch_request), task=self.task)
+            predictions = self.predict(
+                PredictionRequest(**batch_request), task=self.task
+            )
             predictions.model_outputs.pop("attentions", None)
             predictions.questions = questions
             predictions.adversarial["indices"] = indices
@@ -905,13 +1034,19 @@ class Transformer(Model):
             inputs, indices = [], []
             batch_request = {}
             if request.attack_kwargs["method"] == "topk_tokens":
-                attack = topk_tokens.TopkTokens(task=self.task, model_outputs=task_outputs, request=request)
+                attack = topk_tokens.TopkTokens(
+                    task=self.task, model_outputs=task_outputs, request=request
+                )
                 batch_request, indices = attack.attack_instance()
             elif request.attack_kwargs["method"] == "sub_span":
-                attack = subspan.SubSpan(task=self.task, model_outputs=task_outputs, request=request)
+                attack = subspan.SubSpan(
+                    task=self.task, model_outputs=task_outputs, request=request
+                )
                 batch_request, indices = attack.attack_instance()
             contexts = batch_request.pop("contexts")
-            predictions = self.predict(PredictionRequest(**batch_request), task=self.task)
+            predictions = self.predict(
+                PredictionRequest(**batch_request), task=self.task
+            )
             predictions.model_outputs.pop("attentions", None)
             predictions.contexts = contexts
             predictions.adversarial["indices"] = indices
@@ -923,9 +1058,16 @@ class Transformer(Model):
         main prediction function according to the task
         """
         if request.is_preprocessed:
-            raise ValueError("is_preprocessed=True is not " "supported for this model. " "Please use text as input.")
+            raise ValueError(
+                "is_preprocessed=True is not "
+                "supported for this model. "
+                "Please use text as input."
+            )
         if len(request.input) > model_config.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is " f"{model_config.max_input_size}")
+            raise ValueError(
+                f"Input is too large. Max input size is "
+                f"{model_config.max_input_size}"
+            )
         self.task = task
         if task == Task.sequence_classification:
             return self._sequence_classification(request)
@@ -938,7 +1080,9 @@ class Transformer(Model):
         elif task == Task.generation:
             return self._generation(request)
 
-    def _bpe_decode(self, tokens: List[str], attributions: List) -> Tuple[List[str], np.array]:
+    def _bpe_decode(
+        self, tokens: List[str], attributions: List
+    ) -> Tuple[List[str], np.array]:
         """
         Byte-pair encoding for roberta-type models
         Merges sub-words to actual words
@@ -947,7 +1091,9 @@ class Transformer(Model):
         byte_encoder = bytes_to_unicode()
         byte_decoder = {v: k for k, v in byte_encoder.items()}
         decoded_each_tok = [
-            bytearray([byte_decoder[c] for c in t.replace(" ", "Ġ")]).decode(encoding="utf-8", errors="replace")
+            bytearray([byte_decoder[c] for c in t.replace(" ", "Ġ")]).decode(
+                encoding="utf-8", errors="replace"
+            )
             for t in tokens
         ]
 
@@ -991,7 +1137,9 @@ class Transformer(Model):
 
         return filtered_tokens, attribution_score
 
-    def _wordpiece_decode(self, tokens: List[str], attributions: List, word_map: List) -> Tuple[List[str], np.array]:
+    def _wordpiece_decode(
+        self, tokens: List[str], attributions: List, word_map: List
+    ) -> Tuple[List[str], np.array]:
 
         """
         Wordpiece encoding for bert-type models
@@ -1047,7 +1195,9 @@ class Transformer(Model):
             sep_tokens: int = 0
             if self.model.config.model_type in ["roberta", "bart"]:
                 if attack_method != "hotflip":
-                    filtered_tokens, importance = self._bpe_decode(dec_texts[idx], score)
+                    filtered_tokens, importance = self._bpe_decode(
+                        dec_texts[idx], score
+                    )
                 else:
                     filtered_tokens, importance = dec_texts[idx], score
                 sep_tokens = 2
@@ -1062,11 +1212,17 @@ class Transformer(Model):
                 sep_tokens = 1
 
             result = [(w, a) for w, a in zip(filtered_tokens, importance) if w != ""]
-            assert len(filtered_tokens) == len(importance), "filtered tokens do not equal attributions"
+            assert len(filtered_tokens) == len(
+                importance
+            ), "filtered tokens do not equal attributions"
             # outputs = {"attributions": result}
             context_start = filtered_tokens.index(self.tokenizer.sep_token)
             # account for cls token in result
-            question = [(idx, v[0], v[1]) for idx, v in enumerate(result[1:]) if idx < context_start - 1]
+            question = [
+                (idx, v[0], v[1])
+                for idx, v in enumerate(result[1:])
+                if idx < context_start - 1
+            ]
 
             context = [
                 (idx - len(question) - sep_tokens, v[0], v[1])
@@ -1086,20 +1242,42 @@ class Transformer(Model):
                 # TODO: improve this later
                 question_mark_idx = [sym[0] for sym in question if "?" in sym]
                 question = (
-                    [q for i, q in enumerate(question) if i <= question_mark_idx[0]] if question_mark_idx else question
+                    [q for i, q in enumerate(question) if i <= question_mark_idx[0]]
+                    if question_mark_idx
+                    else question
                 )
 
             outputs, outputs_question, outputs_context = [], [], []
             if mode == "question" or mode == "all":
-                outputs_question = [i for i, k, v in sorted(question, key=lambda item: item[2], reverse=True)[:top_k]]
+                outputs_question = [
+                    i
+                    for i, k, v in sorted(
+                        question, key=lambda item: item[2], reverse=True
+                    )[:top_k]
+                ]
             if mode == "context" or mode == "all":
-                outputs_context = [i for i, k, v in sorted(context, key=lambda item: item[2], reverse=True)[:top_k]]
+                outputs_context = [
+                    i
+                    for i, k, v in sorted(
+                        context, key=lambda item: item[2], reverse=True
+                    )[:top_k]
+                ]
 
             # normalize values
-            question_scores = [np.round(float(v) / sum(importance), 3) for _, _, v in question]
-            context_scores = [np.round(float(v) / sum(importance), 3) for _, _, v in context]
-            question = [(ques[0], ques[1], float(score)) for ques, score in zip(question, question_scores)]
-            context = [(cxt[0], cxt[1], float(score)) for cxt, score in zip(context, context_scores)]
+            question_scores = [
+                np.round(float(v) / sum(importance), 3) for _, _, v in question
+            ]
+            context_scores = [
+                np.round(float(v) / sum(importance), 3) for _, _, v in context
+            ]
+            question = [
+                (ques[0], ques[1], float(score))
+                for ques, score in zip(question, question_scores)
+            ]
+            context = [
+                (cxt[0], cxt[1], float(score))
+                for cxt, score in zip(context, context_scores)
+            ]
 
             question_tokens.append(question)
             context_tokens.append(context)

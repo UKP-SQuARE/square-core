@@ -50,22 +50,22 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 
 ###
 
-# @name bert_qa
-POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "input": [
-  ["Who stars in The Matrix?",
-     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
-  ],
-  "is_preprocessed": false,
-  "preprocessing_kwargs": {},
-  "model_kwargs": {"average_adapters": false},
-  "task_kwargs": {},
-  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
-}
+## @name bert_qa
+#POST {{domain_dev}}/api/main/bert-base-uncased/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#  ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {"average_adapters": false},
+#  "task_kwargs": {},
+#  "adapter_name": ["AdapterHub/bert-base-uncased-pf-squad_v2"]
+#}
 
 ###
 
@@ -203,7 +203,7 @@ Content-Type: application/json
 #
 #{
 #  "identifier": "roberta-base",
-#  "model_name": "roberta-base",
+#  "model_name": "deepset/roberta-base-squad2",
 #  "model_type": "transformer",
 #  "disable_gpu": true,
 #  "batch_size": 32,
@@ -259,6 +259,12 @@ Content-Type: application/json
 #PUT {{domain_dev}}/api/models/db/update
 #Authorization: Bearer {{auth_token}}
 
+###
+
+## @name get_model_health
+#GET {{domain_dev}}/api/models/MADE_encoder/health
+#Authorization: Bearer {{auth_token}}
+
 
 ###
 
@@ -277,6 +283,45 @@ Content-Type: application/json
 #  "transformer_cache": "\/etc\/huggingface\/.cache\/",
 #  "model_class": "from_config",
 #  "return_plaintext_arrays": false
+#}
+
+
+###
+
+## @name deploy_model
+#POST {{domain_dev}}/api/models/deploy
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "identifier": "haritzpuerto/MADE_encoder",
+#  "model_name": "haritzpuerto/MADE_encoder",
+#  "model_type": "adapter",
+#  "disable_gpu": true,
+#  "batch_size": 32,
+#  "max_input": 512,
+#  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+#  "model_class": "from_config",
+#  "return_plaintext_arrays": false
+#}
+
+###
+
+## @name made_encoder
+#POST {{domain_dev}}/api/main/deepset/roberta-base-squad2/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#   "input": [
+#    ["Who is the Loreds?",
+#      "Architecturally, the school has a Catholic character. Atop the Main Building's gold dome is a golden statue of the Virgin Mary. Immediately in front of the Main Building and facing it, is a copper statue of Christ with arms upraised with the legend 'Venite Ad Me Omnes'."]
+#    ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {},
+#  "task_kwargs": {},
+#  "adapter_name": ""
 #}
 
 
@@ -301,7 +346,7 @@ Content-Type: application/json
 ###
 
 ## @name task_output
-#GET {{domain_dev}}/api/main/task_result/23bc9deb-fda0-426f-a33d-020465073604
+#GET {{domain_dev}}/api/main/task_result/9a7dcb7d-dbb2-4dd9-8fcd-11ed49c6e51c
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 
@@ -316,4 +361,55 @@ Content-Type: application/json
 
 ## @name get_model_stats
 #GET {{domain_dev}}/api/main/bert-base-uncased/stats
+#Authorization: Bearer {{auth_token}}
+
+###
+
+
+## @name deploy_model
+#POST {{domain_dev}}/api/models/deploy
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "identifier": "haritzpuerto/spanbert-large-cased_HotpotQA",
+#  "model_name": "haritzpuerto/spanbert-large-cased_HotpotQA",
+#  "onnx_use_quantized": false,
+#  "is_encoder_decoder": false,
+#  "model_type": "onnx",
+#  "disable_gpu": true,
+#  "batch_size": 32,
+#  "max_input": 1024,
+#  "transformers_cache": "../.cache",
+#  "model_class": "question-answering",
+#  "return_plaintext_arrays": false,
+#  "hf_token": "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",
+#  "adapter_id": ""
+#  }
+
+
+###
+
+## @name spanbert_onnx
+#POST {{domain_dev}}/api/main/UKP-SQuARE/spanbert-large-cased_HotpotQA-onnx/question-answering
+#Authorization: Bearer {{auth_token}}
+#Content-Type: application/json
+#
+#{
+#  "input": [
+#  ["Who stars in The Matrix?",
+#     "The Matrix is a 1999 science fiction action's film written 'and' directed by The 'Wachowskis', starring Keanu Reeves, Laurence."]
+#  ],
+#  "is_preprocessed": false,
+#  "preprocessing_kwargs": {},
+#  "model_kwargs": {"average_adapters": false},
+#  "task_kwargs": {},
+#  "adapter_name": ""
+#}
+
+
+###
+
+## @name remove_model
+#DELETE {{domain_dev}}/api/models/remove/UKP-SQuARE/tweac_16
 #Authorization: Bearer {{auth_token}}

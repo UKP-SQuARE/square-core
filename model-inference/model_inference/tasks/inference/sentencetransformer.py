@@ -4,7 +4,10 @@ import torch
 from sentence_transformers import SentenceTransformer as SentenceTransformerModel
 from model_inference.tasks.config.model_config import model_config
 from model_inference.tasks.inference.model import Model
-from model_inference.tasks.models.prediction import PredictionOutput, PredictionOutputForEmbedding
+from model_inference.tasks.models.prediction import (
+    PredictionOutput,
+    PredictionOutputForEmbedding,
+)
 from model_inference.tasks.models.request import PredictionRequest, Task
 
 
@@ -45,7 +48,9 @@ class SentenceTransformer(Model):
         self.model = model
 
     def _embedding(self, request: PredictionRequest) -> PredictionOutput:
-        embeddings = self.model.encode(request.input, batch_size=model_config.batch_size, show_progress_bar=False)
+        embeddings = self.model.encode(
+            request.input, batch_size=model_config.batch_size, show_progress_bar=False
+        )
         return PredictionOutputForEmbedding(model_outputs={"embeddings": embeddings})
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
@@ -56,9 +61,13 @@ class SentenceTransformer(Model):
              task: task for which the prediction is required (e.g. embedding)
         """
         if request.is_preprocessed:
-            raise ValueError("is_preprocessed=True is not supported for this model. Please use text as input.")
+            raise ValueError(
+                "is_preprocessed=True is not supported for this model. Please use text as input."
+            )
         if len(request.input) > model_config.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is {model_config.max_input_size}")
+            raise ValueError(
+                f"Input is too large. Max input size is {model_config.max_input_size}"
+            )
         if task != Task.embedding:
             raise ValueError("Only embedding task supported by this model")
         return self._embedding(request)

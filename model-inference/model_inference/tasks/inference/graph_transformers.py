@@ -87,7 +87,11 @@ class GraphTransformers(Model):
             kwargs: Not used
         """
         # This assumes that a corresponding model file exists
-        self.device = "cuda" if torch.cuda.is_available() and not model_config.disable_gpu else "cpu"
+        self.device = (
+            "cuda"
+            if torch.cuda.is_available() and not model_config.disable_gpu
+            else "cpu"
+        )
         self.model_path = model_config.model_path
         self.data_path = model_config.data_path
         # load matcher
@@ -145,7 +149,9 @@ class GraphTransformers(Model):
         Loads LM model in eval mode for relevance scoring
         """
         self.tokenizer = AutoTokenizer.from_pretrained(model_config.model_name)
-        self.lm_model = roberta.RobertaForMaskedLMwithLoss.from_pretrained(model_config.model_name)
+        self.lm_model = roberta.RobertaForMaskedLMwithLoss.from_pretrained(
+            model_config.model_name
+        )
         self.lm_model.to(self.device)
         self.lm_model.eval()
         logger.info("loaded pre-trained LM...")
@@ -158,7 +164,9 @@ class GraphTransformers(Model):
         cp_emb = torch.tensor(np.concatenate(cp_emb, 1), dtype=torch.float)
         concept_num, concept_dim = cp_emb.size(0), cp_emb.size(1)
 
-        model_state_dict, model_args = torch.load(model_config.model_path, map_location=self.device)
+        model_state_dict, model_args = torch.load(
+            model_config.model_path, map_location=self.device
+        )
 
         # create the model template
         self.model = qagnn.LM_QAGNN(
@@ -247,10 +255,18 @@ class GraphTransformers(Model):
         model
         """
 
-        all_input_ids = torch.tensor(self.select_field(features, "input_ids"), dtype=torch.long)
-        all_input_mask = torch.tensor(self.select_field(features, "input_mask"), dtype=torch.long)
-        all_segment_ids = torch.tensor(self.select_field(features, "segment_ids"), dtype=torch.long)
-        all_output_mask = torch.tensor(self.select_field(features, "output_mask"), dtype=torch.bool)
+        all_input_ids = torch.tensor(
+            self.select_field(features, "input_ids"), dtype=torch.long
+        )
+        all_input_mask = torch.tensor(
+            self.select_field(features, "input_mask"), dtype=torch.long
+        )
+        all_segment_ids = torch.tensor(
+            self.select_field(features, "segment_ids"), dtype=torch.long
+        )
+        all_output_mask = torch.tensor(
+            self.select_field(features, "output_mask"), dtype=torch.bool
+        )
         all_label = torch.tensor([f.label for f in features], dtype=torch.long)
         return (
             all_input_ids,
@@ -261,7 +277,10 @@ class GraphTransformers(Model):
         )
 
     def select_field(self, features, field):
-        return [[choice[field] for choice in feature.choices_features] for feature in features]
+        return [
+            [choice[field] for choice in feature.choices_features]
+            for feature in features
+        ]
 
     def _convert_examples_to_features(
         self,
@@ -318,7 +337,9 @@ class GraphTransformers(Model):
             tokens_b = tokenizer.tokenize(question + " " + ending)
 
             special_tokens_count = 4 if sep_token_extra else 3
-            self._truncate_seq_pair(tokens_a, tokens_b, max_seq_length - special_tokens_count)
+            self._truncate_seq_pair(
+                tokens_a, tokens_b, max_seq_length - special_tokens_count
+            )
 
             # The convention in BERT is:
             # (a) For sequence pairs:
@@ -363,39 +384,53 @@ class GraphTransformers(Model):
 
             input_mask = [1 if mask_padding_with_zero else 0] * len(input_ids)
             special_token_id = tokenizer.convert_tokens_to_ids([cls_token, sep_token])
-            output_mask = [1 if id in special_token_id else 0 for id in input_ids]  # 1 for mask
+            output_mask = [
+                1 if id in special_token_id else 0 for id in input_ids
+            ]  # 1 for mask
 
             # Zero-pad up to the sequence length.
             padding_length = max_seq_length - len(input_ids)
             if pad_on_left:
                 input_ids = ([pad_token] * padding_length) + input_ids
-                input_mask = ([0 if mask_padding_with_zero else 1] * padding_length) + input_mask
+                input_mask = (
+                    [0 if mask_padding_with_zero else 1] * padding_length
+                ) + input_mask
                 output_mask = ([1] * padding_length) + output_mask
 
                 segment_ids = ([pad_token_segment_id] * padding_length) + segment_ids
             else:
                 input_ids = input_ids + ([pad_token] * padding_length)
-                input_mask = input_mask + ([0 if mask_padding_with_zero else 1] * padding_length)
+                input_mask = input_mask + (
+                    [0 if mask_padding_with_zero else 1] * padding_length
+                )
                 output_mask = output_mask + ([1] * padding_length)
                 segment_ids = segment_ids + ([pad_token_segment_id] * padding_length)
 
             label = label_map[labels]
-            choices_features.append((tokens, input_ids, input_mask, segment_ids, output_mask))
+            choices_features.append(
+                (tokens, input_ids, input_mask, segment_ids, output_mask)
+            )
         features.append(InputFeatures(choices_features=choices_features, label=label))
 
         return features
 
-    def load_sparse_adj_data_with_contextnode(self, adj_concept_pairs, max_node_num, num_choice):
+    def load_sparse_adj_data_with_contextnode(
+        self, adj_concept_pairs, max_node_num, num_choice
+    ):
         # this is actually n_questions x n_choices
         n_samples = len(adj_concept_pairs)
         edge_index, edge_type = [], []
         adj_lengths = torch.zeros((n_samples,), dtype=torch.long)
         concept_ids = torch.full((n_samples, max_node_num), 1, dtype=torch.long)
-        node_type_ids = torch.full((n_samples, max_node_num), 2, dtype=torch.long)  # default 2: "other node"
+        node_type_ids = torch.full(
+            (n_samples, max_node_num), 2, dtype=torch.long
+        )  # default 2: "other node"
         node_scores = torch.zeros((n_samples, max_node_num, 1), dtype=torch.float)
 
         adj_lengths_ori = adj_lengths.clone()
-        for idx, _data in tqdm(enumerate(adj_concept_pairs), total=n_samples, desc="loading adj matrices"):
+        for idx, _data in tqdm(
+            enumerate(adj_concept_pairs), total=n_samples, desc="loading adj matrices"
+        ):
             adj, concepts, qm, am, cid2score = (
                 _data["adj"],
                 _data["concepts"],
@@ -442,8 +477,12 @@ class GraphTransformers(Model):
 
             # Prepare node types
             node_type_ids[idx, 0] = 3  # context node
-            node_type_ids[idx, 1:num_concept][torch.tensor(qm, dtype=torch.bool)[: num_concept - 1]] = 0
-            node_type_ids[idx, 1:num_concept][torch.tensor(am, dtype=torch.bool)[: num_concept - 1]] = 1
+            node_type_ids[idx, 1:num_concept][
+                torch.tensor(qm, dtype=torch.bool)[: num_concept - 1]
+            ] = 0
+            node_type_ids[idx, 1:num_concept][
+                torch.tensor(am, dtype=torch.bool)[: num_concept - 1]
+            ] = 1
 
             # Load adj
             # (num_matrix_entries, ), where each entry is coordinate
@@ -500,7 +539,8 @@ class GraphTransformers(Model):
         edge_type = list(map(list, zip(*(iter(edge_type),) * num_choice)))
 
         concept_ids, node_type_ids, node_scores, adj_lengths = [
-            x.view(-1, num_choice, *x.size()[1:]) for x in (concept_ids, node_type_ids, node_scores, adj_lengths)
+            x.view(-1, num_choice, *x.size()[1:])
+            for x in (concept_ids, node_type_ids, node_scores, adj_lengths)
         ]
         return (
             concept_ids,
@@ -518,7 +558,9 @@ class GraphTransformers(Model):
             x = x.detach().cpu().numpy() if x.requires_grad else x.cpu().numpy()
         return x
 
-    def _predict(self, request: PredictionRequest) -> Union[np.array, Tuple[np.array, np.array]]:
+    def _predict(
+        self, request: PredictionRequest
+    ) -> Union[np.array, Tuple[np.array, np.array]]:
         """
         featurize data and get the model prediction
         """
@@ -531,7 +573,9 @@ class GraphTransformers(Model):
             examples=statements,
             max_seq_length=request.model_kwargs.get("max_seq_length", 128),
             tokenizer=self.tokenizer,
-            cls_token_at_end=bool(model_type in ["xlnet"]),  # xlnet has a cls token at the end
+            cls_token_at_end=bool(
+                model_type in ["xlnet"]
+            ),  # xlnet has a cls token at the end
             cls_token=self.tokenizer.cls_token,
             sep_token=self.tokenizer.sep_token,
             sep_token_extra=bool(model_type in ["roberta", "albert"]),
@@ -576,7 +620,9 @@ class GraphTransformers(Model):
         if logits.size()[-1] != 1:
             probabilities = torch.softmax(logits, dim=-1)
             predictions["logits"] = probabilities
-            task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
+            task_outputs["labels"] = torch.argmax(
+                predictions["logits"], dim=-1
+            ).tolist()
             label_id = task_outputs["labels"][0]
 
         if request.model_kwargs.get("output_attentions", False):
@@ -585,7 +631,9 @@ class GraphTransformers(Model):
         if output_lm_subgraph:
             graph = graphs[label_id]
             grounded = grounded[label_id]
-            lm_subgraph = self._get_subgraphs(graph, grounded, topk_scores=topk_lm_scores)
+            lm_subgraph = self._get_subgraphs(
+                graph, grounded, topk_scores=topk_lm_scores
+            )
             task_outputs["lm_subgraph"] = lm_subgraph
 
         if output_attn_subgraph:
@@ -655,7 +703,11 @@ class GraphTransformers(Model):
 
         subgraph = {"nodes": {}, "edges": {}}
         lm_scores = graph["cid2score"]
-        ranked_lm_scores = dict(sorted(lm_scores.items(), key=operator.itemgetter(1), reverse=True)[:topk_scores])
+        ranked_lm_scores = dict(
+            sorted(lm_scores.items(), key=operator.itemgetter(1), reverse=True)[
+                :topk_scores
+            ]
+        )
         subgraph["nodes"] = _get_node_info(ranked_lm_scores, grounded)
         subgraph["edges"] = self._get_edge_info(list(ranked_lm_scores.keys()))
         # subgraph = json.dumps(subgraph, indent=4)
@@ -735,7 +787,11 @@ class GraphTransformers(Model):
             if "ab_extra" in ranked_attn:
                 ranked_attn.pop("ab_extra")
 
-            ranked_attn = dict(sorted(ranked_attn.items(), key=operator.itemgetter(1), reverse=True)[:topk_attn])
+            ranked_attn = dict(
+                sorted(ranked_attn.items(), key=operator.itemgetter(1), reverse=True)[
+                    :topk_attn
+                ]
+            )
             return ranked_attn
 
         q_concepts = bfs_attn(q_id)
@@ -750,13 +806,22 @@ class GraphTransformers(Model):
         all_nodes = {**q_nodes, **a_nodes, **o_nodes}
 
         qo_edges = self._get_edge_info(
-            [concept2id[concept] for concept in list(q_concepts.keys()) + list(o_concepts.keys())]
+            [
+                concept2id[concept]
+                for concept in list(q_concepts.keys()) + list(o_concepts.keys())
+            ]
         )
         oa_edges = self._get_edge_info(
-            [concept2id[concept] for concept in list(o_concepts.keys()) + list(a_concepts.keys())]
+            [
+                concept2id[concept]
+                for concept in list(o_concepts.keys()) + list(a_concepts.keys())
+            ]
         )
         ao_edges = self._get_edge_info(
-            [concept2id[concept] for concept in list(a_concepts.keys()) + list(o_concepts.keys())]
+            [
+                concept2id[concept]
+                for concept in list(a_concepts.keys()) + list(o_concepts.keys())
+            ]
         )
 
         all_edges = {**qo_edges, **oa_edges, **ao_edges}
@@ -775,13 +840,22 @@ class GraphTransformers(Model):
         """
         predictions, task_outputs = self._predict(request)
 
-        return PredictionOutputForGraphSequenceClassification(model_outputs=predictions, **task_outputs)
+        return PredictionOutputForGraphSequenceClassification(
+            model_outputs=predictions, **task_outputs
+        )
 
     def predict(self, request: PredictionRequest, task: Task) -> PredictionOutput:
         if request.is_preprocessed:
-            raise ValueError("is_preprocessed=True is not " "supported for this model. " "Please use text as input.")
+            raise ValueError(
+                "is_preprocessed=True is not "
+                "supported for this model. "
+                "Please use text as input."
+            )
         if len(request.input) > model_config.max_input_size:
-            raise ValueError(f"Input is too large. Max input size is " f"{model_config.max_input_size}")
+            raise ValueError(
+                f"Input is too large. Max input size is "
+                f"{model_config.max_input_size}"
+            )
 
         if task == Task.sequence_classification:
             return self._sequence_classification(request)

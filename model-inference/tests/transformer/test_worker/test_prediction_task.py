@@ -11,7 +11,9 @@ TEST_MODEL_PATH = os.getenv("TEST_MODEL_PATH", "./model4test")
 
 class TestTasks(unittest.TestCase):
     def test_embedding_task(self):
-        request = PredictionRequest(input=["Some text"], adapter_name="lingaccept/cola@ukp")
+        request = PredictionRequest(
+            input=["Some text"], adapter_name="lingaccept/cola@ukp"
+        )
         task = Task.embedding
         model_config = {
             "identifier": "test_config",

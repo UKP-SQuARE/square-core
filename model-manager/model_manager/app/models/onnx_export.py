@@ -215,7 +215,13 @@ def auto_onnx_config(model_name: str, task: str) -> OnnxConfig:
         raise ValueError(f"Could not find an AutoOnnxConfig for model {model_name}.")
 
 
-def generate_readme(directory_path: str, base_model: str, skill: str, model_id: str, adapter: Optional[str]):
+def generate_readme(
+    directory_path: str,
+    base_model: str,
+    skill: str,
+    model_id: str,
+    adapter: Optional[str],
+):
     """
     Generates a README.md file for the exported model
     @ directory_path: the path to the directory where the README.md file will be generated
@@ -232,13 +238,13 @@ def generate_readme(directory_path: str, base_model: str, skill: str, model_id: 
             readme_path = hf_hub_download(repo_id=base_model, filename="README.md")
 
             inserted_headline = False
-            with open(readme_path, 'r') as src, open(onnx_readme, 'w') as dst:
+            with open(readme_path, "r") as src, open(onnx_readme, "w") as dst:
                 for line in src:
                     # Insert onnx tag
-                    if line == 'tags:\n':
+                    if line == "tags:\n":
                         dst.write("inference: false\n")
                         dst.write(line)
-                        dst.write('- onnx\n')
+                        dst.write("- onnx\n")
                         continue
 
                     if line.startswith("# ") and not inserted_headline:
@@ -251,13 +257,13 @@ def generate_readme(directory_path: str, base_model: str, skill: str, model_id: 
             readme_path = hf_hub_download(repo_id=adapter, filename="README.md")
 
             skip = False
-            with open(readme_path, 'r') as src, open(onnx_readme, 'w') as dst:
+            with open(readme_path, "r") as src, open(onnx_readme, "w") as dst:
                 for line in src:
                     # Insert onnx tag
-                    if line == 'tags:\n':
+                    if line == "tags:\n":
                         dst.write("inference: false\n")
                         dst.write(line)
-                        dst.write('- onnx\n')
+                        dst.write("- onnx\n")
                         continue
 
                     if line.startswith("# Adapter"):
@@ -266,60 +272,99 @@ def generate_readme(directory_path: str, base_model: str, skill: str, model_id: 
                         # Insert custom README
                         dst.write("# ONNX export of " + line[2:])
                         dst.write(
-                            f"## Conversion of [{adapter}](https://huggingface.co/{adapter}) for UKP SQuARE\n\n\n")
+                            f"## Conversion of [{adapter}](https://huggingface.co/{adapter}) for UKP SQuARE\n\n\n"
+                        )
                         dst.write("## Usage\n")
                         dst.write("```python\n")
                         dst.write(
-                            f"onnx_path = hf_hub_download(repo_id='UKP-SQuARE/{model_id}', filename='model.onnx') # or model_quant.onnx for quantization\n")
-                        dst.write("onnx_model = InferenceSession(onnx_path, providers=['CPUExecutionProvider'])\n\n")
+                            f"onnx_path = hf_hub_download(repo_id='UKP-SQuARE/{model_id}', filename='model.onnx') # or model_quant.onnx for quantization\n"
+                        )
+                        dst.write(
+                            "onnx_model = InferenceSession(onnx_path, providers=['CPUExecutionProvider'])\n\n"
+                        )
 
-                        if (skill == "span-extraction"):
+                        if skill == "span-extraction":
                             dst.write(
-                                "context = 'ONNX is an open format to represent models. The benefits of using ONNX include interoperability of frameworks and hardware optimization.'\n")
+                                "context = 'ONNX is an open format to represent models. The benefits of using ONNX include interoperability of frameworks and hardware optimization.'\n"
+                            )
                             dst.write("question = 'What are advantages of ONNX?'\n")
-                            dst.write(f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n")
                             dst.write(
-                                "inputs = tokenizer(question, context, padding=True, truncation=True, return_tensors='np')\n")
-                            dst.write("outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n")
+                                f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n"
+                            )
+                            dst.write(
+                                "inputs = tokenizer(question, context, padding=True, truncation=True, return_tensors='np')\n"
+                            )
+                            dst.write(
+                                "outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n"
+                            )
                             dst.write("```\n\n")
 
-                        elif (skill == "categorical"):
+                        elif skill == "categorical":
                             dst.write(
-                                "context = 'English orthography typically represents vowel sounds with the five conventional vowel letters ⟨a, e, i, o, u⟩, as well as ⟨y⟩, which may also be a consonant depending on context. However, outside of abbreviations, there are a handful of words in English that do not have vowels, either because the vowel sounds are not written with vowel letters or because the words themselves are pronounced without vowel sounds'.\n")
-                            dst.write("question = 'can there be a word without a vowel'\n")
-                            dst.write(f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n")
+                                "context = 'English orthography typically represents vowel sounds with the five conventional vowel letters ⟨a, e, i, o, u⟩, as well as ⟨y⟩, which may also be a consonant depending on context. However, outside of abbreviations, there are a handful of words in English that do not have vowels, either because the vowel sounds are not written with vowel letters or because the words themselves are pronounced without vowel sounds'.\n"
+                            )
                             dst.write(
-                                "inputs = tokenizer(question, context, padding=True, truncation=True, return_tensors='np')\n")
-                            dst.write("outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n")
+                                "question = 'can there be a word without a vowel'\n"
+                            )
+                            dst.write(
+                                f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n"
+                            )
+                            dst.write(
+                                "inputs = tokenizer(question, context, padding=True, truncation=True, return_tensors='np')\n"
+                            )
+                            dst.write(
+                                "outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n"
+                            )
                             dst.write("```\n\n")
 
                         elif skill == "multiple-choice":
                             dst.write(
-                                "context = 'ONNX is an open format to represent models. The benefits of using ONNX include interoperability of frameworks and hardware optimization.'\n")
+                                "context = 'ONNX is an open format to represent models. The benefits of using ONNX include interoperability of frameworks and hardware optimization.'\n"
+                            )
                             dst.write("question = 'What are advantages of ONNX?'\n")
                             dst.write('choices = ["Cat", "Horse", "Tiger", "Fish"]')
 
-                            dst.write(f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n")
-
-                            dst.write("raw_input = [[context, question + " " + choice] for choice in choices]\n")
                             dst.write(
-                                'inputs = tokenizer(raw_input, padding=True, truncation=True, return_tensors="np")\n')
+                                f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n"
+                            )
 
-                            dst.write("inputs['token_type_ids'] = np.expand_dims(inputs['token_type_ids'], axis=0)\n")
-                            dst.write("inputs['input_ids'] =  np.expand_dims(inputs['input_ids'], axis=0)\n")
-                            dst.write("inputs['attention_mask'] =  np.expand_dims(inputs['attention_mask'], axis=0)\n")
-                            dst.write("outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n")
+                            dst.write(
+                                "raw_input = [[context, question + "
+                                " + choice] for choice in choices]\n"
+                            )
+                            dst.write(
+                                'inputs = tokenizer(raw_input, padding=True, truncation=True, return_tensors="np")\n'
+                            )
+
+                            dst.write(
+                                "inputs['token_type_ids'] = np.expand_dims(inputs['token_type_ids'], axis=0)\n"
+                            )
+                            dst.write(
+                                "inputs['input_ids'] =  np.expand_dims(inputs['input_ids'], axis=0)\n"
+                            )
+                            dst.write(
+                                "inputs['attention_mask'] =  np.expand_dims(inputs['attention_mask'], axis=0)\n"
+                            )
+                            dst.write(
+                                "outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n"
+                            )
 
                             dst.write("```\n\n")
 
                         elif skill == "abstractive":
                             dst.write(
-                                "context = 'ONNX is an open format to represent models. The benefits of using ONNX include interoperability of frameworks and hardware optimization.'\n")
+                                "context = 'ONNX is an open format to represent models. The benefits of using ONNX include interoperability of frameworks and hardware optimization.'\n"
+                            )
                             dst.write("question = 'What are advantages of ONNX?'\n")
-                            dst.write(f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n")
                             dst.write(
-                                "inputs = tokenizer(question, context, padding=True, truncation=True, return_tensors='np')\n")
-                            dst.write("outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n")
+                                f"tokenizer = AutoTokenizer.from_pretrained('UKP-SQuARE/{model_id}')\n\n"
+                            )
+                            dst.write(
+                                "inputs = tokenizer(question, context, padding=True, truncation=True, return_tensors='np')\n"
+                            )
+                            dst.write(
+                                "outputs = onnx_model.run(input_feed=dict(inputs), output_names=None)\n"
+                            )
                             dst.write("```\n\n")
 
                     # Continue with normal model card
@@ -330,7 +375,7 @@ def generate_readme(directory_path: str, base_model: str, skill: str, model_id: 
                         dst.write(line)
     except:
         # If error occurs during README generation (e.g. original README does not exist, parsing error) we only generate a title
-        with open(onnx_readme, 'w') as dst:
+        with open(onnx_readme, "w") as dst:
             dst.write("---\n")
             dst.write("language: en\n")
             dst.write("inference: false\n")
@@ -350,12 +395,7 @@ def push_to_hub(save_dir: str, repo_id: str, hf_token: str):
 
     api = HfApi()
 
-    api.create_repo(
-        token=hf_token,
-        repo_id=repo_id,
-        exist_ok=True,
-        private=False
-    )
+    api.create_repo(token=hf_token, repo_id=repo_id, exist_ok=True, private=False)
 
     for path, _, files in os.walk(save_dir):
         for name in files:
@@ -374,8 +414,14 @@ def push_to_hub(save_dir: str, repo_id: str, hf_token: str):
                 pass
 
 
-def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional[str],
-                custom_onnx_config: Optional[str], quantize_model: bool = True) -> str:
+def onnx_export(
+    model_name: str,
+    skill: str,
+    hf_token: str,
+    adapter_id: Optional[str],
+    custom_onnx_config: Optional[str],
+    quantize_model: bool = True,
+) -> str:
     """
     Exports a model to ONNX format.
     @param model_name: The name of the model to be exported.
@@ -415,7 +461,9 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
         model.active_adapters = adapter_name
     else:
         if skill not in CLASS_MAPPING.keys():
-            raise RuntimeError(f"Unknown skill {skill}. Must be one of {CLASS_MAPPING.keys()}")
+            raise RuntimeError(
+                f"Unknown skill {skill}. Must be one of {CLASS_MAPPING.keys()}"
+            )
 
         model_cls = CLASS_MAPPING[skill]
         model = model_cls.from_pretrained(model_name)
@@ -427,7 +475,11 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
             @property
             def inputs(self) -> Mapping[str, Mapping[int, str]]:
                 return OrderedDict(
-                    {k: {int(k2): v2 for k2, v2 in v.items()} for k, v in json.loads(custom_onnx_config).items()})
+                    {
+                        k: {int(k2): v2 for k2, v2 in v.items()}
+                        for k, v in json.loads(custom_onnx_config).items()
+                    }
+                )
 
         onnx_config = CustomOnnxConfig(model_name, skill)
     else:
@@ -444,7 +496,9 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
     shutil.copyfile(config_path, Path("{}/config.json".format(directory_path)))
 
     # Export ONNX model
-    export(tokenizer, model, onnx_config, onnx_config.default_onnx_opset, onnx_model_path)
+    export(
+        tokenizer, model, onnx_config, onnx_config.default_onnx_opset, onnx_model_path
+    )
     onnx.checker.check_model(onnx.load(onnx_model_path))
 
     # Save tokenizer
@@ -456,15 +510,13 @@ def onnx_export(model_name: str, skill: str, hf_token: str, adapter_id: Optional
     if quantize_model:
         logger.info("Performing quantization")
         quantized_model_path = "{}/model_quant.onnx".format(directory_path)
-        quantize_dynamic(onnx_model_path, quantized_model_path, weight_type=QuantType.QInt8)
+        quantize_dynamic(
+            onnx_model_path, quantized_model_path, weight_type=QuantType.QInt8
+        )
         onnx.checker.check_model(onnx.load(quantized_model_path))
 
     logger.info("Uploading model to hub... (may take a few minutes)")
-    push_to_hub(
-        save_dir=directory_path,
-        repo_id=repo_id,
-        hf_token=hf_token
-    )
+    push_to_hub(save_dir=directory_path, repo_id=repo_id, hf_token=hf_token)
 
     # Remove directory
     shutil.rmtree("onnx_tmp")

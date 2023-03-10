@@ -67,9 +67,15 @@ class LSTMTextEncoder(nn.Module):
         assert not bidirectional or hidden_size % 2 == 0
 
         if pretrained_emb_or_path is not None:
-            if isinstance(pretrained_emb_or_path, str):  # load pretrained embedding from a .npy file
-                pretrained_emb_or_path = torch.tensor(np.load(pretrained_emb_or_path), dtype=torch.float)
-            emb = nn.Embedding.from_pretrained(pretrained_emb_or_path, freeze=freeze_emb)
+            if isinstance(
+                pretrained_emb_or_path, str
+            ):  # load pretrained embedding from a .npy file
+                pretrained_emb_or_path = torch.tensor(
+                    np.load(pretrained_emb_or_path), dtype=torch.float
+                )
+            emb = nn.Embedding.from_pretrained(
+                pretrained_emb_or_path, freeze=freeze_emb
+            )
             emb_size = emb.weight.size(1)
         else:
             emb = nn.Embedding(vocab_size, emb_size)
@@ -78,7 +84,8 @@ class LSTMTextEncoder(nn.Module):
             [
                 nn.LSTM(
                     emb_size if l == 0 else hidden_size,
-                    (hidden_size if l != num_layers else output_size) // (2 if bidirectional else 1),
+                    (hidden_size if l != num_layers else output_size)
+                    // (2 if bidirectional else 1),
                     1,
                     bidirectional=bidirectional,
                     batch_first=True,
@@ -89,7 +96,9 @@ class LSTMTextEncoder(nn.Module):
         self.pooler = self.pool_layer_classes[pool_function]()
 
         self.input_dropout = nn.Dropout(input_p)
-        self.hidden_dropout = nn.ModuleList([RNNDropout(hidden_p) for _ in range(num_layers)])
+        self.hidden_dropout = nn.ModuleList(
+            [RNNDropout(hidden_p) for _ in range(num_layers)]
+        )
 
     def forward(self, inputs, lengths):
         """
@@ -103,9 +112,13 @@ class LSTMTextEncoder(nn.Module):
         hidden_states = self.input_dropout(self.emb(inputs))
         all_hidden_states = [hidden_states]
         for l, (rnn, hid_dp) in enumerate(zip(self.rnns, self.hidden_dropout)):
-            hidden_states = pack_padded_sequence(hidden_states, lengths, batch_first=True, enforce_sorted=False)
+            hidden_states = pack_padded_sequence(
+                hidden_states, lengths, batch_first=True, enforce_sorted=False
+            )
             hidden_states, _ = rnn(hidden_states)
-            hidden_states, _ = pad_packed_sequence(hidden_states, batch_first=True, total_length=seq_len)
+            hidden_states, _ = pad_packed_sequence(
+                hidden_states, batch_first=True, total_length=seq_len
+            )
             all_hidden_states.append(hidden_states)
             if l != self.num_layers - 1:
                 hidden_states = hid_dp(hidden_states)
@@ -126,7 +139,9 @@ def get_gpt_token_num():
 class TextEncoder(nn.Module):
     valid_model_types = set(MODEL_CLASS_TO_NAME.keys())
 
-    def __init__(self, model_name, output_token_states=False, from_checkpoint=None, **kwargs):
+    def __init__(
+        self, model_name, output_token_states=False, from_checkpoint=None, **kwargs
+    ):
         super().__init__()
         self.model_type = MODEL_NAME_TO_CLASS[model_name]
         self.output_token_states = output_token_states
@@ -141,12 +156,20 @@ class TextEncoder(nn.Module):
             self.sent_dim = self.module.output_size
         else:
             model_class = AutoModel
-            self.module = model_class.from_pretrained(model_name, output_hidden_states=True)
+            self.module = model_class.from_pretrained(
+                model_name, output_hidden_states=True
+            )
             if from_checkpoint is not None:
-                self.module = self.module.from_pretrained(from_checkpoint, output_hidden_states=True)
+                self.module = self.module.from_pretrained(
+                    from_checkpoint, output_hidden_states=True
+                )
             if self.model_type in ("gpt",):
                 self.module.resize_token_embeddings(get_gpt_token_num())
-            self.sent_dim = self.module.config.n_embd if self.model_type in ("gpt",) else self.module.config.hidden_size
+            self.sent_dim = (
+                self.module.config.n_embd
+                if self.model_type in ("gpt",)
+                else self.module.config.hidden_size
+            )
 
     def forward(self, *inputs, layer_id=-1):
         """
@@ -166,14 +189,21 @@ class TextEncoder(nn.Module):
             outputs = self.module(input_ids)
         else:  # bert / xlnet / roberta
             input_ids, attention_mask, token_type_ids, output_mask = inputs
-            outputs = self.module(input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask)
+            outputs = self.module(
+                input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask
+            )
         all_hidden_states = outputs[-1]
         hidden_states = all_hidden_states[layer_id]
 
         if self.model_type in ("lstm",):
             sent_vecs = outputs[1]
         elif self.model_type in ("gpt",):
-            cls_token_ids = cls_token_ids.view(-1).unsqueeze(-1).unsqueeze(-1).expand(-1, 1, hidden_states.size(-1))
+            cls_token_ids = (
+                cls_token_ids.view(-1)
+                .unsqueeze(-1)
+                .unsqueeze(-1)
+                .expand(-1, 1, hidden_states.size(-1))
+            )
             sent_vecs = hidden_states.gather(1, cls_token_ids).squeeze(1)
         elif self.model_type in ("xlnet",):
             sent_vecs = hidden_states[:, -1]
@@ -189,7 +219,9 @@ class TextEncoder(nn.Module):
 
 
 def run_test():
-    encoder = TextEncoder("lstm", vocab_size=100, emb_size=100, hidden_size=200, num_layers=4)
+    encoder = TextEncoder(
+        "lstm", vocab_size=100, emb_size=100, hidden_size=200, num_layers=4
+    )
     input_ids = torch.randint(0, 100, (30, 70))
     lenghts = torch.randint(1, 70, (30,))
     outputs = encoder(input_ids, lenghts)
@@ -198,5 +230,7 @@ def run_test():
     #     print(i.shape)
     assert outputs[0].size() == (30, 200)
     assert len(outputs[1]) == 4 + 1
-    assert all([x.size() == (30, 70, 100 if l == 0 else 200) for l, x in enumerate(outputs[1])])
+    assert all(
+        [x.size() == (30, 70, 100 if l == 0 else 200) for l, x in enumerate(outputs[1])]
+    )
     print("all tests are passed")
