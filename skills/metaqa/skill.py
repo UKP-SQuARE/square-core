@@ -137,6 +137,8 @@ def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
 
 def _create_metaqa_output(request, model_response):
     list_predictions = []
+    list_skills_ids = request.skill_args["list_skills"] # list of skill ids
+    selected_skill_id = list_skills_ids[answer["agent_idx"]]
     for answer in model_response["answers"][0]:
         list_predictions.append(
             Prediction(
@@ -145,7 +147,7 @@ def _create_metaqa_output(request, model_response):
                 prediction_output=PredictionOutput(
                     output=answer["answer"], output_score=answer["agent_score"]
                 ),
-                skill_id=answer["agent_name"],
+                skill_id=selected_skill_id,
             )
         )
     return QueryOutput(predictions=list_predictions)
