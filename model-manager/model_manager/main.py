@@ -12,7 +12,9 @@ from model_manager.app.core.event_handlers import start_app_handler, stop_app_ha
 from model_manager.app.routers.api import api_router
 
 
-auth = Auth(keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de"))
+auth = Auth(
+    keycloak_base_url=os.getenv("KEYCLOAK_BASE_URL", "https://square.ukp-lab.de")
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,9 @@ def get_app() -> FastAPI:
     try:
         fileConfig("logging.conf", disable_existing_loggers=False)
     except Exception:
-        logger.info("Failed to load 'logging.conf'. Continuing without configuring the server logger")
+        logger.info(
+            "Failed to load 'logging.conf'. Continuing without configuring the server logger"
+        )
     fast_app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
@@ -65,7 +69,9 @@ def custom_openapi():
         api_mod = "/".join(api_split)
         replaced_keys[api] = api_mod
 
-    new_openapi_paths = {replaced_keys[k]: v for k, v in openapi_schema["paths"].items()}
+    new_openapi_paths = {
+        replaced_keys[k]: v for k, v in openapi_schema["paths"].items()
+    }
     openapi_schema["paths"] = new_openapi_paths
     app.openapi_schema = openapi_schema
     return app.openapi_schema

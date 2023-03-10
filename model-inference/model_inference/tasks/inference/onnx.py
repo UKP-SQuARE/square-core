@@ -31,6 +31,7 @@ from .transformer import Transformer
 
 logger = logging.getLogger(__name__)
 
+
 def to_numpy(x):
     if type(x) is not np.ndarray:
         x = x.detach().cpu().numpy() if x.requires_grad else x.cpu().numpy()
@@ -53,7 +54,7 @@ class Onnx(Transformer):
         self._load_model(
             model_config.model_name,
             model_config.onnx_use_quantized,
-            model_config.is_encoder_decoder
+            model_config.is_encoder_decoder,
         )
 
     def _load_model(self, model_name, load_quantized=False, is_encoder_decoder=False):
@@ -66,6 +67,7 @@ class Onnx(Transformer):
             decoder_name: the Huggingface name of the ONNX decoder model
             kwargs: Not used
         """
+
         def download_model(repo_id, filename):
             """
             Download a model from the Huggingface Hub
@@ -77,10 +79,14 @@ class Onnx(Transformer):
                 logger.debug(f"Loading model {filename} from {repo_id}")
                 model_path = hf_hub_download(repo_id=repo_id, filename=filename)
             except EntryNotFoundError:
-                logger.error(f"Error loading model {repo_id}: File {filename} does not exist")
+                logger.error(
+                    f"Error loading model {repo_id}: File {filename} does not exist"
+                )
                 raise
             except RepositoryNotFoundError:
-                logger.error(f"Error loading model {repo_id}: HuggingFace repository does not exist")
+                logger.error(
+                    f"Error loading model {repo_id}: HuggingFace repository does not exist"
+                )
                 raise
             return model_path
 
@@ -99,7 +105,7 @@ class Onnx(Transformer):
             model_path = download_model(repo_id=model_name, filename=decoder)
             self.decoder_session = onnxruntime.InferenceSession(model_path, sess_options=so)
         else:
-            filename = "model_quant.onnx" if load_quantized else "model.onnx" 
+            filename = "model_quant.onnx" if load_quantized else "model.onnx"
 
         # load model and create onnx session
         model_path = download_model(repo_id=model_name, filename=filename)
@@ -108,16 +114,16 @@ class Onnx(Transformer):
 
         try:
             # load tokenizer from model repository
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)    
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         except EnvironmentError:
             # if tokenizer is not available in the repository, use the base model's tokenizer
             config_path = download_model(repo_id=model_name, filename="config.json")
-        
+
             with open(config_path) as json_file:
                 base_model = json.load(json_file)["_name_or_path"]
-        
+
             self.tokenizer = AutoTokenizer.from_pretrained(base_model)
-            
+
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -130,24 +136,37 @@ class Onnx(Transformer):
         Inference on the input.
 
         Args:
-
              request: the request with the input and optional kwargs
-             output_features: return the features of the input. Necessary if, e.g., attention mask is needed for post-processing.
+             output_features: return the features of the input. Necessary if, e.g.,
+              attention mask is needed for post-processing.
 
         Returns:
                 The model outputs and optionally the input features
         """
         all_predictions = []
-        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get("padding", True)
-        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get("truncation", True)
+        request.preprocessing_kwargs["padding"] = request.preprocessing_kwargs.get(
+            "padding", True
+        )
+        request.preprocessing_kwargs["truncation"] = request.preprocessing_kwargs.get(
+            "truncation", True
+        )
         if features is None:
-            features = self.tokenizer(request.input, return_tensors="pt", **request.preprocessing_kwargs)
-        for start_idx in range(0, features["input_ids"].shape[0], model_config.batch_size):
-            input_names = [self.session.get_inputs()[i].name for i in range(len(self.session.get_inputs()))]
+            features = self.tokenizer(
+                request.input, return_tensors="pt", **request.preprocessing_kwargs
+            )
+        for start_idx in range(
+            0, features["input_ids"].shape[0], model_config.batch_size
+        ):
+            input_names = [
+                self.session.get_inputs()[i].name
+                for i in range(len(self.session.get_inputs()))
+            ]
             ort_inputs = dict(
                 (
                     k,
-                    to_numpy(input_data[start_idx : start_idx + model_config.batch_size]),
+                    to_numpy(
+                        input_data[start_idx : start_idx + model_config.batch_size]
+                    ),
                 )
                 for k, input_data in features.items()
                 if k in input_names
@@ -156,13 +175,9 @@ class Onnx(Transformer):
             if request.task_kwargs.get("multiple_choice", False):
                 # Multiple choice QA with ONNX expects input dimension expansion
                 ort_inputs = dict(
-                    (
-                        k,
-                        np.expand_dims(v, axis=0)
-                    )
-                    for k, v in ort_inputs.items()
+                    (k, np.expand_dims(v, axis=0)) for k, v in ort_inputs.items()
                 )
-            
+
             res = self.session.run([], ort_inputs)
 
             if self.is_encoder_decoder:
@@ -173,7 +188,10 @@ class Onnx(Transformer):
                         "input_ids": features["decoder_input_ids"]
                         if "decoder_input_ids" in features
                         else np.array(
-                            [[self.get_bos_token()] for _ in range(features["input_ids"].shape[0])],
+                            [
+                                [self.get_bos_token()]
+                                for _ in range(features["input_ids"].shape[0])
+                            ],
                             dtype=np.int64,
                         ),
                         "encoder_hidden_states": res[0],
@@ -182,17 +200,23 @@ class Onnx(Transformer):
                     res += self.decoder_session.run([], ort_inputs)
             all_predictions.append(res)
         final_prediction = {}
-        output_names = [self.session.get_outputs()[i].name for i in range(len(self.session.get_outputs()))]
+        output_names = [
+            self.session.get_outputs()[i].name
+            for i in range(len(self.session.get_outputs()))
+        ]
         if self.is_encoder_decoder:
             output_names += [
-                self.decoder_session.get_outputs()[i].name for i in range(len(self.decoder_session.get_outputs()))
+                self.decoder_session.get_outputs()[i].name
+                for i in range(len(self.decoder_session.get_outputs()))
             ]
 
         for idx, key in enumerate(output_names):
             # HuggingFace outputs for 'attentions' and more is returned as tuple of tensors
             # Tuple of tuples only exists for 'past_key_values' which is only relevant for generation.
             # Generation should NOT use this function
-            final_prediction[key] = torch.cat([torch.tensor(p[idx]) for p in all_predictions])
+            final_prediction[key] = torch.cat(
+                [torch.tensor(p[idx]) for p in all_predictions]
+            )
         if output_features:
             return final_prediction, features
         return final_prediction
@@ -218,7 +242,9 @@ class Onnx(Transformer):
 
         if embedding_mode == "pooler":
             if "pooler_output" not in predictions:
-                raise ValueError("No pooler output available. Use a different model or an other embedding method")
+                raise ValueError(
+                    "No pooler output available. Use a different model or an other embedding method"
+                )
             emb = predictions["pooler_output"]
         else:
             if "last_hidden_state" not in predictions:
@@ -234,19 +260,27 @@ class Onnx(Transformer):
             if embedding_mode == "cls":
                 emb = hidden_state[:, 0, :]
             elif embedding_mode == "max":
-                input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
-                hidden_state[input_mask_expanded == 0] = -1e9  # Set padding tokens to large negative value
+                input_mask_expanded = (
+                    attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+                )
+                hidden_state[
+                    input_mask_expanded == 0
+                ] = -1e9  # Set padding tokens to large negative value
                 emb = torch.max(hidden_state, 1)[0]
                 # copied from sentence-transformers pooling
             elif embedding_mode == "mean":
-                input_mask_expanded = attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+                input_mask_expanded = (
+                    attention_mask.unsqueeze(-1).expand(hidden_state.size()).float()
+                )
                 sum_embeddings = torch.sum(hidden_state * input_mask_expanded, 1)
                 sum_mask = input_mask_expanded.sum(1)
                 emb = sum_embeddings / sum_mask
             elif embedding_mode == "token":
                 emb = hidden_state
-                task_outputs["word_ids"] = [features.word_ids(i) for i in range(len(request.input))]
-        
+                task_outputs["word_ids"] = [
+                    features.word_ids(i) for i in range(len(request.input))
+                ]
+
         if request.task_kwargs.get("normalize", False):
             print("*****Normalize the embedding*****")
             emb = torch.nn.functional.normalize(emb)
@@ -266,13 +300,20 @@ class Onnx(Transformer):
         predictions = self._predict(request)
 
         # Some models use last_hidden_state instead of logits
-        if "logits" not in predictions.keys() and "last_hidden_state" in predictions.keys():
+        if (
+            "logits" not in predictions.keys()
+            and "last_hidden_state" in predictions.keys()
+        ):
             predictions["logits"] = predictions["last_hidden_state"]
 
         task_outputs = {}
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False) and not request.task_kwargs.get("multiple_choice", False):
+        if (
+            predictions["logits"].size()[-1] != 1
+            and not request.task_kwargs.get("is_regression", False)
+            and not request.task_kwargs.get("multiple_choice", False)
+        ):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
             labels = torch.argmax(predictions["logits"], dim=-1)
@@ -282,7 +323,9 @@ class Onnx(Transformer):
             predictions["logits"] = probabilities
             task_outputs["labels"] = [torch.argmax(predictions["logits"])]
 
-        return PredictionOutputForSequenceClassification(model_outputs=predictions, **task_outputs)
+        return PredictionOutputForSequenceClassification(
+            model_outputs=predictions, **task_outputs
+        )
 
     def _token_classification(self, request: PredictionRequest) -> PredictionOutput:
         """
@@ -297,13 +340,21 @@ class Onnx(Transformer):
         predictions, features = self._predict(request, output_features=True)
         # If logits dim > 1 or if the 'is_regression' flag is not set, we assume classification:
         # We replace the logits by the softmax and add labels chosen with argmax
-        task_outputs = {"word_ids": [features.word_ids(i) for i in range(len(request.input))]}
-        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get("is_regression", False):
+        task_outputs = {
+            "word_ids": [features.word_ids(i) for i in range(len(request.input))]
+        }
+        if predictions["logits"].size()[-1] != 1 and not request.task_kwargs.get(
+            "is_regression", False
+        ):
             probabilities = torch.softmax(predictions["logits"], dim=-1)
             predictions["logits"] = probabilities
-            task_outputs["labels"] = torch.argmax(predictions["logits"], dim=-1).tolist()
+            task_outputs["labels"] = torch.argmax(
+                predictions["logits"], dim=-1
+            ).tolist()
 
-        return PredictionOutputForTokenClassification(model_outputs=predictions, **task_outputs)
+        return PredictionOutputForTokenClassification(
+            model_outputs=predictions, **task_outputs
+        )
 
     def _generation(self, request: PredictionRequest) -> PredictionOutput:
         """
@@ -329,7 +380,9 @@ class Onnx(Transformer):
                 self.tokenizer.decode(
                     seq,
                     skip_special_tokens=True,
-                    clean_up_tokenization_spaces=request.task_kwargs.get("clean_up_tokenization_spaces", False),
+                    clean_up_tokenization_spaces=request.task_kwargs.get(
+                        "clean_up_tokenization_spaces", False
+                    ),
                 )
                 for seq in input_ids
             ]
@@ -344,7 +397,9 @@ class Onnx(Transformer):
 
         logger.info("Generated texts: {}".format(task_outputs["generated_texts"]))
         logger.info("Model outputs: {}".format(model_outputs))
-        return PredictionOutputForGeneration(model_outputs=model_outputs, **task_outputs)
+        return PredictionOutputForGeneration(
+            model_outputs=model_outputs, **task_outputs
+        )
 
     def _greedy_generation(self, request, prompt, max_length):
         """
@@ -359,10 +414,14 @@ class Onnx(Transformer):
         """
         cur_len = 0
         eos_token_id = (
-            self.tokenizer.eos_token_id if self.tokenizer.eos_token_id is not None else self.tokenizer.pad_token_id
+            self.tokenizer.eos_token_id
+            if self.tokenizer.eos_token_id is not None
+            else self.tokenizer.pad_token_id
         )
         request.preprocessing_kwargs["padding"] = False
-        features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
+        features = self.tokenizer(
+            prompt, return_tensors="pt", **request.preprocessing_kwargs
+        )
         input_ids = features["input_ids"]
         generated_ids = [self.get_bos_token()] if self.is_encoder_decoder else []
         unfinished_sequences = input_ids.new(input_ids.shape[0]).fill_(1)
@@ -382,7 +441,9 @@ class Onnx(Transformer):
             cur_len = cur_len + 1
 
             if eos_token_id is not None:
-                unfinished_sequences = unfinished_sequences.mul((next_tokens != eos_token_id).long())
+                unfinished_sequences = unfinished_sequences.mul(
+                    (next_tokens != eos_token_id).long()
+                )
                 # stop when each sentence is finished, or if we exceed the maximum length
             if unfinished_sequences.max() == 0:
                 break
@@ -450,7 +511,9 @@ class Onnx(Transformer):
                 idx_sort = idx[np.argsort(-scores_flat[idx])]
 
             starts_, ends_ = np.unravel_index(idx_sort, candidates.shape)[1:]
-            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(ends_, undesired_tokens_.nonzero())
+            desired_spans = np.isin(starts_, undesired_tokens_.nonzero()) & np.isin(
+                ends_, undesired_tokens_.nonzero()
+            )
             starts_ = starts_[desired_spans]
             ends_ = ends_[desired_spans]
             scores_ = candidates[0, starts_, ends_]
@@ -472,9 +535,14 @@ class Onnx(Transformer):
         ):
             start = start.numpy()
             end = end.numpy()
+            logger.debug(f"start: {start}, end: {end}")
+            logger.info(f"start: {start}, end: {end}")
+            logger.info(start.shape, end.shape)
             # Ensure padded tokens & question tokens cannot
             # belong to the set of candidate answers.
-            question_tokens = np.abs(np.array([s != 1 for s in features.sequence_ids(idx)]) - 1)
+            question_tokens = np.abs(
+                np.array([s != 1 for s in features.sequence_ids(idx)]) - 1
+            )
             # Unmask CLS token for 'no answer'
             question_tokens[0] = 1
             undesired_tokens = question_tokens & features["attention_mask"][idx].numpy()
@@ -487,7 +555,9 @@ class Onnx(Transformer):
             start = np.where(undesired_tokens_mask, -10000.0, start)
             end = np.where(undesired_tokens_mask, -10000.0, end)
 
-            start = np.exp(start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True)))
+            start = np.exp(
+                start - np.log(np.sum(np.exp(start), axis=-1, keepdims=True))
+            )
             end = np.exp(end - np.log(np.sum(np.exp(end), axis=-1, keepdims=True)))
 
             # Get score for 'no answer' then mask for decoding step (CLS token
@@ -507,19 +577,25 @@ class Onnx(Transformer):
             answers = [
                 {
                     "score": score.item(),
-                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0],
+                    "start": enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[
+                        0
+                    ],
                     "end": enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1],
                     "answer": context[
-                        enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[0] : enc.word_to_chars(
-                            enc.token_to_word(e), sequence_index=1
-                        )[1]
+                        enc.word_to_chars(enc.token_to_word(s), sequence_index=1)[
+                            0
+                        ] : enc.word_to_chars(enc.token_to_word(e), sequence_index=1)[1]
                     ],
                 }
                 for s, e, score in zip(starts, ends, scores)
             ]
             if request.task_kwargs.get("show_null_answers", True):
-                answers.append({"score": no_answer_score, "start": 0, "end": 0, "answer": ""})
-            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[: request.task_kwargs.get("topk", 1)]
+                answers.append(
+                    {"score": no_answer_score, "start": 0, "end": 0, "answer": ""}
+                )
+            answers = sorted(answers, key=lambda x: x["score"], reverse=True)[
+                : request.task_kwargs.get("topk", 1)
+            ]
             task_outputs["answers"].append(answers)
 
             # word attributions
@@ -551,8 +627,12 @@ class Onnx(Transformer):
                 # new added section end
                 word_imp = self.process_outputs(
                     attributions=attributions,
-                    top_k=request.explain_kwargs["top_k"] if request.explain_kwargs else 10,
-                    mode=request.explain_kwargs["mode"] if request.explain_kwargs else "all",
+                    top_k=request.explain_kwargs["top_k"]
+                    if request.explain_kwargs
+                    else 10,
+                    mode=request.explain_kwargs["mode"]
+                    if request.explain_kwargs
+                    else "all",
                     task="question_answering",
                     # new added paramter in process_ourput method
                     attack_method=attack_method,
@@ -570,8 +650,9 @@ class Onnx(Transformer):
                 new_predictions = self._model_attacks(request, task_outputs)
                 return new_predictions
 
-        return PredictionOutputForQuestionAnswering(model_outputs=predictions, **task_outputs)
-
+        return PredictionOutputForQuestionAnswering(
+            model_outputs=predictions, **task_outputs
+        )
 
     def _prepare_input(self, encoder_features, generated_sequence):
         """
@@ -589,8 +670,12 @@ class Onnx(Transformer):
         # if it is a encoder decoder model the generated sequence is passed to the decoder
         # otherwise the generated sequence is appended to the input_ids
         if self.is_encoder_decoder:
-            model_input["decoder_input_ids"] = np.array([generated_sequence], dtype=np.int64)
-            model_input["decoder_attention_mask"] = np.array([[1] * len(generated_sequence)], dtype=np.int64)
+            model_input["decoder_input_ids"] = np.array(
+                [generated_sequence], dtype=np.int64
+            )
+            model_input["decoder_attention_mask"] = np.array(
+                [[1] * len(generated_sequence)], dtype=np.int64
+            )
 
         elif generated_sequence:
             model_input["input_ids"] = torch.cat(
@@ -600,7 +685,9 @@ class Onnx(Transformer):
                 ),
                 dim=1,
             )
-            model_input["attention_mask"] = torch.ones(model_input["input_ids"].shape, dtype=torch.int64)
+            model_input["attention_mask"] = torch.ones(
+                model_input["input_ids"].shape, dtype=torch.int64
+            )
 
         return model_input
 
@@ -617,7 +704,9 @@ class Onnx(Transformer):
              the generated sequence(s)
         """
         request.preprocessing_kwargs["padding"] = False
-        features = self.tokenizer(prompt, return_tensors="pt", **request.preprocessing_kwargs)
+        features = self.tokenizer(
+            prompt, return_tensors="pt", **request.preprocessing_kwargs
+        )
         # get the generation arguments
         num_beams = request.task_kwargs.pop("num_beams")
         no_repeat_ngram_size = request.task_kwargs.pop("no_repeat_ngram_size", 0)
@@ -627,7 +716,9 @@ class Onnx(Transformer):
         num_return_sequences = request.task_kwargs.pop("num_return_sequences", 1)
         return_sequences = []
         for i in range(num_return_sequences):
-            sequences = [([self.get_bos_token()] if self.is_encoder_decoder else [], 0.0)]
+            sequences = [
+                ([self.get_bos_token()] if self.is_encoder_decoder else [], 0.0)
+            ]
             cur_len = 0
             while cur_len < max_length:
                 candidates = []
@@ -656,15 +747,23 @@ class Onnx(Transformer):
                         # draw the next token based on the probabilities
                         probs = nn.functional.softmax(next_token_scores, dim=-1)
 
-                        next_tokens = torch.multinomial(probs, num_samples=2 * num_beams)
-                        next_token_prob = torch.gather(next_token_scores, -1, next_tokens)
+                        next_tokens = torch.multinomial(
+                            probs, num_samples=2 * num_beams
+                        )
+                        next_token_prob = torch.gather(
+                            next_token_scores, -1, next_tokens
+                        )
 
-                        _, _indices = torch.sort(next_token_prob, descending=True, dim=1)
+                        _, _indices = torch.sort(
+                            next_token_prob, descending=True, dim=1
+                        )
                         next_tokens_idx = torch.gather(next_tokens, -1, _indices)
 
                     else:
                         # take the most likely tokens as the next tokens
-                        next_token_prob, next_tokens_idx = torch.topk(next_token_scores, num_beams, dim=-1)
+                        next_token_prob, next_tokens_idx = torch.topk(
+                            next_token_scores, num_beams, dim=-1
+                        )
                     candidates += [
                         (seq[0] + [token_id], seq[1] + np.log(score))
                         for token_id, score in zip(
@@ -673,7 +772,9 @@ class Onnx(Transformer):
                         )
                     ]
                 # select the candidates with the highest scores as beams for the generation of the next token
-                sequences = sorted(candidates, key=lambda x: x[1], reverse=True)[:num_beams]
+                sequences = sorted(candidates, key=lambda x: x[1], reverse=True)[
+                    :num_beams
+                ]
                 cur_len += 1
 
             return_sequences.append(sequences[0])
@@ -733,17 +834,23 @@ class Onnx(Transformer):
                 # Keep at least min_tokens_to_keep (set to min_tokens_to_keep-1 because we add the first one below)
                 sorted_indices_to_remove[..., : min_tokens_to_keep - 1] = 0
             # Shift the indices to the right to keep also the first token above the threshold
-            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[
+                ..., :-1
+            ].clone()
             sorted_indices_to_remove[..., 0] = 0
 
             # scatter sorted tensors to original indexing
-            indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+            indices_to_remove = sorted_indices_to_remove.scatter(
+                1, sorted_indices, sorted_indices_to_remove
+            )
             scores = scores.masked_fill(indices_to_remove, filter_value)
 
         return scores
 
 
-def calc_banned_ngram_tokens(prev_input_ids, num_hypos: int, no_repeat_ngram_size: int, cur_len: int) -> None:
+def calc_banned_ngram_tokens(
+    prev_input_ids, num_hypos: int, no_repeat_ngram_size: int, cur_len: int
+) -> None:
     """Copied from fairseq for no_repeat_ngram in beam_search"""
     if cur_len + 1 < no_repeat_ngram_size:
         # return no banned tokens if we haven't generated no_repeat_ngram_size tokens yet
@@ -754,7 +861,9 @@ def calc_banned_ngram_tokens(prev_input_ids, num_hypos: int, no_repeat_ngram_siz
         generated_ngram = generated_ngrams[idx]
         for ngram in zip(*[gen_tokens[i:] for i in range(no_repeat_ngram_size)]):
             prev_ngram_tuple = tuple(ngram[:-1])
-            generated_ngram[prev_ngram_tuple] = generated_ngram.get(prev_ngram_tuple, []) + [ngram[-1]]
+            generated_ngram[prev_ngram_tuple] = generated_ngram.get(
+                prev_ngram_tuple, []
+            ) + [ngram[-1]]
 
     def _get_generated_ngrams(hypo_idx):
         # Before decoding the next token, prevent decoding of ngrams that have already appeared

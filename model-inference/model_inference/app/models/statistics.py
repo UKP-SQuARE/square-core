@@ -7,6 +7,7 @@ class ModelStatistics(BaseModel):
     """
     Model for displaying the statistics about the deployed model.
     """
+
     model_type: str  # the model type e.g. transformer, onnx, adapter
     model_name: str  # the model e.g. bert-base-cased
     batch_size: int  # the batch size for the model
@@ -26,6 +27,7 @@ class UpdateModel(BaseModel):
     """
     Model for updating the deployed model with new configuration.
     """
+
     disable_gpu: Optional[bool] = None
     batch_size: Optional[int] = None
     max_input: Optional[int] = None

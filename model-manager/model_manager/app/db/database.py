@@ -13,6 +13,7 @@ class MongoClass:
     """
     class to handle the initialization and operation of mongodb
     """
+
     def __init__(self):
         """
         get mongo settings and initialize db
@@ -70,10 +71,7 @@ class MongoClass:
         return await self.add_container(env["IDENTIFIER"], container)
 
     async def add_container(self, identifier, container):
-        container_data = {
-            "IDENTIFIER": identifier,
-            "CONTAINER": container
-        }
+        container_data = {"IDENTIFIER": identifier, "CONTAINER": container}
         self.containers.insert_one(container_data)
         return True
 
@@ -101,7 +99,7 @@ class MongoClass:
         """
         query = {"IDENTIFIER": identifier}
         result = self.containers.find_one(query)
-        logger.info(result)
+        logger.info(f"the result is: {result}")
         return result["CONTAINER"]
 
     async def remove_model_db(self, identifier):
@@ -142,10 +140,27 @@ class MongoClass:
         add deployed models to db
         """
         added_models = []
+
         for data in deployed_models:
-            if self.models.count_documents({"IDENTIFIER": data["IDENTIFIER"]}) == 0:
+            # remove container with same id
+            docs = self.containers.find({"IDENTIFIER": data["IDENTIFIER"]})
+            # Iterate through the documents and remove any that have a different container value
+            for doc in docs:
+                if (
+                    doc["IDENTIFIER"] == data["IDENTIFIER"]
+                    and doc["CONTAINER"] != data["CONTAINER"]
+                ):
+                    self.containers.delete_one({"IDENTIFIER": doc["IDENTIFIER"]})
+                    self.models.delete_one({"IDENTIFIER": doc["IDENTIFIER"]})
+
+            if (
+                self.models.count_documents({"IDENTIFIER": data["IDENTIFIER"]}) == 0
+                and self.containers.count_documents({"CONTAINER": data["CONTAINER"]})
+                == 0
+            ):
                 await self.add_model_db(data)
                 added_models.append(data["IDENTIFIER"])
+
         return added_models
 
     async def get_model_stats(self, identifier):
@@ -154,7 +169,7 @@ class MongoClass:
 
     async def get_containers(self, identifier, num):
         query = {"IDENTIFIER": identifier}
-        result = self.containers.find(query, sort=[('_id', -1)]).limit(num)
+        result = self.containers.find(query, sort=[("_id", -1)]).limit(num)
         containers = []
         for c in result:
             containers.append(c["CONTAINER"])

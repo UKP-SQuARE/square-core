@@ -92,7 +92,11 @@ def create_pattern(nlp, doc, debug=False):
         or doc[-1].text in pronoun_list
         or all(
             [
-                (token.text in nltk_stopwords or token.lemma_ in nltk_stopwords or token.lemma_ in blacklist)
+                (
+                    token.text in nltk_stopwords
+                    or token.lemma_ in nltk_stopwords
+                    or token.lemma_ in blacklist
+                )
                 for token in doc
             ]
         )
@@ -149,7 +153,9 @@ def ground_mentioned_concepts(nlp, matcher, s, ans=None):
 
     if ans is not None:
         ans_matcher = Matcher(nlp.vocab)
-        ans_matcher.add(ans, [[{"TEXT": token.text.lower()} for token in nlp.tokenizer.pipe(ans)]])
+        ans_matcher.add(
+            ans, [[{"TEXT": token.text.lower()} for token in nlp.tokenizer.pipe(ans)]]
+        )
 
         ans_match = ans_matcher(doc)
         ans_mentions = set()
@@ -190,7 +196,13 @@ def ground_mentioned_concepts(nlp, matcher, s, ans=None):
             else:
                 mentioned_concepts.add(c)
 
-        exact_match = set([concept for concept in concepts_sorted if concept.replace("_", " ").lower() == span.lower()])
+        exact_match = set(
+            [
+                concept
+                for concept in concepts_sorted
+                if concept.replace("_", " ").lower() == span.lower()
+            ]
+        )
         assert len(exact_match) < 2
         mentioned_concepts.update(exact_match)
     return mentioned_concepts
