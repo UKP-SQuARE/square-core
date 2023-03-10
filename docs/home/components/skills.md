@@ -90,6 +90,7 @@ SQuARE v3 provides a new key functionality to combine Skills. The current high-s
 
 ### Automatic Skill Selection
 This approach aims to identify the Skill with the highest likelihood of returning the correct answer to the input question and then route the input to that Skill. [Geigle et al., (2021)](https://arxiv.org/abs/2104.07081) proposed TWEAC, a Transformer model with a classification head for each Skill that maps questions to Skills. The Figure below illustrates how it works.
+
 ![tweac](../../static/img/tweac.png)
 
 You can create a Meta-Skill with TWEAC in the same way as any other skill but, you need to set the Skill URL to `http://tweac`. Please, also note that the flag `Meta-Skill` is on. In `base model` you will need to put a sequence-classification model, such as [UKP-SQuARE/tweac_16](https://huggingface.co/UKP-SQuARE/tweac_16), trained to identify QA datasets. This model should have a [config file](https://huggingface.co/UKP-SQuARE/tweac_16/blob/main/config.json) with the field `id2label`, where the labels are the dataset identifiers of Hugging Face. This is needed so that SQuARE is able to route your input to a Skill trained on the predicted dataset. See below an example of this `id2label` mappding:
@@ -106,6 +107,7 @@ You can create a Meta-Skill with TWEAC in the same way as any other skill but, y
 ```
 
 Lastly, an important paramter to set is `max_skills_per_dataset`. It sets the number of Skills that should be called to answer your input question. For example, if TWEAC predicts the dataset `squad`, and `max_skills_per_dataset` is set to `2`. SQuARE will route your input to two Skills trained on `squad`.
+
 ![tweac_skill](../../static/img/TWEAC_Skill_creation.png)
 
 
@@ -113,6 +115,7 @@ Lastly, an important paramter to set is `max_skills_per_dataset`. It sets the nu
 ### Early-fusion of Skills
 
 You can create a Skill that combines the weights of multiple adapters as in [(Friedman et al., 2021)](https://aclanthology.org/2021.emnlp-main.495/). 
+
 ![made](../../static/img/made.png)
 
 You only need to select `Use Adapter` and `Combine Adapters`. Then you can input the list of adapters you want to combine as illustrated in the Figure below.
@@ -122,6 +125,7 @@ You only need to select `Use Adapter` and `Combine Adapters`. Then you can input
 
 ### Late-fusion of Skills
 Lastly, you can also create a Meta-Skill that combines the predictions of multiple Skills as in [(Puerto et al., 2023)](https://arxiv.org/abs/2112.01922). 
+
 ![metaqa](../../static/img/metaqa.png)
 
 You only need to select `http://metaqa` as Skill URL, write your MetaQA model (for example [https://huggingface.co/UKP-SQuARE/Extractive_MetaQA](https://huggingface.co/UKP-SQuARE/Extractive_MetaQA)), and lastly, select the list of Skills in `MetaQA's Agents`. Please note this list is sorted. You need to select the Skills in the same order as you trained your MetaQA model. For more details on how to train MetaQA, we refer the reader to the original publication [(Puerto et al., 2023)](https://arxiv.org/abs/2112.01922). 
