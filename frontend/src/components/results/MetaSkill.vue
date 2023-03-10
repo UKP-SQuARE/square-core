@@ -3,7 +3,7 @@
   <td class="pt-4">
     <div class="container">
       <div class="row">
-        <div class="col col-8 text-start">
+        <div class="col col-6 text-start">
           <span v-html="output" />
         </div>
         <div class="col text-end">
