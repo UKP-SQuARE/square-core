@@ -101,7 +101,6 @@ def _call_skill(skill_id, request):
 def _create_metaqa_output(request, model_response):
     list_predictions = []
     list_skills_ids = request.skill_args["list_skills"] # list of skill ids
-    selected_skill_id = list_skills_ids[answer["agent_idx"]]
     for answer in model_response["answers"][0]:
         list_predictions.append(
             Prediction(
@@ -110,7 +109,7 @@ def _create_metaqa_output(request, model_response):
                 prediction_output=PredictionOutput(
                     output=answer["answer"], output_score=answer["agent_score"]
                 ),
-                skill_id=selected_skill_id,
+                skill_id=list_skills_ids[answer["agent_idx"]],
             )
         )
     return QueryOutput(predictions=list_predictions)
