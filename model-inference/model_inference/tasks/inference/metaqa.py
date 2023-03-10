@@ -1,3 +1,4 @@
+import logging
 import torch
 from typing import List, Tuple
 import numpy as np
@@ -12,6 +13,8 @@ from model_inference.tasks.models.prediction import (
     PredictionOutputForQuestionAnswering,
 )
 from model_inference.tasks.models.request import PredictionRequest, Task
+
+logger = logging.getLogger(__name__)
 
 
 class MetaQA(Model):
@@ -52,7 +55,7 @@ class MetaQA(Model):
         task_outputs = {"answers": [[]]}
         for i in pred_list:
             pred = {}
-            output_name = ["answer", "agent_name", "metaqa_score", "agent_score"]
+            output_name = ["answer", "agent_idx", "metaqa_score", "agent_score"]
             for key, value in zip(output_name, i):
                 pred[key] = value
             task_outputs["answers"][0].append(pred)
@@ -62,7 +65,7 @@ class MetaQA(Model):
         )
 
     def _predict(
-        self, question: str, agents_predictions: List[Tuple[str, float]], topk
+        self, question: str, agents_predictions: List[Tuple[str, int, float, float]], topk
     ):
         """
         Runs MetaQA on a single instance.

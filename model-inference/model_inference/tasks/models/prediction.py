@@ -248,7 +248,7 @@ class MetaQAAnswer(BaseModel):
     """
 
     answer: str
-    agent_name: str
+    agent_idx: int
     metaqa_score: float
     agent_score: float
 
