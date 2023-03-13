@@ -5,7 +5,6 @@ import numpy as np
 from transformers import AutoTokenizer
 from .metaqa_utils.MetaQA_Model import MetaQA_Model
 
-# from metaqa_utils.inference import MetaQA_basemodel
 from model_inference.tasks.inference.model import Model
 from model_inference.tasks.config.model_config import model_config
 from model_inference.tasks.models.prediction import (
@@ -45,13 +44,7 @@ class MetaQA(Model):
         topk: int = request.task_kwargs.get("topk", 1)
         agents_predictions: list = request.input["agents_predictions"]
 
-        if len(agents_predictions) < 16:
-            # TODO:how many agents?
-            for i in range(16 - len(agents_predictions)):
-                agents_predictions.append(["", 0.0])
-        # agent_predictions = self._get_agents_prediction(question,context)
         pred_list = self._predict(question, agents_predictions, topk)
-
         task_outputs = {"answers": [[]]}
         for i in pred_list:
             pred = {}
@@ -65,7 +58,7 @@ class MetaQA(Model):
         )
 
     def _predict(
-        self, question: str, agents_predictions: List[Tuple[str, int, float, float]], topk
+        self, question: str, agents_predictions: List[List[Tuple[str, float]]], topk
     ):
         """
         Runs MetaQA on a single instance.
@@ -86,7 +79,7 @@ class MetaQA(Model):
         return pred_list
 
     def _encode_metaQA_instance(
-        self, question: str, agents_predictions: List[Tuple[str, float]], max_len=512
+        self, question: str, agents_predictions: List[List[Tuple[str, float]]], max_len=512
     ):
         """
         Creates input ids, token ids, token masks for an instance of MetaQA.
