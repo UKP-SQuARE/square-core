@@ -148,7 +148,8 @@ class AdapterTransformer(Transformer):
                 logger.info(f"averaging adapters")
                 state_dict = {}
                 for name in adapter_name:
-                    self.model.load_adapter(name, load_as=name, source=None)
+                    source = "hf" if name.startswith("UKP-SQuARE") else None
+                    self.model.load_adapter(name, load_as=name, source=source)
                     p_state_dict = self.model.state_dict()
                     state_dict.update(p_state_dict)
                 avg_dict = self._average_adapter_params(adapter_name, state_dict)
@@ -159,8 +160,8 @@ class AdapterTransformer(Transformer):
                     state_dict, strict=False
                 )
                 logger.info(f"{len(missing)} missing, {len(unexpected)} unexpected")
-                logger.info(f"missing: {missing}")
-                logger.info(f"unexpected: {unexpected}")
+                # logger.info(f"missing: {missing}")
+                # logger.info(f"unexpected: {unexpected}")
                 missing = set(missing)
                 missing_new = [
                     k
