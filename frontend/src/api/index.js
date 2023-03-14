@@ -7,16 +7,17 @@ import axios from 'axios'
 /**
  * URLs to the SQuARE backend servers
  */
-const SKILL_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
+const SKILL_MANAGER_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`
 const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`
+const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
 
 /**
  * Get a list of available skill types.
  * @param {Object} headers optional authentication header
  */
 export function getSkillTypes(headers) {
-    return axios.get(`${SKILL_URL}/skill-types`, { headers: headers })
+    return axios.get(`${SKILL_MANAGER_URL}/skill-types`, { headers: headers })
 }
 
 /**
@@ -49,7 +50,7 @@ export function getDatastoreIndices(headers, datastoreId) {
  * @param {Object} headers optional authentication header
  */
 export function getSkills(headers) {
-    return axios.get(`${SKILL_URL}/skill`, { headers: headers })
+    return axios.get(`${SKILL_MANAGER_URL}/skill`, { headers: headers })
 }
 
 /**
@@ -58,7 +59,7 @@ export function getSkills(headers) {
  * @param {String} skillId ID of the skill
  */
 export function getSkill(headers, skillId) {
-    return axios.get(`${SKILL_URL}/skill/${skillId}`, { headers: headers })
+    return axios.get(`${SKILL_MANAGER_URL}/skill/${skillId}`, { headers: headers })
 }
 
 /**
@@ -67,7 +68,7 @@ export function getSkill(headers, skillId) {
  * @param {String} skillId ID of the skill that will be deleted
  */
 export function deleteSkill(headers, skillId) {
-    return axios.delete(`${SKILL_URL}/skill/${skillId}`, { headers: headers })
+    return axios.delete(`${SKILL_MANAGER_URL}/skill/${skillId}`, { headers: headers })
 }
 
 /**
@@ -78,7 +79,7 @@ export function deleteSkill(headers, skillId) {
  * @param {Object} newSkill the new values for the skill. All fields need to be present. If a value should not be updated, then set the old value there.
  */
 export function putSkill(headers, skillId, newSkill) {
-    return axios.put(`${SKILL_URL}/skill/${skillId}`, newSkill, { headers: headers })
+    return axios.put(`${SKILL_MANAGER_URL}/skill/${skillId}`, newSkill, { headers: headers })
 }
 
 /**
@@ -125,7 +126,7 @@ export function postQuery(headers, question, context, choices, options) {
         data.skill_args.feedback_documents = options.feedback_documents
     }
     let results = options.selectedSkills.map(skillId => {
-        return axios.post(`${SKILL_URL}/skill/${skillId}/query`, data, { headers: headers })
+        return axios.post(`${SKILL_MANAGER_URL}/skill/${skillId}/query`, data, { headers: headers })
     })
     return axios.all(results)
 }
@@ -136,7 +137,7 @@ export function postQuery(headers, question, context, choices, options) {
  * @param {Object} newSkill the values for the new skill
  */
 export function postSkill(headers, newSkill) {
-    return axios.post(`${SKILL_URL}/skill`, newSkill, { headers: headers })
+    return axios.post(`${SKILL_MANAGER_URL}/skill`, newSkill, { headers: headers })
 }
 
 /**
@@ -144,9 +145,8 @@ export function postSkill(headers, newSkill) {
  * @param {Object} headers optional authentication header
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
-export function pingSkill(headers, skillUrl) {
-    headers.params = { skill_url: skillUrl }
-    return axios.get(`${SKILL_URL}/health/skill-heartbeat`, headers)
+export function skillHeartbeat(headers, id) {
+    return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, {headers: headers})
 }
 
 /**
@@ -181,4 +181,13 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  */
  export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
     return axios.post(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, {}, { headers: headers })
+}
+
+/**
+ * Check if model is available.
+ * @param {Object} headers Authentication header
+ * @param {String} model_identifier identifier of the model to check
+ */
+export function modelHeartbeat(headers, model_identifier) {
+    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health`, {headers: headers})
 }

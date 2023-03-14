@@ -216,11 +216,10 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
-      MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      EVALUATOR_API_URL: #@ data.values.square_api_url[data.values.environment] + "/evaluator"
+      SQUARE_URL: #@ data.values.square_url[data.values.environment]
     depends_on:
       - mongodb
       - redis

@@ -20,7 +20,10 @@
           <small>{{ skill.url }}</small>
         </div>
         <p class="mb-3">{{ skill.description }}</p>
-        <Status :url="skill.url" />
+        <Status :id="skill.id" />
+        <span v-for="(modelIdentifier, modelKey) in skill.models" :key="modelKey" class="p-2 ms-1">
+          <ModelStatus :modelIdentifier="modelIdentifier" :modelKey="modelKey" />
+        </span>
         <span v-if="skill.published" class="badge bg-info ms-1 p-2">Published</span>
         <span v-else class="badge bg-secondary ms-1 p-2">Not Published</span>
         <div class="d-grid gap-2 d-flex mt-2">
@@ -60,12 +63,14 @@ import Vue from 'vue'
 import Card from '@/components/Card.vue'
 import ConfirmDestructiveAction from '@/components/modals/ConfirmDestructiveAction.vue'
 import Status from '@/components/Status.vue'
+import ModelStatus from '@/components/ModelStatus.vue'
 
 export default Vue.component('list-skills', {
   components: {
     Card,
     ConfirmDestructiveAction,
-    Status
+    Status,
+    ModelStatus
   },
   computed: {
     mySkills() {

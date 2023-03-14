@@ -2,16 +2,16 @@
 <template>
   <span class="badge d-inline-flex align-items-center py-2" :class="bgColor">
     <span v-if="status === 'checking'" class="spinner-grow spinner-grow-sm" role="status" />
-    &nbsp;{{ label }}
+    Skill: {{ label }}
   </span>
 </template>
 
 <script>
 import Vue from 'vue'
-import { pingSkill } from '@/api'
+import { skillHeartbeat } from '@/api'
 
 export default Vue.component('skill-status', {
-  props: ['url'],
+  props: ['id'],
   data() {
     return {
       /**
@@ -31,14 +31,14 @@ export default Vue.component('skill-status', {
     }
   },
   watch: {
-    url: function () {
-      this.testSkillUrl()
+    id: function () {
+      this.checkSkillHealth()
     }
   },
   methods: {
-    testSkillUrl() {
+    checkSkillHealth() {
       this.status = 'checking'
-      pingSkill(this.$store.getters.authenticationHeader(), this.url).then((response) => {
+      skillHeartbeat(this.$store.getters.authenticationHeader(), this.id).then((response) => {
         this.status = response.data.is_alive ? 'available' : 'unavailable'
       }).catch(() => {
         this.status = 'unavailable'
@@ -46,7 +46,7 @@ export default Vue.component('skill-status', {
     }
   },
   beforeMount() {
-    this.testSkillUrl()
+    this.checkSkillHealth()
   }
 })
 </script>

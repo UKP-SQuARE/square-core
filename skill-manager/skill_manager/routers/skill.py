@@ -11,6 +11,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
 from square_auth.utils import is_local_deployment
+from square_model_client import SQuAREModelClient
 from square_skill_api.models.prediction import QueryOutput
 from square_skill_api.models.request import QueryRequest
 
@@ -20,22 +21,18 @@ from skill_manager.auth_utils import (
     get_skill_if_authorized,
     has_auth_header,
 )
-from skill_manager.core import ModelManagementClient
 from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
 from skill_manager.models import Prediction, Skill
 from skill_manager.routers import client_credentials
+from skill_manager.settings import SkillManagerSettings
 from skill_manager.utils import merge_dicts
 
 logger = logging.getLogger(__name__)
-evaluator_url = os.getenv(
-    "EVALUATOR_API_URL", "https://square.ukp-lab.de/api/evaluator"
-)
 
+settings = SkillManagerSettings()
 router = APIRouter(prefix="/skill")
-
 auth = Auth()
-
 session_cache = SessionCache()
 
 
@@ -86,7 +83,7 @@ async def create_skill(
     request: Request,
     skill: Skill,
     keycloak_api: KeycloakAPI = Depends(KeycloakAPI),
-    models_client: ModelManagementClient = Depends(ModelManagementClient),
+    models_client: SQuAREModelClient = Depends(SQuAREModelClient),
     token_payload: Dict = Depends(auth),
 ):
     """Creates a new skill and saves it."""
@@ -142,7 +139,7 @@ async def update_skill(
     request: Request,
     id: str,
     data: dict,
-    models_client: ModelManagementClient = Depends(ModelManagementClient),
+    models_client: SQuAREModelClient = Depends(SQuAREModelClient),
 ):
     """Updates a skill with the provided data."""
     skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
@@ -333,7 +330,7 @@ def trigger_evaluations(skill_id: str, dataset_names: List[str], headers={}):
 
 async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
     loop = asyncio.get_event_loop()
-    url = f"{evaluator_url}/evaluate/{skill_id}/{dataset_name.lower()}"
+    url = f"{settings.square_url}/api/{settings.evauluator_api_prefix}/evaluate/{skill_id}/{dataset_name.lower()}"
     future = loop.run_in_executor(
         None, lambda: requests.post(url, headers=headers, timeout=30)
     )
