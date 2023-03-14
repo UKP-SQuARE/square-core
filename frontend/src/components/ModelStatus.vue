@@ -37,12 +37,12 @@
     },
     methods: {
         checkModelHealth() {
-        this.status = 'checking'
-        modelHeartbeat(this.$store.getters.authenticationHeader(), this.modelIdentifier).then((response) => {
-          this.status = response.data.is_alive ? 'available' : 'unavailable'
-        }).catch(() => {
-          this.status = 'unavailable'
-        })
+          this.status = 'checking'
+          modelHeartbeat(this.$store.getters.authenticationHeader(), this.modelIdentifier).then((response) => {
+            this.status = response.data[0].is_alive ? 'available' : 'unavailable'
+          }).catch(() => {
+            this.status = 'unavailable'
+          })
       }
     },
     beforeMount() {
