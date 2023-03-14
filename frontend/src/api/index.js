@@ -146,7 +146,7 @@ export function postSkill(headers, newSkill) {
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
 export function skillHeartbeat(headers, id) {
-    return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, headers)
+    return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, {headers: headers})
 }
 
 /**
@@ -189,6 +189,5 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  * @param {String} model_identifier identifier of the model to check
  */
 export function modelHeartbeat(headers, model_identifier) {
-    console.log(`${MODEL_MANAGER_URL}/${model_identifier}/health/heartbeat`)
-    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health/heartbeat`, headers)
+    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health`, {headers: headers})
 }
