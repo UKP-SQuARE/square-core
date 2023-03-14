@@ -31,7 +31,7 @@
       }
     },
     watch: {
-      url: function () {
+      modelIdentifier: function () {
         this.checkModelHealth()
       }
     },

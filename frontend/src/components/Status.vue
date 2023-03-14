@@ -31,7 +31,7 @@ export default Vue.component('skill-status', {
     }
   },
   watch: {
-    url: function () {
+    id: function () {
       this.checkSkillHealth()
     }
   },
