@@ -48,7 +48,11 @@ def _encode_numpy(
         # - once by Model and once when request response is serialized by fastAPI
         if isinstance(val, int) or isinstance(val, float) or isinstance(val, str):
             raise ValueError("Array is already encoded")
-        if isinstance(val, Iterable) and not isinstance(val, torch.Tensor) and not isinstance(val, np.ndarray):
+        if (
+            isinstance(val, Iterable)
+            and not isinstance(val, torch.Tensor)
+            and not isinstance(val, np.ndarray)
+        ):
             return [enc_or_iterate(v) for v in val]
         else:
             return encode(val)
@@ -129,21 +133,29 @@ class TokenAttributions(BaseModel):
 class PredictionOutputForSequenceClassification(PredictionOutput):
     labels: List[int] = Field(
         default=[],
-        description="List of the predicted label ids for the input. " "Not set for regression.",
+        description="List of the predicted label ids for the input. "
+        "Not set for regression.",
     )
     id2label: Dict[int, str] = Field(
         default={},
-        description="Mapping from label id to the label name. " "Not set for regression.",
+        description="Mapping from label id to the label name. "
+        "Not set for regression.",
     )
     attributions: Optional[List[TokenAttributions]] = Field(
         default=[],
-        description="scores for the input tokens which are important for the" "model prediction",
+        description="scores for the input tokens which are important for the"
+        "model prediction",
     )
-    questions: Optional[List] = Field(default=[], description="The new questions after modification")
-    contexts: Optional[List] = Field(default=[], description="The new contexts after modification")
+    questions: Optional[List] = Field(
+        default=[], description="The new questions after modification"
+    )
+    contexts: Optional[List] = Field(
+        default=[], description="The new contexts after modification"
+    )
     adversarial: Optional[Dict] = Field(
         default={},
-        description="scores for the input tokens which are important for the" "model prediction",
+        description="scores for the input tokens which are important for the"
+        "model prediction",
     )
 
     def __init__(self, **data):
@@ -153,10 +165,15 @@ class PredictionOutputForSequenceClassification(PredictionOutput):
 class PredictionOutputForGraphSequenceClassification(PredictionOutput):
     labels: List[int] = Field(
         default=[],
-        description="List of the predicted label ids for the input. " "Not set for regression.",
+        description="List of the predicted label ids for the input. "
+        "Not set for regression.",
     )
-    lm_subgraph: Optional[Dict[str, Dict]] = Field(default={}, description="return the lm scored subgraph")
-    attn_subgraph: Optional[Dict[str, Dict]] = Field(default={}, description="return the attention subgraph")
+    lm_subgraph: Optional[Dict[str, Dict]] = Field(
+        default={}, description="return the lm scored subgraph"
+    )
+    attn_subgraph: Optional[Dict[str, Dict]] = Field(
+        default={}, description="return the attention subgraph"
+    )
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -165,7 +182,8 @@ class PredictionOutputForGraphSequenceClassification(PredictionOutput):
 class PredictionOutputForTokenClassification(PredictionOutput):
     labels: List[List[int]] = Field(
         [],
-        description="List of the predicted label ids for the input. Not set " "for regression.",
+        description="List of the predicted label ids for the input. Not set "
+        "for regression.",
     )
     id2label: Dict[int, str] = Field(
         {},
@@ -223,19 +241,20 @@ class QAAnswer(BaseModel):
     end: int
     answer: str
 
+
 class MetaQAAnswer(BaseModel):
     """
     Only for output of MetaQA,
     """
 
     answer: str
-    agent_name: str
+    agent_idx: int
     metaqa_score: float
     agent_score: float
 
 
 class PredictionOutputForQuestionAnswering(PredictionOutput):
-    answers: List[List[Union[QAAnswer,MetaQAAnswer]]] = Field(
+    answers: List[List[Union[QAAnswer, MetaQAAnswer]]] = Field(
         ...,
         description="List of lists of answers. Length of outer list is the number "
         "of inputs, length of inner list is parameter 'topk' from the "
@@ -246,17 +265,25 @@ class PredictionOutputForQuestionAnswering(PredictionOutput):
         "answer span was extracted, the empty span is returned "
         "(start and end both 0)",
     )
-    questions: Optional[List] = Field([], description="The new questions after modification")
-    contexts: Optional[List] = Field([], description="The new contexts after modification")
+    questions: Optional[List] = Field(
+        [], description="The new questions after modification"
+    )
+    contexts: Optional[List] = Field(
+        [], description="The new contexts after modification"
+    )
     attributions: Optional[List[TokenAttributions]] = Field(
         [],
-        description="scores for the input tokens which are important for the" "model prediction",
+        description="scores for the input tokens which are important for the"
+        "model prediction",
     )
     adversarial: Optional[Dict] = Field(
         {},
-        description="scores for the input tokens which are important for the" "model prediction",
+        description="scores for the input tokens which are important for the"
+        "model prediction",
     )
-    bertviz: Optional[List] = Field([], description="The plain html string of bertviz's head view")
+    bertviz: Optional[List] = Field(
+        [], description="The plain html string of bertviz's head view"
+    )
 
     def __init__(self, **data):
         super().__init__(**data)

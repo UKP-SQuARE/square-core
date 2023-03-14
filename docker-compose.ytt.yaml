@@ -135,6 +135,38 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d/
+  
+  virtuoso:
+    image: tenforce/virtuoso:virtuoso7.2.5
+    environment: 
+      VIRT_Database_DatabaseFile: /data/virtuoso_db/virtuoso.db
+      VIRT_Database_ErrorLogFile: /data/virtuoso_db/virtuoso.log
+      VIRT_Database_LockFile: /data/virtuoso_db/virtuoso.lck
+      VIRT_TransactionFile_LockFile: /data/virtuoso_db/virtuoso.trx
+      VIRT_xa_persistent_file: /data/virtuoso_db/virtuoso.pxa
+      VIRT_Database_ErrorLogLevel: 7
+      VIRT_Database_FileExtend: 200
+      VIRT_Database_MaxCheckpointRemap: 2000
+      VIRT_Database_Striping: 0
+      VIRT_Database_TempStorage: TempDatabase
+      VIRT_TempDatabase_DatabaseFile: /data/virtuoso_db/virtuoso-temp.db
+      VIRT_TempDatabase_TransactionFile: /data/virtuoso_db/virtuoso-temp.trx
+      VIRT_Parameters_O_DIRECT: 1
+      VIRT_Parameters_ServerThreads: 100
+      VIRT_HTTPServer_ServerThreads: 15
+      VIRT_SPARQL_MaxQueryCostEstimationTime: 600
+      VIRT_SPARQL_MaxQueryExecutionTime: 180
+    volumes:
+      - virtuoso-db:/data/
+    ports:
+      - 8890:8890
+    labels:
+      - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("virtuoso"))
+      - "traefik.http.routers.virtuoso.rule=PathPrefix(`/virtuoso`)"
+      - "traefik.http.routers.virtuoso.middlewares=virtuoso-stripprefix"
+      - "traefik.http.middlewares.virtuoso-stripprefix.stripprefix.prefixes=/virtuoso"
+      - "traefik.http.services.virtuoso.loadbalancer.server.port=8890"
 
   frontend:
     build: 
@@ -401,6 +433,7 @@ services:
       target: build
       args:
         - MODEL_TYPE=transformer
+    container_name: facebook-dpr-question_encoder-single-nq-base
     command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -432,6 +465,7 @@ services:
       target: build
       args:
         - MODEL_TYPE=transformer
+    container_name: bert-base-uncased
     command: celery -A tasks worker -Q bert-base-uncased --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -462,6 +496,7 @@ services:
       target: build
       args:
         - MODEL_TYPE=transformer
+    container_name: metaqa
     command: celery -A tasks worker -Q metaqa --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -494,6 +529,7 @@ services:
       target: build
       args:
         - MODEL_TYPE=transformer
+    container_name: roberta-base
     command: celery -A tasks worker -Q roberta-base --loglevel=info
     volumes:
       - ./:/usr/src/app
@@ -525,6 +561,7 @@ services:
       target: build
       args:
         - MODEL_TYPE=graph_transformer
+    container_name: qagnn
     command: celery -A tasks worker -Q qagnn --loglevel=info --concurrency=1
     volumes:
       - ./:/usr/src/app
@@ -660,4 +697,6 @@ volumes:
   onnx_models:
     driver: local
   evaluation-datasets:
+    driver: local
+  virtuoso-db: 
     driver: local

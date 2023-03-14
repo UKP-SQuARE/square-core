@@ -32,7 +32,9 @@ class Attacker:
 
     def _get_tokens_and_attributions(
         self,
-    ) -> Tuple[np.ndarray, np.ndarray, str, str, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[
+        np.ndarray, np.ndarray, str, str, np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ]:
         """
         get the tokens and attributions from the model outputs
         """
@@ -78,7 +80,9 @@ class Attacker:
         Returns:
             inputs (List): The prepared inputs.
         """
-        inputs = [[query, context] for query, context in zip(question_text, context_text)]
+        inputs = [
+            [query, context] for query, context in zip(question_text, context_text)
+        ]
         return inputs
 
     @staticmethod
@@ -99,13 +103,20 @@ class Attacker:
             inputs (List): The prepared inputs.
         """
         if question_text and context_text and choice_text is None:
-            inputs = [[context, query] for query, context in zip(question_text, context_text)]
+            inputs = [
+                [context, query] for query, context in zip(question_text, context_text)
+            ]
         elif context_text is None and choice_text:
-            inputs = [[[query, choice] for choice in choices] for query, choices in zip(question_text, choice_text)]
+            inputs = [
+                [[query, choice] for choice in choices]
+                for query, choices in zip(question_text, choice_text)
+            ]
         else:
             inputs = [
                 [[context, query + " " + choice] for choice in choices]
-                for query, context, choices in zip(question_text, context_text, choice_text)
+                for query, context, choices in zip(
+                    question_text, context_text, choice_text
+                )
             ]
         return inputs
 
@@ -129,7 +140,9 @@ class Attacker:
         if self.task == "question_answering":
             inputs = self._prepare_qa_inputs(question_text, context_text)
         elif self.task == "sequence_classification":
-            inputs = self._prepare_categorical_inputs(question_text, context_text, choice_text)
+            inputs = self._prepare_categorical_inputs(
+                question_text, context_text, choice_text
+            )
         else:
             raise ValueError(f"Unknown task {self.task}")
         return inputs

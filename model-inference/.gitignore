@@ -146,3 +146,4 @@ model_inference/http-client.env.json
 
 model_inference/model_configs/.env.tweac
 model_inference/tasks/inference/models_playground.py
+optimize

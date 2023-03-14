@@ -83,39 +83,52 @@ If you want to run your Skill directly on SQuARE hardware, you can submit a [pul
 6. Deploy your skill according to the instructions
 7. Copy the URL of your deployment and use it when creating a skill in SQuARE without the trailing `/query` (e.g. https://myskill.azurewebsites.net/api). 
 An example repository can also be found at [UKP-SQuARE/cloud-example-azure](https://github.com/UKP-SQuARE/cloud-example-azure)
-## Publicly Available Skills
- | Name |Retrieval Model |Datastore |Reader Model |Reader Adapter |Type |Code |
- |--- | --- | --- | --- | --- | --- | --- | 
- | BoolQ BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [boolq](https://huggingface.co/AdapterHub/bert-base-uncased-pf-boolq) | categorical | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | BoolQ RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [boolq](https://huggingface.co/AdapterHub/roberta-base-pf-boolq) | categorical | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | CommonsenseQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [commonsense_qa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-commonsense_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/commonsense-qa/skill.py) | 
- | CommonsenseQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [commonsense_qa](https://huggingface.co/AdapterHub/roberta-base-pf-commonsense_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/commonsense-qa/skill.py) | 
- | CosmosQA BERT |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [cosmos_qa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-cosmos_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | CosmosQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [cosmos_qa](https://huggingface.co/AdapterHub/roberta-base-pf-cosmos_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | DROP BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [drop](https://huggingface.co/AdapterHub/bert-base-uncased-pf-drop) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | DROP RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [drop](https://huggingface.co/AdapterHub/roberta-base-pf-drop) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | HotpotQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [hotpotqa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-hotpotqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | HotpotQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [hotpotqa](https://huggingface.co/AdapterHub/roberta-base-pf-hotpotqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | MultiRC BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [multirc](https://huggingface.co/AdapterHub/bert-base-uncased-pf-multirc) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | MultiRC RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [multirc](https://huggingface.co/AdapterHub/roberta-base-pf-multirc) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | NarrativeQA BART Adapter |  |  | [bart-base](https://huggingface.co/facebook/bart-base) | [narrativeqa](https://huggingface.co/AdapterHub/narrativeqa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/generative-qa/skill.py) | 
- | NewsQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [newsqa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-newsqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | NewsQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [newsqa](https://huggingface.co/AdapterHub/roberta-base-pf-newsqa) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | OpenBioASQ | [BM25](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) |  Pubmed | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-bioasq/skill.py) | 
- | OpenSQuAD-DPR | [dpr](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base) |  Wikipedia | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-squad/skill.py) | 
- | OpenSQuAD-TAS-b | [dpr](https://huggingface.co/facebook/dpr-ctx_encoder-single-nq-base) |  Wikipedia | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/open-extractive-qa/skill.py) | 
- | QuAIL BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [quail](https://huggingface.co/AdapterHub/bert-base-uncased-pf-quail) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | QuAIL RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quail](https://huggingface.co/AdapterHub/roberta-base-pf-quail) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | QuaRTz RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quartz](https://huggingface.co/AdapterHub/roberta-base-pf-quartz) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | Quoref BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [quoref](https://huggingface.co/AdapterHub/bert-base-uncased-pf-quoref) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | Quoref RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [quoref](https://huggingface.co/AdapterHub/roberta-base-pf-quoref) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | RACE BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [race](https://huggingface.co/AdapterHub/bert-base-uncased-pf-race) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | RACE RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [race](https://huggingface.co/AdapterHub/roberta-base-pf-race) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | SQuAD 1.1 BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad](https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | SQuAD 1.1 RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [squad](https://huggingface.co/AdapterHub/roberta-base-pf-squad) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | SQuAD 2.0 BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [squad_v2](https://huggingface.co/AdapterHub/bert-base-uncased-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | SQuAD 2.0 RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [squad_v2](https://huggingface.co/AdapterHub/roberta-base-pf-squad_v2) | span-extraction | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/extractive-qa/skill.py) | 
- | Social-IQA BERT Adapter |  |  | [bert-base-uncased](https://huggingface.co/bert-base-uncased) | [social_i_qa](https://huggingface.co/AdapterHub/bert-base-uncased-pf-social_i_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
- | Social-IQA RoBERTa Adapter |  |  | [roberta-base](https://huggingface.co/roberta-base) | [social_i_qa](https://huggingface.co/AdapterHub/roberta-base-pf-social_i_qa) | multiple-choice | [code](https://github.com/UKP-SQuARE/square-core/blob/master/skills/multiple-choice-qa/skill.py) | 
+
+## Combining Skills (Meta-Skills)
+SQuARE v3 provides a new key functionality to combine Skills. The current high-speed development of NLP is yielding thousands of QA models. Researches have discovered that combining them can yield to substantial gains w.r.t. models trained on multiple datasets [(Puerto et al., 2023)](https://arxiv.org/abs/2112.01922). Thus, given all the QA Skills available in SQuARE, it becomes natural to analyze the possibilities of combining them. To do this, SQuARE provides three methods: i) Automatic Skill selection, ii) Early-fusion of Skills, and iii) Late-fusion of Skills.
 
 
+### Automatic Skill Selection
+This approach aims to identify the Skill with the highest likelihood of returning the correct answer to the input question and then route the input to that Skill. [Geigle et al., (2021)](https://arxiv.org/abs/2104.07081) proposed TWEAC, a Transformer model with a classification head for each Skill that maps questions to Skills. The Figure below illustrates how it works.
+
+![tweac](../../static/img/tweac.png)
+
+You can create a Meta-Skill with TWEAC in the same way as any other skill but, you need to set the Skill URL to `http://tweac`. Please, also note that the flag `Meta-Skill` is on. In `base model` you will need to put a sequence-classification model, such as [UKP-SQuARE/tweac_16](https://huggingface.co/UKP-SQuARE/tweac_16), trained to identify QA datasets. This model should have a [config file](https://huggingface.co/UKP-SQuARE/tweac_16/blob/main/config.json) with the field `id2label`, where the labels are the dataset identifiers of Hugging Face. This is needed so that SQuARE is able to route your input to a Skill trained on the predicted dataset. See below an example of this `id2label` mappding:
+
+```
+"id2label": {
+    "0": "boolq",
+    "1": "commonsense_qa",
+    "2": "drop",
+    "3": "search_qa",
+    "4": "squad",
+    "5": "trivia_qa"
+  },
+```
+
+Lastly, an important paramter to set is `max_skills_per_dataset`. It sets the number of Skills that should be called to answer your input question. For example, if TWEAC predicts the dataset `squad`, and `max_skills_per_dataset` is set to `2`. SQuARE will route your input to two Skills trained on `squad`.
+
+![tweac_skill](../../static/img/TWEAC_Skill_creation.png)
+
+
+
+### Early-fusion of Skills
+
+You can create a Skill that combines the weights of multiple adapters as in [(Friedman et al., 2021)](https://aclanthology.org/2021.emnlp-main.495/). 
+
+![made](../../static/img/made.png)
+
+You only need to select `Use Adapter` and `Combine Adapters`. Then you can input the list of adapters you want to combine as illustrated in the Figure below.
+
+![made_skill](../../static/img/MADESkillCreation.png)
+
+
+### Late-fusion of Skills
+Lastly, you can also create a Meta-Skill that combines the predictions of multiple Skills as in [(Puerto et al., 2023)](https://arxiv.org/abs/2112.01922). 
+
+![metaqa](../../static/img/metaqa.png)
+
+You only need to select `http://metaqa` as Skill URL, write your MetaQA model (for example [https://huggingface.co/UKP-SQuARE/Extractive_MetaQA](https://huggingface.co/UKP-SQuARE/Extractive_MetaQA)), and lastly, select the list of Skills in `MetaQA's Agents`. Please note this list is sorted. You need to select the Skills in the same order as you trained your MetaQA model. For more details on how to train MetaQA, we refer the reader to the original publication [(Puerto et al., 2023)](https://arxiv.org/abs/2112.01922). 
+
+
+![metaqa_skill](../../static/img/MetaQASkillCreation.png)

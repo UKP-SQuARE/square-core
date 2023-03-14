@@ -23,6 +23,27 @@ def check_valid_request(request):
     return True, None
 
 
+async def run_task(
+    identifier: str,
+    prediction_request: PredictionRequest,
+    hf_username: str = None,
+    task_type: Task = None,
+    message: str = None,
+):
+    if hf_username:
+        identifier = f"{hf_username}/{identifier}"
+    valid, msg = check_valid_request(prediction_request)
+    if not valid:
+        return HTTPException(status_code=422, detail=msg)
+    model_config = ModelConfig.load_from_file(identifier)
+    queue_name = identifier.replace("/", "-")
+    res = prediction_task.apply_async(
+        (prediction_request.dict(), task_type, model_config.to_dict()),
+        queue=queue_name,
+    )
+    return AsyncTaskResult(message=message, task_id=res.id)
+
+
 @router.post(
     "/{identifier}/sequence-classification",
     response_model=AsyncTaskResult,
@@ -36,22 +57,13 @@ def check_valid_request(request):
 async def sequence_classification(
     identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
-    if hf_username:
-        identifier = f"{hf_username}/{identifier}"
-    valid, msg = check_valid_request(prediction_request)
-    if not valid:
-        return HTTPException(status_code=422, detail=msg)
-    model_config = ModelConfig.load_from_file(identifier)
-    res = prediction_task.apply_async(
-        (
-            prediction_request.dict(),
-            Task.sequence_classification,
-            model_config.to_dict(),
-        ),
-        queue=identifier.replace("/", "-"),
+    return await run_task(
+        identifier,
+        prediction_request,
+        hf_username,
+        Task.sequence_classification,
+        "Queued sequence classification",
     )
-
-    return AsyncTaskResult(message="Queued sequence classification", task_id=res.id)
 
 
 @router.post(
@@ -67,37 +79,29 @@ async def sequence_classification(
 async def token_classification(
     identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
-    if hf_username:
-        identifier = f"{hf_username}/{identifier}"
-    valid, msg = check_valid_request(prediction_request)
-    if not valid:
-        return HTTPException(status_code=422, detail=msg)
-    model_config = ModelConfig.load_from_file(identifier)
-    res = prediction_task.apply_async(
-        (prediction_request.dict(), Task.token_classification, model_config.to_dict()),
-        queue=identifier.replace("/", "-"),
+    return await run_task(
+        identifier,
+        prediction_request,
+        hf_username,
+        Task.token_classification,
+        "Queued token classification",
     )
-    return AsyncTaskResult(message="Queued token classification", task_id=res.id)
 
 
-@router.post("/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding")
+@router.post(
+    "/{identifier}/embedding", response_model=AsyncTaskResult, name="embedding"
+)
 @router.post(
     "/{hf_username}/{identifier}/embedding",
     response_model=AsyncTaskResult,
     name="embedding",
 )
-async def embedding(identifier: str, prediction_request: PredictionRequest, hf_username: str = None) -> AsyncTaskResult:
-    if hf_username:
-        identifier = f"{hf_username}/{identifier}"
-    valid, msg = check_valid_request(prediction_request)
-    if not valid:
-        return HTTPException(status_code=422, detail=msg)
-    model_config = ModelConfig.load_from_file(identifier)
-    res = prediction_task.apply_async(
-        (prediction_request.dict(), Task.embedding, model_config.to_dict()),
-        queue=identifier.replace("/", "-"),
+async def embedding(
+    identifier: str, prediction_request: PredictionRequest, hf_username: str = None
+) -> AsyncTaskResult:
+    return await run_task(
+        identifier, prediction_request, hf_username, Task.embedding, "Queued embedding"
     )
-    return AsyncTaskResult(message="Queued embedding", task_id=res.id)
 
 
 @router.post(
@@ -113,20 +117,18 @@ async def embedding(identifier: str, prediction_request: PredictionRequest, hf_u
 async def question_answering(
     identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
-    if hf_username:
-        identifier = f"{hf_username}/{identifier}"
-    valid, msg = check_valid_request(prediction_request)
-    if not valid:
-        return HTTPException(status_code=422, detail=msg)
-    model_config = ModelConfig.load_from_file(identifier)
-    res = prediction_task.apply_async(
-        (prediction_request.dict(), Task.question_answering, model_config.to_dict()),
-        queue=identifier.replace("/", "-"),
+    return await run_task(
+        identifier,
+        prediction_request,
+        hf_username,
+        Task.question_answering,
+        "Queued question answering",
     )
-    return AsyncTaskResult(message="Queued question answering", task_id=res.id)
 
 
-@router.post("/{identifier}/generation", response_model=AsyncTaskResult, name="generation")
+@router.post(
+    "/{identifier}/generation", response_model=AsyncTaskResult, name="generation"
+)
 @router.post(
     "/{hf_username}/{identifier}/generation",
     response_model=AsyncTaskResult,
@@ -135,24 +137,22 @@ async def question_answering(
 async def generation(
     identifier: str, prediction_request: PredictionRequest, hf_username: str = None
 ) -> AsyncTaskResult:
-    if hf_username:
-        identifier = f"{hf_username}/{identifier}"
-    valid, msg = check_valid_request(prediction_request)
-    if not valid:
-        return HTTPException(status_code=422, detail=msg)
-    model_config = ModelConfig.load_from_file(identifier)
-    res = prediction_task.apply_async(
-        (prediction_request.dict(), Task.generation, model_config.to_dict()),
-        queue=identifier.replace("/", "-"),
+    return await run_task(
+        identifier,
+        prediction_request,
+        hf_username,
+        Task.generation,
+        "Queued generation",
     )
-    return AsyncTaskResult(message="Queued generation", task_id=res.id)
 
 
 @router.get("/task_result/{task_id}")
 async def get_task_results(task_id: str):
     task = AsyncResult(task_id)
     if not task.ready():
-        return JSONResponse(status_code=202, content={"task_id": str(task_id), "status": "Processing"})
+        return JSONResponse(
+            status_code=202, content={"task_id": str(task_id), "status": "Processing"}
+        )
     result = task.get()
     return {"task_id": str(task_id), "status": "Finished", "result": result}
 
@@ -192,14 +192,15 @@ async def update(identifier: str, updated_param: UpdateModel, hf_username: str =
         model_config.model_type in ["onnx", "sentence-transformer"]
         and model_config.disable_gpu != updated_param.disable_gpu
     ):
-        raise HTTPException(status_code=400, detail="Can't change gpu setting for the model")
+        raise HTTPException(
+            status_code=400, detail="Can't change gpu setting for the model"
+        )
     model_config.disable_gpu = updated_param.disable_gpu
     model_config.batch_size = updated_param.batch_size
     model_config.max_input_size = updated_param.max_input
     model_config.return_plaintext_arrays = updated_param.return_plaintext_arrays
     logger.info(model_config)
     model_config.save(identifier)
-    logger.info(model_config)
     return model_config.to_statistics()
 
 

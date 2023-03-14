@@ -70,8 +70,6 @@ def _call_skills(list_skills, request):
 
 
 def _call_skill(skill_id, request):
-    token = client_credentials()
-
     input_data = {
         "query": request.query,
         "skill_args": {
@@ -102,11 +100,11 @@ def _call_skill(skill_id, request):
 
 
 def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
-    list_preds = [["", 0.0]] * 16
-    for skill_idx, skill_response in enumerate(list_skill_responses):
+    list_preds = []
+    for skill_response in list_skill_responses:
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
-        list_preds[skill_idx] = (pred, score)
+        list_preds.append((pred, score))
 
     model_request = {
         "input": {
@@ -120,11 +118,11 @@ def _create_metaqa_request_for_span_extraction(request, list_skill_responses):
 
 
 def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
-    list_preds = [("", 0.0)] * 16
-    for skill_idx, skill_response in enumerate(list_skill_responses):
+    list_preds = []
+    for skill_response in list_skill_responses:
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
-        list_preds[8 + skill_idx] = (pred, score)
+        list_preds.append((pred, score))
 
     model_request = {
         "input": {
@@ -139,6 +137,7 @@ def _create_metaqa_request_for_multiple_choice(request, list_skill_responses):
 
 def _create_metaqa_output(request, model_response):
     list_predictions = []
+    list_skills_ids = request.skill_args["list_skills"] # list of skill ids
     for answer in model_response["answers"][0]:
         list_predictions.append(
             Prediction(
@@ -147,7 +146,7 @@ def _create_metaqa_output(request, model_response):
                 prediction_output=PredictionOutput(
                     output=answer["answer"], output_score=answer["agent_score"]
                 ),
-                skill_id=answer["agent_name"],
+                skill_id=list_skills_ids[answer["agent_idx"]],
             )
         )
     return QueryOutput(predictions=list_predictions)

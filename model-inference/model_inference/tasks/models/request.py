@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union,Tuple
+from typing import List, Optional, Union, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -58,7 +58,7 @@ class PredictionRequest(BaseModel):
         "3. set `topk_lm_scores` to get the most relevant nodes"
         "4. set `topk_attn` to get the nodes with most attention"
         "For adapter models, the following options are also available:"
-        "1. set `average_adapters` to True to average the adapter weights"
+        "1. set `average_adapters` to True to average the adapter weights",
     )
     # task: Task = Field(...)
     task_kwargs: dict = Field(

@@ -55,7 +55,10 @@ class QAGNN_Message_Passing(nn.Module):
 
         self.k = k
         self.gnn_layers = nn.ModuleList(
-            [GATConvE(args, hidden_size, n_ntype, n_etype, self.edge_encoder) for _ in range(k)]
+            [
+                GATConvE(args, hidden_size, n_ntype, n_etype, self.edge_encoder)
+                for _ in range(k)
+            ]
         )
 
         self.Vh = nn.Linear(input_size, output_size)
@@ -67,7 +70,9 @@ class QAGNN_Message_Passing(nn.Module):
 
     def mp_helper(self, _X, edge_index, edge_type, _node_type, _node_feature_extra):
         for _ in range(self.k):
-            _X = self.gnn_layers[_](_X, edge_index, edge_type, _node_type, _node_feature_extra)
+            _X = self.gnn_layers[_](
+                _X, edge_index, edge_type, _node_type, _node_feature_extra
+            )
             _X = self.activation(_X)
             _X = F.dropout(_X, self.dropout_rate, training=self.training)
         return _X
@@ -84,12 +89,20 @@ class QAGNN_Message_Passing(nn.Module):
         _batch_size, _n_nodes = node_type.size()
 
         # Embed type
-        T = make_one_hot(node_type.view(-1).contiguous(), self.n_ntype).view(_batch_size, _n_nodes, self.n_ntype)
+        T = make_one_hot(node_type.view(-1).contiguous(), self.n_ntype).view(
+            _batch_size, _n_nodes, self.n_ntype
+        )
         node_type_emb = self.activation(self.emb_node_type(T))
 
         # Embed score
         if self.basis_f == "sin":
-            js = torch.arange(self.hidden_size // 2).unsqueeze(0).unsqueeze(0).float().to(node_type.device)
+            js = (
+                torch.arange(self.hidden_size // 2)
+                .unsqueeze(0)
+                .unsqueeze(0)
+                .float()
+                .to(node_type.device)
+            )
             js = torch.pow(1.1, js)
             B = torch.sin(js * node_score)
             node_score_emb = self.activation(self.emb_score(B))
@@ -105,7 +118,9 @@ class QAGNN_Message_Passing(nn.Module):
         _X = X.view(-1, X.size(2)).contiguous()
         _node_type = node_type.view(-1).contiguous()
         _node_feature_extra = (
-            torch.cat([node_type_emb, node_score_emb], dim=2).view(_node_type.size(0), -1).contiguous()
+            torch.cat([node_type_emb, node_score_emb], dim=2)
+            .view(_node_type.size(0), -1)
+            .contiguous()
         )
 
         _X = self.mp_helper(_X, edge_index, edge_type, _node_type, _node_feature_extra)
@@ -220,7 +235,10 @@ class QAGNN(nn.Module):
         gnn_input1 = gnn_input1.to(node_type_ids.device)
         gnn_input = self.dropout_e(torch.cat([gnn_input0, gnn_input1], dim=1))
 
-        _mask = (torch.arange(node_scores.size(1), device=node_scores.device) < adj_lengths.unsqueeze(1)).float()
+        _mask = (
+            torch.arange(node_scores.size(1), device=node_scores.device)
+            < adj_lengths.unsqueeze(1)
+        ).float()
         node_scores = -node_scores
         node_scores = node_scores - node_scores[:, 0:1, :]
         node_scores = node_scores.squeeze(2)
@@ -232,7 +250,9 @@ class QAGNN(nn.Module):
         gnn_output = self.gnn(gnn_input, adj, node_type_ids, node_scores)
         Z_vecs = gnn_output[:, 0]
 
-        mask = torch.arange(node_type_ids.size(1), device=node_type_ids.device) >= adj_lengths.unsqueeze(1)
+        mask = torch.arange(
+            node_type_ids.size(1), device=node_type_ids.device
+        ) >= adj_lengths.unsqueeze(1)
 
         mask = mask | (node_type_ids == 3)  # pool over all KG nodes
         mask[mask.all(1), 0] = 0  # a temporary solution to avoid zero node
@@ -330,7 +350,9 @@ class LM_QAGNN(nn.Module):
             edge_index,
             edge_type,
         ) = _inputs
-        edge_index, edge_type = self.batch_graph(edge_index, edge_type, concept_ids.size(1))
+        edge_index, edge_type = self.batch_graph(
+            edge_index, edge_type, concept_ids.size(1)
+        )
         adj = (edge_index.to(node_type_ids.device), edge_type.to(node_type_ids.device))
         sent_vecs, all_hidden_states = self.encoder(*lm_inputs, layer_id=layer_id)
         logits, attn = self.decoder(
@@ -390,7 +412,9 @@ class GATConvE(MessagePassing):
         n_etype (int): number of edge relation types (e.g. 38)
     """
 
-    def __init__(self, args, emb_dim, n_ntype, n_etype, edge_encoder, head_count=4, aggr="add"):
+    def __init__(
+        self, args, emb_dim, n_ntype, n_etype, edge_encoder, head_count=4, aggr="add"
+    ):
         super(GATConvE, self).__init__(aggr=aggr)
         self.args = args
 
@@ -447,7 +471,9 @@ class GATConvE(MessagePassing):
         edge_embeddings = self.edge_encoder(torch.cat([edge_vec, headtail_vec], dim=1))
 
         # Add self loops to edge_index
-        loop_index = torch.arange(0, x.size(0), dtype=torch.long, device=edge_index.device)
+        loop_index = torch.arange(
+            0, x.size(0), dtype=torch.long, device=edge_index.device
+        )
         loop_index = loop_index.unsqueeze(0).repeat(2, 1)
         edge_index = torch.cat([edge_index, loop_index], dim=1)
 
@@ -472,8 +498,12 @@ class GATConvE(MessagePassing):
         assert x_i.size(1) == x_j.size(1) == 2 * self.emb_dim
         assert x_i.size(0) == x_j.size(0) == edge_attr.size(0) == edge_index.size(1)
 
-        key = self.linear_key(torch.cat([x_i, edge_attr], dim=1)).view(-1, self.head_count, self.dim_per_head)
-        msg = self.linear_msg(torch.cat([x_j, edge_attr], dim=1)).view(-1, self.head_count, self.dim_per_head)
+        key = self.linear_key(torch.cat([x_i, edge_attr], dim=1)).view(
+            -1, self.head_count, self.dim_per_head
+        )
+        msg = self.linear_msg(torch.cat([x_j, edge_attr], dim=1)).view(
+            -1, self.head_count, self.dim_per_head
+        )
         query = self.linear_query(x_j).view(-1, self.head_count, self.dim_per_head)
 
         query = query / math.sqrt(self.dim_per_head)
@@ -486,7 +516,9 @@ class GATConvE(MessagePassing):
         E = edge_index.size(1)  # n_edges
         N = int(src_node_index.max()) + 1  # n_nodes
         ones = torch.full((E,), 1.0, dtype=torch.float).to(edge_index.device)
-        src_node_edge_count = scatter(ones, src_node_index, dim=0, dim_size=N, reduce="sum")[src_node_index]
+        src_node_edge_count = scatter(
+            ones, src_node_index, dim=0, dim_size=N, reduce="sum"
+        )[src_node_index]
         assert len(src_node_edge_count.size()) == 1 and len(src_node_edge_count) == E
         alpha = alpha * src_node_edge_count.unsqueeze(1)
         out = msg * alpha.view(-1, self.head_count, 1)

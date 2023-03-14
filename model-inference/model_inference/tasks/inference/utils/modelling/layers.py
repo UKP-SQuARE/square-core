@@ -18,7 +18,11 @@ def gelu(x):
     in Google Bert repo (identical to OpenAI GPT).
     Also see https://arxiv.org/abs/1606.08415
     """
-    return 0.5 * x * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
+    return (
+        0.5
+        * x
+        * (1 + torch.tanh(math.sqrt(2 / math.pi) * (x + 0.044715 * torch.pow(x, 3))))
+    )
 
 
 class GELU(nn.Module):
@@ -94,10 +98,16 @@ class MLP(nn.Module):
             if i < self.num_layers:
                 self.layers.add_module(f"{i}-Dropout", nn.Dropout(self.dropout))
                 if self.batch_norm:
-                    self.layers.add_module(f"{i}-BatchNorm1d", nn.BatchNorm1d(self.hidden_size))
+                    self.layers.add_module(
+                        f"{i}-BatchNorm1d", nn.BatchNorm1d(self.hidden_size)
+                    )
                 if self.layer_norm:
-                    self.layers.add_module(f"{i}-LayerNorm", nn.LayerNorm(self.hidden_size))
-                self.layers.add_module(f"{i}-{activation}", self.activation_classes[activation.lower()]())
+                    self.layers.add_module(
+                        f"{i}-LayerNorm", nn.LayerNorm(self.hidden_size)
+                    )
+                self.layers.add_module(
+                    f"{i}-{activation}", self.activation_classes[activation.lower()]()
+                )
         if init_last_layer_bias_to_zero:
             self.layers[-1].bias.data.fill_(0)
 
@@ -122,10 +132,14 @@ class MaxPoolLayer(nn.Module):
         """
         bs, sl, _ = inputs.size()
         if len(mask_or_lengths.size()) == 1:
-            mask = torch.arange(sl, device=inputs.device).unsqueeze(0).expand(bs, sl) >= mask_or_lengths.unsqueeze(1)
+            mask = torch.arange(sl, device=inputs.device).unsqueeze(0).expand(
+                bs, sl
+            ) >= mask_or_lengths.unsqueeze(1)
         else:
             mask = mask_or_lengths
-        masked_inputs = inputs.masked_fill(mask.unsqueeze(-1).expand_as(inputs), float("-inf"))
+        masked_inputs = inputs.masked_fill(
+            mask.unsqueeze(-1).expand_as(inputs), float("-inf")
+        )
         max_pooled = masked_inputs.max(1)[0]
         return max_pooled
 
@@ -147,7 +161,9 @@ class MeanPoolLayer(nn.Module):
         """
         bs, sl, _ = inputs.size()
         if len(mask_or_lengths.size()) == 1:
-            mask = torch.arange(sl, device=inputs.device).unsqueeze(0).expand(bs, sl) >= mask_or_lengths.unsqueeze(1)
+            mask = torch.arange(sl, device=inputs.device).unsqueeze(0).expand(
+                bs, sl
+            ) >= mask_or_lengths.unsqueeze(1)
             lengths = mask_or_lengths.float()
         else:
             mask, lengths = mask_or_lengths, (1 - mask_or_lengths.float()).sum(1)
@@ -267,9 +283,13 @@ class LSTMEncoder(nn.Module):
         bz, full_length = inputs.size()
         embed = self.emb(inputs)
         embed = self.input_dropout(embed)
-        lstm_inputs = pack_padded_sequence(embed, lengths, batch_first=True, enforce_sorted=False)
+        lstm_inputs = pack_padded_sequence(
+            embed, lengths, batch_first=True, enforce_sorted=False
+        )
         rnn_outputs, _ = self.rnn(lstm_inputs)
-        rnn_outputs, _ = pad_packed_sequence(rnn_outputs, batch_first=True, total_length=full_length)
+        rnn_outputs, _ = pad_packed_sequence(
+            rnn_outputs, batch_first=True, total_length=full_length
+        )
         rnn_outputs = self.output_dropout(rnn_outputs)
         return self.max_pool(rnn_outputs, lengths) if self.pooling else rnn_outputs
 
@@ -326,7 +346,9 @@ class TripleEncoder(nn.Module):
         rnn_outputs, _ = self.rnn(inputs)  # (bz, 3, dim)
         if self.bidirectional:
             outputs_f, outputs_b = torch.chunk(rnn_outputs, 2, dim=2)
-            outputs = torch.cat((outputs_f[:, -1, :], outputs_b[:, 0, :]), 1)  # (bz, 2 * h_dim)
+            outputs = torch.cat(
+                (outputs_f[:, -1, :], outputs_b[:, 0, :]), 1
+            )  # (bz, 2 * h_dim)
         else:
             outputs = rnn_outputs[:, -1, :]
 
@@ -363,7 +385,9 @@ class AttPoolLayer(nn.Module):
         super().__init__()
         self.w_qs = nn.Linear(d_q, d_k)
         nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q + d_k)))
-        self.attention = MatrixVectorScaledDotProductAttention(temperature=np.power(d_k, 0.5))
+        self.attention = MatrixVectorScaledDotProductAttention(
+            temperature=np.power(d_k, 0.5)
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, mask=None):
@@ -382,7 +406,9 @@ class AttPoolLayer(nn.Module):
 class MultiheadAttPoolLayer(nn.Module):
     def __init__(self, n_head, d_q_original, d_k_original, dropout=0.1):
         super().__init__()
-        assert d_k_original % n_head == 0  # make sure the output dimension equals to d_k_origin
+        assert (
+            d_k_original % n_head == 0
+        )  # make sure the output dimension equals to d_k_origin
         self.n_head = n_head
         self.d_k = d_k_original // n_head
         self.d_v = d_k_original // n_head
@@ -391,11 +417,19 @@ class MultiheadAttPoolLayer(nn.Module):
         self.w_ks = nn.Linear(d_k_original, n_head * self.d_k)
         self.w_vs = nn.Linear(d_k_original, n_head * self.d_v)
 
-        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k)))
-        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k)))
-        nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v)))
+        nn.init.normal_(
+            self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v))
+        )
 
-        self.attention = MatrixVectorScaledDotProductAttention(temperature=np.power(self.d_k, 0.5))
+        self.attention = MatrixVectorScaledDotProductAttention(
+            temperature=np.power(self.d_k, 0.5)
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, mask=None):
@@ -423,7 +457,9 @@ class MultiheadAttPoolLayer(nn.Module):
         output, attn = self.attention(qs, ks, vs, mask=mask)
 
         output = output.view(n_head, bs, d_v)
-        output = output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)  # (b, n*dv)
+        output = (
+            output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)
+        )  # (b, n*dv)
         output = self.dropout(output)
         return output, attn
 
@@ -431,7 +467,9 @@ class MultiheadAttPoolLayer(nn.Module):
 class TypedMultiheadAttPoolLayer(nn.Module):
     def __init__(self, n_head, d_q_original, d_k_original, dropout=0.1, n_type=1):
         super().__init__()
-        assert d_k_original % n_head == 0  # make sure the outpute dimension equals to d_k_origin
+        assert (
+            d_k_original % n_head == 0
+        )  # make sure the outpute dimension equals to d_k_origin
         self.n_head = n_head
         self.d_k = d_k_original // n_head
         self.d_v = d_k_original // n_head
@@ -440,11 +478,19 @@ class TypedMultiheadAttPoolLayer(nn.Module):
         self.w_ks = TypedLinear(d_k_original, n_head * self.d_k, n_type)
         self.w_vs = TypedLinear(d_k_original, n_head * self.d_v, n_type)
 
-        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k)))
-        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k)))
-        nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v)))
+        nn.init.normal_(
+            self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_q_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_k))
+        )
+        nn.init.normal_(
+            self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_k_original + self.d_v))
+        )
 
-        self.attention = MatrixVectorScaledDotProductAttention(temperature=np.power(self.d_k, 0.5))
+        self.attention = MatrixVectorScaledDotProductAttention(
+            temperature=np.power(self.d_k, 0.5)
+        )
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, q, k, mask=None, type_ids=None):
@@ -461,8 +507,12 @@ class TypedMultiheadAttPoolLayer(nn.Module):
         bs, len_k, _ = k.size()
 
         qs = self.w_qs(q).view(bs, n_head, d_k)  # (b, n, dk)
-        ks = self.w_ks(k, type_ids=type_ids).view(bs, len_k, n_head, d_k)  # (b, l, n, dk)
-        vs = self.w_vs(k, type_ids=type_ids).view(bs, len_k, n_head, d_v)  # (b, l, n, dv)
+        ks = self.w_ks(k, type_ids=type_ids).view(
+            bs, len_k, n_head, d_k
+        )  # (b, l, n, dk)
+        vs = self.w_vs(k, type_ids=type_ids).view(
+            bs, len_k, n_head, d_v
+        )  # (b, l, n, dv)
 
         qs = qs.permute(1, 0, 2).contiguous().view(n_head * bs, d_k)
         ks = ks.permute(2, 0, 1, 3).contiguous().view(n_head * bs, len_k, d_k)
@@ -473,7 +523,9 @@ class TypedMultiheadAttPoolLayer(nn.Module):
         output, attn = self.attention(qs, ks, vs, mask=mask)
 
         output = output.view(n_head, bs, d_v)
-        output = output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)  # (b, n*dv)
+        output = (
+            output.permute(1, 0, 2).contiguous().view(bs, n_head * d_v)
+        )  # (b, n*dv)
         output = self.dropout(output)
         return output, attn
 
@@ -537,7 +589,9 @@ def masked_softmax(
             # result = result / (result.sum(dim=dim, keepdim=True) + 1e-13)
             raise NotImplementedError
         else:
-            masked_vector = vector.masked_fill(mask.to(dtype=torch.uint8), mask_fill_value)
+            masked_vector = vector.masked_fill(
+                mask.to(dtype=torch.uint8), mask_fill_value
+            )
             result = nn.functional.softmax(masked_vector, dim=dim)
             result = result * (1 - mask)
     return result
@@ -665,11 +719,15 @@ class CustomizedEmbedding(nn.Module):
         if contextualized_emb is not None:
             assert index.size(0) == contextualized_emb.size(0)
             if hasattr(self, "cpt_transform"):
-                contextualized_emb = self.activation(self.cpt_transform(contextualized_emb * self.scale))
+                contextualized_emb = self.activation(
+                    self.cpt_transform(contextualized_emb * self.scale)
+                )
             else:
                 contextualized_emb = contextualized_emb * self.scale
             emb_dim = contextualized_emb.size(-1)
-            return contextualized_emb.gather(1, index.unsqueeze(-1).expand(-1, -1, emb_dim))
+            return contextualized_emb.gather(
+                1, index.unsqueeze(-1).expand(-1, -1, emb_dim)
+            )
         else:
             if hasattr(self, "cpt_transform"):
                 return self.activation(self.cpt_transform(self.emb(index) * self.scale))
