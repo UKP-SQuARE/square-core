@@ -119,7 +119,11 @@ export default Vue.component('skill-results', {
       return this.$store.state.currentResults
     },
     skillType() {
-      if (this.$store.state.currentResults[0].skill.meta_skill) {
+      let skill = this.$store.state.currentResults[0].skill
+      // if skill is a meta_skill and 'average_adapters' is a key of skill['default_skill_args'] and is true
+      if ("average_adapters" in skill.default_skill_args && skill.default_skill_args.average_adapters) {
+        return SpanExtraction
+      } else if (this.$store.state.currentResults[0].skill.meta_skill) {
         return MetaSkill
       }
       switch (this.$store.state.currentResults[0].skill.skill_type) {
