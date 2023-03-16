@@ -208,6 +208,15 @@
         </Alert>
       </div>
     </div>
+
+    <div v-if="deployingModel" class="row">
+      <div class="col-md-4 mx-auto mt-4">
+        <Alert class="bg-info">Deploying your model
+          <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+        </Alert>
+      </div>
+    </div>
+
     <div v-if="this.$store.state.inputMode && minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <div class="d-grid gap-1 d-md-flex justify-content-md-center">
@@ -232,11 +241,14 @@
 import Vue from 'vue'
 import CompareSkills from '../components/CompareSkills'
 import Alert from '../components/Alert'
+import { modelHeartbeat, deployDBModel } from '@/api'
+
 
 export default Vue.component('query-skills', {
   data() {
     return {
       waiting: false,
+      deployingModel: false,
       options: {
         selectedSkills: []
       },
@@ -343,6 +355,8 @@ export default Vue.component('query-skills', {
       this.$store.commit('changeInputMode')
     },
     askQuestion() {
+      this.checkModelsHeartbeat(this.selectedSkills)
+
       // if skill does not require context, set context to null
       if (!this.skillSettings.requiresContext) {
         this.inputContext = ""
@@ -363,6 +377,34 @@ export default Vue.component('query-skills', {
       }).finally(() => {
         this.waiting = false
       })
+    },
+    checkModelsHeartbeat(skills) {
+      // check if models are ready if not, deploy them
+      let listModels = []
+      // iterate over the array of skills
+      for (let skill of skills) {
+        let modelDict = this.$store.state.availableSkills.find(x => x.id === skill).models
+        for (let model of Object.values(modelDict)) {
+          listModels.push(model)
+        }
+      }
+      modelHeartbeat(listModels[0]).then(results => {
+        console.log(results)
+      })
+      // check heartbeat of all these models in parallel
+      Promise.all(listModels.map(model => modelHeartbeat(model)))
+        .then((results) => {
+          // if any model is not ready, deploy that model
+          if (results.some(x => x === false)) {
+            this.deployingModel = true
+            let models2deploy = listModels[results.indexOf(false)]
+            // deploy these models in parallel
+            Promise.all(models2deploy.map(model => deployDBModel(model))).then(() => {
+              this.deployingModel = false
+            })
+          }
+        })
+
     },
     selectExample(example) {
       this.list_choices = ["", "", ""]
