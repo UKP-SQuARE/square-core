@@ -146,7 +146,7 @@ export function postSkill(headers, newSkill) {
  * @param {String} skillUrl URL to the skill server. Format: {scheme}://host[:port]/{base_path}
  */
 export function skillHeartbeat(headers, id) {
-    return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, {headers: headers})
+    return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, { headers: headers })
 }
 
 /**
@@ -163,7 +163,7 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  * Get all user and public evaluations.
  * @param {Object} headers Authentication header
  */
- export function getEvaluations(headers) {
+export function getEvaluations(headers) {
     return axios.get(`${EVALUATOR_URL}/evaluations`, { headers: headers })
 }
 
@@ -171,7 +171,7 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  * Get all metrics. Not yet implemented in backend.
  * @param {Object} headers Authentication header
  */
- export function getMetrics(headers) {
+export function getMetrics(headers) {
     return axios.get(`${EVALUATOR_URL}/metrics`, { headers: headers })
 }
 
@@ -179,15 +179,22 @@ export function getLeaderboard(dataset_name, metric_name, headers) {
  * Run evaluation with skill_id, dataset_name and metric_name
  * @param {Object} headers Authentication header
  */
- export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
+export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
     return axios.post(`${EVALUATOR_URL}/evaluate/${skill_id}/${dataset_name}/${metric_name}`, {}, { headers: headers })
 }
 
 /**
  * Check if model is available.
- * @param {Object} headers Authentication header
  * @param {String} model_identifier identifier of the model to check
  */
-export function modelHeartbeat(headers, model_identifier) {
-    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health`, {headers: headers})
+export function modelHeartbeat(model_identifier) {
+    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health`)
+}
+
+/**
+ * Deploy model
+ * @param {String} model_identifier identifier of the model to deploy
+ */
+export function deployDBModel(model_identifier) {
+    return axios.post(`${MODEL_MANAGER_URL}/db/deploy/${model_identifier}`)
 }
