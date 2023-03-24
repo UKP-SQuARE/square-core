@@ -15,7 +15,7 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto">
               <li class="nav-item">
-                <router-link class="nav-link" to="/skill_hub" exact-active-class="active">QA Hub</router-link>
+                <router-link class="nav-link" to="/qa_hub" exact-active-class="active">QA Hub</router-link>
               </li>
               <li class="nav-item">
                 <router-link class="nav-link" to="/behavioral_tests" exact-active-class="active">Behavioral
@@ -23,7 +23,7 @@
               </li>
             <!-- <li class="nav-item">
                 <router-link class="nav-link" to="/leaderboard" exact-active-class="active">Leaderboard</router-link>
-                                  </li> -->
+                                    </li> -->
               <li class="nav-item">
                 <router-link class="nav-link" to="/publications" exact-active-class="active">Publications</router-link>
               </li>
