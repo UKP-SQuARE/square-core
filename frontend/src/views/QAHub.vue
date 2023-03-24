@@ -59,6 +59,7 @@
             </div>
             <div class="col col-md-9">
               <!-- Search Bar -->
+              {{ selectedSkills }}
               <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text" id="basic-addon1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
@@ -98,7 +99,7 @@
                             <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
                             <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H3v2.5a.5.5 0 0 1-1 0v-3zm12 7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H13V8.5a.5.5 0 0 1 1 0v3z"/>
                           </svg>
-                                                                                                                                                                                                                                                                                            300M -->
+                                                                                                                                                                                                                                                                                                                  300M -->
                         </small>
                         <small v-if="skill.meta_skill" class="text-muted">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -278,10 +279,6 @@ export default Vue.component('skill-hub', {
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
     },
-    filterByTask(chosenSkillType) {
-      this.skillSettings.skillType = chosenSkillType
-      console.log(this.skillSettings.skillType)
-    },
     addRemoveDatasetFilter(dataset) {
       dataset = dataset.name
       if (this.selectedDatasets.includes(dataset)) {
@@ -296,6 +293,8 @@ export default Vue.component('skill-hub', {
         // add active class to dataset button
         document.getElementById(dataset).classList.add('active')
       }
+      // unselect all skills (changing the filter will change the available skills, so we need to unselect all)
+      this.unselectAllSkills()
     },
     addRemoveSkillTypeFilter(skillType) {
       // remove all active classes from skill type buttons
@@ -308,6 +307,8 @@ export default Vue.component('skill-hub', {
         this.chosenSkillType = skillType
         document.getElementById(skillType).classList.add('active')
       }
+      // unselect all skills (changing the filter will change the available skills, so we need to unselect all)
+      this.unselectAllSkills()
     },
     addRemoveScopeFilter(scope) {
       // remove all active classes from scope buttons
@@ -320,6 +321,8 @@ export default Vue.component('skill-hub', {
         this.selectedSkillScope = scope
         document.getElementById(scope).classList.add('active')
       }
+      // unselect all skills (changing the filter will change the available skills, so we need to unselect all)
+      this.unselectAllSkills()
     },
     selectSkill(skill_id) {
       if (this.options.selectedSkills.includes(skill_id)) {
@@ -333,6 +336,11 @@ export default Vue.component('skill-hub', {
       this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
       this.$emit('input', this.options, this.skillSettings)
 
+    },
+    unselectAllSkills() {
+      for (let i = 0; i < this.options.selectedSkills.length; i++) {
+        this.selectSkill(this.options.selectedSkills[i])
+      }
     },
     skillBaseModel(skill) {
       // if skill.default_skill_args['base_model'] is not null
