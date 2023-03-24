@@ -35,7 +35,7 @@
             <p class="lead fs-2">Use or create skills to <span class="text-danger">query</span> and <span
                 class="text-danger">compare</span> models and datastores</p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
-              <router-link class="btn btn-outline-danger btn-lg px-4" to="/qa">Get started</router-link>
+              <router-link class="btn btn-outline-danger btn-lg px-4" to="/qa_hub">Get started</router-link>
               <a href="/docs/home/components/skills" target="_blank" class="btn btn-outline-danger btn-lg px-4">Learn
                 more</a>
             </div>
@@ -79,7 +79,7 @@
               <span class="text-success">behavioural tests</span> via CheckList
             </p>
             <div class="d-grid gap-2 d-lg-flex justify-content-lg-center">
-              <router-link class="btn btn-outline-success btn-lg px-4" to="/qa">Get started</router-link>
+              <router-link class="btn btn-outline-success btn-lg px-4" to="/qa_hub">Get started</router-link>
               <a href="/docs/home/components/explainability" target="_blank"
                 class="btn btn-outline-success btn-lg px-4">Learn more</a>
             </div>
