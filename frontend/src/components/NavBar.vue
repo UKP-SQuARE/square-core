@@ -23,7 +23,7 @@
               </li>
             <!-- <li class="nav-item">
                 <router-link class="nav-link" to="/leaderboard" exact-active-class="active">Leaderboard</router-link>
-                      </li> -->
+                                  </li> -->
               <li class="nav-item">
                 <router-link class="nav-link" to="/publications" exact-active-class="active">Publications</router-link>
               </li>

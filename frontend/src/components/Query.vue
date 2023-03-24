@@ -1,38 +1,15 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
   <form v-on:submit.prevent="askQuestion">
-    <div class="row mt-4 mt-md-0 mb-4">
-      <div class="accordion" id="accordionExample">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingOne">
-            <button v-on:click="changeInputMode()" id="btn_collapseOne" class="accordion-button" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-              Selected Skills: {{ strSelectedSkills }}
-            </button>
-          </h2>
-          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
-            data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <CompareSkills ref="compareSkills" selector-target="qa" v-on:input="changeSelectedSkills" class="" />
-            </div>
-          </div>
+    <div class="row">
+      <div class="col-md-12 me-auto mt-4 mt-md-0 mb-4">
+        <div class="bg-light border border-info rounded shadow h-100 p-3">
+          <h1>Selected Skills</h1> {{ strSelectedSkills }}
         </div>
-
       </div>
-    </div>
-
-    <div class="row mb-2" v-if="!this.$store.state.inputMode">
-      <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next"
-          data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Next
-        </button>
-      </div>
-
     </div>
     <!-- Input for span-extraction, categorical and abstractive (i.e., not multiple-choice) -->
-    <div class="row"
-      v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
+    <div class="row" v-if="(skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -65,7 +42,7 @@
 
     <!-- Input for span-extraction open domain or IR or abstractive -->
     <div class="row"
-      v-if="this.$store.state.inputMode && (!skillSettings.requiresContext &&
+      v-if="(!skillSettings.requiresContext &&
         (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval' || skillSettings.skillType == 'abstractive'))">
       <!-- Question Input -->
       <div class="col-md-12 me-auto mt-4 mt-md-0">
@@ -85,8 +62,7 @@
       </div>
     </div>
     <!-- Input for multiple choice that requires context-->
-    <div class="row"
-      v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row" v-if="(skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -147,8 +123,7 @@
     </div>
 
     <!-- Input for multiple choice that DO NOT require context-->
-    <div class="row"
-      v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row" v-if="(!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -208,9 +183,12 @@
         </Alert>
       </div>
     </div>
-    <div v-if="this.$store.state.inputMode && minSkillsSelected(1)" class="col">
+    <div v-if="minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+          <router-link to="/skill_hub" class="btn btn-outline-secondary btn-lg shadow">
+            Back to QA Hub
+          </router-link>
           <button type="submit" class="btn btn-danger btn-lg shadow text-white" :disabled="waiting">
             <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
             &nbsp;Ask your question</button>
@@ -230,10 +208,11 @@
 
 <script>
 import Vue from 'vue'
-import CompareSkills from '../components/CompareSkills'
 import Alert from '../components/Alert'
+import { getSkill } from '@/api/index.js'
 
 export default Vue.component('query-skills', {
+  props: ['selectedSkills'],
   data() {
     return {
       waiting: false,
@@ -255,13 +234,9 @@ export default Vue.component('query-skills', {
     }
   },
   components: {
-    CompareSkills,
     Alert
   },
   computed: {
-    selectedSkills() {
-      return this.options.selectedSkills.filter(skill => skill !== 'None')
-    },
     strSelectedSkills() {
       let availableSkills = this.$store.state.availableSkills;
       // filter available skills to only include selected skills
@@ -312,6 +287,19 @@ export default Vue.component('query-skills', {
         .filter(skill => this.selectedSkills.includes(skill.id))
         .some(skill => skill.meta_skill)
     }
+  },
+  beforeMount() {
+    // set skillSettings from the selectedSkills
+    // get skill all details from skill id
+    let skill_id = this.selectedSkills[0]
+    getSkill(this.$store.getters.authenticationHeader(), skill_id).then((response) => {
+      let skill = response.data
+      this.skillSettings.skillType = skill.skill_type
+      this.skillSettings.requiresContext = skill.skill_settings.requires_context
+    }).catch((error) => {
+      console.log(error)
+    })
+
   },
   mounted() {
     this.$root.$on("addFeedbackDocument", (feedbackDoc) => {
@@ -413,8 +401,8 @@ export default Vue.component('query-skills', {
       this.feedbackDocuments = []
       this.feedback = false
 
-      this.$store.commit('setInputModeFalse')
-      this.$refs.compareSkills.prepareToExit()
+      // this.$store.commit('setInputModeFalse')
+      // this.$refs.compareSkills.prepareToExit()
     }
   }
 })
