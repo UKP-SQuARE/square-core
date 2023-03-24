@@ -308,10 +308,6 @@ export default Vue.component('query-skills', {
     })
   },
   methods: {
-    changeSelectedSkills(options, skillSettings) {
-      this.options = options
-      this.skillSettings = skillSettings
-    },
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
     },
@@ -326,9 +322,6 @@ export default Vue.component('query-skills', {
         alert("You need at least 2 choices")
       }
 
-    },
-    changeInputMode() {
-      this.$store.commit('changeInputMode')
     },
     askQuestion() {
       // if skill does not require context, set context to null
@@ -400,9 +393,6 @@ export default Vue.component('query-skills', {
       }
       this.feedbackDocuments = []
       this.feedback = false
-
-      // this.$store.commit('setInputModeFalse')
-      // this.$refs.compareSkills.prepareToExit()
     }
   }
 })
