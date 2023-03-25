@@ -3,6 +3,7 @@ import logging
 from pymongo import MongoClient
 
 from model_manager.app.core.mongo_config import MongoSettings
+from model_manager.app.core.config import settings
 from model_manager.app.routers import utils
 
 
@@ -45,8 +46,12 @@ class MongoClass:
         """
         models = await self.get_models_db()
         model_config = [m for m in models if m["IDENTIFIER"] == identifier][0]
-        check_user = bool(model_config["USER_ID"] == await utils.get_user_id(request))
-        return check_user
+        # check_user = bool(model_config["USER_ID"] == await utils.get_user_id(request))
+        model_user_id = model_config.get("USER_ID")
+        request_user_id = await utils.get_user_id(request)
+        # check if the user is the owner of the model or the admin
+        user_matches = request_user_id == model_user_id or request_user_id == settings.ADMIN_USER_ID
+        return user_matches
 
     def server_info(self):
         return self.client.server_info()
