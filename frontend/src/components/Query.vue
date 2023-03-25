@@ -186,7 +186,7 @@
     <div v-if="minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-          <router-link to="/skill_hub" class="btn btn-outline-secondary btn-lg shadow">
+          <router-link to="/qa_hub" class="btn btn-outline-secondary btn-lg shadow">
             Back to QA Hub
           </router-link>
           <button type="submit" class="btn btn-danger btn-lg shadow text-white" :disabled="waiting">
