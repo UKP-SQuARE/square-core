@@ -58,8 +58,10 @@
               </div>
             </div>
             <div class="col col-md-9">
+              <!-- Write Selected Skills in bold -->
+              <span class="fw-bold">Selected Skills:</span> {{ strSelectedSkills }}
+
               <!-- Search Bar -->
-              {{ selectedSkills }}
               <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text" id="basic-addon1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
@@ -82,7 +84,8 @@
                       :id="skill.id">
                     <label
                       class="btn btn-outline-primary d-flex align-middle align-items-center justify-content-center w-100 h-100"
-                      :for="skill.id" :content=getSkillInfo(skill) v-tippy style="--bs-bg-opacity: 1">
+                      :for="skill.id" :content=getSkillInfo(skill) v-tippy style="--bs-bg-opacity: 1"
+                      :id="'lbl-' + skill.id">
                       <span class="text-break">{{ skill.name }}
                         <br>
                         <small class="text-muted">
@@ -99,7 +102,7 @@
                             <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
                             <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H3v2.5a.5.5 0 0 1-1 0v-3zm12 7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H13V8.5a.5.5 0 0 1 1 0v3z"/>
                           </svg>
-                                                                                                                                                                                                                                                                                                                  300M -->
+                                                                                                                                                                                                                                                                                                                                                                                                                        300M -->
                         </small>
                         <small v-if="skill.meta_skill" class="text-muted">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -176,6 +179,13 @@ export default Vue.component('skill-hub', {
     'v-page': Page
   },
   computed: {
+    strSelectedSkills() {
+      let availableSkills = this.$store.state.availableSkills;
+      // filter available skills to only include selected skills
+      availableSkills = availableSkills.filter(skill => this.selectedSkills.includes(skill.id));
+      // return a string of the selected skills
+      return availableSkills.map(skill => skill.name).join(', ');
+    },
     filteredSkills() {
       let availableSkills = this.availableSkills
       // Apply skill type filter
@@ -259,8 +269,22 @@ export default Vue.component('skill-hub', {
   },
   watch: {
     filteredSkills() {
-      this.pageSkillChange({ pageSize: this.pageLength, pageNumber: 1 })
+      this.pageSkillChange({ pageSize: this.pageLength, pageNumber: this.currentPage })
     },
+    filteredSkillsPage() {
+      this.$nextTick(() => {
+        // set to active the selected skill if appears in the current page
+        let list_skills_id_page = this.filteredSkillsPage.map(skill => skill.id)
+        // remove active class from lbl-skill.id in the current page except the selected skills (add active to them)
+        list_skills_id_page.forEach(skill => {
+          if (!this.selectedSkills.includes(skill)) {
+            this.forceUnselectSkillButton(skill)
+          } else {
+            document.getElementById('lbl-' + skill).classList.add('active')
+          }
+        })
+      })
+    }
   },
   methods: {
     pageSkillChange(pInfo) {
@@ -334,12 +358,22 @@ export default Vue.component('skill-hub', {
         this.$set(this.options.selectedSkills, index, skill_id)
       }
       this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
-      this.$emit('input', this.options, this.skillSettings)
+      // this.$emit('input', this.options, this.skillSettings)
 
     },
     unselectAllSkills() {
       for (let i = 0; i < this.options.selectedSkills.length; i++) {
         this.selectSkill(this.options.selectedSkills[i])
+      }
+    },
+    forceUnselectSkillButton(skill_id) {
+      let checkbox = document.getElementById(skill_id)
+      if (checkbox) {
+        checkbox.checked = false
+      }
+      let label = document.getElementById('lbl-' + skill_id)
+      if (label) {
+        label.classList.remove('active')
       }
     },
     skillBaseModel(skill) {
