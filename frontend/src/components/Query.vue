@@ -1,38 +1,15 @@
 <!-- Component for the Search Query. The user can enter a question here and change the query options. -->
 <template>
   <form v-on:submit.prevent="askQuestion">
-    <div class="row mt-4 mt-md-0 mb-4">
-      <div class="accordion" id="accordionExample">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="headingOne">
-            <button v-on:click="changeInputMode()" id="btn_collapseOne" class="accordion-button" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-              Selected Skills: {{ strSelectedSkills }}
-            </button>
-          </h2>
-          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
-            data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <CompareSkills ref="compareSkills" selector-target="qa" v-on:input="changeSelectedSkills" class="" />
-            </div>
-          </div>
+    <div class="row">
+      <div class="col-md-12 me-auto mt-4 mt-md-0 mb-4">
+        <div class="bg-light border border-info rounded shadow h-100 p-3">
+          <h1>Selected Skills</h1> {{ strSelectedSkills }}
         </div>
-
       </div>
-    </div>
-
-    <div class="row mb-2" v-if="!this.$store.state.inputMode">
-      <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-        <button v-on:click="changeInputMode()" class="btn btn-danger btn-lg shadow text-white" id="btn-next"
-          data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Next
-        </button>
-      </div>
-
     </div>
     <!-- Input for span-extraction, categorical and abstractive (i.e., not multiple-choice) -->
-    <div class="row"
-      v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
+    <div class="row" v-if="(skillSettings.requiresContext && skillSettings.skillType != 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -65,7 +42,7 @@
 
     <!-- Input for span-extraction open domain or IR or abstractive -->
     <div class="row"
-      v-if="this.$store.state.inputMode && (!skillSettings.requiresContext &&
+      v-if="(!skillSettings.requiresContext &&
         (skillSettings.skillType == 'span-extraction' || skillSettings.skillType == 'information-retrieval' || skillSettings.skillType == 'abstractive'))">
       <!-- Question Input -->
       <div class="col-md-12 me-auto mt-4 mt-md-0">
@@ -85,8 +62,7 @@
       </div>
     </div>
     <!-- Input for multiple choice that requires context-->
-    <div class="row"
-      v-if="this.$store.state.inputMode && (skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row" v-if="(skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-4 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -147,8 +123,7 @@
     </div>
 
     <!-- Input for multiple choice that DO NOT require context-->
-    <div class="row"
-      v-if="this.$store.state.inputMode && (!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
+    <div class="row" v-if="(!skillSettings.requiresContext && skillSettings.skillType == 'multiple-choice')">
       <!-- Question Input -->
       <div class="col-md-6 me-auto mt-4 mt-md-0">
         <div class="bg-light border border-success rounded shadow h-100 p-3">
@@ -208,12 +183,37 @@
         </Alert>
       </div>
     </div>
-    <div v-if="this.$store.state.inputMode && minSkillsSelected(1)" class="col">
+    <div v-if="minSkillsSelected(1)" class="col">
       <div class="row mt-4">
-        <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-          <button type="submit" class="btn btn-danger btn-lg shadow text-white" :disabled="waiting">
+        <!-- Button to go back to QA Hub -->
+        <div class="col col-6 text-end">
+          <router-link to="/qa_hub" class="btn btn-outline-secondary btn-lg shadow">
+            <span class="d-flex align-items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                  d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z" />
+                <path fill-rule="evenodd"
+                  d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
+              </svg>&nbsp;Back to QA Hub
+            </span>
+
+          </router-link>
+        </div>
+        <!-- Button to ask question -->
+        <div class="col col-6">
+          <button type="submit" class="btn btn-danger btn-lg shadow text-white d-flex align-items-center"
+            :disabled="waiting">
             <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
-            &nbsp;Ask your question</button>
+            &nbsp;Ask your question&nbsp;
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+              <path fill-rule="evenodd"
+                d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -230,10 +230,11 @@
 
 <script>
 import Vue from 'vue'
-import CompareSkills from '../components/CompareSkills'
 import Alert from '../components/Alert'
+import { getSkill } from '@/api/index.js'
 
 export default Vue.component('query-skills', {
+  props: ['selectedSkills'],
   data() {
     return {
       waiting: false,
@@ -255,13 +256,9 @@ export default Vue.component('query-skills', {
     }
   },
   components: {
-    CompareSkills,
     Alert
   },
   computed: {
-    selectedSkills() {
-      return this.options.selectedSkills.filter(skill => skill !== 'None')
-    },
     strSelectedSkills() {
       let availableSkills = this.$store.state.availableSkills;
       // filter available skills to only include selected skills
@@ -313,6 +310,19 @@ export default Vue.component('query-skills', {
         .some(skill => skill.meta_skill)
     }
   },
+  beforeMount() {
+    // set skillSettings from the selectedSkills
+    // get skill all details from skill id
+    let skill_id = this.selectedSkills[0]
+    getSkill(this.$store.getters.authenticationHeader(), skill_id).then((response) => {
+      let skill = response.data
+      this.skillSettings.skillType = skill.skill_type
+      this.skillSettings.requiresContext = skill.skill_settings.requires_context
+    }).catch((error) => {
+      console.log(error)
+    })
+
+  },
   mounted() {
     this.$root.$on("addFeedbackDocument", (feedbackDoc) => {
       this.feedbackDocuments.push(feedbackDoc)
@@ -320,10 +330,6 @@ export default Vue.component('query-skills', {
     })
   },
   methods: {
-    changeSelectedSkills(options, skillSettings) {
-      this.options = options
-      this.skillSettings = skillSettings
-    },
     minSkillsSelected(num) {
       return this.selectedSkills.length >= num
     },
@@ -338,9 +344,6 @@ export default Vue.component('query-skills', {
         alert("You need at least 2 choices")
       }
 
-    },
-    changeInputMode() {
-      this.$store.commit('changeInputMode')
     },
     askQuestion() {
       // if skill does not require context, set context to null
@@ -412,9 +415,6 @@ export default Vue.component('query-skills', {
       }
       this.feedbackDocuments = []
       this.feedback = false
-
-      this.$store.commit('setInputModeFalse')
-      this.$refs.compareSkills.prepareToExit()
     }
   }
 })
