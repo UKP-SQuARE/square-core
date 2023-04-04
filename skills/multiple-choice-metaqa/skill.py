@@ -35,7 +35,7 @@ def predict(request: QueryRequest) -> QueryOutput:
     for skill_idx, skill_response in enumerate(list_skill_responses):
         pred = skill_response["predictions"][0]["prediction_output"]["output"]
         score = skill_response["predictions"][0]["prediction_output"]["output_score"]
-        list_preds[8 + skill_idx] = (pred, score)
+        list_preds[8 + skill_idx] = (pred, score) # the first 8 are extractive agents in the original metaqa model
 
     # 3) Call MetaQA Model API
     model_request = {
@@ -109,7 +109,7 @@ def _create_metaqa_output(request, model_response):
                 prediction_output=PredictionOutput(
                     output=answer["answer"], output_score=answer["agent_score"]
                 ),
-                skill_id=list_skills_ids[answer["agent_idx"]],
+                skill_id=list_skills_ids[answer["agent_idx"]-8], # the first 8 are extractive agents in the original metaqa model
             )
         )
     return QueryOutput(predictions=list_predictions)
