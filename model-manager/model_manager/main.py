@@ -31,7 +31,7 @@ def get_app() -> FastAPI:
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
         openapi_url=settings.OPENAPI_URL,
-        dependencies=[Depends(auth)],
+        # dependencies=[Depends(auth)],  # removing auth for now
     )
 
     fast_app.add_middleware(
