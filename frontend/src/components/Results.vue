@@ -46,7 +46,7 @@
           <a data-bs-toggle="modal" data-bs-target="#modalattack" role="button" class="btn btn-primary shadow">
             Attack Methods
           </a>
-          <AttackOutput id="modalattack" />
+          <AttackOutput id="modalattack" :selectedSkills="this.selectedSkills" />
         </div>
       </div>
 
@@ -55,7 +55,7 @@
           <a data-bs-toggle="modal" data-bs-target="#modalExplain" role="button" class="btn btn-primary shadow">
             Explain this output
           </a>
-          <ExplainOutput id="modalExplain" />
+          <ExplainOutput id="modalExplain" :selectedSkills="this.selectedSkills" />
         </div>
       </div>
       <div class="col mt-3" v-if="showExplainability">
@@ -93,6 +93,7 @@ import BertVizOutput from '../components/modals/BertVizOutput'
 import GraphViz from '../components/modals/GraphViz'
 
 export default Vue.component('skill-results', {
+  props: ['selectedSkills'],
   data() {
     return {
       showWithContext: false,

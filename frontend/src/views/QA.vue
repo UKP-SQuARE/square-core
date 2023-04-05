@@ -6,7 +6,7 @@
       QAGNN is intrinsically slower than the other skills. On average, it takes 20s to run. Please be patient.
     </div>
     <Query ref="query" :selectedSkills="selectedSkills" />
-    <Results v-if="isShowingResults" />
+    <Results v-if="isShowingResults" :selectedSkills="selectedSkills" />
   </div>
 </template>
 
