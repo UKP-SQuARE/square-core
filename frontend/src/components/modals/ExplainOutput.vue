@@ -22,13 +22,7 @@
 
             <div class="row">
               <div class="col-12">
-                <h1>Saliency Map
-                  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi bi-map"
-                    viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                      d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z" />
-                  </svg>
-                </h1>
+                <h1>Output Explanation</h1>
                 <hr />
               </div>
             </div>
@@ -65,10 +59,33 @@
                     <span v-show="waiting_integrated_grads" class="spinner-border spinner-border-sm"
                       role="status" />&nbsp;Integrated Gradients
                   </button>
+                  <button id="bertviz_btn" v-on:click="postReq('bertviz')" type="button" 
+                    class="btn btn-outline-primary" :disabled="waiting_bertviz">
+                      <span v-show="waiting_bertviz" class="spinner-border spinner-border-sm" 
+                        role="status"/>&nbsp;Bertviz
+                  </button>
                 </div>
               </div> <!--  end method row -->
             </div>
 
+            <div v-if="show_bertviz">
+              <div class="row mt-3" v-for="(skillResult, index) in this.$store.state.currentResults" :key="index">
+                <div class="col-12">
+                  <hr/>
+                  <h4>{{ skillResult.skill.name }}</h4>
+                </div>
+
+                <div v-if="show_bertviz"> <!-- show bertviz -->
+                  <div class="row mt-3">
+                    <div class="col-18">
+                      <div>
+                        <iframe :srcdoc="BertViz_html(index)" frameborder="0" width="50%" height="500px" ></iframe>
+                        </div>
+                    </div>
+                  </div>
+                </div> <!-- end show bertviz -->
+              </div> 
+            </div> 
 
             <div v-if="show_saliency_map" class="slidecontainer">
               <div class="row mt-3">
@@ -153,6 +170,8 @@ export default Vue.component("explain-output", {
       waiting_integrated_grads: false,
       show_saliency_map: false,
       failure: false,
+      waiting_bertviz: false,
+      show_bertviz: false,
     }
   },
   components: {
@@ -189,8 +208,18 @@ export default Vue.component("explain-output", {
       this.num_Maxshow = Math.max(numQuestionWords, numContextWords);
 
       this.show_saliency_map = false;
+      this.show_bertviz = false;
       this.runSpinner(method);
       // api call
+
+      let explain_kwargs = {
+        method: method,
+        mode: 'all', // can be 'all', 'question', 'context'
+      };
+      if (method !== 'bertviz') {
+        explain_kwargs.top_k = this.num_Maxshow;
+      }
+
       this.$store.dispatch('query', {
         question: this.$store.state.currentQuestion,
         inputContext: context,
@@ -198,34 +227,39 @@ export default Vue.component("explain-output", {
         options: {
           selectedSkills: this.selectedSkills,
           maxResultsPerSkill: this.$store.state.skillOptions['qa'].maxResultsPerSkill,
-          explain_kwargs: {
-            method: method,
-            top_k: this.num_Maxshow,
-            mode: 'all', // can be 'all', 'question', 'context'
-          }
+          explain_kwargs: explain_kwargs
         }
       }).then(() => {
         this.failure = false,
-          this.num_show = 3
-        this.show_saliency_map = true;
+        this.num_show = 3
+        if(method == 'bertviz')
+          this.show_bertviz = true;
+        else
+          this.show_saliency_map = true;
         // add class active to the button method+"_btn"
         document.getElementById(method + "_btn").classList.add("active");
         // the tokenizer used by the API is a bit different from the one used in the frontend,
         // so update num_Maxshow with the real number of words in the context
-        this.num_Maxshow = this.$store.state.currentResults[0].predictions[0].attributions.topk_context_idx.length;
-      }).catch(() => {
+        if (method !== 'bertviz'){
+          this.num_Maxshow = this.$store.state.currentResults[0].predictions[0].attributions.topk_context_idx.length;
+        }
+      }).catch((error) => {
+        console.log(error);
         this.failure = true
       }).finally(() => {
         // switch the waiting_* variables to false to stop loading spinner
         this.stopSpinner(method);
       })
     },
+
     stopSpinner(method) {
       this.changeSpinnerStatus(method, false);
     },
+
     runSpinner(method) {
       this.changeSpinnerStatus(method, true);
     },
+
     changeSpinnerStatus(method, value) {
       switch (method) {
         case 'attention':
@@ -243,8 +277,12 @@ export default Vue.component("explain-output", {
         case 'integrated_grads':
           this.waiting_integrated_grads = value;
           break;
+        case 'bertviz':
+          this.waiting_bertviz = value;
+          break;
       }
     },
+
     highLight(topk_idx, attributions) { // add here skill param
       var listWords = [];
       for (var i = 0; i < attributions.length; i++) {
@@ -305,8 +343,15 @@ export default Vue.component("explain-output", {
       this.num_show = slider.value;
     },
 
+    BertViz_html(idx) {
+      var json =this.$store.state.currentResults[idx].predictions[0].bertviz;
+      let obj = JSON.parse(JSON.stringify(json));    // maybe there is no need to stringify and parse.Needs testing!!!!
+      return obj
+    },
+
     close() {
       this.show_saliency_map = false;
+      this.show_bertviz = false;
       this.num_Maxshow = undefined;
       // remove activate class from all buttons
       var btn_list = document.getElementsByClassName('btn-outline-primary');
@@ -314,8 +359,6 @@ export default Vue.component("explain-output", {
         btn_list[i].classList.remove('active');
       }
     }
-
-
   },
 })
 
