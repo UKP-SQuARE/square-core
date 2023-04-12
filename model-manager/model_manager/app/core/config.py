@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     API_PREFIX: str = config.get("app", "api_prefix")
     OPENAPI_URL: str = config.get("app", "openapi_url")
     # set this ENV variable to `host.docker.internal` for Mac
-    API_URL: str = config.get('app', 'api_url')
+    API_URL: str = config.get('app', 'api_url').format(DOCKER_HOST_URL=os.environ['DOCKER_HOST_URL'])
     ADMIN_USER_ID: str = config.get("user", "admin_user_id")
 
 
