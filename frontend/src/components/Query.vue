@@ -354,13 +354,42 @@ export default Vue.component('query-skills', {
     changeInputMode() {
       this.$store.commit('changeInputMode')
     },
-    askQuestion() {
-      this.checkModelsHeartbeat(this.selectedSkills)
+    async askQuestion() {
+      const skills = this.selectedSkills
+      let listModels = []
+      // iterate over the array of skills
+      for (let skill of skills) {
+        let modelDict = this.$store.state.availableSkills.find(x => x.id === skill).models
+        for (let model of Object.values(modelDict)) {
+          listModels.push(model)
+        }
+      }
+
+      // check if models are deployed
+      listModels.forEach(async (model) => {
+        try{
+          await modelHeartbeat(this.$store.getters.authenticationHeader(), model)
+        } catch { // if modelHeartbeat fails, it means the model is not deployed => deploy it
+          this.deployingModel = true
+          try {
+            // deploy model
+            await deployDBModel(this.$store.getters.authenticationHeader(), model)
+            this.deployingModel = false
+          } catch {
+            this.deployingModel = false
+          }
+        }
+      })
+
+      // wait 2 sec for the models to be deployed
+      // TODO: delete this when we have a better way to check if the model is deployed
+      await new Promise(r => setTimeout(r, 1000))
 
       // if skill does not require context, set context to null
       if (!this.skillSettings.requiresContext) {
         this.inputContext = ""
       }
+
       this.waiting = true
       this.$store.dispatch('query', {
         question: this.inputQuestion,
@@ -377,34 +406,6 @@ export default Vue.component('query-skills', {
       }).finally(() => {
         this.waiting = false
       })
-    },
-    checkModelsHeartbeat(skills) {
-      // check if models are ready if not, deploy them
-      let listModels = []
-      // iterate over the array of skills
-      for (let skill of skills) {
-        let modelDict = this.$store.state.availableSkills.find(x => x.id === skill).models
-        for (let model of Object.values(modelDict)) {
-          listModels.push(model)
-        }
-      }
-      modelHeartbeat(listModels[0]).then(results => {
-        console.log(results)
-      })
-      // check heartbeat of all these models in parallel
-      Promise.all(listModels.map(model => modelHeartbeat(model)))
-        .then((results) => {
-          // if any model is not ready, deploy that model
-          if (results.some(x => x === false)) {
-            this.deployingModel = true
-            let models2deploy = listModels[results.indexOf(false)]
-            // deploy these models in parallel
-            Promise.all(models2deploy.map(model => deployDBModel(model))).then(() => {
-              this.deployingModel = false
-            })
-          }
-        })
-
     },
     selectExample(example) {
       this.list_choices = ["", "", ""]
