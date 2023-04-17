@@ -380,9 +380,8 @@ export default Vue.component('query-skills', {
           try {
             // deploy model
             await deployDBModel(this.$store.getters.authenticationHeader(), model)
-            this.deployingModel = false
-          } catch {
-            this.deployingModel = false
+          } catch (error) {
+            console.log(error)
           }
         }
       })
@@ -411,6 +410,7 @@ export default Vue.component('query-skills', {
         this.failure = true
       }).finally(() => {
         this.waiting = false
+        this.deployingModel = false
       })
     },
     selectExample(example) {
