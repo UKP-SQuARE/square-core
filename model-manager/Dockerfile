@@ -8,6 +8,9 @@ RUN pip install --upgrade pip
 
 WORKDIR /app
 
+COPY config.ini /app/
+ENV APP_CONFIG_PATH=/app/config.ini
+
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 

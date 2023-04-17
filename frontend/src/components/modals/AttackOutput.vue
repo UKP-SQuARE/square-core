@@ -179,6 +179,7 @@
 import Vue from 'vue'
 
 export default Vue.component("attack-output",{
+  props: ['selectedSkills'], 
   data () {
      return {
       // form data
@@ -207,12 +208,6 @@ export default Vue.component("attack-output",{
       showAttackOutput: false,
       failure: false,
     }
-  },
-  computed:{
-    selectedSkills() {
-      // remove None from skills list when send query
-      return this.$store.state.skillOptions['qa'].selectedSkills.filter(skill => skill !== 'None')
-    },
   },
   methods:{
     methodSelected(){

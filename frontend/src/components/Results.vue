@@ -46,7 +46,7 @@
           <a data-bs-toggle="modal" data-bs-target="#modalattack" role="button" class="btn btn-primary shadow">
             Attack Methods
           </a>
-          <AttackOutput id="modalattack" />
+          <AttackOutput id="modalattack" :selectedSkills="this.selectedSkills" />
         </div>
       </div>
 
@@ -55,15 +55,7 @@
           <a data-bs-toggle="modal" data-bs-target="#modalExplain" role="button" class="btn btn-primary shadow">
             Explain this output
           </a>
-          <ExplainOutput id="modalExplain" />
-        </div>
-      </div>
-      <div class="col mt-3" v-if="showExplainability">
-        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-          <a data-bs-toggle="modal" data-bs-target="#modalBertViz" role="button" class="btn btn-primary shadow">
-            Bertviz
-          </a>
-          <BertVizOutput id="modalBertViz" />
+          <ExplainOutput id="modalExplain" :selectedSkills="this.selectedSkills" />
         </div>
       </div>
 
@@ -89,10 +81,10 @@ import MetaSkill from '@/components/results/MetaSkill.vue'
 import InformationRetrieval from '@/components/results/InformationRetrieval.vue'
 import AttackOutput from '../components/modals/AttackOutput.vue'
 import ExplainOutput from '../components/modals/ExplainOutput'
-import BertVizOutput from '../components/modals/BertVizOutput'
 import GraphViz from '../components/modals/GraphViz'
 
 export default Vue.component('skill-results', {
+  props: ['selectedSkills'],
   data() {
     return {
       showWithContext: false,
@@ -111,7 +103,6 @@ export default Vue.component('skill-results', {
     MetaSkill,
     AttackOutput,
     ExplainOutput,
-    BertVizOutput,
     GraphViz
   },
   computed: {

@@ -19,14 +19,13 @@ let initOptions = {
 }
 let keycloak = Keycloak(initOptions)
 keycloak.init({
-  onLoad: initOptions.onLoad,
-  silentCheckSsoRedirectUri: initOptions.silentCheckSsoRedirectUri,
+  checkLoginIframe: false,
 }).then((authenticated) => {
   if (process.env.VUE_APP_AUTH_TOKEN !== '') {
     keycloak.authenticated = true
     authenticated = true
     keycloak.token = process.env.VUE_APP_AUTH_TOKEN
-    store.dispatch('signIn', { userInfo: {'preferred_username': 'LOCAL_SQUARE_USER'}, token: process.env.VUE_APP_AUTH_TOKEN })
+    store.dispatch('signIn', { userInfo: { 'preferred_username': 'LOCAL_SQUARE_USER' }, token: process.env.VUE_APP_AUTH_TOKEN })
   } else if (authenticated) {
     keycloak.loadUserInfo().then(userInfo => {
       store.dispatch('signIn', { userInfo: userInfo, token: keycloak.token })
