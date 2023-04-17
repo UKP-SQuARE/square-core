@@ -187,14 +187,14 @@ export function runEvaluation(headers, skill_id, dataset_name, metric_name) {
  * Check if model is available.
  * @param {String} model_identifier identifier of the model to check
  */
-export function modelHeartbeat(model_identifier) {
-    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health`)
+export function modelHeartbeat(headers, model_identifier) {
+    return axios.get(`${MODEL_MANAGER_URL}/${model_identifier}/health`, { headers: headers })
 }
 
 /**
  * Deploy model
  * @param {String} model_identifier identifier of the model to deploy
  */
-export function deployDBModel(model_identifier) {
-    return axios.post(`${MODEL_MANAGER_URL}/db/deploy/${model_identifier}`)
+export function deployDBModel(headers, model_identifier) {
+    return axios.post(`${MODEL_MANAGER_URL}/db/deploy/${model_identifier}`, {}, { headers: headers })
 }

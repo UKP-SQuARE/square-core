@@ -47,3 +47,11 @@ Authorization: Bearer {{token}}
 GET https://{{hostname}}/api/datastores/nq/indices HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
+
+###
+# @name deploy_model
+@token =  {{get_token.response.body.access_token}}
+# @prompt model_identifier {model_identifier}
+POST https://{{hostname}}/api/models/db/deploy/{{model_identifier}} HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
