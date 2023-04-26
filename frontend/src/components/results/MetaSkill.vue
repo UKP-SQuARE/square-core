@@ -7,15 +7,9 @@
           <span v-html="output" />
         </div>
         <div class="col text-end">
-          <span class="badge fs-6 ms-1 mb-1"
+          <span class="badge fs-6 ms-1 mb-1 text-wrap"
             :style="{ 'background-color': colorFromGradient(prediction.prediction_score) }">
-            {{ getSkillName }}
-          </span>
-        </div>
-        <div class="col col-1 text-end">
-          <span class="badge fs-6 ms-1 mb-1 float-end"
-            :style="{ 'background-color': colorFromGradient(prediction.prediction_score) }">
-            {{ roundScore(prediction.prediction_score) }}%
+            {{ getSkillName }} {{ roundScore(prediction.prediction_score) }}%
           </span>
         </div>
       </div>
