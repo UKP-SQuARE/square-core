@@ -183,6 +183,15 @@
         </Alert>
       </div>
     </div>
+
+    <div v-if="deployingModel" class="row">
+      <div class="col-md-4 mx-auto mt-4">
+        <Alert class="bg-info">Deploying your model
+          <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+        </Alert>
+      </div>
+    </div>
+
     <div v-if="minSkillsSelected(1)" class="col">
       <div class="row mt-4">
         <!-- Button to go back to QA Hub -->
@@ -231,6 +240,8 @@
 <script>
 import Vue from 'vue'
 import Alert from '../components/Alert'
+import { modelHeartbeat, deployDBModel } from '@/api'
+
 import { getSkill } from '@/api/index.js'
 
 export default Vue.component('query-skills', {
@@ -238,6 +249,7 @@ export default Vue.component('query-skills', {
   data() {
     return {
       waiting: false,
+      deployingModel: false,
       options: {
         selectedSkills: []
       },
@@ -345,11 +357,44 @@ export default Vue.component('query-skills', {
       }
 
     },
-    askQuestion() {
+    changeInputMode() {
+      this.$store.commit('changeInputMode')
+    },
+    async askQuestion() {
+      const skills = this.selectedSkills
+      let listModels = []
+      // iterate over the array of skills
+      for (let skill of skills) {
+        let modelDict = this.$store.state.availableSkills.find(x => x.id === skill).models
+        for (let model of Object.values(modelDict)) {
+          listModels.push(model)
+        }
+      }
+
+      // check if models are deployed
+      listModels.forEach(async (model) => {
+        try {
+          await modelHeartbeat(this.$store.getters.authenticationHeader(), model)
+        } catch { // if modelHeartbeat fails, it means the model is not deployed => deploy it
+          this.deployingModel = true
+          try {
+            // deploy model
+            await deployDBModel(this.$store.getters.authenticationHeader(), model)
+          } catch (error) {
+            console.log(error)
+          }
+        }
+      })
+
+      // wait 2 sec for the models to be deployed
+      // TODO: delete this when we have a better way to check if the model is deployed
+      await new Promise(r => setTimeout(r, 1000))
+
       // if skill does not require context, set context to null
       if (!this.skillSettings.requiresContext) {
         this.inputContext = ""
       }
+
       this.waiting = true
       this.$store.dispatch('query', {
         question: this.inputQuestion,
@@ -365,6 +410,7 @@ export default Vue.component('query-skills', {
         this.failure = true
       }).finally(() => {
         this.waiting = false
+        this.deployingModel = false
       })
     },
     selectExample(example) {

@@ -504,7 +504,6 @@ async def init_db_from_docker(token: str = Depends(client_credentials)):
 async def start_from_db(
     identifier: str = None,
     hf_username: str = None,
-    token: str = Depends(client_credentials),
 ):
     """
     deploy models from the database
@@ -521,7 +520,6 @@ async def start_from_db(
     for model in configs:
         response = requests.get(
             url=f'{settings.API_URL}/api/main/{model["IDENTIFIER"]}/health/heartbeat',
-            headers={"Authorization": f"Bearer {token}"},
             verify=os.getenv("VERIFY_SSL", 1) == 1,
         )
         # if the model-api instance has not finished loading the model it is not available yet
