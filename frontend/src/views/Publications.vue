@@ -30,8 +30,8 @@
                                     research, to support three families of multi-agent systems: i) agent selection, ii)
                                     early-fusion of agents, and iii) late-fusion of agents. We conduct experiments to
                                     evaluate their inference speed and discuss the performance vs. speed trade-off compared
-                                    to multi-dataset models. UKP-SQuARE is open-source and publicly available at this http
-                                    URL.
+                                    to multi-dataset models. UKP-SQuARE is open-source and publicly available at
+                                    https://square.ukp-lab.de/.
                                 </div>
                             </div>
                         </div>
@@ -66,7 +66,7 @@
                                     reasoning behind the model prediction. In addition, we provide multiple adversarial
                                     attacks to compare the robustness of QA models. With these explainability methods and
                                     adversarial attacks, we aim to ease the research on trustworthy QA models. SQuARE is
-                                    available on this https URL.
+                                    available on https://square.ukp-lab.de/.
                                 </div>
                             </div>
                         </div>
@@ -98,8 +98,8 @@
                                     via a user-friendly web interface and integrated behavioural tests. In addition, QA
                                     researchers can develop, manage, and share their custom Skills using our microservices
                                     that support a wide range of models (Transformers, Adapters, ONNX), datastores and
-                                    retrieval techniques (e.g., sparse and dense). UKP-SQUARE is available on this https
-                                    URL.
+                                    retrieval techniques (e.g., sparse and dense). UKP-SQUARE is available on
+                                    thttps://square.ukp-lab.de/.
                                 </div>
                             </div>
                         </div>
