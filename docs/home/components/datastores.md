@@ -6,9 +6,88 @@ sidebar_position: 1
 
 API for storing, indexing and retrieving document corpora, powered by [Elasticsearch](https://www.elastic.co/elasticsearch/) and [FAISS](https://github.com/facebookresearch/faiss).
 
-## Overview
 
-The Datastore API is dependent upon the following services:
+## Uploading Documents
+If you want to upload your collection of documents to UKP-SQuARE, you need to create an empty Datastore first, and then upload your documents. This will automatically create a BM25 index for your documents. You can do this with simple REST API calls. Please, follow this Notebook tutorial to for more details https://colab.research.google.com/drive/1YZkrDOSaJVxrphTx-M22bpKZLHSAZs99?usp=sharing.
+
+
+In summary, the Datastore API provides different methods for uploading documents.
+Documents are expected to be uploaded as `.jsonl` files.
+
+We first create a demo datastore to upload some documents to:
+```
+curl -X 'PUT' \
+  'http://localhost:7000/datastores/demo' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '[
+  {
+    "name": "id",
+    "type": "long"
+  },
+  {
+    "name": "title",
+    "type": "text"
+  },
+  {
+    "name": "text",
+    "type": "text"
+  }
+]'
+```
+
+Some example documents adhering to the required format can be found at https://github.com/UKP-SQuARE/square-core/blob/master/datastore-api/tests/fixtures/0.jsonl.
+We can upload these documents to the Datastore API as follows:
+```
+curl -X 'POST' \
+  'http://localhost:7000/datastores/wiki/demo/upload' \
+  -H 'Authorization: abcdefg' \
+  -F 'file=@tests/fixtures/0.jsonl'
+```
+
+## Configure dense retrieval with FAISS
+
+To enable dense document retrieval with FAISS, the Datastore API relies on [FAISS web service containers](https://github.com/kwang2049/faiss-instant) that provide FAISS indices for the documents in a datastore.
+Each index in each datastore is corresponds to one FAISS web service container.
+The document embedding computation and FAISS index creation are performed offline, i.e. not via the Datastore API itself.
+
+Let's see how to add a dense retrieval index to an existing datastore (`"wiki"`).
+The new index should use Facebook's DPR model and should be called `"dpr"`.
+
+1. Embed the document corpus using the document encoder model & create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this.
+
+2. Register the new index with its name via the Datastore API:
+    ```
+    curl -X 'PUT' \
+    'http://localhost:7000/datastores/wiki/indices/dpr' \
+    -H 'accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d '{
+      "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
+      "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
+      "embedding_size": 768
+    }'
+    ```
+
+3. Specify the FAISS web service container for the new index: Open the *docker-compose.yml* and in the section for FAISS service containers, add the following:
+    ```
+    faiss-wiki-dpr:
+      image: kwang2049/faiss-instant:latest
+      volumes:
+        - /local/path/to/index:/opt/faiss-instant/resources
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.faiss-wiki-dpr.loadbalancer.server.port=5000"
+        - "square.datastore=/wiki/dpr"
+    ```
+
+4. Restart the Docker Compose setup:
+    ```
+    docker compose up -d
+    ```
+
+## Local Deployment (Advanced users)
+You can deploy the Datastore service on your own machine. The Datastore API is dependent upon the following services:
 
 - Required (automatically via Docker):
   - **Elasticsearch** (for storing documents and sparse retrieval)
@@ -17,7 +96,7 @@ The Datastore API is dependent upon the following services:
   - **FAISS** web service containers (for storing dense document embeddings): see the section on dense retrieval on how to setup.
   - **SQuARE Model API** (for dense document retrieval)
 
-## Quick (production) setup
+### Quick (production) setup
 
 1. Open the *docker-compose.yml*. Find the service declaration for datastore_api and uncomment it. In the environment section, optionally set an API key and the connection to the Model API.
 
@@ -91,123 +170,3 @@ Run API tests (does not require dependency services):
 make test-api
 ```
 
-## Upload documents
-
-In general, there are two ways to upload documents to the server: via the REST interface of the Datastore API or via the `upload.py` script.
-
-### Uploading via the REST API
-
-The Datastore API provides different methods for uploading documents.
-Documents are expected to be uploaded as `.jsonl` files.
-
-We first create a demo datastore to upload some documents to:
-```
-curl -X 'PUT' \
-  'http://localhost:7000/datastores/demo' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '[
-  {
-    "name": "id",
-    "type": "long"
-  },
-  {
-    "name": "title",
-    "type": "text"
-  },
-  {
-    "name": "text",
-    "type": "text"
-  }
-]'
-```
-
-Some example documents adhering to the required format can be found at `tests/fixtures/0.jsonl`.
-We can upload these documents to the Datastore API as follows:
-```
-curl -X 'POST' \
-  'http://localhost:7000/datastores/wiki/demo/upload' \
-  -H 'Authorization: abcdefg' \
-  -F 'file=@tests/fixtures/0.jsonl'
-```
-
-### Uploading via *upload.py*
-
-As an example, we upload the Wikipedia split used by DPR (containing 21M passages) into a datastore named "wiki".
-
-1. First, we download and unzip the documents:
-    ```
-    curl https://dl.fbaipublicfiles.com/dpr/wikipedia_split/psgs_w100.tsv.gz -o psgs_w100.tsv.gz
-    gunzip psgs_w100.tsv.gz
-    ```
-
-2. Create the datastore:
-    ```
-    curl -X 'PUT' \
-      'http://localhost:7000/datastores/wiki' \
-      -H 'accept: application/json' \
-      -H 'Content-Type: application/json' \
-      -d '[
-      {
-        "name": "id",
-        "type": "long"
-      },
-      {
-        "name": "title",
-        "type": "text"
-      },
-      {
-        "name": "text",
-        "type": "text"
-      }
-    ]'
-    ```
-
-3. Upload documents:
-    ```
-    python upload.py\
-      -s wiki \
-      -t <access_token> \
-      psgs_w100.tsv
-    ```
-
-## Configure dense retrieval with FAISS
-
-To enable dense document retrieval with FAISS, the Datastore API relies on [FAISS web service containers](https://github.com/kwang2049/faiss-instant) that provide FAISS indices for the documents in a datastore.
-Each index in each datastore is corresponds to one FAISS web service container.
-The document embedding computation and FAISS index creation are performed offline, i.e. not via the Datastore API itself.
-
-Let's see how to add a dense retrieval index to an existing datastore (`"wiki"`).
-The new index should use Facebook's DPR model and should be called `"dpr"`.
-
-1. Embed the document corpus using the document encoder model & create a FAISS index in the correct format. Refer to https://github.com/kwang2049/faiss-instant for more on this.
-
-2. Register the new index with its name via the Datastore API:
-    ```
-    curl -X 'PUT' \
-    'http://localhost:7000/datastores/wiki/indices/dpr' \
-    -H 'accept: application/json' \
-    -H 'Content-Type: application/json' \
-    -d '{
-      "doc_encoder_model": "facebook/dpr-ctx_encoder-single-nq-base",
-      "query_encoder_model": "facebook/dpr-question_encoder-single-nq-base",
-      "embedding_size": 768
-    }'
-    ```
-
-3. Specify the FAISS web service container for the new index: Open the *docker-compose.yml* and in the section for FAISS service containers, add the following:
-    ```
-    faiss-wiki-dpr:
-      image: kwang2049/faiss-instant:latest
-      volumes:
-        - /local/path/to/index:/opt/faiss-instant/resources
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.services.faiss-wiki-dpr.loadbalancer.server.port=5000"
-        - "square.datastore=/wiki/dpr"
-    ```
-
-4. Restart the Docker Compose setup:
-    ```
-    docker compose up -d
-    ```
