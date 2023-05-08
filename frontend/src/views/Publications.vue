@@ -9,7 +9,7 @@
                             <h2 class="accordion-header" id="square_v3_header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#square_v3" aria-expanded="false" aria-controls="square_v3">
-                                    [<b>arXiv</b>, 2023] UKP-SQuARE v3: A Platform for Multi-Agent QA Research
+                                    [<b>ACL</b>, 2023] UKP-SQuARE v3: A Platform for Multi-Agent QA Research
                                 </button>
                             </h2>
                             <div id="square_v3" class="accordion-collapse collapse" aria-labelledby="square_v3_header"
