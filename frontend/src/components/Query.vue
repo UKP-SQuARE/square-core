@@ -357,9 +357,11 @@ export default Vue.component('query-skills', {
       }
 
     },
+
     changeInputMode() {
       this.$store.commit('changeInputMode')
     },
+
     async askQuestion() {
       const skills = this.selectedSkills
       let listModels = []
@@ -407,10 +409,7 @@ export default Vue.component('query-skills', {
         }
       }))
 
-      // if skill does not require context, set context to null
-      if (!this.skillSettings.requiresContext) {
-        this.inputContext = ""
-      }
+      this.deployingModel = false
 
       this.waiting = true
       this.$store.dispatch('query', {
@@ -427,7 +426,6 @@ export default Vue.component('query-skills', {
         this.failure = true
       }).finally(() => {
         this.waiting = false
-        this.deployingModel = false
       })
     },
     selectExample(example) {
