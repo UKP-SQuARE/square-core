@@ -371,24 +371,41 @@ export default Vue.component('query-skills', {
         }
       }
 
+      if (!this.skillSettings.requiresContext) {
+        this.inputContext = ""
+      }
+
       // check if models are deployed
-      listModels.forEach(async (model) => {
-        try {
+      await Promise.all(listModels.map(async (model) => {
+        try{
           await modelHeartbeat(this.$store.getters.authenticationHeader(), model)
-        } catch { // if modelHeartbeat fails, it means the model is not deployed => deploy it
+        }catch{
           this.deployingModel = true
-          try {
-            // deploy model
-            await deployDBModel(this.$store.getters.authenticationHeader(), model)
-          } catch (error) {
+          try{
+            await deployDBModel(this.$store.getters.authenticationHeader(), model) // deploy model
+            await new Promise(r => setTimeout(r, 1000)) // wait 1 sec for the models to be deployed
+            // const start_time = new Date().getTime()
+            try{
+              await this.$store.dispatch('query', {
+                question: this.inputQuestion,
+                inputContext: this.inputContext,
+                choices: this.list_choices,
+                options: {
+                  selectedSkills: this.selectedSkills,
+                  maxResultsPerSkill: this.options.maxResultsPerSkill
+                }
+              })
+            } catch (error) {
+              console.log(error)
+            }
+            // const end_time = new Date().getTime()
+            // const time_diff = end_time - start_time
+            // console.log("time diff =============", time_diff)
+          }catch(error){
             console.log(error)
           }
         }
-      })
-
-      // wait 2 sec for the models to be deployed
-      // TODO: delete this when we have a better way to check if the model is deployed
-      await new Promise(r => setTimeout(r, 1000))
+      }))
 
       // if skill does not require context, set context to null
       if (!this.skillSettings.requiresContext) {

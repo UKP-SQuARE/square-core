@@ -89,7 +89,7 @@ export function putSkill(headers, skillId, newSkill) {
  * @param {String} context the provided context
  * @param {Object} options the options for the request
  */
-export function postQuery(headers, question, context, choices, options) {
+export async function postQuery(headers, question, context, choices, options) {
     let data = {
         query: question,
         skill_args: {},
