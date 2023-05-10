@@ -187,7 +187,7 @@
     <div v-if="deployingModel" class="row">
       <div class="col-md-4 mx-auto mt-4">
         <Alert class="bg-info">Deploying your model
-          <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+          <span v-show="deployingModel" class="spinner-border spinner-border-sm" role="status" />
         </Alert>
       </div>
     </div>
