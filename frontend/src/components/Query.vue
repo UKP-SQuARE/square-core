@@ -187,7 +187,7 @@
     <div v-if="deployingModel" class="row">
       <div class="col-md-4 mx-auto mt-4">
         <Alert class="bg-info">Deploying your model
-          <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+          <span v-show="deployingModel" class="spinner-border spinner-border-sm" role="status" />
         </Alert>
       </div>
     </div>
@@ -357,9 +357,11 @@ export default Vue.component('query-skills', {
       }
 
     },
+
     changeInputMode() {
       this.$store.commit('changeInputMode')
     },
+
     async askQuestion() {
       const skills = this.selectedSkills
       let listModels = []
@@ -371,29 +373,48 @@ export default Vue.component('query-skills', {
         }
       }
 
-      // check if models are deployed
-      listModels.forEach(async (model) => {
-        try {
-          await modelHeartbeat(this.$store.getters.authenticationHeader(), model)
-        } catch { // if modelHeartbeat fails, it means the model is not deployed => deploy it
-          this.deployingModel = true
-          try {
-            // deploy model
-            await deployDBModel(this.$store.getters.authenticationHeader(), model)
-          } catch (error) {
-            console.log(error)
-          }
-        }
-      })
-
-      // wait 2 sec for the models to be deployed
-      // TODO: delete this when we have a better way to check if the model is deployed
-      await new Promise(r => setTimeout(r, 1000))
-
-      // if skill does not require context, set context to null
       if (!this.skillSettings.requiresContext) {
         this.inputContext = ""
       }
+
+      // check if models are deployed
+      await Promise.all(listModels.map(async (model) => {
+        try{
+          await modelHeartbeat(this.$store.getters.authenticationHeader(), model)
+        }catch{
+          this.deployingModel = true
+          try{
+            await deployDBModel(this.$store.getters.authenticationHeader(), model) // deploy model
+            await new Promise(r => setTimeout(r, 1000)) // wait 1 sec for the models to be deployed
+          }catch(error){
+            console.log(error)
+          }
+        }
+      }))
+
+      // const start_time = new Date().getTime()
+
+      if(this.deployingModel){
+        try{
+          await this.$store.dispatch('query', {
+            question: this.inputQuestion,
+            inputContext: this.inputContext,
+            choices: this.list_choices,
+            options: {
+              selectedSkills: this.selectedSkills,
+              maxResultsPerSkill: this.options.maxResultsPerSkill
+            }
+          })
+        } catch (error) {
+          console.log(error) // possible timeout error
+        }
+      }
+
+      // const end_time = new Date().getTime()
+      // const time_diff = end_time - start_time
+      // console.log("time diff =============", time_diff)
+
+      this.deployingModel = false
 
       this.waiting = true
       this.$store.dispatch('query', {
@@ -410,7 +431,6 @@ export default Vue.component('query-skills', {
         this.failure = true
       }).finally(() => {
         this.waiting = false
-        this.deployingModel = false
       })
     },
     selectExample(example) {
