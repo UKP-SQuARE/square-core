@@ -136,8 +136,8 @@
           class="bg-primary bg-gradient flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
           <div class="my-3 py-3">
             <h2 class="display-5">Latest News!</h2>
-            <p class="lead fs-4">SQuARE is accepted as a demo paper at AACL '22! Read the <a
-                href="https://arxiv.org/abs/2208.09316" target="_blank"> <span class='text-warning'> paper </span></a>!
+            <p class="lead fs-4">SQuARE is accepted as a demo paper at ACL '23! Read the <a
+                href="https://arxiv.org/abs/2303.18120" target="_blank"> <span class='text-warning'> paper </span></a>!
             </p>
 
             <div class="d-grid gap-2 d-flex justify-content-center mt-5">
