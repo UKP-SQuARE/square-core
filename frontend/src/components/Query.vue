@@ -386,28 +386,33 @@ export default Vue.component('query-skills', {
           try{
             await deployDBModel(this.$store.getters.authenticationHeader(), model) // deploy model
             await new Promise(r => setTimeout(r, 1000)) // wait 1 sec for the models to be deployed
-            // const start_time = new Date().getTime()
-            try{
-              await this.$store.dispatch('query', {
-                question: this.inputQuestion,
-                inputContext: this.inputContext,
-                choices: this.list_choices,
-                options: {
-                  selectedSkills: this.selectedSkills,
-                  maxResultsPerSkill: this.options.maxResultsPerSkill
-                }
-              })
-            } catch (error) {
-              console.log(error)
-            }
-            // const end_time = new Date().getTime()
-            // const time_diff = end_time - start_time
-            // console.log("time diff =============", time_diff)
           }catch(error){
             console.log(error)
           }
         }
       }))
+
+      // const start_time = new Date().getTime()
+
+      if(this.deployingModel){
+        try{
+          await this.$store.dispatch('query', {
+            question: this.inputQuestion,
+            inputContext: this.inputContext,
+            choices: this.list_choices,
+            options: {
+              selectedSkills: this.selectedSkills,
+              maxResultsPerSkill: this.options.maxResultsPerSkill
+            }
+          })
+        } catch (error) {
+          console.log(error) // possible timeout error
+        }
+      }
+
+      // const end_time = new Date().getTime()
+      // const time_diff = end_time - start_time
+      // console.log("time diff =============", time_diff)
 
       this.deployingModel = false
 
