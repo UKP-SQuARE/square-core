@@ -20,6 +20,7 @@ const News = () => import('../views/News')
 const Publications = () => import('../views/Publications')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
+const Prompting = () => import('../views/PromptingView')
 
 
 Vue.use(VueRouter)
@@ -29,6 +30,11 @@ const routes = [
     path: '/',
     name: 'home',
     component: Home
+  },
+  {
+    path:'/prompting',
+    name: 'prompting',
+    component: Prompting
   },
   {
     path: '/qa_hub',
