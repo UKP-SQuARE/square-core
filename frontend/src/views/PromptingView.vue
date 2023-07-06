@@ -32,10 +32,10 @@
             </div>
             <div
               class="col col-md-9 border rounded p-3 bg-white"
-              style="height: 70vh"
+              style="height: 77vh"
             >
-              <div class="app">
-                <div ref="messages" class="messages">
+              <div style="height: 100%; flex-direction: column; display: flex;">
+                <div ref="messages" class="messages" style="  flex-grow: 1; overflow: auto; padding: 1rem;">
                   <MessageView
                     v-for="message in messages"
                     :key="message.id"
@@ -45,22 +45,22 @@
                     :author="message.author"
                   />
                 </div>
-                <div class="chat-box">
-                  <form class="chat-box" @submit.prevent="onSubmit">
-                    <button
-                      :disabled="messages.length === 1"
-                      type="button"
-                      @click="resetConv"
-                    >
-                      Reset
-                    </button>
-                    <!-- <input v-model="chatText" placeholder="Write a message" type="text"/> -->
-                    <textarea
-                      v-model="chatText"
-                      placeholder="Write a message"
-                      type="text"
-                    />
-                    <button :disabled="chatText === ''">Send</button>
+                <div>
+                  <form @submit.prevent="onSubmit">
+                    <div class="row">
+                      <div class="col-2 px-0 d-flex align-items-end justify-content-end">
+                        <button :disabled="messages.length === 1" type="button" @click="resetConv"
+                          class="btn btn-primary border rounded-5"> Reset </button>
+                      </div>
+                      <div class="col-8">
+                        <textarea v-model="chatText" placeholder="Write a message" 
+                        type="text" class="form-control border-0 p-2 m-0"
+                        style="background: rgba(0, 0, 0, 0.1); max-height: 12rem; height: 2rem;"/>
+                      </div>
+                      <div class="col-2 px-0 d-flex align-items-end">
+                        <button :disabled="chatText === ''" class="btn btn-primary">Send</button>
+                      </div>
+                    </div>
                   </form>
                 </div>
               </div>
@@ -174,47 +174,12 @@ export default {
 </script>
 
 <style scoped>
-button {
-  border: 0;
-  background: #2a60ff;
-  color: white;
-  cursor: pointer;
-  padding: 1rem;
-}
-
-textarea {
-  border: 0;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.1);
-  width: min(100%, 30rem);
-  flex-grow: 1;
-  font-size: 1.2rem;
-}
-
-.app {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.messages {
-  flex-grow: 1;
-  overflow: auto;
-  padding: 1rem;
-}
-
 .message + .message {
   margin-top: 1rem;
 }
-
 .message.right {
   margin-left: auto;
 }
-.chat-box {
-  width: 100%;
-  display: flex;
-}
-
 button:disabled {
   opacity: 0.5;
 }
