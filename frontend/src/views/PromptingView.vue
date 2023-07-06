@@ -9,16 +9,17 @@
                 <div class="form-group">
                   <div class="row">
                     <div class="col-8 px-0">
+                      <label for="open-ai-key" >OpenAI key (locally stored)</label>
                       <input
                         type="password"
-                        class="form-control py-1 mx-0"
+                        class="form-control py-1 mx-0 mt-1"
                         id="open-ai-key"
                         placeholder="OpenAI key (locally stored)"
                         title="Your key is stored locally and not shared with anyone"
                         v-model="openAIApiKey"
                       />
                     </div>
-                    <div class="col-4 px-2">
+                    <div class="col-4 px-2 d-flex align-items-end">
                       <button
                         type="submit"
                         class="btn btn-primary mx-0 px-4 py-1"
@@ -54,11 +55,12 @@
                       </div>
                       <div class="col-8">
                         <textarea v-model="chatText" placeholder="Write a message" 
-                        type="text" class="form-control border-0 p-2 m-0"
-                        style="background: rgba(0, 0, 0, 0.1); max-height: 12rem; height: 2rem;"/>
+                        type="text" class="form-control border-0 p-2 m-0 auto-resize"
+                        style="background: rgba(0, 0, 0, 0.1); max-height: 12rem; height: 2rem;"
+                        @keydown.enter.prevent="onSubmit"/>
                       </div>
                       <div class="col-2 px-0 d-flex align-items-end">
-                        <button :disabled="chatText === ''" class="btn btn-primary">Send</button>
+                        <button :disabled="chatText === ''" class="btn btn-danger text-white">Send</button>
                       </div>
                     </div>
                   </form>
@@ -88,7 +90,7 @@ export default {
   data: () => ({
     chatText: "",
     user: {
-      name: "John",
+      name: "You",
       id: 2,
     },
     init_messages: [
@@ -160,7 +162,6 @@ export default {
       }
     },
     resetConv() {
-      console.log("reset");
       this.chatText = "";
       this.messages.splice(1, this.messages.length);
       this.chatChain.memory.clear();
