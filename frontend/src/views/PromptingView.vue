@@ -6,28 +6,35 @@
           <div class="row">
             <div class="col col-3 d-none d-md-block">
               <form class="form-inline" @submit.prevent="saveKey">
-                <div class="form-group">
+                <div class="form-group pb-2">
                   <div class="row">
-                    <div class="col-8 px-0">
+                    <div class="col-9">
                       <label for="open-ai-key" >OpenAI key (locally stored)</label>
                       <input
                         type="password"
-                        class="form-control py-1 mx-0 mt-1"
+                        class="form-control"
                         id="open-ai-key"
                         placeholder="OpenAI key (locally stored)"
                         title="Your key is stored locally and not shared with anyone"
                         v-model="openAIApiKey"
                       />
                     </div>
-                    <div class="col-4 px-2 d-flex align-items-end">
+                    <div class="col-3 ps-0 d-flex align-items-end">
                       <button
                         type="submit"
-                        class="btn btn-primary mx-0 px-4 py-1"
+                        class="btn btn-primary px-3"
                       >
                         Save
                       </button>
                     </div>
                   </div>
+                </div>
+                <div class="form-group">
+                  <label for="exampleFormControlSelect1">Chat Mode</label>
+                  <select v-model="chatMode" class="form-select" id="chat-mode">
+                    <option value="normal_chat">Normal Chat</option>
+                    <option value="agent_chat">Agent Chat</option>
+                  </select>
                 </div>
               </form>
             </div>
@@ -46,7 +53,7 @@
                     :author="message.author"
                   />
                 </div>
-                <div>
+                <div class="mt-3">
                   <form @submit.prevent="onSubmit">
                     <div class="row">
                       <div class="col-2 px-0 d-flex align-items-end justify-content-end">
@@ -79,6 +86,10 @@ import MessageView from "@/components/MessageView";
 import { OpenAI } from "langchain/llms/openai";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { Calculator } from "langchain/tools/calculator";
+// import { SerpAPI } from "langchain/tools";
+import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import Vue from "vue";
 
 export default {
@@ -89,6 +100,7 @@ export default {
 
   data: () => ({
     chatText: "",
+    chatMode: "normal_chat",
     user: {
       name: "You",
       id: 2,
@@ -100,9 +112,45 @@ export default {
         uid: 1,
         isMine: false,
       },
+      {
+        author: "AI",
+        text: "Hey, how can I help you today?",
+        uid: 1,
+        isMine: false,
+      },
+      {
+        author: "AI",
+        text: "Hey, how can I help you today?",
+        uid: 1,
+        isMine: false,
+      },
+      {
+        author: "AI",
+        text: "Hey, how can I help you today?",
+        uid: 1,
+        isMine: false,
+      },
+      {
+        author: "AI",
+        text: "Hey, how can I help you today?",
+        uid: 1,
+        isMine: false,
+      },
+      {
+        author: "AI",
+        text: "Hey, how can I help you today?",
+        uid: 1,
+        isMine: false,
+      },
+      {
+        author: "AI",
+        text: "Hey, how can I help you today?",
+        uid: 1,
+        isMine: false,
+      }
     ],
     messages: [],
-    chatChain: null,
+    chatModel: null,
     openAIApiKey: "",
   }),
 
@@ -110,7 +158,7 @@ export default {
     this.messages = [...this.init_messages];
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
     if (this.openAIApiKey != null) {
-      this.chatChain = new ConversationChain({
+      this.chatModel = new ConversationChain({
         memory: new BufferMemory(),
         llm: new OpenAI({
           modelName: "gpt-3.5-turbo",
@@ -138,12 +186,30 @@ export default {
 
         try {
           if(this.openAIApiKey === ""){
-            // show worning message about the key
+            // TODO: show worning message about the key
           }else{
-            const res = await this.chatChain.call({ input: text });
+            const res = await this.chatModel.call({ input: text });
+            console.log(res)
+
+            let response = ""; 
+
+            if (this.chatMode === "normal_chat"){
+              response = res.response;
+            }else{
+              // for loop with index for the intermediate steps
+              for (let i = 0; i < res.intermediateSteps.length; i++) {
+                const step = res.intermediateSteps[i];
+                response += "Action" + (i + 1) + ": ";
+                response += step.action.log + "\n";
+              }
+              response += "Final Answer: " + res.output;
+            }
+            console.log(response)
+
+
             this.messages.push({
               author: "AI",
-              text: res.response,
+              text: response,
               uid: 1,
               isMine: false,
             });
@@ -151,26 +217,63 @@ export default {
             Vue.nextTick(() => {
               this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
             });
+
+            console.log(this.chatModel)
           }
         } catch (err) {
-          if(err.response.data.error.code === "invalid_api_key"){
-            // show error message about the key  
-          }else{
-            // show general error message
-          }
+          console.log(err.message)
+          // if(err.response.data.error.code === "invalid_api_key"){
+          //   // TODO: show error message about the key  
+          // }else{
+          //   // TODO: show general error message
+          // }
         }
       }
     },
     resetConv() {
       this.chatText = "";
       this.messages.splice(1, this.messages.length);
-      this.chatChain.memory.clear();
+      // this.chatModel.memory.clear();
     },
     saveKey() {
       localStorage.setItem("openAIApiKey", this.openAIApiKey);
       // show success message
-    },
+    }
   },
+
+  watch: {
+    async chatMode(newValue, oldValue) {
+      if (newValue === "normal_chat") {
+        this.chatModel = new ConversationChain({
+          memory: new BufferMemory(),
+          llm: new OpenAI({
+            modelName: "gpt-3.5-turbo",
+            openAIApiKey: this.openAIApiKey,
+          }),
+        });
+        console.log("normal chat ready");
+      } else if (newValue === "agent_chat") {
+        process.env.LANGCHAIN_HANDLER = "langchain";
+        const model = new ChatOpenAI({
+          modelName: "gpt-3.5-turbo",
+          openAIApiKey: this.openAIApiKey,
+        });
+        const tools = [
+          new Calculator()
+        ]
+        this.chatModel = await initializeAgentExecutorWithOptions(tools, model, {
+          agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
+          returnIntermediateSteps: true,
+        }); 
+        console.log("agent ready");
+      }
+
+      this.resetConv();
+
+      console.log(newValue, oldValue);
+    }
+  }
+
 };
 </script>
 
