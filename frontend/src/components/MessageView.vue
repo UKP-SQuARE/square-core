@@ -1,9 +1,9 @@
 <template>
   <div :class="['message', { dark }]">
-        <strong>{{ author }}</strong>
-        <br />
+    <strong>{{ author }}</strong>
+    <br />
     <div v-html="markdownToHtml(text)"></div>
-    </div>
+  </div>
 </template>
 
 <script>
@@ -27,7 +27,7 @@ marked.use({
 
 export default {
   name: "MessageView",
-    props: [
+  props: [
     "text", // Content of the message
     "author", // Author of the message
     "dark", // Background variant of the box
@@ -45,12 +45,12 @@ export default {
 <style scoped>
 .message {
   background: #ebebeb;
-    border-radius: 10px;
-    padding: 0.77rem;
-    width: fit-content;
+  border-radius: 10px;
+  padding: 0.77rem;
+  width: fit-content;
 }
 .message.dark {
-    background: #5fc9f8;
+  background: #5fc9f8;
 }
 </style>
 

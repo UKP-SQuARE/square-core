@@ -112,42 +112,6 @@ export default {
         uid: 1,
         isMine: false,
       },
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      },
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      },
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      },
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      },
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      },
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      }
     ],
     messages: [],
     chatModel: null,
@@ -189,23 +153,49 @@ export default {
             // TODO: show worning message about the key
           }else{
             const res = await this.chatModel.call({ input: text });
-            console.log(res)
-
+            // const res = {
+            //     "output": "The square root of 25 is 5.",
+            //     "intermediateSteps": [
+            //         {
+            //             "action": {
+            //                 "tool": "calculator",
+            //                 "toolInput": "sqrt(25)",
+            //                 "log": "{\n    \"action\": \"calculator\",\n    \"action_input\": \"sqrt(25)\"\n}"
+            //             },
+            //             "observation": "5"
+            //         }, 
+            //         {
+            //             "action": {
+            //                 "tool": "calculator",
+            //                 "toolInput": "sqrt(25)",
+            //                 "log": "{\n    \"action\": \"calculator\",\n    \"action_input\": \"sqrt(25)\"\n}"
+            //             },
+            //             "observation": "5"
+            //         }
+            //     ]
+            // }
             let response = ""; 
-
             if (this.chatMode === "normal_chat"){
               response = res.response;
             }else{
-              // for loop with index for the intermediate steps
-              for (let i = 0; i < res.intermediateSteps.length; i++) {
-                const step = res.intermediateSteps[i];
-                response += "Action" + (i + 1) + ": ";
-                response += step.action.log + "\n";
+              if(res.intermediateSteps.length > 0){
+                response += "```\n";
+                for (let i = 0; i < res.intermediateSteps.length; i++) {
+                  const step = res.intermediateSteps[i];
+                  console.log(step);
+                  response += `Action [${i + 1}] tool:\t ${step.action.tool} \n`;
+                  response += `Action [${i + 1}] Input:\t ${step.action.toolInput} \n`;
+                  response += `Action [${i + 1}] Output:\t ${step.observation} \n`;
+                  response += "============================================== \n";
+                }
+                response += "```\n";
+                response += "Final Answer: " + res.output;
+              }else{
+                response = res.output;
               }
-              response += "Final Answer: " + res.output;
             }
-            console.log(response)
 
+            console.log(response);
 
             this.messages.push({
               author: "AI",
@@ -217,8 +207,6 @@ export default {
             Vue.nextTick(() => {
               this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
             });
-
-            console.log(this.chatModel)
           }
         } catch (err) {
           console.log(err.message)
@@ -233,7 +221,7 @@ export default {
     resetConv() {
       this.chatText = "";
       this.messages.splice(1, this.messages.length);
-      // this.chatModel.memory.clear();
+      this.chatModel.memory.clear();
     },
     saveKey() {
       localStorage.setItem("openAIApiKey", this.openAIApiKey);
