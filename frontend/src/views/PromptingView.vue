@@ -9,28 +9,67 @@
                 <div class="form-group pb-2">
                   <div class="row">
                     <div class="col-9">
-                      <label for="open-ai-key" >OpenAI key (locally stored)</label>
+                      <label for="open-ai-key"
+                        >OpenAI key (locally stored)</label
+                      >
                       <input
                         type="password"
                         class="form-control"
                         id="open-ai-key"
-                        placeholder="OpenAI key (locally stored)"
+                        placeholder="OpenAI key"
                         title="Your key is stored locally and not shared with anyone"
                         v-model="openAIApiKey"
                       />
                     </div>
                     <div class="col-3 ps-0 d-flex align-items-end">
+                      <button type="submit" class="btn btn-primary px-3">
+                        Save
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="selectedModel">Chat Model</label>
+                    <select
+                      v-model="selectedModel"
+                      class="form-select"
+                      id="selectedModel"
+                    >
+                      <option
+                        v-for="model in chatModelList"
+                        :key="model.id"
+                        :value="model.id"
+                      >
+                        {{ model.id }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- <div class="row">
+                    <div class="col-9">
+                      <label for="open-ai-key" >Search key (locally stored)</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="search-key"
+                        placeholder="Search Key"
+                        title="Your key is stored locally and not shared with anyone"
+                        v-model="searchKey"
+                      />
+                    </div>
+                    <div class="col-3 ps-0 d-flex align-items-end">
                       <button
-                        type="submit"
+                        type="button"
+                        @click="saveSearchKey"
                         class="btn btn-primary px-3"
                       >
                         Save
                       </button>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
                 <div class="form-group">
-                  <label for="exampleFormControlSelect1">Chat Mode</label>
+                  <label for="chat-mode">Chat Mode</label>
                   <select v-model="chatMode" class="form-select" id="chat-mode">
                     <option value="normal_chat">Normal Chat</option>
                     <option value="agent_chat">Agent Chat</option>
@@ -42,8 +81,12 @@
               class="col col-md-9 border rounded p-3 bg-white"
               style="height: 77vh"
             >
-              <div style="height: 100%; flex-direction: column; display: flex;">
-                <div ref="messages" class="messages" style="  flex-grow: 1; overflow: auto; padding: 1rem;">
+              <div style="height: 100%; flex-direction: column; display: flex">
+                <div
+                  ref="messages"
+                  class="messages"
+                  style="flex-grow: 1; overflow: auto; padding: 1rem"
+                >
                   <MessageView
                     v-for="message in messages"
                     :key="message.id"
@@ -53,21 +96,60 @@
                     :author="message.author"
                   />
                 </div>
+
+                <div
+                  v-if="messages.length === 0"
+                  class="d-flex justify-content-center"
+                  style="flex-grow: 1"
+                >
+                  <div class="text-center opacity-50">
+
+                    <!-- add h1 with that is a little transparent -->
+                    
+                    <h1 class="display-4">Start a conversation</h1>
+                    <p class="lead">
+                      Start a conversation with the AI by typing in the box
+                      below.
+                    </p>
+                  </div>
+                </div>
+
                 <div class="mt-3">
                   <form @submit.prevent="onSubmit">
                     <div class="row">
-                      <div class="col-2 px-0 d-flex align-items-end justify-content-end">
-                        <button :disabled="messages.length === 1" type="button" @click="resetConv"
-                          class="btn btn-primary border rounded-5"> Reset </button>
+                      <div
+                        class="col-2 px-0 d-flex align-items-end justify-content-end"
+                      >
+                        <button
+                          :disabled="messages.length === 1"
+                          type="button"
+                          @click="resetConv"
+                          class="btn btn-primary border rounded-5"
+                        >
+                          Reset
+                        </button>
                       </div>
                       <div class="col-8">
-                        <textarea v-model="chatText" placeholder="Write a message" 
-                        type="text" class="form-control border-0 p-2 m-0 auto-resize"
-                        style="background: rgba(0, 0, 0, 0.1); max-height: 12rem; height: 2rem;"
-                        @keydown.enter.prevent="onSubmit"/>
+                        <textarea
+                          v-model="chatText"
+                          placeholder="Write a message"
+                          type="text"
+                          class="form-control border-0 p-2 m-0 auto-resize"
+                          style="
+                            background: rgba(0, 0, 0, 0.1);
+                            max-height: 12rem;
+                            height: 2rem;
+                          "
+                          @keydown.enter.prevent="onSubmit"
+                        />
                       </div>
                       <div class="col-2 px-0 d-flex align-items-end">
-                        <button :disabled="chatText === ''" class="btn btn-danger text-white">Send</button>
+                        <button
+                          :disabled="chatText === ''"
+                          class="btn btn-danger text-white"
+                        >
+                          Send
+                        </button>
                       </div>
                     </div>
                   </form>
@@ -105,31 +187,30 @@ export default {
       name: "You",
       id: 2,
     },
-    init_messages: [
-      {
-        author: "AI",
-        text: "Hey, how can I help you today?",
-        uid: 1,
-        isMine: false,
-      },
-    ],
+    // init_messages: [
+    //   {
+    //     author: "AI",
+    //     text: "Hey, how can I help you today?",
+    //     uid: 1,
+    //     isMine: false,
+    //   },
+    // ],
     messages: [],
     chatModel: null,
     openAIApiKey: "",
+    // searchKey: "",
+    chatModelList: [],
+    selectedModel: "gpt-3.5-turbo",
   }),
 
   created() {
-    this.messages = [...this.init_messages];
+    this.messages = [];
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
+    // this.searchKey = localStorage.getItem("searchKey");
     if (this.openAIApiKey != null) {
-      this.chatModel = new ConversationChain({
-        memory: new BufferMemory(),
-        llm: new OpenAI({
-          modelName: "gpt-3.5-turbo",
-          openAIApiKey: this.openAIApiKey,
-        }),
-      });
+      this.initChatModel(this.chatMode, this.selectedModel);
     }
+    this.fetchModels();
   },
 
   methods: {
@@ -149,48 +230,34 @@ export default {
         });
 
         try {
-          if(this.openAIApiKey === ""){
+          if (this.openAIApiKey === "") {
             // TODO: show worning message about the key
-          }else{
+          } else {
             const res = await this.chatModel.call({ input: text });
-            // const res = {
-            //     "output": "The square root of 25 is 5.",
-            //     "intermediateSteps": [
-            //         {
-            //             "action": {
-            //                 "tool": "calculator",
-            //                 "toolInput": "sqrt(25)",
-            //                 "log": "{\n    \"action\": \"calculator\",\n    \"action_input\": \"sqrt(25)\"\n}"
-            //             },
-            //             "observation": "5"
-            //         }, 
-            //         {
-            //             "action": {
-            //                 "tool": "calculator",
-            //                 "toolInput": "sqrt(25)",
-            //                 "log": "{\n    \"action\": \"calculator\",\n    \"action_input\": \"sqrt(25)\"\n}"
-            //             },
-            //             "observation": "5"
-            //         }
-            //     ]
-            // }
-            let response = ""; 
-            if (this.chatMode === "normal_chat"){
+            let response = "";
+            if (this.chatMode === "normal_chat") {
               response = res.response;
-            }else{
-              if(res.intermediateSteps.length > 0){
+            } else {
+              if (res.intermediateSteps.length > 0) {
                 response += "```\n";
                 for (let i = 0; i < res.intermediateSteps.length; i++) {
                   const step = res.intermediateSteps[i];
                   console.log(step);
-                  response += `Action [${i + 1}] tool:\t ${step.action.tool} \n`;
-                  response += `Action [${i + 1}] Input:\t ${step.action.toolInput} \n`;
-                  response += `Action [${i + 1}] Output:\t ${step.observation} \n`;
-                  response += "============================================== \n";
+                  response += `Action [${i + 1}] tool:\t ${
+                    step.action.tool
+                  } \n`;
+                  response += `Action [${i + 1}] Input:\t ${
+                    step.action.toolInput
+                  } \n`;
+                  response += `Action [${i + 1}] Output:\t ${
+                    step.observation
+                  } \n`;
+                  response +=
+                    "============================================== \n";
                 }
                 response += "```\n";
                 response += "Final Answer: " + res.output;
-              }else{
+              } else {
                 response = res.output;
               }
             }
@@ -209,9 +276,9 @@ export default {
             });
           }
         } catch (err) {
-          console.log(err.message)
+          console.log(err.message);
           // if(err.response.data.error.code === "invalid_api_key"){
-          //   // TODO: show error message about the key  
+          //   // TODO: show error message about the key
           // }else{
           //   // TODO: show general error message
           // }
@@ -220,48 +287,80 @@ export default {
     },
     resetConv() {
       this.chatText = "";
-      this.messages.splice(1, this.messages.length);
+      this.messages.splice(0, this.messages.length);
       this.chatModel.memory.clear();
     },
     saveKey() {
       localStorage.setItem("openAIApiKey", this.openAIApiKey);
-      // show success message
-    }
-  },
-
-  watch: {
-    async chatMode(newValue, oldValue) {
-      if (newValue === "normal_chat") {
+      // TODO: show success message
+    },
+    // saveSearchKey() {
+    //   localStorage.setItem("searchKey", this.searchKey);
+    //   // TODO: show success message
+    // },
+    async initChatModel(chatmode, chatmodel) {
+      if (chatmode === "normal_chat") {
         this.chatModel = new ConversationChain({
           memory: new BufferMemory(),
           llm: new OpenAI({
-            modelName: "gpt-3.5-turbo",
+            modelName: chatmodel,
             openAIApiKey: this.openAIApiKey,
           }),
         });
-        console.log("normal chat ready");
-      } else if (newValue === "agent_chat") {
+      } else if (chatmode === "agent_chat") {
         process.env.LANGCHAIN_HANDLER = "langchain";
         const model = new ChatOpenAI({
-          modelName: "gpt-3.5-turbo",
+          modelName: chatmodel,
           openAIApiKey: this.openAIApiKey,
         });
+        // console.log(this.searchKey);
         const tools = [
-          new Calculator()
-        ]
-        this.chatModel = await initializeAgentExecutorWithOptions(tools, model, {
-          agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
-          returnIntermediateSteps: true,
-        }); 
-        console.log("agent ready");
+          new Calculator(),
+          // new SerpAPI(this.searchKey, {}, "/serp-api",) // see https://github.com/hwchase17/langchainjs/blob/9523a2e/langchain/src/tools/serpapi.ts#L303
+        ];
+        this.chatModel = await initializeAgentExecutorWithOptions(
+          tools,
+          model,
+          {
+            agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
+            returnIntermediateSteps: true,
+          }
+        );
       }
+    },
+    fetchModels() {
+      fetch("https://api.openai.com/v1/models", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.openAIApiKey}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          this.chatModelList = data.data.filter(
+            (model) =>
+              model.id.startsWith("gpt") &&
+              model.owned_by === "openai" &&
+              !model.id.includes("curie")
+          );
+        });
+    },
+  },
 
+  watch: {
+    /* eslint-disable no-unused-vars */
+    async chatMode(newValue, oldValue) {
+      // TODO: check if the key is valid
+      await this.initChatModel(newValue, this.selectedModel);
       this.resetConv();
-
-      console.log(newValue, oldValue);
-    }
-  }
-
+    },
+    /* eslint-disable no-unused-vars */
+    async selectedModel(newValue, oldValue) {
+      await this.initChatModel(this.chatMode, newValue);
+      this.resetConv();
+    },
+  },
 };
 </script>
 
