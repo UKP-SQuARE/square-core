@@ -12,6 +12,19 @@
                 <div class="card">
                   <img :src="`${publicPath}acl2023.png`" class="card-img-top" alt="acl 2023 logo">
                   <div class="card-body">
+                    <h5 class="card-title">BEA Workshop@ACL2023</h5>
+                    <p class="card-text">SQuARE is accepted at the 17th Workshop on Innovative Use of 
+                      NLP for Building Educational Applications held at ACL 2023. <a href="https://aclanthology.org/2023.bea-1.17/">
+                        Paper.</a></p>
+                    <p class="card-text"><small class="text-muted">May. 2023</small></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
+                  <img :src="`${publicPath}acl2023.png`" class="card-img-top" alt="acl 2023 logo">
+                  <div class="card-body">
                     <h5 class="card-title">ACL 2023</h5>
                     <p class="card-text">SQuARE v3 is accepted at ACL as a <a href="https://arxiv.org/abs/2303.18120"
                         target="_blank">demo paper</a>.</p>
