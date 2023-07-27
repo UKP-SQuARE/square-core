@@ -10,7 +10,7 @@
                             <h2 class="accordion-header" id="square_teaching_tool_header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#square_teaching_tool" aria-expanded="false" aria-controls="square_teaching_tool">
-                                    [<b>ACL</b>, 2023] UKP-SQuARE: An Interactive Tool for Teaching Question Answering
+                                    [<b>BEA Workshop@ACL</b>, 2023] UKP-SQuARE: An Interactive Tool for Teaching Question Answering
                                 </button>
                             </h2>
                             <div id="square_teaching_tool" class="accordion-collapse collapse" aria-labelledby="square_teaching_tool_header"
