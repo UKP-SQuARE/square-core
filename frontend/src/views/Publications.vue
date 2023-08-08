@@ -15,8 +15,8 @@
                             <div id="square_v3" class="accordion-collapse collapse" aria-labelledby="square_v3_header"
                                 data-bs-parent="#accordion_square_papers">
                                 <div class="accordion-body">
-                                    <strong>Link: </strong><a href="https://arxiv.org/abs/2303.18120"
-                                        target="_blank">https://arxiv.org/abs/2303.18120</a> <br />
+                                    <strong>Link: </strong><a href="https://aclanthology.org/2023.acl-demo.55/"
+                                        target="_blank">https://aclanthology.org/2023.acl-demo.55/</a> <br />
                                     <strong>Authors: </strong>Haritz Puerto, Tim Baumgärtner, Rachneet Sachdeva, Haishuo
                                     Fang, Hao Zhang, Sewin Tariverdian, Kexin Wang, Iryna Gurevych <br />
                                     <strong>Abstract: </strong> The continuous development of Question Answering (QA)

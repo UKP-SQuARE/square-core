@@ -172,6 +172,7 @@ import { ChatOpenAI } from "langchain/chat_models/openai";
 import { Calculator } from "langchain/tools/calculator";
 // import { SerpAPI } from "langchain/tools";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
+import { AWSLambda } from "langchain/tools/aws_lambda";
 import Vue from "vue";
 
 export default {
@@ -313,10 +314,20 @@ export default {
           modelName: chatmodel,
           openAIApiKey: this.openAIApiKey,
         });
-        // console.log(this.searchKey);
+
+        const my_lambda_function = new AWSLambda({
+          name: 'ACL papers',
+          description: 'Gives you the exact number of papers ACL accepted in any year. The input to this tool should be a year as a string.',
+          region: 'eu-north-1',
+          accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID, 
+          secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
+          functionName: 'my_random_function',
+        });
+
         const tools = [
           new Calculator(),
           // new SerpAPI(this.searchKey, {}, "/serp-api",) // see https://github.com/hwchase17/langchainjs/blob/9523a2e/langchain/src/tools/serpapi.ts#L303
+          my_lambda_function,
         ];
         this.chatModel = await initializeAgentExecutorWithOptions(
           tools,
@@ -324,7 +335,8 @@ export default {
           {
             agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
             returnIntermediateSteps: true,
-          }
+            verbose: true,
+          }, 
         );
       }
     },
