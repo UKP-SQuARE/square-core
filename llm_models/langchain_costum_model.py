@@ -5,7 +5,7 @@ from typing import Any, List, Mapping, Optional
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
 
-OPENAI_API_KEY="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"
+OPENAI_API_KEY=""
 openai.api_key = OPENAI_API_KEY
 
 async def open_ai_completion(prompt):
