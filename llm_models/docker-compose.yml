@@ -1,0 +1,17 @@
+# Only dev
+
+version: '3'
+services:
+  llama7b_chat_hf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - llms:/app/data
+    env_file:
+      - .env
+
+volumes:
+  llms:
