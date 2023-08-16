@@ -1,3 +1,4 @@
+import torch
 from fastapi import FastAPI
 from typing import Optional
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
@@ -19,7 +20,7 @@ async def startup_event():
     global tokenizer, model
     print("Loading model ...")
     tokenizer = AutoTokenizer.from_pretrained("data/Llama-2-7b-chat-hf")
-    model = AutoModelForCausalLM.from_pretrained("data/Llama-2-7b-chat-hf")
+    model = AutoModelForCausalLM.from_pretrained("data/Llama-2-7b-chat-hf", torch_dtype=torch.float16)
     print("Model loaded")
 
 @app.post("/fake-generate")
@@ -37,6 +38,7 @@ def generate(params: ModelParams):
         tokenizer=tokenizer,
         max_new_tokens=params.max_new_tokens,
         temperature=params.temperature,
+        device=0
     )
     generated_text = pipe(params.text)
     return generated_text
