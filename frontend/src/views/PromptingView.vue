@@ -34,7 +34,7 @@
                   <hr />
 
                   <div class="accordion" id="chatControl">
-                    
+
                     <div class="accordion-item">
                       <h2 class="accordion-header" id="headingOne">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -80,7 +80,7 @@
                               id="top_pRange">
                           </div>
 
-                          <hr class="form-group" v-if="chatConfig.chatMode === 'normal_chat'"/>
+                          <hr class="form-group" v-if="chatConfig.chatMode === 'normal_chat'" />
 
                           <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
                             <label for="systemPrompt" class="form-label">System Prompt</label>
@@ -102,7 +102,13 @@
                       <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
                         data-bs-parent="#chatControl">
                         <div class="accordion-body">
-                          test
+                          <div v-for="(item, index) in chatConfig.tools" :key="index" class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" :id="'flexCheckChecked' + index"
+                              v-model="item.checked">
+                            <label class="form-check-label" :for="'flexCheckChecked' + index">
+                              {{ item.name }}
+                            </label>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -168,7 +174,6 @@
 
 <script>
 import MessageView from "@/components/MessageView";
-// import { OpenAI } from "langchain/llms/openai";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
@@ -182,8 +187,6 @@ import {
   SystemMessagePromptTemplate,
   MessagesPlaceholder,
 } from "langchain/prompts";
-
-
 
 export default {
   name: "prompting-view",
@@ -206,8 +209,8 @@ export default {
       inserted: function (el) {
         el.oninput();
       },
-      update: function (el) {
-        this.$nextTick(function () {
+      componentUpdated: function (el, binding, vnode) {
+        vnode.context.$nextTick(function () {
           el.oninput();
         });
       }
@@ -220,6 +223,8 @@ export default {
     messages: [],
     openAIApiKey: "",
     chatModelList: [],
+    availableTools: [],
+
 
     chatConfig: {
       chatMode: "normal_chat",
@@ -228,6 +233,10 @@ export default {
       maxTokens: 256,
       top_p: 0.9,
       systemPrompt: "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+      tools: [
+        { name: "Calculator", checked: false },
+        { name: "Search", checked: false },
+      ],
     },
 
     user: {
@@ -239,11 +248,11 @@ export default {
   created() {
     this.messages = [];
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
-    // this.searchKey = localStorage.getItem("searchKey");
     if (this.openAIApiKey != null) {
       this.initChatModel();
+      this.fetchModels();
     }
-    this.fetchModels();
+    this.initTools();
   },
 
   methods: {
@@ -266,7 +275,6 @@ export default {
           if (this.openAIApiKey === "") {
             // TODO: show worning message about the key
           } else {
-            console.log(this.chatModel.memory)
             const res = await this.chatModel.call({ input: text });
             let response = "";
             if (this.chatConfig.chatMode === "normal_chat") {
@@ -317,11 +325,13 @@ export default {
         }
       }
     },
+
     resetConv() {
       this.chatText = "";
       this.messages.splice(0, this.messages.length);
       this.chatModel.memory.clear();
     },
+
     saveKey() {
       localStorage.setItem("openAIApiKey", this.openAIApiKey);
       // TODO: show success message
@@ -354,21 +364,15 @@ export default {
       } else if (this.chatConfig.chatMode === "agent_chat") {
         process.env.LANGCHAIN_HANDLER = "langchain";
 
-        const my_lambda_function = new AWSLambda({
-          name: 'ACL papers',
-          description: 'Gives you the exact number of papers ACL accepted in any year. The input to this tool should be a year as a string.',
-          region: 'eu-north-1',
-          accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
-          functionName: 'my_random_function',
-        });
+        // filter the tools that are checked
+        const selectedTools = this.chatConfig.tools.filter((tool) => tool.checked);
 
-        const tools = [
-          new Calculator(),
-          my_lambda_function,
-        ];
+        const actualTools = this.availableTools.filter((tool) => {
+          return selectedTools.some((selectedTool) => selectedTool.name === tool.name);
+        }).map((tool) => tool.tool);
+
         this.chatModel = await initializeAgentExecutorWithOptions(
-          tools,
+          actualTools,
           chat,
           {
             agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
@@ -397,14 +401,39 @@ export default {
           );
         });
     },
+
+    initTools() {
+      this.availableTools = [
+        {
+          name: "Calculator",
+          description: "A simple calculator that can add, subtract, multiply and divide numbers.",
+          tool: new Calculator(),
+        }
+      ];
+
+      const searchLambdaFunction = new AWSLambda({
+        name: 'Search',
+        description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
+        region: 'eu-north-1',
+        accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
+        functionName: 'my_random_function',
+      });
+
+      this.availableTools.push({
+        name: "Search",
+        description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
+        tool: searchLambdaFunction,
+      });
+    }
   },
 
   watch: {
-
     chatConfig: {
       deep: true,
       /* eslint-disable no-unused-vars */
       async handler(newConfig, oldConfig) {
+        console.log("config changed =============================================")
         this.chatConfig.temperature = parseFloat(newConfig.temperature);
         this.chatConfig.top_p = parseFloat(newConfig.top_p);
         this.chatConfig.maxTokens = parseInt(newConfig.maxTokens);
@@ -412,18 +441,6 @@ export default {
         this.resetConv();
       }
     },
-
-
-    // async chatMode(newValue, oldValue) {
-    //   // TODO: check if the key is valid
-    //   await this.initChatModel();
-    //   this.resetConv();
-    // },
-    // /* eslint-disable no-unused-vars */
-    // async selectedModel(newValue, oldValue) {
-    //   await this.initChatModel();
-    //   this.resetConv();
-    // },
   },
 };
 </script>
