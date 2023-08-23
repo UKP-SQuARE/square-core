@@ -9,8 +9,7 @@
                 <div class="form-group pb-2">
                   <div class="row">
                     <div class="col-9">
-                      <label for="open-ai-key"
-                        >OpenAI key (locally stored)</label
+                      <label for="open-ai-key" class="form-label">OpenAI key (locally stored)</label
                       >
                       <input
                         type="password"
@@ -28,10 +27,12 @@
                     </div>
                   </div>
 
+                  <hr />
+
                   <div class="form-group">
-                    <label for="selectedModel">Chat Model</label>
+                    <label for="selectedModel" class="form-label">Chat Model</label>
                     <select
-                      v-model="selectedModel"
+                      v-model="chatConfig.selectedModel"
                       class="form-select"
                       id="selectedModel"
                     >
@@ -44,37 +45,42 @@
                       </option>
                     </select>
                   </div>
-
-                  <!-- <div class="row">
-                    <div class="col-9">
-                      <label for="open-ai-key" >Search key (locally stored)</label>
-                      <input
-                        type="password"
-                        class="form-control"
-                        id="search-key"
-                        placeholder="Search Key"
-                        title="Your key is stored locally and not shared with anyone"
-                        v-model="searchKey"
-                      />
-                    </div>
-                    <div class="col-3 ps-0 d-flex align-items-end">
-                      <button
-                        type="button"
-                        @click="saveSearchKey"
-                        class="btn btn-primary px-3"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div> -->
                 </div>
                 <div class="form-group">
-                  <label for="chat-mode">Chat Mode</label>
-                  <select v-model="chatMode" class="form-select" id="chat-mode">
+                  <label for="chat-mode" class="form-label">Chat Mode</label>
+                  <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
                     <option value="normal_chat">Normal Chat</option>
                     <option value="agent_chat">Agent Chat</option>
                   </select>
                 </div>
+
+                <div class="form-group">
+                  <label for="tempRange" class="form-label">Tempreture: {{ this.chatConfig.temperature }}</label>
+                  <input v-model="chatConfig.temperature" type="range" class="form-range" min="0" max="1" step="0.1" id="tempRange">
+                </div>
+
+                <div class="form-group">
+
+                  <label for="maxTokens" class="form-label">Max Tokens</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="maxTokens"
+                      min="0"
+                      max="32768"
+                      v-model="chatConfig.maxTokens"/>
+                </div>
+
+                <div class="form-group">
+                  <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
+                  <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1" id="top_pRange">
+                </div>
+                
+                <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
+                  <label for="systemPrompt" class="form-label">System Prompt</label>
+                  <textarea class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt"/>
+                </div>
+
               </form>
             </div>
             <div
@@ -165,15 +171,20 @@
 
 <script>
 import MessageView from "@/components/MessageView";
-import { OpenAI } from "langchain/llms/openai";
+// import { OpenAI } from "langchain/llms/openai";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { Calculator } from "langchain/tools/calculator";
-// import { SerpAPI } from "langchain/tools";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { AWSLambda } from "langchain/tools/aws_lambda";
 import Vue from "vue";
+import {
+  ChatPromptTemplate,
+  HumanMessagePromptTemplate,
+  SystemMessagePromptTemplate,
+  MessagesPlaceholder,
+} from "langchain/prompts";
 
 export default {
   name: "prompting-view",
@@ -182,26 +193,25 @@ export default {
   },
 
   data: () => ({
+    chatModel: null,
     chatText: "",
-    chatMode: "normal_chat",
+    messages: [],
+    openAIApiKey: "",
+    chatModelList: [],
+    
+    chatConfig: {
+      chatMode: "normal_chat",
+      selectedModel: "gpt-3.5-turbo",
+      temperature: 0.7,
+      maxTokens: 256,
+      top_p: 0.9,
+      systemPrompt: "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+    },
+
     user: {
       name: "You",
       id: 2,
     },
-    // init_messages: [
-    //   {
-    //     author: "AI",
-    //     text: "Hey, how can I help you today?",
-    //     uid: 1,
-    //     isMine: false,
-    //   },
-    // ],
-    messages: [],
-    chatModel: null,
-    openAIApiKey: "",
-    // searchKey: "",
-    chatModelList: [],
-    selectedModel: "gpt-3.5-turbo",
   }),
 
   created() {
@@ -209,7 +219,7 @@ export default {
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
     // this.searchKey = localStorage.getItem("searchKey");
     if (this.openAIApiKey != null) {
-      this.initChatModel(this.chatMode, this.selectedModel);
+      this.initChatModel();
     }
     this.fetchModels();
   },
@@ -234,9 +244,10 @@ export default {
           if (this.openAIApiKey === "") {
             // TODO: show worning message about the key
           } else {
+            console.log(this.chatModel.memory)
             const res = await this.chatModel.call({ input: text });
             let response = "";
-            if (this.chatMode === "normal_chat") {
+            if (this.chatConfig.chatMode === "normal_chat") {
               response = res.response;
             } else {
               if (res.intermediateSteps.length > 0) {
@@ -278,6 +289,7 @@ export default {
           }
         } catch (err) {
           console.log(err.message);
+          throw err;
           // if(err.response.data.error.code === "invalid_api_key"){
           //   // TODO: show error message about the key
           // }else{
@@ -295,25 +307,33 @@ export default {
       localStorage.setItem("openAIApiKey", this.openAIApiKey);
       // TODO: show success message
     },
-    // saveSearchKey() {
-    //   localStorage.setItem("searchKey", this.searchKey);
-    //   // TODO: show success message
-    // },
-    async initChatModel(chatmode, chatmodel) {
-      if (chatmode === "normal_chat") {
+
+    async initChatModel() {
+      // see ChatOpenAI class: https://api.python.langchain.com/en/latest/chat_models/langchain.chat_models.openai.ChatOpenAI.html#langchain.chat_models.openai.ChatOpenAI
+      const chat = new ChatOpenAI({ 
+        openAIApiKey: this.openAIApiKey,
+        modelName: this.chatConfig.selectedModel,
+        temperature: this.chatConfig.temperature,
+        maxTokens: this.chatConfig.max_tokens,
+        top_p: this.chatConfig.top_p,
+      });
+
+      const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+        SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt),
+        new MessagesPlaceholder("chat_history"),
+        HumanMessagePromptTemplate.fromTemplate("{input}"),
+      ]);
+
+      const memory = new BufferMemory({ returnMessages: true, memoryKey: "chat_history"});
+
+      if (this.chatConfig.chatMode === "normal_chat") {
         this.chatModel = new ConversationChain({
-          memory: new BufferMemory(),
-          llm: new OpenAI({
-            modelName: chatmodel,
-            openAIApiKey: this.openAIApiKey,
-          }),
+          memory: memory, 
+          llm: chat,
+          prompt: chatPrompt,
         });
-      } else if (chatmode === "agent_chat") {
+      } else if (this.chatConfig.chatMode === "agent_chat") {
         process.env.LANGCHAIN_HANDLER = "langchain";
-        const model = new ChatOpenAI({
-          modelName: chatmodel,
-          openAIApiKey: this.openAIApiKey,
-        });
 
         const my_lambda_function = new AWSLambda({
           name: 'ACL papers',
@@ -326,12 +346,11 @@ export default {
 
         const tools = [
           new Calculator(),
-          // new SerpAPI(this.searchKey, {}, "/serp-api",) // see https://github.com/hwchase17/langchainjs/blob/9523a2e/langchain/src/tools/serpapi.ts#L303
           my_lambda_function,
         ];
         this.chatModel = await initializeAgentExecutorWithOptions(
           tools,
-          model,
+          chat,
           {
             agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
             returnIntermediateSteps: true,
@@ -340,6 +359,7 @@ export default {
         );
       }
     },
+
     fetchModels() {
       fetch("https://api.openai.com/v1/models", {
         method: "GET",
@@ -361,17 +381,30 @@ export default {
   },
 
   watch: {
-    /* eslint-disable no-unused-vars */
-    async chatMode(newValue, oldValue) {
-      // TODO: check if the key is valid
-      await this.initChatModel(newValue, this.selectedModel);
-      this.resetConv();
+
+    chatConfig:{
+      deep: true,
+      /* eslint-disable no-unused-vars */
+      async handler(newConfig, oldConfig) {
+        this.chatConfig.temperature = parseFloat(newConfig.temperature); 
+        this.chatConfig.top_p = parseFloat(newConfig.top_p);
+        this.chatConfig.maxTokens = parseInt(newConfig.maxTokens);
+        await this.initChatModel();
+        this.resetConv();
+      }
     },
-    /* eslint-disable no-unused-vars */
-    async selectedModel(newValue, oldValue) {
-      await this.initChatModel(this.chatMode, newValue);
-      this.resetConv();
-    },
+
+    
+    // async chatMode(newValue, oldValue) {
+    //   // TODO: check if the key is valid
+    //   await this.initChatModel();
+    //   this.resetConv();
+    // },
+    // /* eslint-disable no-unused-vars */
+    // async selectedModel(newValue, oldValue) {
+    //   await this.initChatModel();
+    //   this.resetConv();
+    // },
   },
 };
 </script>
