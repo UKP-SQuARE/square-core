@@ -1,87 +1,101 @@
 <template>
-  <div class="bg-light border rounded shadow p-3">
+  <div class="bg-light border rounded shadow p-3" >
     <div class="w-100">
       <div class="mb-3">
         <div class="container-fluid">
           <div class="row">
             <div class="col col-3 d-none d-md-block">
-              <form class="form-inline" @submit.prevent="saveKey">
-                <div class="form-group pb-2">
-                  <div class="row">
-                    <div class="col-9">
-                      <label for="open-ai-key" class="form-label">OpenAI key (locally stored)</label
-                      >
-                      <input
-                        type="password"
-                        class="form-control"
-                        id="open-ai-key"
-                        placeholder="OpenAI key"
-                        title="Your key is stored locally and not shared with anyone"
-                        v-model="openAIApiKey"
-                      />
+              <div style="height: 35rem; overflow-y: auto; overflow-x: hidden;">
+                <form class="form-inline" @submit.prevent="saveKey">
+                  <div class="form-group pb-2">
+                    <div class="row">
+                      <div class="col-9">
+                        <label for="open-ai-key" class="form-label">OpenAI key (locally stored)</label
+                        >
+                        <input
+                          type="password"
+                          class="form-control"
+                          id="open-ai-key"
+                          placeholder="OpenAI key"
+                          title="Your key is stored locally and not shared with anyone"
+                          v-model="openAIApiKey"
+                        />
+                      </div>
+                      <div class="col-3 ps-0 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary px-3">
+                          Save
+                        </button>
+                      </div>
                     </div>
-                    <div class="col-3 ps-0 d-flex align-items-end">
-                      <button type="submit" class="btn btn-primary px-3">
-                        Save
-                      </button>
+
+                    <hr />
+
+                    <div class="form-group">
+                      <label for="selectedModel" class="form-label">Chat Model</label>
+                      <select
+                        v-model="chatConfig.selectedModel"
+                        class="form-select"
+                        id="selectedModel"
+                      >
+                        <option
+                          v-for="model in chatModelList"
+                          :key="model.id"
+                          :value="model.id"
+                        >
+                          {{ model.id }}
+                        </option>
+                      </select>
                     </div>
                   </div>
-
-                  <hr />
-
                   <div class="form-group">
-                    <label for="selectedModel" class="form-label">Chat Model</label>
-                    <select
-                      v-model="chatConfig.selectedModel"
-                      class="form-select"
-                      id="selectedModel"
-                    >
-                      <option
-                        v-for="model in chatModelList"
-                        :key="model.id"
-                        :value="model.id"
-                      >
-                        {{ model.id }}
-                      </option>
+                    <label for="chat-mode" class="form-label">Chat Mode</label>
+                    <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
+                      <option value="normal_chat">Normal Chat</option>
+                      <option value="agent_chat">Agent Chat</option>
                     </select>
                   </div>
-                </div>
-                <div class="form-group">
-                  <label for="chat-mode" class="form-label">Chat Mode</label>
-                  <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
-                    <option value="normal_chat">Normal Chat</option>
-                    <option value="agent_chat">Agent Chat</option>
-                  </select>
-                </div>
 
-                <div class="form-group">
-                  <label for="tempRange" class="form-label">Tempreture: {{ this.chatConfig.temperature }}</label>
-                  <input v-model="chatConfig.temperature" type="range" class="form-range" min="0" max="1" step="0.1" id="tempRange">
-                </div>
+                  <div class="form-group">
+                    <label for="tempRange" class="form-label">Tempreture: {{ this.chatConfig.temperature }}</label>
+                    <input v-model="chatConfig.temperature" type="range" class="form-range" min="0" max="1" step="0.1" id="tempRange">
+                  </div>
 
-                <div class="form-group">
+                  <div class="form-group">
 
-                  <label for="maxTokens" class="form-label">Max Tokens</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="maxTokens"
-                      min="0"
-                      max="32768"
-                      v-model="chatConfig.maxTokens"/>
-                </div>
+                    <label for="maxTokens" class="form-label">Max Tokens</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxTokens"
+                        min="0"
+                        max="32768"
+                        v-model="chatConfig.maxTokens"/>
+                  </div>
 
-                <div class="form-group">
-                  <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
-                  <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1" id="top_pRange">
-                </div>
-                
-                <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
-                  <label for="systemPrompt" class="form-label">System Prompt</label>
-                  <textarea class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt"/>
-                </div>
+                  <div class="form-group">
+                    <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
+                    <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1" id="top_pRange">
+                  </div>
 
-              </form>
+                  <div class="form-group">
+                    <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
+                    <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1" id="top_pRange">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
+                    <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1" id="top_pRange">
+                  </div>
+
+                  <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
+                    <label for="systemPrompt" class="form-label">System Prompt</label>
+                    <textarea v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt"/>
+                  </div>
+
+                  
+
+                </form>
+              </div>
             </div>
             <div
               class="col col-md-9 border rounded p-3 bg-white"
@@ -137,6 +151,7 @@
                       </div>
                       <div class="col-8">
                         <textarea
+                          v-autosize
                           v-model="chatText"
                           placeholder="Write a message"
                           type="text"
@@ -186,10 +201,35 @@ import {
   MessagesPlaceholder,
 } from "langchain/prompts";
 
+
+
 export default {
   name: "prompting-view",
   components: {
     MessageView,
+  },
+
+  directives: {
+    autosize: {
+      bind: function (el) {
+        let computed = window.getComputedStyle(el);
+        el.style.height = "auto";
+        el.style.overflowY = "auto";
+        el.style.minHeight = computed.getPropertyValue("min-height");
+        el.oninput = function() {
+          el.style.height = "auto";
+          el.style.height = el.scrollHeight + "px";
+        }
+      },
+      inserted: function(el) {
+        el.oninput();
+      },
+      update: function(el) {
+        this.$nextTick(function() {
+          el.oninput();
+        });
+      }
+    }
   },
 
   data: () => ({
