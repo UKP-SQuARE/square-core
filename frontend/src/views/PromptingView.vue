@@ -361,6 +361,7 @@ export default {
           llm: chat,
           prompt: chatPrompt,
         });
+        console.log(this.chatModel, "============================== 1")
       } else if (this.chatConfig.chatMode === "agent_chat") {
         process.env.LANGCHAIN_HANDLER = "langchain";
 
@@ -429,14 +430,53 @@ export default {
   },
 
   watch: {
-    chatConfig: {
-      deep: true,
+    'chatConfig.temperature': {
       /* eslint-disable no-unused-vars */
-      async handler(newConfig, oldConfig) {
-        console.log("config changed =============================================")
-        this.chatConfig.temperature = parseFloat(newConfig.temperature);
-        this.chatConfig.top_p = parseFloat(newConfig.top_p);
-        this.chatConfig.maxTokens = parseInt(newConfig.maxTokens);
+      async handler(newTemperature, oldTemperature) {
+        this.chatConfig.temperature = parseFloat(newTemperature);
+        this.chatModel.llm.temperature = this.chatConfig.temperature;
+        console.log(this.chatModel, "============================== 2")
+      }
+    },
+
+    'chatConfig.top_p': {
+      /* eslint-disable no-unused-vars */
+      async handler(newTopP, oldTopP) {
+        this.chatConfig.top_p = parseFloat(newTopP);
+        this.chatModel.llm.top_p = this.chatConfig.top_p;
+      }
+    },
+
+    'chatConfig.maxTokens': {
+      /* eslint-disable no-unused-vars */
+      async handler(newMaxTokens, oldMaxTokens) {
+        this.chatConfig.maxTokens = parseInt(newMaxTokens);
+        this.chatModel.llm.maxTokens = this.chatConfig.maxTokens;
+      }
+    },
+
+    'chatConfig.systemPrompt':{
+      /* eslint-disable no-unused-vars */
+      async handler(newSystemPrompt, oldSystemPrompt) {
+        this.chatConfig.systemPrompt = newSystemPrompt;
+        this.chatModel.prompt.promptMessages[0] = SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt); 
+        console.log(this.chatModel)
+      }
+    },
+
+    'chatConfig.selectedModel': {
+      /* eslint-disable no-unused-vars */
+      async handler(newModel, oldModel) {
+        this.chatConfig.selectedModel = newModel;
+        await this.initChatModel();
+        this.resetConv();
+      }
+    },
+
+    'chatConfig.chatMode': {
+      /* eslint-disable no-unused-vars */
+      async handler(newChatMode, oldChatMode) {
+        this.chatConfig.chatMode = newChatMode;
         await this.initChatModel();
         this.resetConv();
       }
