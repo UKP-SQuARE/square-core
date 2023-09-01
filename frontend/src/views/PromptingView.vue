@@ -109,10 +109,60 @@
                               {{ item.name }}
                             </label>
                           </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" :id="'addNewToolId'" v-model="addingNewTool">
+                            <label class="form-check-label" :for="'addNewToolId'">Add New Tool (Lambda Function)</label>
+                          </div>
+                          <div v-if="addingNewTool">
+                            <br />
+                            <div class="form-group row">
+                              <label for="toolName" class="col-sm-3 col-form-label">Name</label>
+                              <div class="col-sm-9">
+                                <input type="text" class="form-control" id="toolName" v-model="newTool.name">
+                              </div>
+                            </div>
+                            <hr />
+                            <div class="form-group row">
+                              <label for="toolDescription" class="col-sm-3 col-form-label">Description</label>
+                              <div class="col-sm-9">
+                                <input type="text" class="form-control" id="toolDescription" v-model="newTool.description" value="A search engine. Useful for when you need to answer questions about current events. Input should be a search query.">
+                              </div>
+                            </div>
+                            <hr />
+                            <div class="form-group row">
+                              <label for="toolRegion" class="col-sm-3 col-form-label">Region</label>
+                              <div class="col-sm-9">
+                                <input type="text" class="form-control" id="toolRegion" v-model="newTool.region" value="eu-north-1">
+                              </div>
+                            </div>
+                            <hr />
+                            <div class="form-group row">
+                              <label for="toolAccessKeyId" class="col-sm-3 col-form-label">Access Key Id</label>
+                              <div class="col-sm-9">
+                                <input type="text" class="form-control" id="toolAccessKeyId" v-model="newTool.accessKeyId" value="AKIA6RSJDDRNNQ4557EU">
+                              </div>
+                            </div>
+                            <hr />
+                            <div class="form-group row">
+                              <label for="toolSecretAccessKey" class="col-sm-3 col-form-label">Secret Access Key</label>
+                              <div class="col-sm-9">
+                                <input type="text" class="form-control" id="toolSecretAccessKey" v-model="newTool.secretAccessKey" value="vS8kgrSyJW85/RilNTH6+eqVyJmzm0YjX7QJwwuv">
+                              </div>
+                            </div>
+                            <hr />
+                            <div class="form-group row">
+                              <label for="toolFunctionName" class="col-sm-3 col-form-label">Function Name</label>
+                              <div class="col-sm-9">
+                                <input type="text" class="form-control" id="toolFunctionName" v-model="newTool.functionName">
+                              </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                              <button class="btn btn-primary" type="button" @click.prevent="addNewTool">Save</button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </form>
               </div>
@@ -224,6 +274,17 @@ export default {
     openAIApiKey: "",
     chatModelList: [],
     availableTools: [],
+    addingNewTool: false,
+
+    // TODO: remove the initial values. These are just for testing
+    newTool: {
+      name: 'Search1',
+      description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
+      region: 'eu-north-1',
+      accessKeyId: '',
+      secretAccessKey: '',
+      functionName: 'my_random_function',
+    },
 
 
     chatConfig: {
@@ -233,11 +294,10 @@ export default {
       maxTokens: 256,
       top_p: 0.9,
       systemPrompt: "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
-      tools: [
-        { name: "Calculator", checked: false },
-        { name: "Search", checked: false },
-      ],
+      tools: [],
     },
+
+    oldTools: null,
 
     user: {
       name: "You",
@@ -256,6 +316,35 @@ export default {
   },
 
   methods: {
+    async addNewTool() {
+      if (this.newTool.name !== '' 
+      && this.newTool.description !== '' 
+      && this.newTool.region !== '' 
+      && this.newTool.accessKeyId !== '' 
+      && this.newTool.secretAccessKey !== '' 
+      && this.newTool.functionName !== '') {
+        const lambdaFunction = new AWSLambda({
+          name: this.newTool.name,
+          description: this.newTool.description,
+          region: this.newTool.region,
+          accessKeyId: this.newTool.accessKeyId,
+          secretAccessKey: this.newTool.secretAccessKey,
+          functionName: this.newTool.functionName,
+        });
+        this.availableTools.push({
+          name: this.newTool.name,
+          description: this.newTool.description,
+          tool: lambdaFunction,
+        });
+        this.addingNewTool = false;
+        this.oldTools = JSON.parse(JSON.stringify(this.chatConfig.tools));
+        this.chatConfig.tools.push({
+          name: this.newTool.name,
+          checked: false,
+        });
+      }
+    },
+    
     async onSubmit() {
       if (this.chatText != "") {
         let text = this.chatText;
@@ -361,7 +450,6 @@ export default {
           llm: chat,
           prompt: chatPrompt,
         });
-        console.log(this.chatModel, "============================== 1")
       } else if (this.chatConfig.chatMode === "agent_chat") {
         process.env.LANGCHAIN_HANDLER = "langchain";
 
@@ -426,6 +514,14 @@ export default {
         description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
         tool: searchLambdaFunction,
       });
+    
+      for (let i = 0; i < this.availableTools.length; i++) {
+        const tool = this.availableTools[i];
+        this.chatConfig.tools.push({
+          name: tool.name,
+          checked: false,
+        });
+      }
     }
   },
 
@@ -435,7 +531,6 @@ export default {
       async handler(newTemperature, oldTemperature) {
         this.chatConfig.temperature = parseFloat(newTemperature);
         this.chatModel.llm.temperature = this.chatConfig.temperature;
-        console.log(this.chatModel, "============================== 2")
       }
     },
 
@@ -460,7 +555,6 @@ export default {
       async handler(newSystemPrompt, oldSystemPrompt) {
         this.chatConfig.systemPrompt = newSystemPrompt;
         this.chatModel.prompt.promptMessages[0] = SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt); 
-        console.log(this.chatModel)
       }
     },
 
@@ -481,6 +575,17 @@ export default {
         this.resetConv();
       }
     },
+
+    'chatConfig.tools': {
+      deep: true,
+      async handler(newTools) {
+        if (this.oldTools && newTools.length === this.oldTools.length) {
+          await this.initChatModel();
+          this.resetConv();
+        }
+        this.oldTools = newTools; 
+      }
+    }
   },
 };
 </script>
