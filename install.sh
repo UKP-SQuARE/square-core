@@ -19,6 +19,9 @@ POSTGRES_PASSWORD=${4:-$(generate_password)}
 MONGO_PASSWORD=${5:-$(generate_password)}
 RABBITMQ_PASSWORD=${6:-$(generate_password)}
 REDIS_PASSWORD=${7:-$(generate_password)}
+SQUARE_ADMIN_PASSWORD=${8:-$(generate_password)}
+SQUARE_ADMIN_PASSWORD_HASHED=$(openssl passwd -apr1 $SQUARE_ADMIN_PASSWORD)
+SQUARE_ADMIN_PASSWORD_HASHED_ESCAPED=$(echo "$SQUARE_ADMIN_PASSWORD_HASHED" | sed 's/\//\\\//g')
 
 keycloak_get_admin_token () {
 	# returns an admin token from the master realm
@@ -219,6 +222,7 @@ if [ -f ./keycloak/.env ]; then
 else
 	sed -e "s/%%KEYCLOAK_PASSWORD%%/$KEYCLOAK_PASSWORD/g" -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./keycloak/.env.template > ./keycloak/.env 
 	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/.env.template > ./postgres/.env 
+	sed -e "s/%%POSTGRES_PASSWORD%%/$POSTGRES_PASSWORD/g" ./postgres/init/.init_db.sql.template > ./postgres/init/init_db.sql
 fi
 
 if [ -f ./mongodb/.env ]; then
@@ -240,9 +244,35 @@ if [ -f ./redis/.env ]; then
 	eval "$(grep ^REDIS_PASSWORD= ./redis/.env)"    
 else
 	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./redis/.env.template > ./redis/.env
-	sed -e "s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./.env.template > ./.env
+	sed -e "s/%%SQUARE_ADMIN_PASSWORD%%/'$SQUARE_ADMIN_PASSWORD_HASHED_ESCAPED'/g; s/%%REDIS_PASSWORD%%/$REDIS_PASSWORD/g" ./.env.template > ./.env
 
 fi
+
+if [ -f ./skill-manager/.env ]; then
+	echo "./skill-manager/.env already exists. Skipping."
+else
+	cp ./skill-manager/.env.template ./skill-manager/.env
+fi
+
+if [ -f ./datastore-api/.env ]; then
+	echo "./datastore-api/.env already exists. Skipping."
+else
+	cp ./datastore-api/.env.template ./datastore-api/.env
+fi
+
+if [ -f ./evaluator/.env ]; then
+	echo "./evaluator/.env already exists. Skipping."
+	eval "$(grep ^RABBITMQ_DEFAULT_PASS= ./evaluator/.env)"
+else
+	sed -e "s/%%RABBITMQ_DEFAULT_PASS%%/$RABBITMQ_DEFAULT_PASS/g" ./evaluator/.local.env > ./evaluator/.env
+fi
+
+if [ -f ./model-manager/.env ]; then
+	echo "./model-manager/.env already exists. Skipping."
+else
+	cp ./model-manager/.env.template ./model-manager/.env
+fi
+
 
 # get all servies that need to be registered as clients keycloak
 CLIENTS=( "models" "datastores" ) 
@@ -279,7 +309,7 @@ sed -e "s/%%CLIENT_SECRET%%/$SKILL_MANAGER_SECRET/g" ./skill-manager/.env.templa
 for CLIENT_ID in ${CLIENTS[@]}; do
 	
 	if [[ $CLIENT_ID == "models" ]]; then
-		CLIENT_PATH="square-model-inference-api/management_server"
+		CLIENT_PATH="model-manager"
 	
 	elif [[ $CLIENT_ID == "datastores" ]]; then
 		CLIENT_PATH="datastore-api"
@@ -301,8 +331,8 @@ docker-compose down
 
 echo "Building frontend."
 # build frontend with updated env file
-cp square-frontend/.env.production square-frontend/.env.production-backup
-sed -e "s/%%SQUARE_URL%%/https:\/\/$SQUARE_URL/g" square-frontend/.env.template > square-frontend/.env.production
+cp frontend/.env.production frontend/.env.production-backup
+sed -e "s/%%SQUARE_URL%%/https:\/\/$SQUARE_URL/g" frontend/.env.template > frontend/.env.local
 
 docker-compose build -q frontend
 

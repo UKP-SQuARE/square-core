@@ -5,6 +5,38 @@
                 <div class="mb-3 pb-3">
                     <h1>Scientific Publications about SQuARE</h1>
                     <div class="accordion" id="accordion_square_papers">
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="square_teaching_tool_header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#square_teaching_tool" aria-expanded="false" aria-controls="square_teaching_tool">
+                                    [<b>BEA Workshop@ACL</b>, 2023] UKP-SQuARE: An Interactive Tool for Teaching Question Answering
+                                </button>
+                            </h2>
+                            <div id="square_teaching_tool" class="accordion-collapse collapse" aria-labelledby="square_teaching_tool_header"
+                                data-bs-parent="#accordion_square_papers">
+                                <div class="accordion-body">
+                                    <strong>Link: </strong><a href="https://aclanthology.org/2023.bea-1.17/"
+                                        target="_blank">https://aclanthology.org/2023.bea-1.17/</a> <br />
+                                    <strong>Authors: </strong>Haishuo Fang, Haritz Puerto, Iryna Gurevych<br />
+                                    <strong>Abstract: </strong> The exponential growth of question answering (QA) has made it 
+                                    an indispensable topic in any Natural Language Processing (NLP) course. Additionally, the breadth 
+                                    of QA derived from this exponential growth makes it an ideal scenario for teaching related NLP 
+                                    topics such as information retrieval, explainability, and adversarial attacks among others. In 
+                                    this paper, we introduce UKP-SQuARE as a platform for QA education. This platform provides an 
+                                    nteractive environment where students can run, compare, and analyze various QA models from different 
+                                    perspectives, such as general behavior, explainability, and robustness. Therefore, students can get 
+                                    a first-hand experience in different QA techniques during the class. Thanks to this, we propose a 
+                                    learner-centered approach for QA education in which students proactively learn theoretical concepts 
+                                    and acquire problem-solving skills through interactive exploration, experimentation, and practical 
+                                    assignments, rather than solely relying on traditional lectures. To evaluate the effectiveness of 
+                                    UKP-SQuARE in teaching scenarios, we adopted it in a postgraduate NLP course and surveyed the students 
+                                    after the course. Their positive feedback shows the platform’s effectiveness in their course and invites 
+                                    a wider adoption.
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="square_v3_header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
