@@ -139,14 +139,14 @@
                             <div class="form-group row">
                               <label for="toolAccessKeyId" class="col-sm-3 col-form-label">Access Key Id</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolAccessKeyId" v-model="newTool.accessKeyId" value="AKIA6RSJDDRNNQ4557EU">
+                                <input type="text" class="form-control" id="toolAccessKeyId" v-model="newTool.accessKeyId">
                               </div>
                             </div>
                             <hr />
                             <div class="form-group row">
                               <label for="toolSecretAccessKey" class="col-sm-3 col-form-label">Secret Access Key</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolSecretAccessKey" v-model="newTool.secretAccessKey" value="vS8kgrSyJW85/RilNTH6+eqVyJmzm0YjX7QJwwuv">
+                                <input type="text" class="form-control" id="toolSecretAccessKey" v-model="newTool.secretAccessKey">
                               </div>
                             </div>
                             <hr />
