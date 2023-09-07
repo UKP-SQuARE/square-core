@@ -500,20 +500,20 @@ export default {
         }
       ];
 
-      const searchLambdaFunction = new AWSLambda({
-        name: 'Search',
-        description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
-        region: 'eu-north-1',
-        accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
-        functionName: 'my_random_function',
-      });
+      // const searchLambdaFunction = new AWSLambda({
+      //   name: 'Search',
+      //   description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
+      //   region: 'eu-north-1',
+      //   accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
+      //   secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
+      //   functionName: 'my_random_function',
+      // });
 
-      this.availableTools.push({
-        name: "Search",
-        description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
-        tool: searchLambdaFunction,
-      });
+      // this.availableTools.push({
+      //   name: "Search",
+      //   description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
+      //   tool: searchLambdaFunction,
+      // });
     
       for (let i = 0; i < this.availableTools.length; i++) {
         const tool = this.availableTools[i];
@@ -552,6 +552,7 @@ export default {
 
     'chatConfig.systemPrompt':{
       /* eslint-disable no-unused-vars */
+      // TODO: this is not working. Fix it
       async handler(newSystemPrompt, oldSystemPrompt) {
         this.chatConfig.systemPrompt = newSystemPrompt;
         this.chatModel.prompt.promptMessages[0] = SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt); 
