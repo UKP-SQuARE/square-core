@@ -153,7 +153,7 @@ services:
       VIRT_TempDatabase_TransactionFile: /data/virtuoso_db/virtuoso-temp.trx
       VIRT_Parameters_O_DIRECT: 1
       VIRT_Parameters_ServerThreads: 100
-      VIRT_HTTPServer_ServerThreads: 15
+      VIRT_HTTPServer_ServerThreads: 100
       VIRT_SPARQL_MaxQueryCostEstimationTime: 600
       VIRT_SPARQL_MaxQueryExecutionTime: 180
     volumes:
