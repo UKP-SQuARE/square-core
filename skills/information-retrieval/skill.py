@@ -13,29 +13,25 @@ def softmax(x):
     return np.exp(x) / np.exp(x).sum()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question, performs open-domain, extractive QA. First, background
     knowledge is retrieved using a specified index and retrieval method. Next, the top k
     documents are used for span extraction. Finally, the extracted answers are returned.
     """
 
+    query = request.query
+    kwargs = dict(
+        datastore_name=request.skill_args["datastore"],
+        index_name=request.skill_args.get("index", ""),
+        query=query,
+    )
     if "feedback_documents" in request.skill_args:
         feedback_docs = request.skill_args["feedback_documents"]
-        query = request.query
-        data_response = await square_datastore_client(
-            datastore_name=request.skill_args["datastore"],
-            index_name=request.skill_args.get("index", ""),
-            query=query,
-            feedback_documents=feedback_docs,
-        )
-    else:
-        query = request.query
-        data_response = await square_datastore_client(
-            datastore_name=request.skill_args["datastore"],
-            index_name=request.skill_args.get("index", ""),
-            query=query,
-        )
+        kwargs.update(feedback_documents=feedback_docs)
 
+    data_response = square_datastore_client(**kwargs)
+
+    # HACK: Add link to PubMed for BioASQ
     context = []
     if request.skill_args["datastore"] == "bioasq":
         for d in data_response:

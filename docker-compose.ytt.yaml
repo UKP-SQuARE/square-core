@@ -135,6 +135,38 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d/
+  
+  virtuoso:
+    image: tenforce/virtuoso:virtuoso7.2.5
+    environment: 
+      VIRT_Database_DatabaseFile: /data/virtuoso_db/virtuoso.db
+      VIRT_Database_ErrorLogFile: /data/virtuoso_db/virtuoso.log
+      VIRT_Database_LockFile: /data/virtuoso_db/virtuoso.lck
+      VIRT_TransactionFile_LockFile: /data/virtuoso_db/virtuoso.trx
+      VIRT_xa_persistent_file: /data/virtuoso_db/virtuoso.pxa
+      VIRT_Database_ErrorLogLevel: 7
+      VIRT_Database_FileExtend: 200
+      VIRT_Database_MaxCheckpointRemap: 2000
+      VIRT_Database_Striping: 0
+      VIRT_Database_TempStorage: TempDatabase
+      VIRT_TempDatabase_DatabaseFile: /data/virtuoso_db/virtuoso-temp.db
+      VIRT_TempDatabase_TransactionFile: /data/virtuoso_db/virtuoso-temp.trx
+      VIRT_Parameters_O_DIRECT: 1
+      VIRT_Parameters_ServerThreads: 100
+      VIRT_HTTPServer_ServerThreads: 15
+      VIRT_SPARQL_MaxQueryCostEstimationTime: 600
+      VIRT_SPARQL_MaxQueryExecutionTime: 180
+    volumes:
+      - virtuoso-db:/data/
+    ports:
+      - 8890:8890
+    labels:
+      - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("virtuoso"))
+      - "traefik.http.routers.virtuoso.rule=PathPrefix(`/virtuoso`)"
+      - "traefik.http.routers.virtuoso.middlewares=virtuoso-stripprefix"
+      - "traefik.http.middlewares.virtuoso-stripprefix.stripprefix.prefixes=/virtuoso"
+      - "traefik.http.services.virtuoso.loadbalancer.server.port=8890"
 
   frontend:
     build: 
@@ -179,7 +211,7 @@ services:
       - ./skill-manager/.env
     environment:
       API_PREFIX: skill-manager
-      WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
+      WEB_CONCURRENCY: 8
       KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
@@ -188,6 +220,7 @@ services:
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EVALUATOR_API_URL: #@ data.values.square_api_url[data.values.environment] + "/evaluator"
     depends_on:
       - mongodb
       - redis
@@ -206,8 +239,10 @@ services:
     expose:
       - 8081
     env_file:
+      - ./redis/.env
       - ./mongodb/.env
       - ./evaluator/.env
+      - ./rabbitmq/.env
     environment:
       API_PREFIX: evaluator
       WEB_CONCURRENCY: #@ str(data.values.web_concurrency)
@@ -215,9 +250,12 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MODEL_API_URL: #@ data.values.model_url[data.values.environment]
       VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
       DATASET_DIR: /app/datasets/
+      SKILL_MANAGER_API_URL: #@ data.values.square_api_url[data.values.environment] + "/skill-manager"
     depends_on:
       - mongodb
     labels:
@@ -261,12 +299,13 @@ services:
     build:
       context: ./evaluator
       target: build
-    command: celery -A evaluator.tasks worker --loglevel=info
+    command: celery -A evaluator.tasks worker -Q evaluation --loglevel=info
     volumes:
       - ./:/usr/src/app
       - /var/run/docker.sock:/var/run/docker.sock
       - evaluation-datasets:/app/datasets/
     env_file:
+      - ./evaluator/.env
       - ./mongodb/.env
       - ./rabbitmq/.env
       - ./redis/.env
@@ -278,7 +317,10 @@ services:
       REALM: #@ data.values.realm
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       DATASET_DIR: /app/datasets/
+      QUEUE: evaluation
     depends_on:
       - mongodb
       - redis
@@ -308,6 +350,8 @@ services:
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
       CONFIG_VOLUME: square-core_model_configs
+      MODEL_API_IMAGE: ukpsquare/model-inference
+      MODEL_API_IMAGE_TAG: #@ data.values.tag
     depends_on:
       - maintaining
       - rabbit
@@ -654,4 +698,6 @@ volumes:
   onnx_models:
     driver: local
   evaluation-datasets:
+    driver: local
+  virtuoso-db: 
     driver: local

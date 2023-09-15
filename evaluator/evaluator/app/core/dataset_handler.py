@@ -1,5 +1,5 @@
 import logging
-import os
+import shutil
 from typing import Union
 
 import datasets
@@ -62,7 +62,7 @@ class DatasetHandler:
         """
         logger.info(f'Removing dataset "{dataset_name}" from local storage.')
         try:
-            os.remove(self.settings.dataset_dir + dataset_name)
+            shutil.rmtree(self.settings.dataset_dir + dataset_name)
             return True
         except FileNotFoundError:
             return False

@@ -6,14 +6,13 @@
         <table class="table table-borderless">
           <thead class="border-bottom border-dark">
             <tr>
-              <!--            This for name of the skills   eg: SQuAD 1.1 BERT Adapter-->
+              <!-- This for name of the skills   eg: SQuAD 1.1 BERT Adapter-->
               <th v-if="skillType.options.name !== 'categorical-results'" scope="col" />
               <th v-for="(skillResult, index) in currentResults" :key="index" scope="col"
-                class="fs-2 fw-light text-center">{{ skillResult.skill.name }}</th>
+                class="fs-2 fw-light text-center">{{ skillResult.skill.name }} </th>
             </tr>
             <tr>
-              <!--            This is for type of model eg:Extractive QA, bert-base-uncased
- -->
+              <!-- DESCRIPTION -->
               <th v-if="skillType.options.name !== 'categorical-results'" scope="col" />
               <th v-for="(skillResult, index) in currentResults" :key="index" scope="col" class="fw-normal text-center">
                 {{ skillResult.skill.description }}</th>
@@ -21,13 +20,12 @@
           </thead>
           <tbody>
             <tr v-for="row in currentResults[0].predictions.length" :key="row">
-              <th v-if="skillType.options.name !== 'categorical-results'" scope="row"
-                class="pt-4 text-primary text-end">
+              <th v-if="skillType.options.name !== 'categorical-results'" scope="row" class="pt-4 text-primary text-end">
                 {{ row }}.
               </th>
               <component v-for="(skillResult, index) in currentResults" :key="index" :is="skillType"
                 :prediction="skillResult.predictions[row - 1]" :showWithContext="showWithContext"
-                :width="`${100 / currentResults.length }%`" style="min-width: 320px;" />
+                :width="`${100 / currentResults.length}%`" style="min-width: 320px;" />
             </tr>
           </tbody>
         </table>
@@ -60,6 +58,14 @@
           <ExplainOutput id="modalExplain" />
         </div>
       </div>
+      <div class="col mt-3" v-if="showExplainability">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a data-bs-toggle="modal" data-bs-target="#modalBertViz" role="button" class="btn btn-primary shadow">
+            Bertviz
+          </a>
+          <BertVizOutput id="modalBertViz" />
+        </div>
+      </div>
 
       <div class="col mt-3" v-if="this.$store.state.currentSkills.includes('62eb8f7765872e7b65ea5c8b')">
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
@@ -78,9 +84,12 @@
 import Vue from 'vue'
 import Categorical from '@/components/results/Categorical.vue'
 import SpanExtraction from '@/components/results/SpanExtraction.vue'
+import Abstractive from '@/components/results/Abstractive.vue'
+import MetaSkill from '@/components/results/MetaSkill.vue'
 import InformationRetrieval from '@/components/results/InformationRetrieval.vue'
 import AttackOutput from '../components/modals/AttackOutput.vue'
 import ExplainOutput from '../components/modals/ExplainOutput'
+import BertVizOutput from '../components/modals/BertVizOutput'
 import GraphViz from '../components/modals/GraphViz'
 
 export default Vue.component('skill-results', {
@@ -98,8 +107,11 @@ export default Vue.component('skill-results', {
   components: {
     Categorical,
     SpanExtraction,
+    Abstractive,
+    MetaSkill,
     AttackOutput,
     ExplainOutput,
+    BertVizOutput,
     GraphViz
   },
   computed: {
@@ -107,9 +119,12 @@ export default Vue.component('skill-results', {
       return this.$store.state.currentResults
     },
     skillType() {
+      if (this.$store.state.currentResults[0].skill.meta_skill) {
+        return MetaSkill
+      }
       switch (this.$store.state.currentResults[0].skill.skill_type) {
         case 'abstractive':
-        // Fall through
+          return Abstractive
         case 'span-extraction':
         // Fall through
         case 'multiple-choice':

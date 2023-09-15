@@ -1,11 +1,12 @@
+import asyncio
 import datetime
 import json
 import logging
 import os
-from datetime import timedelta
 from threading import Thread
 from typing import Dict, List
 
+import requests
 from bson import ObjectId
 from fastapi import APIRouter, Depends, Request
 from square_auth.auth import Auth
@@ -22,11 +23,14 @@ from skill_manager.auth_utils import (
 from skill_manager.core import ModelManagementClient
 from skill_manager.core.session_cache import SessionCache
 from skill_manager.keycloak_api import KeycloakAPI
-from skill_manager.models import Prediction, Skill, SkillType
+from skill_manager.models import Prediction, Skill
 from skill_manager.routers import client_credentials
 from skill_manager.utils import merge_dicts
 
 logger = logging.getLogger(__name__)
+evaluator_url = os.getenv(
+    "EVALUATOR_API_URL", "https://square.ukp-lab.de/api/evaluator"
+)
 
 router = APIRouter(prefix="/skill")
 
@@ -41,7 +45,7 @@ session_cache = SessionCache()
 )
 async def get_skill_by_id(request: Request, id: str = None):
     """Returns the saved skill information."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=False)
+    skill = get_skill_if_authorized(request, skill_id=id, write_access=False)
     logger.debug("get_skill_by_id: {skill}".format(skill=skill))
 
     return skill
@@ -57,7 +61,7 @@ async def get_skills(request: Request):
 
     mongo_query = {"published": True}
     if has_auth_header(request):
-        payload = await get_payload_from_token(request)
+        payload = get_payload_from_token(request)
         user_id = payload["username"]
         mongo_query = {"$or": [mongo_query, {"user_id": user_id}]}
 
@@ -128,6 +132,8 @@ async def create_skill(
     # returned, but not logged and not persisted.
     skill.client_secret = client["secret"]
 
+    trigger_evaluations(skill_id, skill.data_sets, request.headers)
+
     return skill
 
 
@@ -139,9 +145,7 @@ async def update_skill(
     models_client: ModelManagementClient = Depends(ModelManagementClient),
 ):
     """Updates a skill with the provided data."""
-    skill: Skill = await get_skill_if_authorized(
-        request, skill_id=id, write_access=True
-    )
+    skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     for k, v in data.items():
         if hasattr(skill, k):
@@ -165,13 +169,16 @@ async def update_skill(
             skill=skill, updated_skill=updated_skill
         )
     )
+
+    trigger_evaluations(id, skill.data_sets, request.headers)
+
     return skill
 
 
 @router.delete("/{id}", status_code=204, dependencies=[Depends(auth)])
 async def delete_skill(request: Request, id: str):
     """Deletes a skill."""
-    await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    get_skill_if_authorized(request, skill_id=id, write_access=True)
 
     delete_result = mongo_client.client.skill_manager.skills.delete_one(
         {"_id": ObjectId(id)}
@@ -191,7 +198,7 @@ async def delete_skill(request: Request, id: str):
 )
 async def publish_skill(request: Request, id: str):
     """Makes a skill publicly available."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
     skill.published = True
     skill = await update_skill(request, id, skill.dict())
 
@@ -207,7 +214,7 @@ async def publish_skill(request: Request, id: str):
 )
 async def unpublish_skill(request: Request, id: str):
     """Makes a skill private."""
-    skill = await get_skill_if_authorized(request, skill_id=id, write_access=True)
+    skill = get_skill_if_authorized(request, skill_id=id, write_access=True)
     skill.published = False
     skill = await update_skill(request, id, skill.dict())
 
@@ -219,7 +226,7 @@ async def unpublish_skill(request: Request, id: str):
     "/{id}/query",
     response_model=QueryOutput,
 )
-async def query_skill(
+def query_skill(
     request: Request,
     query_request: QueryRequest,
     id: str,
@@ -227,6 +234,7 @@ async def query_skill(
     # sess=Depends(skill_query_session),
 ):
     """Sends a query to the respective skill and returns its prediction."""
+    logger.info(f"Got request for skill={id}")
     logger.info(
         "received query: {query} for skill {id}".format(
             query=query_request.json(), id=id
@@ -236,9 +244,7 @@ async def query_skill(
     query = query_request.query
     user_id = query_request.user_id
 
-    skill: Skill = await get_skill_if_authorized(
-        request, skill_id=id, write_access=False
-    )
+    skill: Skill = get_skill_if_authorized(request, skill_id=id, write_access=False)
     query_request.skill = json.loads(skill.json())
 
     if skill.default_skill_args is None:
@@ -275,13 +281,23 @@ async def query_skill(
     if response.status_code > 201:
         logger.exception(response.content)
         response.raise_for_status()
+
     predictions = QueryOutput.parse_obj(response.json())
+
     logger.debug(
         "predictions from skill: {predictions}".format(
             predictions=str(predictions.json())[:100]
         )
     )
-
+    # remove bertviz from predictions
+    # to store the preds in mongodb without bertviz (too large)
+    list_bertviz = []
+    for prediction in predictions.predictions:
+        if prediction.bertviz is not None:
+            list_bertviz.append(prediction.bertviz)
+            prediction.bertviz = None
+        else:
+            list_bertviz.append(None)
     # save prediction to mongodb
     mongo_prediction = Prediction(
         skill_id=skill.id,
@@ -298,10 +314,31 @@ async def query_skill(
             mongo_prediction=str(mongo_prediction.json())[:100],
         )
     )
-
     logger.debug(
         "query_skill: query_request: {query_request} predictions: {predictions}".format(
             query_request=query_request.json(), predictions=str(predictions)[:100]
         )
     )
+    # get bertviz data
+    for i in range(len(predictions.predictions)):
+        if list_bertviz[i]:
+            predictions.predictions[i].bertviz = list_bertviz[i]
     return predictions
+
+
+def trigger_evaluations(skill_id: str, dataset_names: List[str], headers={}):
+    for dataset_name in dataset_names:
+        asyncio.create_task(trigger_evaluation(skill_id, dataset_name, headers))
+
+
+async def trigger_evaluation(skill_id: str, dataset_name: str, headers={}):
+    loop = asyncio.get_event_loop()
+    url = f"{evaluator_url}/evaluate/{skill_id}/{dataset_name.lower()}"
+    future = loop.run_in_executor(
+        None, lambda: requests.post(url, headers=headers, timeout=30)
+    )
+    response = await future
+    if not response.ok:
+        logger.error(
+            f"Triggering evaluation for dataset '{dataset_name}' failed: {response.json()}"
+        )

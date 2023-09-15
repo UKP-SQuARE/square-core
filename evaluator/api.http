@@ -1,11 +1,11 @@
 @hostname = localhost:8081
-@path_prefix = /api
+@path_prefix = api
 @token = <ENTER TOKEN>
 ### GET TOKEN
 # @name get_token
 # @prompt username
 # @prompt password
-POST /auth/realms/square/protocol/openid-connect/token HTTP/1.1
+POST https://{{hostname}}/auth/realms/square/protocol/openid-connect/token 
 Host: {{hostname}}
 content-type: application/x-www-form-urlencoded
 
@@ -13,7 +13,7 @@ client_id=square-api&grant_type=password&username={{username}}&password={{passwo
 
 ### 
 # @name get_datasets
-GET {{path_prefix}}/dataset HTTP/1.1
+GET https://{{hostname}}/{{path_prefix}}/dataset HTTP/1.1
 Host: {{hostname}}
 
 ###
@@ -21,7 +21,7 @@ Host: {{hostname}}
 # @prompt skill_id
 # @prompt dataset_id 
 @token = {{get_token.response.body.access_token}}
-POST {{path_prefix}}/predictor/{{skill_id}}/{{dataset_id}} HTTP/1.1
+POST https://{{hostname}}/{{path_prefix}}/predictor/{{skill_id}}/{{dataset_id}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
@@ -32,7 +32,27 @@ content-type: application/json
 # @prompt dataset_id 
 # @prompt metric_name 
 @token = {{get_token.response.body.access_token}}
-POST {{path_prefix}}/evaluator/{{skill_id}}/{{dataset_id}}/{{metric_name}} HTTP/1.1
+POST https://{{hostname}}/{{path_prefix}}/evaluator/{{skill_id}}/{{dataset_id}}/{{metric_name}} HTTP/1.1
 Host: {{hostname}}
 Authorization: Bearer {{token}}
 content-type: application/json
+
+###
+# @name create_dataset
+@token = {{get_token.response.body.access_token}}
+POST https://{{hostname}}/{{path_prefix}}/evaluator/dataset  HTTP/1.1
+Host: {{hostname}}
+Authorization: Bearer {{token}}
+content-type: application/json
+
+{
+  "name": "quoref",
+  "skill_type": "extractive-qa",
+  "metric": "squad",
+  "mapping": {
+    "id_column": "id",
+    "question_column": "question",
+    "context_column": "context",
+    "answers_column": "answers.text"
+  }
+}

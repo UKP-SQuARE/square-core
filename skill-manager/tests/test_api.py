@@ -1,6 +1,5 @@
 import json
 import uuid
-from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -473,6 +472,8 @@ def test_query_skill(
         for p in response["predictions"]:
             p.pop("attributions")
             p.pop("prediction_graph")
+            p.pop("skill_id")
+            p.pop("bertviz")
 
         TestCase().assertDictEqual(
             response, {"predictions": saved_prediction["predictions"]}

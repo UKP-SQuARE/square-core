@@ -10,7 +10,7 @@ square_model_client = SQuAREModelClient()
 square_datastore_client = SQuAREDatastoreClient()
 
 
-async def predict(request: QueryRequest) -> QueryOutput:
+def predict(request: QueryRequest) -> QueryOutput:
     """Given a question and context, performs extractive QA. This skill is a general
     skill, it can be used with any adapter for extractive question answering. The
     adapter to use can be specified in the `skill_args` or via the `default_skill_args`
@@ -20,7 +20,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     query = request.query
     explain_kwargs = request.explain_kwargs or {}
 
-    data_response = await square_datastore_client(
+    data_response = square_datastore_client(
         datastore_name=request.skill_args["datastore"],
         index_name=request.skill_args.get("index", ""),
         query=query,
@@ -57,7 +57,7 @@ async def predict(request: QueryRequest) -> QueryOutput:
     if request.skill_args.get("adapter"):
         model_request["adapter_name"] = request.skill_args["adapter"]
 
-    model_response = await square_model_client(
+    model_response = square_model_client(
         model_name=request.skill_args["base_model"],
         pipeline="generation",
         model_request=model_request,

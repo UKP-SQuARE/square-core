@@ -49,10 +49,10 @@
               <div class="row">
                 <div class="col text-start">
                   <h4>Datasets</h4>
-                  <div v-for="dataset in availableDatasets" :key="dataset" style="display:inline;">
-                    <span role="button" v-on:click="addRemoveDatasetFilter(dataset)" :id="dataset"
+                  <div v-for="dataset in availableDatasets" :key="dataset.name" style="display:inline;">
+                    <span role="button" v-on:click="addRemoveDatasetFilter(dataset)" :id="dataset.name"
                       class="btn btn-outline-primary btn-sm  mb-1 me-1">
-                      {{ dataset }}
+                      {{ dataset.name }}
                     </span>
                   </div>
 
@@ -63,8 +63,8 @@
               <!-- Search Bar -->
               <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text" id="basic-addon1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    class="bi bi-search" viewBox="0 0 16 16">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+                    viewBox="0 0 16 16">
                     <path
                       d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z">
                     </path>
@@ -95,12 +95,12 @@
                               d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
                           </svg>
                           {{ skill.skill_type }}
-                          <!-- <span class="px-1.5 text-gray-300">• </span>
+                        <!-- <span class="px-1.5 text-gray-300">• </span>
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-aspect-ratio" viewBox="0 1 16 16">
                             <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
                             <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H3v2.5a.5.5 0 0 1-1 0v-3zm12 7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H13V8.5a.5.5 0 0 1 1 0v3z"/>
                           </svg>
-                          300M -->
+                                                    300M -->
                         </small>
                         <small v-if="skill.meta_skill" class="text-muted">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -152,7 +152,7 @@ export default Vue.component('compare-skills', {
   },
   computed: {
     filteredSkills() {
-      let availableSkills = this.$store.state.availableSkills
+      let availableSkills = this.availableSkills
       // Apply skill type filter
       if (this.chosenSkillType) {
         availableSkills = availableSkills.filter(skill => skill.skill_type == this.chosenSkillType)
@@ -196,7 +196,6 @@ export default Vue.component('compare-skills', {
         return availableSkills
       }
     },
-
     selectedSkills() {
       return this.options.selectedSkills.filter(skill => skill !== 'None')
     },
@@ -235,6 +234,7 @@ export default Vue.component('compare-skills', {
       console.log(this.skillSettings.skillType)
     },
     addRemoveDatasetFilter(dataset) {
+      dataset = dataset.name
       if (this.selectedDatasets.includes(dataset)) {
         // remove dataset from selectedDatasets
         let index = this.selectedDatasets.indexOf(dataset)
@@ -316,6 +316,17 @@ export default Vue.component('compare-skills', {
     },
     boxIcon() {
       return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16"> <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z" /></svg>'
+    },
+    prepareToExit: function () {
+      // set all data to default
+      this.options.selectedSkills = ['None', 'None', 'None']
+      this.selectedDatasets = []
+      this.chosenSkillType = null
+      this.selectedSkillScope = null
+      this.skillSettings.skillType = null
+      this.skillSettings.skillScope = null
+      this.skillSettings.datasets = null
+      this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
     }
 
   },
@@ -334,6 +345,16 @@ export default Vue.component('compare-skills', {
     getDataSets(this.$store.getters.authenticationHeader())
       .then((response) => {
         this.availableDatasets = response.data
+        // sort datasets by name
+        this.availableDatasets.sort((a, b) => {
+          if (a.name < b.name) {
+            return -1
+          }
+          if (a.name > b.name) {
+            return 1
+          }
+          return 0
+        })
       })
       .catch((error) => {
         console.log(error)

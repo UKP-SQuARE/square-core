@@ -171,7 +171,7 @@ def user_id() -> str:
 def es_container(
     wiki_datastore: Datastore,
     bing_search_datastore: Datastore,
-    conceptnet_kg: Datastore,
+    kg_name: str,
     test_node: Document,
     mongo_container: Tuple[str, str],
     user_id: str,
@@ -211,8 +211,8 @@ def es_container(
                     wiki_datastore.name, query_document.id, query_document
                 )
             ),
-            loop.create_task(kg_connector.add_kg(conceptnet_kg)),
-            loop.create_task(kg_connector.add_document(conceptnet_kg.name,test_node.id, test_node ))
+            loop.create_task(kg_connector.add_kg(kg_name)),
+            loop.create_task(kg_connector.add_document(kg_name,test_node.id, test_node ))            
         ]
         loop.run_until_complete(asyncio.gather(*tasks))
 
@@ -227,7 +227,7 @@ def es_container(
         )
 
         # add conceptnet kg binding
-        datastore_name = conceptnet_kg.name
+        datastore_name = kg_name
         mongo_client = build_mongo_client(*mongo_container)
         mongo_client.user_datastore_bindings.insert_one(
             {
