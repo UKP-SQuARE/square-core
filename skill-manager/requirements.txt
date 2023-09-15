@@ -3,7 +3,7 @@ square-skill-api==0.0.38
 square-auth==0.0.14
 uvicorn>=0.15.0
 fastapi>=0.70.0
-pydantic>=1.8.2
+pydantic==1.8.2
 pymongo>=3.12.1
 requests>=2.26.0
 redis
