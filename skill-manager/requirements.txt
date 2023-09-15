@@ -7,6 +7,6 @@ requests-cache==0.9.8
 requests==2.28.2
 square-auth==0.0.14
 square-elk-json-formatter==0.0.3
--e git+https://github.com/UKP-SQuARE/square-skill-api/releases/tag/v0.0.46#egg=square-skill-api
+-e git+https://github.com/UKP-SQuARE/square-skill-api.git#egg=square-skill-api
 uvicorn==0.20.0
 square-model-client==0.0.10
