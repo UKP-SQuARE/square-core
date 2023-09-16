@@ -37,7 +37,7 @@
 
                     <div class="accordion-item">
                       <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                           data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                           Chat Controls
                         </button>
@@ -94,9 +94,9 @@
 
                     <div class="accordion-item" v-if="chatConfig.chatMode === 'agent_chat'">
                       <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                           data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                          Tools
+                          Tools (AWS Lambda Functions)
                         </button>
                       </h2>
                       <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
