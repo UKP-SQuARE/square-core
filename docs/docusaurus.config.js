@@ -42,10 +42,10 @@ const config = {
      "redocusaurus",
      {
        specs: [
-           // {
-           // route: "/api/datastores/",
-           // spec: "https://square.ukp-lab.de/api/datastores/openapi.json",
-           // },
+           {
+           route: "/api/datastores/",
+           spec: "https://square.ukp-lab.de/",
+           },
            {
             route: "/api/skills/",
            spec: "https://square.ukp-lab.de/api/skill-manager/openapi.json",
