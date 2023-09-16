@@ -102,15 +102,29 @@
                       <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
                         data-bs-parent="#chatControl">
                         <div class="accordion-body">
-                          <div v-for="(item, index) in chatConfig.tools" :key="index" class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" :id="'flexCheckChecked' + index"
-                              v-model="item.checked">
-                            <label class="form-check-label" :for="'flexCheckChecked' + index">
-                              {{ item.name }}
-                            </label>
+
+                          <div class="d-flex justify-content-between align-items-center form-check"
+                            v-for="(item, index) in chatConfig.tools" :key="index">
+                            <div>
+                              <input class="form-check-input" type="checkbox" :id="'flexCheckChecked' + index"
+                                v-model="item.checked">
+                              <label class="form-check-label" :for="'flexCheckChecked' + index"> {{ item.name }} </label>
+                            </div>
+                            <div v-if="index >= initialToolsNumber">
+                              <button type="button" class="btn btn-sm btn-outline-danger"
+                                @click="deleteTool(item, index)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor"
+                                  class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                  <path
+                                    d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z">
+                                  </path>
+                                </svg>
+                              </button>
+                            </div>
                           </div>
                           <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" :id="'addNewToolId'" v-model="addingNewTool">
+                            <input class="form-check-input" type="checkbox" value="" :id="'addNewToolId'"
+                              v-model="addingNewTool">
                             <label class="form-check-label" :for="'addNewToolId'">Add New Tool (Lambda Function)</label>
                           </div>
                           <div v-if="addingNewTool">
@@ -125,39 +139,48 @@
                             <div class="form-group row">
                               <label for="toolDescription" class="col-sm-3 col-form-label">Description</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolDescription" v-model="newTool.description" value="A search engine. Useful for when you need to answer questions about current events. Input should be a search query.">
+                                <input type="text" class="form-control" id="toolDescription" v-model="newTool.description"
+                                  value="A search engine. Useful for when you need to answer questions about current events. Input should be a search query.">
                               </div>
                             </div>
                             <hr />
                             <div class="form-group row">
                               <label for="toolRegion" class="col-sm-3 col-form-label">Region</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolRegion" v-model="newTool.region" value="eu-north-1">
+                                <input type="text" class="form-control" id="toolRegion" v-model="newTool.region"
+                                  value="eu-north-1">
                               </div>
                             </div>
                             <hr />
                             <div class="form-group row">
                               <label for="toolAccessKeyId" class="col-sm-3 col-form-label">Access Key Id</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolAccessKeyId" v-model="newTool.accessKeyId">
+                                <input type="text" class="form-control" id="toolAccessKeyId"
+                                  v-model="newTool.accessKeyId">
                               </div>
                             </div>
                             <hr />
                             <div class="form-group row">
                               <label for="toolSecretAccessKey" class="col-sm-3 col-form-label">Secret Access Key</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolSecretAccessKey" v-model="newTool.secretAccessKey">
+                                <input type="text" class="form-control" id="toolSecretAccessKey"
+                                  v-model="newTool.secretAccessKey">
                               </div>
                             </div>
                             <hr />
                             <div class="form-group row">
                               <label for="toolFunctionName" class="col-sm-3 col-form-label">Function Name</label>
                               <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolFunctionName" v-model="newTool.functionName">
+                                <input type="text" class="form-control" id="toolFunctionName"
+                                  v-model="newTool.functionName">
                               </div>
                             </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                              <button class="btn btn-primary" type="button" @click.prevent="addNewTool">Save</button>
+                              <button class="btn btn-primary" type="button" @click.prevent="addNewTool">Save (locally in
+                                the browser)</button>
+                            </div>
+                            <div v-if="addNewToolErrorMessage" class="alert mt-2 alert-danger text-center">
+                              {{ addNewToolErrorMessage }}
                             </div>
                           </div>
                         </div>
@@ -219,6 +242,26 @@
         </div>
       </div>
     </div>
+    <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
+      <div id="toastBootstrap" class="toast text-white bg-primary border-0" 
+      role="alert" aria-live="assertive" aria-atomic="true" v-bind:class="{ show: showSuccessToast }">
+        <div class="d-flex">
+          <div class="toast-body">
+            Key was saved successfully.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
+      <div id="toastBootstrapError" class="toast text-white bg-danger border-0" 
+      role="alert" aria-live="assertive" aria-atomic="true" v-bind:class="{ show: errorToast.show }">
+        <div class="d-flex">
+          <div class="toast-body">
+            {{ errorToast.message }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -230,6 +273,7 @@ import { ChatOpenAI } from "langchain/chat_models/openai";
 import { Calculator } from "langchain/tools/calculator";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { AWSLambda } from "langchain/tools/aws_lambda";
+import { v4 as uuidv4 } from "uuid";
 import Vue from "vue";
 import {
   ChatPromptTemplate,
@@ -244,6 +288,7 @@ export default {
     MessageView,
   },
 
+  // to change the size of the textarea dynamically
   directives: {
     autosize: {
       bind: function (el) {
@@ -275,10 +320,10 @@ export default {
     chatModelList: [],
     availableTools: [],
     addingNewTool: false,
+    initialToolsNumber: 0,
 
-    // TODO: remove the initial values. These are just for testing
     newTool: {
-      name: 'Search1',
+      name: 'Search',
       description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
       region: 'eu-north-1',
       accessKeyId: '',
@@ -298,6 +343,12 @@ export default {
     },
 
     oldTools: null,
+    addNewToolErrorMessage: null,
+    showSuccessToast: false,
+    errorToast: {
+      show: false,
+      message: "",
+    },
 
     user: {
       name: "You",
@@ -317,12 +368,12 @@ export default {
 
   methods: {
     async addNewTool() {
-      if (this.newTool.name !== '' 
-      && this.newTool.description !== '' 
-      && this.newTool.region !== '' 
-      && this.newTool.accessKeyId !== '' 
-      && this.newTool.secretAccessKey !== '' 
-      && this.newTool.functionName !== '') {
+      if (this.newTool.name !== ''
+        && this.newTool.description !== ''
+        && this.newTool.region !== ''
+        && this.newTool.accessKeyId !== ''
+        && this.newTool.secretAccessKey !== ''
+        && this.newTool.functionName !== '') {
         const lambdaFunction = new AWSLambda({
           name: this.newTool.name,
           description: this.newTool.description,
@@ -331,20 +382,73 @@ export default {
           secretAccessKey: this.newTool.secretAccessKey,
           functionName: this.newTool.functionName,
         });
+        let toolId = uuidv4();
         this.availableTools.push({
           name: this.newTool.name,
           description: this.newTool.description,
           tool: lambdaFunction,
+          toolId: toolId,
         });
         this.addingNewTool = false;
         this.oldTools = JSON.parse(JSON.stringify(this.chatConfig.tools));
         this.chatConfig.tools.push({
           name: this.newTool.name,
           checked: false,
+          toolId: toolId,
         });
+        this.saveToolLocally(toolId);
+      } else {
+        this.addNewToolErrorMessage = "All fields must be filled in.";
       }
     },
-    
+
+    saveToolLocally(toolId) {
+      let localToolIds = localStorage.getItem("local_tool_ids");
+      if (localToolIds == null) {
+        localToolIds = [];
+      } else {
+        localToolIds = JSON.parse(localToolIds);
+      }
+      localToolIds.push(toolId);
+      localStorage.setItem("local_tool_ids", JSON.stringify(localToolIds));
+      let tool = this.availableTools[this.availableTools.length - 1];
+      localStorage.setItem(`tool_${toolId}_name`, tool.name);
+      localStorage.setItem(`tool_${toolId}_description`, tool.tool.description);
+      localStorage.setItem(`tool_${toolId}_region`, tool.tool.lambdaConfig.region);
+      localStorage.setItem(`tool_${toolId}_accessKeyId`, tool.tool.lambdaConfig.accessKeyId);
+      localStorage.setItem(`tool_${toolId}_secretAccessKey`, tool.tool.lambdaConfig.secretAccessKey);
+      localStorage.setItem(`tool_${toolId}_functionName`, tool.tool.lambdaConfig.functionName);
+    },
+
+    async deleteTool(tool, index) {
+      localStorage.removeItem(`tool_${tool.toolId}_name`);
+      localStorage.removeItem(`tool_${tool.toolId}_description`);
+      localStorage.removeItem(`tool_${tool.toolId}_region`);
+      localStorage.removeItem(`tool_${tool.toolId}_accessKeyId`);
+      localStorage.removeItem(`tool_${tool.toolId}_secretAccessKey`);
+      localStorage.removeItem(`tool_${tool.toolId}_functionName`);
+
+      let localToolIds = localStorage.getItem("local_tool_ids");
+      if (localToolIds == null) {
+        localToolIds = [];
+      } else {
+        localToolIds = JSON.parse(localToolIds);
+      }
+      localToolIds = localToolIds.filter((id) => id !== tool.toolId);
+      localStorage.setItem("local_tool_ids", JSON.stringify(localToolIds));
+
+      this.availableTools.splice(index, 1);
+      this.oldTools = JSON.parse(JSON.stringify(this.chatConfig.tools));
+
+      // if the tool is checked, reset the conversation because tool is not available anymore
+      if (this.chatConfig.tools[index].checked) {
+        await this.initChatModel();
+        this.resetConv();
+      }
+
+      this.chatConfig.tools.splice(index, 1);
+    },
+
     async onSubmit() {
       if (this.chatText != "") {
         let text = this.chatText;
@@ -362,7 +466,8 @@ export default {
 
         try {
           if (this.openAIApiKey === "") {
-            // TODO: show worning message about the key
+            this.errorToast.message = "Please enter your OpenAI key first.";
+            this.errorToast.show = true;
           } else {
             const res = await this.chatModel.call({ input: text });
             let response = "";
@@ -405,12 +510,13 @@ export default {
           }
         } catch (err) {
           console.log(err.message);
-          throw err;
-          // if(err.response.data.error.code === "invalid_api_key"){
-          //   // TODO: show error message about the key
-          // }else{
-          //   // TODO: show general error message
-          // }
+          if(err.response.data.error.code === "invalid_api_key"){
+            this.errorToast.message = "Please enter a valid OpenAI key.";
+            this.errorToast.show = true;
+          }else{
+            this.errorToast.message = "Something went wrong. Please try again."
+            this.errorToast.show = true;
+          }
         }
       }
     },
@@ -423,7 +529,7 @@ export default {
 
     saveKey() {
       localStorage.setItem("openAIApiKey", this.openAIApiKey);
-      // TODO: show success message
+      this.showSuccessToast = true;
     },
 
     async initChatModel() {
@@ -457,7 +563,7 @@ export default {
         const selectedTools = this.chatConfig.tools.filter((tool) => tool.checked);
 
         const actualTools = this.availableTools.filter((tool) => {
-          return selectedTools.some((selectedTool) => selectedTool.name === tool.name);
+          return selectedTools.some((selectedTool) => selectedTool.toolId === tool.toolId);
         }).map((tool) => tool.tool);
 
         this.chatModel = await initializeAgentExecutorWithOptions(
@@ -497,6 +603,7 @@ export default {
           name: "Calculator",
           description: "A simple calculator that can add, subtract, multiply and divide numbers.",
           tool: new Calculator(),
+          toolId: 1,
         }
       ];
 
@@ -513,16 +620,44 @@ export default {
       //   name: "Search",
       //   description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
       //   tool: searchLambdaFunction,
+      //   toolId: 2,
       // });
-    
+
+      // add any initial tools before this line
+      this.initialToolsNumber = this.availableTools.length;
+
+      // get tools from local storage
+      const localToolIds = localStorage.getItem("local_tool_ids");
+
+      if (localToolIds != null) {
+        const localToolIdsList = JSON.parse(localToolIds);
+        for (let i = 0; i < localToolIdsList.length; i++) {
+          const toolId = localToolIdsList[i];
+          const tool = {
+            name: localStorage.getItem(`tool_${toolId}_name`),
+            description: localStorage.getItem(`tool_${toolId}_description`),
+            tool: new AWSLambda({
+              name: localStorage.getItem(`tool_${toolId}_name`),
+              description: localStorage.getItem(`tool_${toolId}_description`),
+              region: localStorage.getItem(`tool_${toolId}_region`),
+              accessKeyId: localStorage.getItem(`tool_${toolId}_accessKeyId`),
+              secretAccessKey: localStorage.getItem(`tool_${toolId}_secretAccessKey`),
+              functionName: localStorage.getItem(`tool_${toolId}_functionName`),
+            }),
+            toolId: toolId,
+          };
+          this.availableTools.push(tool);
+        }
+      }
       for (let i = 0; i < this.availableTools.length; i++) {
         const tool = this.availableTools[i];
         this.chatConfig.tools.push({
           name: tool.name,
           checked: false,
+          toolId: tool.toolId,
         });
       }
-    }
+    },
   },
 
   watch: {
@@ -550,12 +685,11 @@ export default {
       }
     },
 
-    'chatConfig.systemPrompt':{
+    'chatConfig.systemPrompt': {
       /* eslint-disable no-unused-vars */
-      // TODO: this is not working. Fix it
       async handler(newSystemPrompt, oldSystemPrompt) {
         this.chatConfig.systemPrompt = newSystemPrompt;
-        this.chatModel.prompt.promptMessages[0] = SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt); 
+        this.chatModel.prompt.promptMessages[0] = SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt);
       }
     },
 
@@ -584,15 +718,37 @@ export default {
           await this.initChatModel();
           this.resetConv();
         }
-        this.oldTools = newTools; 
+        this.oldTools = JSON.parse(JSON.stringify(newTools));
+      }
+    }, 
+
+    'showSuccessToast': {
+      /* eslint-disable no-unused-vars */
+      async handler(newShowSuccessToast, oldShowSuccessToast) {
+        if (newShowSuccessToast) {
+          setTimeout(() => {
+            this.showSuccessToast = false;
+          }, 2000);
+        }
+      }
+    }, 
+
+    'errorToast.show':{
+      /* eslint-disable no-unused-vars */
+      async handler(newErrorToastShow, oldErrorToastShow) {
+        if (newErrorToastShow) {
+          setTimeout(() => {
+            this.errorToast.show = false;
+          }, 3000);
+        }
       }
     }
   },
+
 };
 </script>
 
-<style scoped>
-.message+.message {
+<style scoped>.message+.message {
   margin-top: 1rem;
 }
 
@@ -602,5 +758,4 @@ export default {
 
 button:disabled {
   opacity: 0.5;
-}
-</style>
+}</style>
