@@ -23,6 +23,7 @@
     "cytoscape-popper": "^2.0.0",
     "dompurify": "^2.3.3",
     "keycloak-js": "^17.0.0",
+    "langchain": "^0.0.150",
     "masonry-layout": "^4.2.2",
     "package.json": "^2.0.1",
     "string-punctuation-tokenizer": "^2.2.0",
