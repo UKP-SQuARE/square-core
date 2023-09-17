@@ -1,5 +1,5 @@
 module.exports = {
-  transpileDependencies: ['langchain', 'langchainplus-sdk'], 
+  transpileDependencies: ['langchain', 'langchainplus-sdk', 'langsmith'], 
   chainWebpack: config => {
       config.module
           .rule('cjs')
