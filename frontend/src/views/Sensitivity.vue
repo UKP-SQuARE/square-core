@@ -157,7 +157,7 @@
           </div>
         </div>
       </div>
-        <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
+      <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
         <div id="toastBootstrapError" class="toast text-white bg-danger border-0" 
         role="alert" aria-live="assertive" aria-atomic="true" v-bind:class="{ show: errorToast.show }">
           <div class="d-flex">
@@ -195,10 +195,10 @@ export default {
     openAIApiKey: "",
     modelList: [],
     modelConfig: {
-      selectedModel: "text-davinci-003",
-      temperature: 0.7,
-      maxTokens: 256,
-      top_p: 0.9,
+      selectedModel: "gpt-3.5-turbo-instruct",
+      temperature: 0.8,
+      maxTokens: 64,
+      top_p: 1,
     },
     currentModelSensitivity: 0,
     showSuccessToast: false,
@@ -243,7 +243,7 @@ export default {
     async initModel() {
       // see https://js.langchain.com/docs/modules/model_io/models/llms/integrations/openai
       this.generativeModel = new OpenAI({
-        modelName: this.modelConfig.selectedModel,
+        model: this.modelConfig.selectedModel,
         openAIApiKey: this.openAIApiKey,
         temperature: this.modelConfig.temperature,
         maxTokens: this.modelConfig.maxTokens,
@@ -261,19 +261,64 @@ export default {
 
     async getSensitivity() {
       this.waiting = true;
-      const prompt = new PromptTemplate({
-        template: "{input}",
-        inputVariables: ["input"]
-      });
-      const formattedPrompt = await prompt.format({
-        input: "What would be a good company name a company that makes colorful socks?",
-      });
-      console.log(formattedPrompt);
+      if (this.selectedDatasetName === 'cola') {
+        const results = [];
+        let prompt = await this.getPrompt(this.currentOriginalInput);
+        let res = await this.generativeModel.call(prompt);
+        results.push(res.trim());
 
-      const res = await this.generativeModel.call(formattedPrompt);
+        for (let i = 0; i < this.listPerturbedInput.length; i++) {
+          prompt = await this.getPrompt(this.listPerturbedInput[i]);
+          res = await this.generativeModel.call(prompt);
+          results.push(res.trim());
+        }
+        console.log(results);
+        this.currentModelSensitivity = this.calculateSensitivity(results);
+        this.showResults = true;
+      }
       this.waiting = false;
-      this.currentModelSensitivity = res;
-      this.showResults = true;
+    },
+
+    calculateSensitivity(results) {
+      let s = 1 - (this.f_m(results) / results.length);
+      return s;
+    },
+
+    f_m(results) {
+      let result = this.mode(results);
+      let count = 0;
+      results.forEach(val => {
+        if (val === result) {
+          count++;
+        }
+      });
+      return count;
+    },
+
+    mode(results) {
+      let frequency = {};
+      results.forEach(val => frequency[val] = (frequency[val] || 0) + 1);
+      let max = 0;
+      let result;
+      for (const key in frequency) {
+        if (frequency[key] > max) {
+          max = frequency[key];
+          result = key;
+        }
+      }
+      return result;
+    },
+
+    async getPrompt(input) {
+      const template = 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER:'
+      const prompt = new PromptTemplate({
+        template: template,
+        inputVariables: ["sentence"]
+      });
+      let formattedPrompt = await prompt.format({
+        sentence: input
+      });
+      return template + formattedPrompt;
     },
 
     getDatasets() {
