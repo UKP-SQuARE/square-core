@@ -7,78 +7,86 @@
             <div class="row">
               <div class="col col-4 d-none d-md-block">
                 <div style="height: 35rem; overflow-y: auto; overflow-x: hidden;">
-                  <form class="form-inline" @submit.prevent="saveKey">
-                    <div class="form-group pb-2">
-                      <div class="row">
-                        <div class="col-9">
-                          <label for="open-ai-key" class="form-label">OpenAI key (locally stored)</label>
-                          <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key"
-                            title="Your key is stored locally and not shared with anyone" v-model="openAIApiKey" />
-                        </div>
-                        <div class="col-3 ps-0 d-flex align-items-end">
-                          <button type="submit" class="btn btn-primary px-3">
-                            Save
-                          </button>
-                        </div>
+                  <div class="form-group pb-2">
+                    <div class="row">
+                      <div>
+                        <label for="open-ai-key" class="form-label">
+                          OpenAI key
+                          <svg
+                            content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer."
+                            v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-info-circle" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path
+                              d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                          </svg>
+                        </label>
+                        <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key" v-model="openAIApiKey" />
                       </div>
                     </div>
-                    <hr />
-                    <div class="form-group">
-                      <label for="selectedModel" class="form-label">Model</label>
-                      <select v-model="modelConfig.selectedModel" class="form-select" id="selectedModel">
-                        <option v-for="model in modelList" :key="model.id" :value="model.id">
-                          {{ model.id }}
-                        </option>
-                      </select>
-                    </div>
+                  </div>
+                  <hr />
+                  <div class="form-group">
+                    <label for="selectedModel" class="form-label">Model</label>
+                    <select v-model="modelConfig.selectedModel" class="form-select" id="selectedModel">
+                      <option v-for="model in modelList" :key="model.id" :value="model.id">
+                        {{ model.id }}
+                      </option>
+                    </select>
+                  </div>
 
-                    <hr />
+                  <hr />
 
-                    <div class="form-group">
-                      <label for="selectedDataset" class="form-label">Dataset (to show examples form)</label>
-                      <select v-model="selectedDatasetName" class="form-select" id="selectedDataset">
-                        <option v-for="dataset in datasetNameList" :key="dataset" :value="dataset">
-                          {{ dataset }}
-                        </option>
-                      </select>
-                    </div>
+                  <div class="form-group">
+                    <label for="selectedDataset" class="form-label">Dataset (to show examples form)</label>
+                    <select v-model="selectedDatasetName" class="form-select" id="selectedDataset">
+                      <option v-for="dataset in datasetNameList" :key="dataset" :value="dataset">
+                        {{ dataset }}
+                      </option>
+                    </select>
+                  </div>
 
-                    <hr />
-                    <div class="accordion" id="configControl">
-                      <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
-                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            Model Controls
-                          </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
-                          data-bs-parent="#configControl">
-                          <div class="accordion-body">
-                            <hr />
-                            <div class="form-group">
-                              <label for="tempRange" class="form-label">Tempreture: {{ this.modelConfig.temperature
-                              }}</label>
-                              <input v-model="modelConfig.temperature" type="range" class="form-range" min="0" max="1"
-                                step="0.1" id="tempRange">
-                            </div>
-                            <hr />
-                            <div class="form-group">
-                              <label for="maxTokens" class="form-label">Max Tokens</label>
-                              <input type="number" class="form-control" id="maxTokens" min="0" max="32768"
-                                v-model="modelConfig.maxTokens" />
-                            </div>
-                            <hr />
-                            <div class="form-group">
-                              <label for="top_pRange" class="form-label">top_p: {{ this.modelConfig.top_p }}</label>
-                              <input v-model="modelConfig.top_p" type="range" class="form-range" min="0" max="1"
-                                step="0.1" id="top_pRange">
-                            </div>
+                  <hr />
+                  <div class="accordion" id="configControl">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                          data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                          Model Controls
+                        </button>
+                      </h2>
+                      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                        data-bs-parent="#configControl">
+                        <div class="accordion-body">
+                          <hr />
+                          <div class="form-group">
+                            <label for="tempRange" class="form-label">Tempreture: {{ this.modelConfig.temperature
+                            }}</label>
+                            <input v-model="modelConfig.temperature" type="range" class="form-range" min="0" max="1"
+                              step="0.1" id="tempRange">
+                          </div>
+                          <hr />
+                          <div class="form-group">
+                            <label for="maxTokens" class="form-label">Max Tokens</label>
+                            <input type="number" class="form-control" id="maxTokens" min="0" max="32768"
+                              v-model="modelConfig.maxTokens" />
+                          </div>
+                          <hr />
+                          <div class="form-group">
+                            <label for="top_pRange" class="form-label">top_p: {{ this.modelConfig.top_p }}</label>
+                            <input v-model="modelConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1"
+                              id="top_pRange">
+                          </div>
+                          <hr />
+                          <div class="form-group">
+                            <label for="promptTemplate" class="form-label">promptTemplate</label>
+                            <textarea v-autosize class="form-control" id="promptTemplate"
+                              v-model="modelConfig.promptTemplate" />
                           </div>
                         </div>
                       </div>
                     </div>
-                  </form>
+                  </div>
                 </div>
               </div>
               <div class="col col-md-8 rounded">
@@ -147,7 +155,7 @@
           </div>
         </div>
       </div>
-      <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
+      <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
         <div id="toastBootstrap" class="toast text-white bg-primary border-0" role="alert" aria-live="assertive"
           aria-atomic="true" v-bind:class="{ show: showSuccessToast }">
           <div class="d-flex">
@@ -156,7 +164,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
         <div id="toastBootstrapError" class="toast text-white bg-danger border-0" 
         role="alert" aria-live="assertive" aria-atomic="true" v-bind:class="{ show: errorToast.show }">
@@ -187,6 +195,10 @@
 <script>
 import { OpenAI } from "langchain/llms/openai";
 import { PromptTemplate } from "langchain/prompts";
+import VueTippy from "vue-tippy";
+import Vue from 'vue'
+
+Vue.use(VueTippy);
 
 export default {
   name: "sensitivity-view",
@@ -199,9 +211,10 @@ export default {
       temperature: 0.8,
       maxTokens: 64,
       top_p: 1,
+      promptTemplate: 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER:',
     },
     currentModelSensitivity: 0,
-    showSuccessToast: false,
+    // showSuccessToast: false,
     currentOriginalInput: "",
     currentExamples: [],
     listPerturbedInput: ["", "", "", "", ""],
@@ -228,10 +241,6 @@ export default {
   },
 
   methods: {
-    saveKey() {
-      localStorage.setItem("openAIApiKey", this.openAIApiKey);
-      this.showSuccessToast = true;
-    },
 
     selectExample(example) {
       this.currentOriginalInput = example.original;
@@ -310,15 +319,14 @@ export default {
     },
 
     async getPrompt(input) {
-      const template = 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER:'
       const prompt = new PromptTemplate({
-        template: template,
+        template: this.promptTemplate,
         inputVariables: ["sentence"]
       });
       let formattedPrompt = await prompt.format({
         sentence: input
       });
-      return template + formattedPrompt;
+      return this.promptTemplate + formattedPrompt;
     },
 
     getDatasets() {
@@ -391,14 +399,21 @@ export default {
       }
     },
 
-    'showSuccessToast': {
+    // 'showSuccessToast': {
+    //   /* eslint-disable no-unused-vars */
+    //   async handler(newShowSuccessToast, oldShowSuccessToast) {
+    //     if (newShowSuccessToast) {
+    //       setTimeout(() => {
+    //         this.showSuccessToast = false;
+    //       }, 2000);
+    //     }
+    //   }
+    // },
+
+    'openAIApiKey': {
       /* eslint-disable no-unused-vars */
-      async handler(newShowSuccessToast, oldShowSuccessToast) {
-        if (newShowSuccessToast) {
-          setTimeout(() => {
-            this.showSuccessToast = false;
-          }, 2000);
-        }
+      handler(newKey, oldKey) {
+        localStorage.setItem("openAIApiKey", newKey);
       }
     },
 
