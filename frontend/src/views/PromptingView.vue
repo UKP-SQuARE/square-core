@@ -6,188 +6,188 @@
           <div class="row">
             <div class="col col-4 d-none d-md-block">
               <div style="height: 35rem; overflow-y: auto; overflow-x: hidden;">
-                <form class="form-inline" @submit.prevent="saveKey">
-                  <div class="form-group pb-2">
-                    <div class="row">
-                      <div class="col-9">
-                        <label for="open-ai-key" class="form-label">OpenAI key (locally stored)</label>
-                        <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key"
-                          title="Your key is stored locally and not shared with anyone" v-model="openAIApiKey" />
-                      </div>
-                      <div class="col-3 ps-0 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary px-3">
-                          Save
-                        </button>
-                      </div>
+                <div class="form-group pb-2">
+                  <div class="row">
+                    <div>
+                      <label for="open-ai-key" class="form-label">
+                        OpenAI key
+                        <svg
+                          content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer."
+                          v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                          class="bi bi-info-circle" viewBox="0 0 16 16">
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                          <path
+                            d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                        </svg>
+                      </label>
+                      <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key"
+                        v-model="openAIApiKey" />
                     </div>
-                    <hr />
                   </div>
-
-                  <div class="form-group">
-                    <label for="chat-mode" class="form-label">Chat Mode</label>
-                    <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
-                      <option value="normal_chat">Normal Chat</option>
-                      <option value="agent_chat">Agent Chat</option>
-                    </select>
-                  </div>
-
                   <hr />
+                </div>
 
-                  <div class="accordion" id="chatControl">
+                <div class="form-group">
+                  <label for="chat-mode" class="form-label">Chat Mode</label>
+                  <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
+                    <option value="normal_chat">Normal Chat</option>
+                    <option value="agent_chat">Agent Chat</option>
+                  </select>
+                </div>
 
-                    <div class="accordion-item">
-                      <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                          Chat Controls
-                        </button>
-                      </h2>
-                      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
-                        data-bs-parent="#chatControl">
-                        <div class="accordion-body">
-                          <div class="form-group">
-                            <label for="selectedModel" class="form-label">Chat Model</label>
-                            <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
-                              <option v-for="model in chatModelList" :key="model.id" :value="model.id">
-                                {{ model.id }}
-                              </option>
-                            </select>
-                          </div>
+                <hr />
 
-                          <hr />
+                <div class="accordion" id="chatControl">
 
-                          <div class="form-group">
-                            <label for="tempRange" class="form-label">Tempreture: {{ this.chatConfig.temperature
-                            }}</label>
-                            <input v-model="chatConfig.temperature" type="range" class="form-range" min="0" max="1"
-                              step="0.1" id="tempRange">
-                          </div>
-
-                          <hr />
-
-                          <div class="form-group">
-
-                            <label for="maxTokens" class="form-label">Max Tokens</label>
-                            <input type="number" class="form-control" id="maxTokens" min="0" max="32768"
-                              v-model="chatConfig.maxTokens" />
-                          </div>
-
-                          <hr />
-
-                          <div class="form-group">
-                            <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
-                            <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1"
-                              id="top_pRange">
-                          </div>
-
-                          <hr class="form-group" v-if="chatConfig.chatMode === 'normal_chat'" />
-
-                          <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
-                            <label for="systemPrompt" class="form-label">System Prompt</label>
-                            <textarea v-autosize class="form-control" id="systemPrompt"
-                              v-model="chatConfig.systemPrompt" />
-                          </div>
-
+                  <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        Chat Controls
+                      </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                      data-bs-parent="#chatControl">
+                      <div class="accordion-body">
+                        <div class="form-group">
+                          <label for="selectedModel" class="form-label">Chat Model</label>
+                          <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
+                            <option v-for="model in chatModelList" :key="model.id" :value="model.id">
+                              {{ model.id }}
+                            </option>
+                          </select>
                         </div>
+
+                        <hr />
+
+                        <div class="form-group">
+                          <label for="tempRange" class="form-label">Tempreture: {{ this.chatConfig.temperature
+                          }}</label>
+                          <input v-model="chatConfig.temperature" type="range" class="form-range" min="0" max="1"
+                            step="0.1" id="tempRange">
+                        </div>
+
+                        <hr />
+
+                        <div class="form-group">
+
+                          <label for="maxTokens" class="form-label">Max Tokens</label>
+                          <input type="number" class="form-control" id="maxTokens" min="0" max="32768"
+                            v-model="chatConfig.maxTokens" />
+                        </div>
+
+                        <hr />
+
+                        <div class="form-group">
+                          <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
+                          <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1"
+                            id="top_pRange">
+                        </div>
+
+                        <hr class="form-group" v-if="chatConfig.chatMode === 'normal_chat'" />
+
+                        <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
+                          <label for="systemPrompt" class="form-label">System Prompt</label>
+                          <textarea v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt" />
+                        </div>
+
                       </div>
                     </div>
+                  </div>
 
-                    <div class="accordion-item" v-if="chatConfig.chatMode === 'agent_chat'">
-                      <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                          data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                          Tools (AWS Lambda Functions)
-                        </button>
-                      </h2>
-                      <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
-                        data-bs-parent="#chatControl">
-                        <div class="accordion-body">
+                  <div class="accordion-item" v-if="chatConfig.chatMode === 'agent_chat'">
+                    <h2 class="accordion-header" id="headingTwo">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                        Tools (AWS Lambda Functions)
+                      </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                      data-bs-parent="#chatControl">
+                      <div class="accordion-body">
 
-                          <div class="d-flex justify-content-between align-items-center form-check"
-                            v-for="(item, index) in chatConfig.tools" :key="index">
-                            <div>
-                              <input class="form-check-input" type="checkbox" :id="'flexCheckChecked' + index"
-                                v-model="item.checked">
-                              <label class="form-check-label" :for="'flexCheckChecked' + index"> {{ item.name }} </label>
-                            </div>
-                            <div v-if="index >= initialToolsNumber">
-                              <button type="button" class="btn btn-sm btn-outline-danger"
-                                @click="deleteTool(item, index)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor"
-                                  class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                  <path
-                                    d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z">
-                                  </path>
-                                </svg>
-                              </button>
+                        <div class="d-flex justify-content-between align-items-center form-check"
+                          v-for="(item, index) in chatConfig.tools" :key="index">
+                          <div>
+                            <input class="form-check-input" type="checkbox" :id="'flexCheckChecked' + index"
+                              v-model="item.checked">
+                            <label class="form-check-label" :for="'flexCheckChecked' + index"> {{ item.name }} </label>
+                          </div>
+                          <div v-if="index >= initialToolsNumber">
+                            <button type="button" class="btn btn-sm btn-outline-danger" @click="deleteTool(item, index)">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor"
+                                class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                <path
+                                  d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z">
+                                </path>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" value="" :id="'addNewToolId'"
+                            v-model="addingNewTool">
+                          <label class="form-check-label" :for="'addNewToolId'">Add New Tool (Lambda Function)</label>
+                        </div>
+                        <div v-if="addingNewTool">
+                          <br />
+                          <div class="form-group row">
+                            <label for="toolName" class="col-sm-3 col-form-label">Name</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="toolName" v-model="newTool.name">
                             </div>
                           </div>
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" :id="'addNewToolId'"
-                              v-model="addingNewTool">
-                            <label class="form-check-label" :for="'addNewToolId'">Add New Tool (Lambda Function)</label>
+                          <hr />
+                          <div class="form-group row">
+                            <label for="toolDescription" class="col-sm-3 col-form-label">Description</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="toolDescription" v-model="newTool.description"
+                                value="A search engine. Useful for when you need to answer questions about current events. Input should be a search query.">
+                            </div>
                           </div>
-                          <div v-if="addingNewTool">
-                            <br />
-                            <div class="form-group row">
-                              <label for="toolName" class="col-sm-3 col-form-label">Name</label>
-                              <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolName" v-model="newTool.name">
-                              </div>
+                          <hr />
+                          <div class="form-group row">
+                            <label for="toolRegion" class="col-sm-3 col-form-label">Region</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="toolRegion" v-model="newTool.region"
+                                value="eu-north-1">
                             </div>
-                            <hr />
-                            <div class="form-group row">
-                              <label for="toolDescription" class="col-sm-3 col-form-label">Description</label>
-                              <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolDescription" v-model="newTool.description"
-                                  value="A search engine. Useful for when you need to answer questions about current events. Input should be a search query.">
-                              </div>
+                          </div>
+                          <hr />
+                          <div class="form-group row">
+                            <label for="toolAccessKeyId" class="col-sm-3 col-form-label">Access Key Id</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="toolAccessKeyId" v-model="newTool.accessKeyId">
                             </div>
-                            <hr />
-                            <div class="form-group row">
-                              <label for="toolRegion" class="col-sm-3 col-form-label">Region</label>
-                              <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolRegion" v-model="newTool.region"
-                                  value="eu-north-1">
-                              </div>
+                          </div>
+                          <hr />
+                          <div class="form-group row">
+                            <label for="toolSecretAccessKey" class="col-sm-3 col-form-label">Secret Access Key</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="toolSecretAccessKey"
+                                v-model="newTool.secretAccessKey">
                             </div>
-                            <hr />
-                            <div class="form-group row">
-                              <label for="toolAccessKeyId" class="col-sm-3 col-form-label">Access Key Id</label>
-                              <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolAccessKeyId"
-                                  v-model="newTool.accessKeyId">
-                              </div>
+                          </div>
+                          <hr />
+                          <div class="form-group row">
+                            <label for="toolFunctionName" class="col-sm-3 col-form-label">Function Name</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="toolFunctionName"
+                                v-model="newTool.functionName">
                             </div>
-                            <hr />
-                            <div class="form-group row">
-                              <label for="toolSecretAccessKey" class="col-sm-3 col-form-label">Secret Access Key</label>
-                              <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolSecretAccessKey"
-                                  v-model="newTool.secretAccessKey">
-                              </div>
-                            </div>
-                            <hr />
-                            <div class="form-group row">
-                              <label for="toolFunctionName" class="col-sm-3 col-form-label">Function Name</label>
-                              <div class="col-sm-9">
-                                <input type="text" class="form-control" id="toolFunctionName"
-                                  v-model="newTool.functionName">
-                              </div>
-                            </div>
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                              <button class="btn btn-primary" type="button" @click.prevent="addNewTool">Save (locally in
-                                the browser)</button>
-                            </div>
-                            <div v-if="addNewToolErrorMessage" class="alert mt-2 alert-danger text-center">
-                              {{ addNewToolErrorMessage }}
-                            </div>
+                          </div>
+                          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-primary" type="button" @click.prevent="addNewTool">Save (locally in
+                              the browser)</button>
+                          </div>
+                          <div v-if="addNewToolErrorMessage" class="alert mt-2 alert-danger text-center">
+                            {{ addNewToolErrorMessage }}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
             <div class="col col-md-8 border rounded p-3 bg-white" style="height: 77vh">
@@ -242,19 +242,19 @@
         </div>
       </div>
     </div>
-    <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
-      <div id="toastBootstrap" class="toast text-white bg-primary border-0" 
-      role="alert" aria-live="assertive" aria-atomic="true" v-bind:class="{ show: showSuccessToast }">
+    <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
+      <div id="toastBootstrap" class="toast text-white bg-primary border-0" role="alert" aria-live="assertive"
+        aria-atomic="true" v-bind:class="{ show: showSuccessToast }">
         <div class="d-flex">
           <div class="toast-body">
             Key was saved successfully.
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
-      <div id="toastBootstrapError" class="toast text-white bg-danger border-0" 
-      role="alert" aria-live="assertive" aria-atomic="true" v-bind:class="{ show: errorToast.show }">
+      <div id="toastBootstrapError" class="toast text-white bg-danger border-0" role="alert" aria-live="assertive"
+        aria-atomic="true" v-bind:class="{ show: errorToast.show }">
         <div class="d-flex">
           <div class="toast-body">
             {{ errorToast.message }}
@@ -281,6 +281,9 @@ import {
   SystemMessagePromptTemplate,
   MessagesPlaceholder,
 } from "langchain/prompts";
+import VueTippy from "vue-tippy";
+
+Vue.use(VueTippy);
 
 export default {
   name: "prompting-view",
@@ -344,7 +347,7 @@ export default {
 
     oldTools: null,
     addNewToolErrorMessage: null,
-    showSuccessToast: false,
+    // showSuccessToast: false,
     errorToast: {
       show: false,
       message: "",
@@ -510,10 +513,10 @@ export default {
           }
         } catch (err) {
           console.log(err.message);
-          if(err.response.data.error.code === "invalid_api_key"){
+          if (err.response.data.error.code === "invalid_api_key") {
             this.errorToast.message = "Please enter a valid OpenAI key.";
             this.errorToast.show = true;
-          }else{
+          } else {
             this.errorToast.message = "Something went wrong. Please try again."
             this.errorToast.show = true;
           }
@@ -525,11 +528,6 @@ export default {
       this.chatText = "";
       this.messages.splice(0, this.messages.length);
       this.chatModel.memory.clear();
-    },
-
-    saveKey() {
-      localStorage.setItem("openAIApiKey", this.openAIApiKey);
-      this.showSuccessToast = true;
     },
 
     async initChatModel() {
@@ -720,20 +718,27 @@ export default {
         }
         this.oldTools = JSON.parse(JSON.stringify(newTools));
       }
-    }, 
+    },
 
-    'showSuccessToast': {
+    // 'showSuccessToast': {
+    //   /* eslint-disable no-unused-vars */
+    //   async handler(newShowSuccessToast, oldShowSuccessToast) {
+    //     if (newShowSuccessToast) {
+    //       setTimeout(() => {
+    //         this.showSuccessToast = false;
+    //       }, 2000);
+    //     }
+    //   }
+    // },
+
+    'openAIApiKey': {
       /* eslint-disable no-unused-vars */
-      async handler(newShowSuccessToast, oldShowSuccessToast) {
-        if (newShowSuccessToast) {
-          setTimeout(() => {
-            this.showSuccessToast = false;
-          }, 2000);
-        }
+      handler(newKey, oldKey) {
+        localStorage.setItem("openAIApiKey", newKey);
       }
-    }, 
+    },
 
-    'errorToast.show':{
+    'errorToast.show': {
       /* eslint-disable no-unused-vars */
       async handler(newErrorToastShow, oldErrorToastShow) {
         if (newErrorToastShow) {
@@ -748,7 +753,8 @@ export default {
 };
 </script>
 
-<style scoped>.message+.message {
+<style scoped>
+.message+.message {
   margin-top: 1rem;
 }
 
@@ -758,4 +764,5 @@ export default {
 
 button:disabled {
   opacity: 0.5;
-}</style>
+}
+</style>
