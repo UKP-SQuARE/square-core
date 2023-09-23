@@ -1,0 +1,5 @@
+torch
+transformers
+fschat[model_worker,webui]
+uvicorn
+fastapi>=0.73.0
