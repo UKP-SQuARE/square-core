@@ -272,26 +272,6 @@ async def refresh_all_workers():
     models = controller.refresh_all_workers()
 
 
-@app.post("/list_models")
-async def list_models():
-    models = controller.list_models()
-    return {"models": models}
-
-
-@app.post("/get_worker_address")
-async def get_worker_address(request: Request):
-    data = await request.json()
-    addr = controller.get_worker_address(data["model"])
-    return {"address": addr}
-
-
-@app.post("/receive_heart_beat")
-async def receive_heart_beat(request: Request):
-    data = await request.json()
-    exist = controller.receive_heart_beat(data["worker_name"], data["queue_length"])
-    return {"exist": exist}
-
-
 @app.post("/worker_generate_stream")
 async def worker_api_generate_stream(request: Request):
     params = await request.json()
@@ -299,14 +279,34 @@ async def worker_api_generate_stream(request: Request):
     return StreamingResponse(generator)
 
 
-@app.post("/worker_get_status")
-async def worker_api_get_status(request: Request):
+@app.get("/list_models")
+async def list_models():
+    models = controller.list_models()
+    return {"models": models}
+
+
+@app.get("/worker_get_status")
+async def worker_api_get_status():
     return controller.worker_api_get_status()
 
 
 @app.get("/test_connection")
-async def worker_api_get_status(request: Request):
+async def worker_api_get_status():
     return "success"
+
+
+@app.get("/worker_address")
+async def get_worker_address(request: Request):
+    data = await request.json()
+    addr = controller.get_worker_address(data["model"])
+    return {"address": addr}
+
+
+@app.get("/receive_heart_beat")
+async def receive_heart_beat(request: Request):
+    data = await request.json()
+    exist = controller.receive_heart_beat(data["worker_name"], data["queue_length"])
+    return {"exist": exist}
 
 
 def create_controller():
