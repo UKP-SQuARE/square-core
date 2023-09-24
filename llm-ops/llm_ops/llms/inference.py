@@ -1,4 +1,4 @@
-"""Inference for FastChat models."""
+"""Inference for LLMs."""
 import abc
 import gc
 import json
@@ -303,8 +303,6 @@ def chat_loop(
     repetition_penalty: float,
     max_new_tokens: int,
     chatio: ChatIO,
-    gptq_config: Optional[GptqConfig] = None,
-    awq_config: Optional[AWQConfig] = None,
     revision: str = "main",
     judge_sent_end: bool = True,
     debug: bool = True,
@@ -319,8 +317,6 @@ def chat_loop(
         dtype=dtype,
         load_8bit=load_8bit,
         cpu_offloading=cpu_offloading,
-        gptq_config=gptq_config,
-        awq_config=awq_config,
         revision=revision,
         debug=debug,
     )

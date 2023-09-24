@@ -1,4 +1,10 @@
-# inspiration from FASTCHAT conversation module
+"""
+Inspiration from Fastchat conversation module
+Consists of conversation prompts for models
+
+Templates for new models will be added here
+"""
+
 
 import dataclasses
 from typing import Optional, List, Union, Dict
@@ -9,6 +15,7 @@ class SeparatorStyle(IntEnum):
     """Separator styles."""
     LLAMA2 = auto()
     VICUNA = auto()
+    DOLLY = auto()
 
 
 @dataclasses.dataclass
@@ -62,6 +69,17 @@ class Conversation:
                     ret += role + ": " + message + seps[i % 2]
                 else:
                     ret += role + ":"
+            return ret
+        elif self.sep_style == SeparatorStyle.DOLLY:
+            seps = [self.sep, self.sep2]
+            ret = system_prompt
+            for i, (role, message) in enumerate(self.messages):
+                if message:
+                    ret += role + ":\n" + message + seps[i % 2]
+                    if i % 2 == 1:
+                        ret += "\n\n"
+                else:
+                    ret += role + ":\n"
             return ret
 
 
@@ -149,6 +167,19 @@ register_conv_template(
         sep2="</s>",
     )
 )
+
+# Dolly V2 default template
+register_conv_template(
+    Conversation(
+        name="dolly_v2",
+        system_message="Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n",
+        roles=("### Instruction", "### Response"),
+        sep_style=SeparatorStyle.DOLLY,
+        sep="\n\n",
+        sep2="### End",
+    )
+)
+
 
 # print(conv_templates)
 

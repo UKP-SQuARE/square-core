@@ -73,6 +73,7 @@ class BaseModel:
             revision=revision,
         )
 
+    # add templates to prompts/conversation.py file
     def get_default_conv_template(self, model_path: str) -> Conversation:
         return get_conv_template("one_shot")
 
@@ -446,10 +447,35 @@ class Llama2Adapter(BaseModel):
         return get_conv_template("llama-2")
 
 
+class DollyV2Adapter(BaseModel):
+    """The model adapter for databricks/dolly-v2"""
+
+    def match(self, model_path: str):
+        return "dolly-v2" in model_path.lower()
+
+    def load_model(self, model_path: str, from_pretrained_kwargs: dict):
+        revision = from_pretrained_kwargs.get("revision", "main")
+        tokenizer = AutoTokenizer.from_pretrained(model_path, revision=revision)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            low_cpu_mem_usage=True,
+            **from_pretrained_kwargs,
+        )
+        # 50277 means "### End"
+        tokenizer.eos_token_id = 50277
+        model.config.eos_token_id = tokenizer.eos_token_id
+        model.config.pad_token_id = tokenizer.pad_token_id
+        return model, tokenizer
+
+    def get_default_conv_template(self, model_path: str) -> Conversation:
+        return get_conv_template("dolly_v2")
+
+
 # Note: the registration order matters.
 # The one registered earlier has a higher matching priority.
 register_model_adapter(VicunaAdapter)
 register_model_adapter(Llama2Adapter)
+register_model_adapter(DollyV2Adapter)
 
 # After all adapters, try the default base adapter.
 register_model_adapter(BaseModel)
