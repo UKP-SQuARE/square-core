@@ -96,8 +96,9 @@ class Controller:
         return True
 
     def get_worker_status(self, worker_name: str):
+        # print(worker_name)
         try:
-            r = requests.post(worker_name + "/worker_get_status", timeout=5)
+            r = requests.get(worker_name + "/worker_get_status", timeout=5)
         except requests.exceptions.RequestException as e:
             logger.error(f"Get status fails: {worker_name}, {e}")
             return None
@@ -279,6 +280,20 @@ async def worker_api_generate_stream(request: Request):
     return StreamingResponse(generator)
 
 
+@app.post("/get_worker_address")
+async def get_worker_address(request: Request):
+    data = await request.json()
+    addr = controller.get_worker_address(data["model"])
+    return {"address": addr}
+
+
+@app.post("/receive_heart_beat")
+async def receive_heart_beat(request: Request):
+    data = await request.json()
+    exist = controller.receive_heart_beat(data["worker_name"], data["queue_length"])
+    return {"exist": exist}
+
+
 @app.get("/list_models")
 async def list_models():
     models = controller.list_models()
@@ -295,18 +310,6 @@ async def worker_api_get_status():
     return "success"
 
 
-@app.get("/worker_address")
-async def get_worker_address(request: Request):
-    data = await request.json()
-    addr = controller.get_worker_address(data["model"])
-    return {"address": addr}
-
-
-@app.get("/receive_heart_beat")
-async def receive_heart_beat(request: Request):
-    data = await request.json()
-    exist = controller.receive_heart_beat(data["worker_name"], data["queue_length"])
-    return {"exist": exist}
 
 
 def create_controller():

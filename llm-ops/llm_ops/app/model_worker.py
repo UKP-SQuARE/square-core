@@ -466,8 +466,8 @@ async def api_count_token(request: Request):
 def create_model_worker():
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="localhost")
-    parser.add_argument("--port", type=int, default=9001)
-    parser.add_argument("--worker-address", type=str, default="http://localhost:9001")
+    parser.add_argument("--port", type=int, default=21002)
+    parser.add_argument("--worker-address", type=str, default="http://localhost:21002")
     parser.add_argument(
         "--controller-address", type=str, default="http://localhost:21001"
     )
@@ -510,6 +510,7 @@ def create_model_worker():
             )
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
 
+    print(args.model_path)
     worker = ModelWorker(
         args.controller_address,
         args.worker_address,

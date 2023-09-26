@@ -14,10 +14,13 @@ echo "Enable web: $FS_ENABLE_WEB"
 echo "Enable OpenAI API: $FS_ENABLE_OPENAI_API"
 
 # Start the controller
-python3 -m llm_ops.app.controller --host 0.0.0.0 &
+python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
 
 # Start the model worker
-python3 -m llm_ops.app.model_worker --device cuda --host 0.0.0.0 $@ &
+python3 -m llm_ops.app.model_worker --host 0.0.0.0 \
+                                    --port 21002 \
+                                    --worker-address http://0.0.0.0:21002 \
+                                    --controller-address http://localhost:21001 $@ &
 
 # Health check for controller using a test message
 while true; do
@@ -39,8 +42,8 @@ if [[ "${FS_ENABLE_WEB}" == "true" ]]; then
   python3 -m fastchat.serve.gradio_web_server --host 0.0.0.0 --model-list-mode 'reload' &
 fi
 
-if [[ "${FS_ENABLE_OPENAI_API}" == "true" ]]; then
-    # Start the OpenAI API
-    echo "Enabling OpenAI API server..."
-    python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000
-fi
+#if [[ "${FS_ENABLE_OPENAI_API}" == "true" ]]; then
+#    # Start the OpenAI API
+#    echo "Enabling OpenAI API server..."
+#    python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000
+#fi

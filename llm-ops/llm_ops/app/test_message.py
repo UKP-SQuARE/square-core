@@ -8,6 +8,7 @@ from llm_ops.llms.base_model import get_conversation_template
 
 
 def main():
+    print("In Test.............................")
     model_name = args.model_name
 
     if args.worker_address:
@@ -20,8 +21,8 @@ def main():
         models.sort()
         print(f"Models: {models}")
 
-        ret = requests.get(
-            controller_addr + "/worker_address", json={"model": model_name}
+        ret = requests.post(
+            controller_addr + "/get_worker_address", json={"model": model_name}
         )
         worker_addr = ret.json()["address"]
         print(f"worker_addr: {worker_addr}")

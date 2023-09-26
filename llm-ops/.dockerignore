@@ -1,1 +1,8 @@
-__pycache__/
+
+# system dependencies
+**/__pycache__
+**/.env.json
+**/.env
+
+# logs
+**/.log

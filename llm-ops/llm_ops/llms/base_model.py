@@ -203,7 +203,7 @@ def load_model(
 
     # Load model
     model, tokenizer = adapter.load_model(model_path, kwargs)
-    model.to(device)
+    model.device
 
     return model, tokenizer
 
