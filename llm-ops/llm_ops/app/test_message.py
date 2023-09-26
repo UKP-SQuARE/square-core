@@ -8,7 +8,7 @@ from llm_ops.llms.base_model import get_conversation_template
 
 
 def main():
-    print("In Test.............................")
+    print("In Test...")
     model_name = args.model_name
 
     if args.worker_address:

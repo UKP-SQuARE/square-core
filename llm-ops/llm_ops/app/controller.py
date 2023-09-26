@@ -98,7 +98,7 @@ class Controller:
     def get_worker_status(self, worker_name: str):
         # print(worker_name)
         try:
-            r = requests.get(worker_name + "/worker_get_status", timeout=5)
+            r = requests.get(worker_name + "/worker_status", timeout=5)
         except requests.exceptions.RequestException as e:
             logger.error(f"Get status fails: {worker_name}, {e}")
             return None
@@ -300,7 +300,7 @@ async def list_models():
     return {"models": models}
 
 
-@app.get("/worker_get_status")
+@app.get("/worker_status")
 async def worker_api_get_status():
     return controller.worker_api_get_status()
 

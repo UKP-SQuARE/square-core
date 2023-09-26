@@ -39,7 +39,7 @@ from fastchat.utils import (
     build_logger,
     violates_moderation,
     get_window_url_params_js,
-    get_window_url_params_with_tos_js,
+    # get_window_url_params_with_tos_js,
     parse_gradio_auth_creds,
 )
 
@@ -125,7 +125,7 @@ def get_model_list(
     if controller_url:
         ret = requests.post(controller_url + "/refresh_all_workers")
         assert ret.status_code == 200
-        ret = requests.post(controller_url + "/list_models")
+        ret = requests.get(controller_url + "/list_models")
         models = ret.json()["models"]
     else:
         models = []
@@ -680,10 +680,10 @@ def build_demo(models):
         if args.model_list_mode not in ["once", "reload"]:
             raise ValueError(f"Unknown model list mode: {args.model_list_mode}")
 
-        if args.show_terms_of_use:
-            load_js = get_window_url_params_with_tos_js
-        else:
-            load_js = get_window_url_params_js
+        # if args.show_terms_of_use:
+        #     load_js = get_window_url_params_with_tos_js
+        # else:
+        load_js = get_window_url_params_js
 
         demo.load(
             load_demo,

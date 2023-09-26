@@ -38,20 +38,8 @@ VOLUME [ "/root/.cache/huggingface" ]
 EXPOSE 7860
 #EXPOSE 8000
 ENV FS_ENABLE_WEB=true
-#ENV FS_ENABLE_OPENAI_API=true
+ENV FS_ENABLE_OPENAI_API=true
 ENV FS_ENABLE_HF_API=false
 
 ENTRYPOINT [ "/bin/bash", "./start_fastchat.sh" ]
-CMD ["--model-path lmsys/vicuna-7b-v1.3 --max-gpu-memory 14Gib"]
-
-#FROM nvidia/cuda:11.1.1-runtime-ubuntu20.04
-#
-#ARG DEBIAN_FRONTEND=noninteractive
-#
-#ENV PYTHONUNBUFFERED=1
-#
-#RUN apt-get update -y && apt-get install -y python3.9 python3.9-distutils curl
-#RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-#RUN python3.9 get-pip.py
-#RUN pip3 install fschat[model_worker,webui] pydantic==1.10.1
-#RUN pip3 install --force-reinstall typing-extensions==4.5.0
+#CMD ["--model-path lmsys/vicuna-7b-v1.3 --max-gpu-memory 14Gib"]

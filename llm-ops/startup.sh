@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Find the value for --model-path using sed
-model_path=$(echo "$@" | awk -F'--model-path ' '{print $2}' | awk '{print $1}')
+#model_path=$(echo "$@" | awk -F'--model-path ' '{print $2}' | awk '{print $1}')
+model_path=../root/.cache/huggingface/vicuna-7b-v1.3
 
 # Extract the model name after the "/" character
-short_model_name=${model_path#*/}
+short_model_name=$(basename "$model_path")
 
 # Print args
 echo "Model path: $model_path"
@@ -19,7 +20,8 @@ python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
 # Start the model worker
 python3 -m llm_ops.app.model_worker --host 0.0.0.0 \
                                     --port 21002 \
-                                    --worker-address http://0.0.0.0:21002 \
+                                    --model-path $model_path \
+                                    --worker-address http://localhost:21002 \
                                     --controller-address http://localhost:21001 $@ &
 
 # Health check for controller using a test message
@@ -39,11 +41,14 @@ done
 if [[ "${FS_ENABLE_WEB}" == "true" ]]; then
   # Start the web server
   echo "Enabling web server..."
-  python3 -m fastchat.serve.gradio_web_server --host 0.0.0.0 --model-list-mode 'reload' &
+  python3 -m llm_ops.app.gradio_web_server --host 0.0.0.0 \
+                                           --port 7860 \
+                                           --controller-url http://localhost:21001 \
+                                           --model-list-mode 'reload' &
 fi
 
-#if [[ "${FS_ENABLE_OPENAI_API}" == "true" ]]; then
-#    # Start the OpenAI API
-#    echo "Enabling OpenAI API server..."
-#    python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000
-#fi
+if [[ "${FS_ENABLE_OPENAI_API}" == "true" ]]; then
+    # Start the OpenAI API
+    echo "Enabling OpenAI API server..."
+    python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000
+fi
