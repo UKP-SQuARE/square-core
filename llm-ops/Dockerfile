@@ -28,18 +28,19 @@ RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
 
 COPY ./llm_ops ./llm_ops
 
-COPY startup.sh ./start_fastchat.sh
-RUN chmod 755 ./start_fastchat.sh
+COPY startup.sh ./start_chat.sh
+RUN chmod 755 ./start_chat.sh
 
 VOLUME [ "/deps" ]
 VOLUME [ "/apps" ]
 VOLUME [ "/root/.cache/huggingface" ]
 
 EXPOSE 7860
-#EXPOSE 8000
+EXPOSE 8000
+
 ENV FS_ENABLE_WEB=true
 ENV FS_ENABLE_OPENAI_API=true
 ENV FS_ENABLE_HF_API=false
 
-ENTRYPOINT [ "/bin/bash", "./start_fastchat.sh" ]
-#CMD ["--model-path lmsys/vicuna-7b-v1.3 --max-gpu-memory 14Gib"]
+#ENTRYPOINT [ "/bin/bash", "./start_chat.sh" ]
+#CMD ["--model-path ../root/.cache/huggingface/vicuna-7b-v1.3 --max-gpu-memory 14Gib"]

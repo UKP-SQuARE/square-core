@@ -14,7 +14,6 @@ import uuid
 import gradio as gr
 import requests
 
-from fastchat.conversation import SeparatorStyle
 from fastchat.constants import (
     LOGDIR,
     WORKER_API_TIMEOUT,
@@ -27,8 +26,9 @@ from fastchat.constants import (
     CONVERSATION_TURN_LIMIT,
     SESSION_EXPIRATION_TIME,
 )
-from fastchat.model.model_adapter import get_conversation_template
-from fastchat.model.model_registry import get_model_info, model_info
+from llm_ops.llms.base_model import get_conversation_template
+from llm_ops.app.model_registry import get_model_info, model_info
+
 from fastchat.serve.api_provider import (
     anthropic_api_stream_iter,
     openai_api_stream_iter,
@@ -523,7 +523,7 @@ def get_model_description_md(models):
     ct = 0
     visited = set()
     for i, name in enumerate(models):
-        minfo = get_model_info(name)
+        minfo = get_model_info(name.lower())
         if minfo.simple_name in visited:
             continue
         visited.add(minfo.simple_name)

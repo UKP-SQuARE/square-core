@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Find the value for --model-path using sed
-#model_path=$(echo "$@" | awk -F'--model-path ' '{print $2}' | awk '{print $1}')
-model_path=../root/.cache/huggingface/vicuna-7b-v1.3
+model_path=$(echo "$@" | awk -F'--model-path ' '{print $2}' | awk '{print $1}')
 
 # Extract the model name after the "/" character
 short_model_name=$(basename "$model_path")
@@ -20,7 +19,6 @@ python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
 # Start the model worker
 python3 -m llm_ops.app.model_worker --host 0.0.0.0 \
                                     --port 21002 \
-                                    --model-path $model_path \
                                     --worker-address http://localhost:21002 \
                                     --controller-address http://localhost:21001 $@ &
 

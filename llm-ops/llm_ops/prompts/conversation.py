@@ -99,6 +99,28 @@ class Conversation:
         """
         self.messages[-1][1] = message
 
+    def to_gradio_chatbot(self):
+        """Convert the conversation to gradio chatbot format."""
+        ret = []
+        for i, (role, msg) in enumerate(self.messages[self.offset :]):
+            if i % 2 == 0:
+                ret.append([msg, None])
+            else:
+                ret[-1][-1] = msg
+        return ret
+
+    def to_openai_api_messages(self):
+        """Convert the conversation to OpenAI chat completion format."""
+        ret = [{"role": "system", "content": self.system_message}]
+
+        for i, (_, msg) in enumerate(self.messages[self.offset :]):
+            if i % 2 == 0:
+                ret.append({"role": "user", "content": msg})
+            else:
+                if msg is not None:
+                    ret.append({"role": "assistant", "content": msg})
+        return ret
+
     def copy(self):
         return Conversation(
             name=self.name,
