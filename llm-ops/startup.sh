@@ -17,7 +17,7 @@ echo "Enable OpenAI API: $FS_ENABLE_OPENAI_API"
 python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
 
 # Start the model worker
-python3 -m llm_ops.app.model_worker --host 0.0.0.0 \
+python3 -m llm_ops.app.vllm_worker --host 0.0.0.0 \
                                     --port 21002 \
                                     --worker-address http://localhost:21002 \
                                     --controller-address http://localhost:21001 $@ &
