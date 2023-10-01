@@ -1,6 +1,6 @@
 fastapi==0.89.1
 httpx==0.23.3
-pydantic==1.10.4
+pydantic==1.10.13
 pymongo==4.3.3
 redis==4.4.2
 requests-cache==0.9.8
