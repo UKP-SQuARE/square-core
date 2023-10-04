@@ -23,7 +23,10 @@ def get_model_info(name: str) -> ModelInfo:
 
 
 register_model_info(
-    ["gpt-4"], "ChatGPT-4", "https://openai.com/research/gpt-4", "ChatGPT-4 by OpenAI"
+    ["gpt-4"],
+    "ChatGPT-4",
+    "https://openai.com/research/gpt-4",
+    "ChatGPT-4 by OpenAI",
 )
 register_model_info(
     ["gpt-3.5-turbo"],
@@ -87,52 +90,10 @@ register_model_info(
     "a chat assistant fine-tuned from LLaMA on user-shared conversations by LMSYS",
 )
 register_model_info(
-    ["wizardlm-70b", "wizardlm-30b", "wizardlm-13b"],
-    "WizardLM",
-    "https://github.com/nlpxucan/WizardLM",
-    "an instruction-following LLM using evol-instruct by Microsoft",
-)
-register_model_info(
-    ["wizardcoder-15b-v1.0"],
-    "WizardLM",
-    "https://github.com/nlpxucan/WizardLM/tree/main/WizardCoder",
-    "Empowering Code Large Language Models with Evol-Instruct",
-)
-register_model_info(
-    ["mpt-7b-chat", "mpt-30b-chat"],
-    "MPT-Chat",
-    "https://www.mosaicml.com/blog/mpt-30b",
-    "a chatbot fine-tuned from MPT by MosaicML",
-)
-register_model_info(
-    ["guanaco-33b", "guanaco-65b"],
-    "Guanaco",
-    "https://github.com/artidoro/qlora",
-    "a model fine-tuned with QLoRA by UW",
-)
-register_model_info(
     ["gpt4all-13b-snoozy"],
     "GPT4All-Snoozy",
     "https://github.com/nomic-ai/gpt4all",
     "a finetuned LLaMA model on assistant style data by Nomic AI",
-)
-register_model_info(
-    ["koala-13b"],
-    "Koala",
-    "https://bair.berkeley.edu/blog/2023/04/03/koala",
-    "a dialogue model for academic research by BAIR",
-)
-register_model_info(
-    ["RWKV-4-Raven-14B"],
-    "RWKV-4-Raven",
-    "https://huggingface.co/BlinkDL/rwkv-4-raven",
-    "an RNN with transformer-level LLM performance",
-)
-register_model_info(
-    ["chatglm-6b", "chatglm2-6b"],
-    "ChatGLM",
-    "https://chatglm.cn/blog",
-    "an open bilingual dialogue language model by Tsinghua University",
 )
 register_model_info(
     ["alpaca-13b"],
@@ -171,12 +132,6 @@ register_model_info(
     "an instruction-tuned open large language model by Databricks",
 )
 register_model_info(
-    ["stablelm-tuned-alpha-7b"],
-    "StableLM",
-    "https://github.com/stability-AI/stableLM",
-    "Stability AI language models",
-)
-register_model_info(
     ["codet5p-6b"],
     "CodeT5p-6b",
     "https://huggingface.co/Salesforce/codet5p-6b",
@@ -187,69 +142,6 @@ register_model_info(
     "FastChat-T5",
     "https://huggingface.co/lmsys/fastchat-t5-3b-v1.0",
     "a chat assistant fine-tuned from FLAN-T5 by LMSYS",
-)
-register_model_info(
-    ["phoenix-inst-chat-7b"],
-    "Phoenix-7B",
-    "https://huggingface.co/FreedomIntelligence/phoenix-inst-chat-7b",
-    "a multilingual chat assistant fine-tuned from Bloomz to democratize ChatGPT across languages by CUHK(SZ)",
-)
-register_model_info(
-    ["realm-7b-v1"],
-    "ReaLM",
-    "https://github.com/FreedomIntelligence/ReaLM",
-    "A chatbot fine-tuned from LLaMA2 with data generated via iterative calls to UserGPT and ChatGPT by CUHK(SZ) and SRIBD.",
-)
-register_model_info(
-    ["billa-7b-sft"],
-    "BiLLa-7B-SFT",
-    "https://huggingface.co/Neutralzz/BiLLa-7B-SFT",
-    "an instruction-tuned bilingual LLaMA with enhanced reasoning ability by an independent researcher",
-)
-register_model_info(
-    ["h2ogpt-gm-oasst1-en-2048-open-llama-7b-preview-300bt-v2"],
-    "h2oGPT-GM-7b",
-    "https://huggingface.co/h2oai/h2ogpt-gm-oasst1-en-2048-open-llama-7b-preview-300bt-v2",
-    "an instruction-tuned OpenLLaMA with enhanced conversational ability by H2O.ai",
-)
-register_model_info(
-    ["baize-v2-7b", "baize-v2-13b"],
-    "Baize v2",
-    "https://github.com/project-baize/baize-chatbot#v2",
-    "A chatbot fine-tuned from LLaMA with ChatGPT self-chat data and Self-Disillation with Feedback (SDF) by UCSD and SYSU.",
-)
-register_model_info(
-    [
-        "airoboros-l2-7b-2.1",
-        "airoboros-l2-13b-2.1",
-        "airoboros-c34b-2.1",
-        "airoboros-l2-70b-2.1",
-    ],
-    "airoboros",
-    "https://huggingface.co/jondurbin/airoboros-l2-70b-2.1",
-    "an instruction-tuned LlaMa model tuned with 100% synthetic instruction-response pairs from GPT4",
-)
-register_model_info(
-    [
-        "spicyboros-7b-2.2",
-        "spicyboros-13b-2.2",
-        "spicyboros-70b-2.2",
-    ],
-    "spicyboros",
-    "https://huggingface.co/jondurbin/spicyboros-70b-2.2",
-    "de-aligned versions of the airoboros models",
-)
-register_model_info(
-    ["Robin-7b-v2", "Robin-13b-v2", "Robin-33b-v2"],
-    "Robin-v2",
-    "https://huggingface.co/OptimalScale/robin-7b-v2-delta",
-    "A chatbot fine-tuned from LLaMA-7b, achieving competitive performance on chitchat, commonsense reasoning and instruction-following tasks, by OptimalScale, HKUST.",
-)
-register_model_info(
-    ["manticore-13b-chat"],
-    "Manticore 13B Chat",
-    "https://huggingface.co/openaccess-ai-collective/manticore-13b-chat-pyg",
-    "A chatbot fine-tuned from LlaMa across several CoT and chat datasets.",
 )
 register_model_info(
     ["redpajama-incite-7b-chat"],
@@ -269,40 +161,4 @@ register_model_info(
     "Falcon",
     "https://huggingface.co/tiiuae/falcon-180B",
     "TII's flagship series of large language models",
-)
-register_model_info(
-    ["tigerbot-7b-sft"],
-    "Tigerbot",
-    "https://huggingface.co/TigerResearch/tigerbot-7b-sft",
-    "TigerBot is a large-scale language model (LLM) with multiple languages and tasks.",
-)
-register_model_info(
-    ["internlm-chat-7b", "internlm-chat-7b-8k"],
-    "InternLM",
-    "https://huggingface.co/internlm/internlm-chat-7b",
-    "InternLM is a multi-language large-scale language model (LLM), developed by SHLAB.",
-)
-register_model_info(
-    ["Qwen-7B-Chat"],
-    "Qwen",
-    "https://huggingface.co/Qwen/Qwen-7B-Chat",
-    "Qwen is a multi-language large-scale language model (LLM), developed by Damo Academy.",
-)
-register_model_info(
-    ["Llama2-Chinese-13b-Chat", "LLama2-Chinese-13B"],
-    "Llama2-Chinese",
-    "https://huggingface.co/FlagAlpha/Llama2-Chinese-13b-Chat",
-    "Llama2-Chinese is a multi-language large-scale language model (LLM), developed by FlagAlpha.",
-)
-register_model_info(
-    ["Vigogne-2-7B-Instruct", "Vigogne-2-13B-Instruct"],
-    "Vigogne-Instruct",
-    "https://huggingface.co/bofenghuang/vigogne-2-7b-instruct",
-    "Vigogne-Instruct is a French large language model (LLM) optimized for instruction-following, developed by Bofeng Huang",
-)
-register_model_info(
-    ["Vigogne-2-7B-Chat", "Vigogne-2-13B-Chat"],
-    "Vigogne-Chat",
-    "https://huggingface.co/bofenghuang/vigogne-2-7b-chat",
-    "Vigogne-Chat is a French large language model (LLM) optimized for instruction-following and multi-turn dialogues, developed by Bofeng Huang",
 )

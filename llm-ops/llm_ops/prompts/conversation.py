@@ -13,10 +13,13 @@ from enum import auto, IntEnum
 
 class SeparatorStyle(IntEnum):
     """Separator styles."""
+    ADD_COLON_SINGLE = auto()
     LLAMA2 = auto()
     VICUNA = auto()
     DOLLY = auto()
     MISTRAL = auto()
+    FALCON_CHAT = auto()
+    RWKV = auto()
 
 
 @dataclasses.dataclass
@@ -47,7 +50,15 @@ class Conversation:
     def get_prompt(self) -> str:
         """Get the prompt for generation."""
         system_prompt = self.system_template.format(system_message=self.system_message)
-        if self.sep_style == SeparatorStyle.LLAMA2:
+        if self.sep_style == SeparatorStyle.ADD_COLON_SINGLE:
+            ret = system_prompt + self.sep
+            for role, message in self.messages:
+                if message:
+                    ret += role + ": " + message + self.sep
+                else:
+                    ret += role + ":"
+            return ret
+        elif self.sep_style == SeparatorStyle.LLAMA2:
             seps = [self.sep, self.sep2]
             if self.system_message:
                 ret = system_prompt
@@ -82,6 +93,32 @@ class Conversation:
                 else:
                     ret += role + ":\n"
             return ret
+        elif self.sep_style == SeparatorStyle.FALCON_CHAT:
+            ret = ""
+            if self.system_message:
+                ret += system_prompt + self.sep
+            for role, message in self.messages:
+                if message:
+                    ret += role + ": " + message + self.sep
+                else:
+                    ret += role + ":"
+
+            return ret
+        elif self.sep_style == SeparatorStyle.RWKV:
+            ret = system_prompt
+            for i, (role, message) in enumerate(self.messages):
+                if message:
+                    ret += (
+                            role
+                            + ": "
+                            + message.replace("\r\n", "\n").replace("\n\n", "\n")
+                    )
+                    ret += "\n\n"
+                else:
+                    ret += role + ":"
+            return ret
+        else:
+            raise ValueError(f"Invalid style: {self.sep_style}")
 
 
     def set_system_message(self, system_message: str):
@@ -164,6 +201,41 @@ def get_conv_template(name: str) -> Conversation:
     return conv_templates[name].copy()
 
 
+
+# A template with a one-shot conversation example
+register_conv_template(
+    Conversation(
+        name="one_shot",
+        system_message="A chat between a curious human and an artificial intelligence assistant. "
+        "The assistant gives helpful, detailed, and polite answers to the human's questions.",
+        roles=("Human", "Assistant"),
+        messages=(
+            (
+                "Human",
+                "Got any creative ideas for a 10 year old’s birthday?",
+            ),
+            (
+                "Assistant",
+                """Of course! Here are some creative ideas for a 10-year-old's birthday party:
+1. Treasure Hunt: Organize a treasure hunt in your backyard or nearby park. Create clues and riddles for the kids to solve, leading them to hidden treasures and surprises.
+2. Science Party: Plan a science-themed party where kids can engage in fun and interactive experiments. You can set up different stations with activities like making slime, erupting volcanoes, or creating simple chemical reactions.
+3. Outdoor Movie Night: Set up a backyard movie night with a projector and a large screen or white sheet. Create a cozy seating area with blankets and pillows, and serve popcorn and snacks while the kids enjoy a favorite movie under the stars.
+4. DIY Crafts Party: Arrange a craft party where kids can unleash their creativity. Provide a variety of craft supplies like beads, paints, and fabrics, and let them create their own unique masterpieces to take home as party favors.
+5. Sports Olympics: Host a mini Olympics event with various sports and games. Set up different stations for activities like sack races, relay races, basketball shooting, and obstacle courses. Give out medals or certificates to the participants.
+6. Cooking Party: Have a cooking-themed party where the kids can prepare their own mini pizzas, cupcakes, or cookies. Provide toppings, frosting, and decorating supplies, and let them get hands-on in the kitchen.
+7. Superhero Training Camp: Create a superhero-themed party where the kids can engage in fun training activities. Set up an obstacle course, have them design their own superhero capes or masks, and organize superhero-themed games and challenges.
+8. Outdoor Adventure: Plan an outdoor adventure party at a local park or nature reserve. Arrange activities like hiking, nature scavenger hunts, or a picnic with games. Encourage exploration and appreciation for the outdoors.
+Remember to tailor the activities to the birthday child's interests and preferences. Have a great celebration!""",
+            ),
+        ),
+        offset=2,
+        sep_style=SeparatorStyle.ADD_COLON_SINGLE,
+        sep="\n### ",
+        stop_str="###",
+    )
+)
+
+
 # llama2 template
 # reference: https://huggingface.co/blog/codellama#conversational-instructions
 # reference: https://github.com/facebookresearch/llama/blob/1a240688810f8036049e8da36b073f63d2ac552c/llama/generation.py#L212
@@ -200,6 +272,48 @@ register_conv_template(
         sep_style=SeparatorStyle.DOLLY,
         sep="\n\n",
         sep2="### End",
+    )
+)
+
+# Falcon 180B chat template
+# source: https://huggingface.co/spaces/tiiuae/falcon-180b-demo/blob/d1590ee7fae9b6ce331ba7808e61a29dcce9239f/app.py#L28-L37
+register_conv_template(
+    Conversation(
+        name="falcon-chat",
+        roles=("User", "Falcon"),
+        system_template="System: {system_message}",
+        messages=[],
+        sep_style=SeparatorStyle.FALCON_CHAT,
+        sep="\n",
+        sep2="<|endoftext|>",
+        stop_str="\nUser:",  # use stop_str to stop generation after stop_token_ids, it will also remove stop_str from the generated text
+    )
+)
+
+# Falcon default template
+register_conv_template(
+    Conversation(
+        name="falcon",
+        roles=("User", "Assistant"),
+        messages=[],
+        sep_style=SeparatorStyle.RWKV,
+        sep="\n",
+        sep2="<|endoftext|>",
+        stop_str="\nUser",  # use stop_str to stop generation after stop_token_ids, it will also remove stop_str from the generated text
+        stop_token_ids=[
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+        ],  # it better only put special tokens here, because tokenizer only remove special tokens
     )
 )
 

@@ -92,7 +92,6 @@ def register_model_adapter(cls):
 def get_model_adapter(model_path: str) -> BaseModel:
     """Get a model adapter for a model_path."""
     model_path_basename = os.path.basename(os.path.normpath(model_path))
-
     # Try the basename of model_path at first
     for adapter in model_adapters:
         if adapter.match(model_path_basename) and type(adapter) != BaseModel:
@@ -217,19 +216,14 @@ def get_conversation_template(model_path: str) -> Conversation:
 def get_generate_stream_function(model: torch.nn.Module, model_path: str):
     """Get the generate_stream function for inference."""
     from llm_ops.llms.inference import generate_stream
+    from llm_ops.llms.model_falcon import generate_stream_falcon
 
     model_type = str(type(model)).lower()
-    is_chatglm = "chatglm" in model_type
     is_falcon = "rwforcausallm" in model_type
-    is_codet5p = "codet5p" in model_type
     is_peft = "peft" in model_type
 
-    if is_chatglm:
-        return generate_stream_chatglm
-    elif is_falcon:
+    if is_falcon:
         return generate_stream_falcon
-    elif is_codet5p:
-        return generate_stream_codet5p
     elif peft_share_base_weights and is_peft:
         # Return a curried stream function that loads the right adapter
         # according to the model_name available in this context.  This ensures
@@ -471,6 +465,39 @@ class DollyV2Adapter(BaseModel):
         return get_conv_template("dolly_v2")
 
 
+class FalconAdapter(BaseModel):
+    """The model adapter for tiiuae/falcon-40b"""
+
+    def match(self, model_path: str):
+        return "falcon" in model_path.lower() and "chat" not in model_path.lower()
+
+    def load_model(self, model_path: str, from_pretrained_kwargs: dict):
+        revision = from_pretrained_kwargs.get("revision", "main")
+        # Strongly suggest using bf16, which is recommended by the author of Falcon
+        tokenizer = AutoTokenizer.from_pretrained(model_path, revision=revision)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True,
+            **from_pretrained_kwargs,
+        )
+        # In Falcon tokenizer config and special config there is not any pad token
+        # Setting `pad_token_id` to 9, which corresponds to special token '>>SUFFIX<<'
+        tokenizer.pad_token_id = 9
+        return model, tokenizer
+
+    def get_default_conv_template(self, model_path: str) -> Conversation:
+        return get_conv_template("falcon")
+
+
+class FalconChatAdapter(BaseModel):
+    def match(self, model_path: str):
+        return "falcon" in model_path.lower() and "chat" in model_path.lower()
+
+    def get_default_conv_template(self, model_path: str) -> Conversation:
+        return get_conv_template("falcon-chat")
+
+
 class MistralAdapter(BaseModel):
     """The model adapter for Mistral models"""
 
@@ -490,6 +517,8 @@ register_model_adapter(VicunaAdapter)
 register_model_adapter(Llama2Adapter)
 register_model_adapter(DollyV2Adapter)
 register_model_adapter(MistralAdapter)
+register_model_adapter(FalconAdapter)
+register_model_adapter(FalconChatAdapter)
 
 # After all adapters, try the default base adapter.
 register_model_adapter(BaseModel)
