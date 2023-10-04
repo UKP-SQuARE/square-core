@@ -24,3 +24,19 @@ databricks/dolly-v2-12b
 ```python
 python3 -m llm_ops.app.chat_cli --model-path meta-llama/Llama-2-7b-chat-hf
 ```
+
+
+2. Using docker 
+```python
+cd llm-ops
+docker compose up -d --build
+
+# to check docker logs
+docker compose logs -f llm_chat
+
+# shutdown application
+docker compose down
+```
+
+If the container starts successfully, the application should be running
+on http://localhost:7860

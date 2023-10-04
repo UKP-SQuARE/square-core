@@ -62,6 +62,12 @@ register_model_info(
     "open foundation and fine-tuned chat models by Meta",
 )
 register_model_info(
+    ["mistral-7b-instruct-v0.1", "mistral-7b-v0.1"],
+    "Mistral-7B",
+    "https://mistral.ai/",
+    "open foundation and fine-tuned chat models by Mistral AI",
+)
+register_model_info(
     ["codellama-34b-instruct", "codellama-13b-instruct", "codellama-7b-instruct"],
     "Code Llama",
     "https://ai.meta.com/blog/code-llama-large-language-model-coding/",

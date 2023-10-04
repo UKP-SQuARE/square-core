@@ -471,11 +471,25 @@ class DollyV2Adapter(BaseModel):
         return get_conv_template("dolly_v2")
 
 
+class MistralAdapter(BaseModel):
+    """The model adapter for Mistral models"""
+
+    def match(self, model_path: str):
+        return "mistral" in model_path.lower()
+
+    def load_model(self, model_path: str, from_pretrained_kwargs: dict):
+        raise NotImplementedError()
+
+    def get_default_conv_template(self, model_path: str) -> Conversation:
+        return get_conv_template("mistral")
+
+
 # Note: the registration order matters.
 # The one registered earlier has a higher matching priority.
 register_model_adapter(VicunaAdapter)
 register_model_adapter(Llama2Adapter)
 register_model_adapter(DollyV2Adapter)
+register_model_adapter(MistralAdapter)
 
 # After all adapters, try the default base adapter.
 register_model_adapter(BaseModel)

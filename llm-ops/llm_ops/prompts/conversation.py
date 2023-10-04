@@ -7,7 +7,7 @@ Templates for new models will be added here
 
 
 import dataclasses
-from typing import Optional, List, Union, Dict
+from typing import Optional, List, Union, Dict, Tuple
 from enum import auto, IntEnum
 
 
@@ -16,6 +16,7 @@ class SeparatorStyle(IntEnum):
     LLAMA2 = auto()
     VICUNA = auto()
     DOLLY = auto()
+    MISTRAL = auto()
 
 
 @dataclasses.dataclass
@@ -29,7 +30,7 @@ class Conversation:
     # The system message
     system_message: str = ""
     # The names of two roles
-    roles: List[str] = (("USER", "ASSISTANT"),)
+    roles: Tuple[str, str] = ("USER", "ASSISTANT")
     # All messages. Each item is (role, message).
     messages: List[List[str]] = ()
     # The number of few shot examples
@@ -202,13 +203,25 @@ register_conv_template(
     )
 )
 
+# mistral 7B models
+register_conv_template(
+    Conversation(
+        name="mistral",
+        system_template="",
+        roles=("[INST]", "[/INST]"),
+        sep_style=SeparatorStyle.LLAMA2,
+        sep=" ",
+        sep2="</s> ",
+    )
+)
+
 
 # print(conv_templates)
 
 if __name__ == "__main__":
 
-    print("Llama-2 template:")
-    conv = get_conv_template("llama-2")
+    # print("Llama-2 template:")
+    conv = get_conv_template("mistral")
     conv.set_system_message("You are a helpful, respectful and honest assistant.")
     conv.append_message(conv.roles[0], "Hello!")
     conv.append_message(conv.roles[1], "Hi!")
@@ -216,10 +229,15 @@ if __name__ == "__main__":
     conv.append_message(conv.roles[1], None)
     print(conv.get_prompt())
 
-
     # Llama - 2 template:
     # --------------------------------------------------------
     # [INST] <<SYS>>
     # You are a helpful, respectful and honest assistant.
     # <</SYS>>
     # Hello! [/INST] Hi! </s><s> [INST] How are you? [/INST]
+
+    # Mistral
+    # text = "<s>[INST] What is your favourite condiment? [/INST]"
+    # "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!</s> "
+    # "[INST] Do you have mayonnaise recipes? [/INST]"
+    # Hello! [/INST] Hi!</s> [INST]  How are you? [/INST]
