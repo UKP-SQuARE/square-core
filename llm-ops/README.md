@@ -17,6 +17,20 @@ databricks/dolly-v2-7b
 databricks/dolly-v2-12b
 ```
 
+4. Mistral 7B
+```python
+mistralai/Mistral-7B-v0.1
+mistralai/Mistral-7B-Instruct-v0.1
+```
+5. Falcon
+```python
+tiiuae/falcon-7b
+tiiuae/falcon-7b-instruct
+tiiuae/falcon-40b
+tiiuae/falcon-40b-instruct
+tiiuae/falcon-180B
+tiiuae/falcon-180B-chat
+```
 
 ### Usage
 
