@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  llm_chat:
+    build:
+      context: .
+    container_name: llm_chat
+    volumes:
+      - /home/rachneet/hf_models:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "7860:7860"
+      - "8000:8000"
+    entrypoint:
+      - /bin/bash
+      - ./start_chat.sh
+    command:
+      - --model-path
+      - ../root/.cache/huggingface/Mistral-7B-Instruct-v0.1  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
+#      - --max-gpu-memory
+#      - 14Gib
