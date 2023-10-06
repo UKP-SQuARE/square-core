@@ -48,5 +48,5 @@ fi
 if [[ "${FS_ENABLE_OPENAI_API}" == "true" ]]; then
     # Start the OpenAI API
     echo "Enabling OpenAI API server..."
-    python3 -m fastchat.serve.openai_api_server --host 0.0.0.0 --port 8000
+    python3 -m llm_ops.app.openai_api_server --host 0.0.0.0 --port 8000
 fi
