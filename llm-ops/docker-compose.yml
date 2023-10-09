@@ -1,6 +1,47 @@
 version: "3.9"
 
 services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      # Enable https port 443
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Uncomment staging certs for testing
+      - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.le.acme.email=sachdeva@ukp.informatik.tu-darmstadt.de
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      # Enable dashboard and logging
+      - --api.dashboard=true
+      - --log.level=DEBUG
+    ports:
+      - "8989:80"  # http port
+      - "8443:443"  # https port
+      - "8080:8080"  # web UI port
+    labels:
+      - "traefik.enable=true"
+      # Global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+
+      # Middleware redirect from HTTP to HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.port=8443"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # mount volume to store certificates
+      - traefik-public-certificates:/certificates
+
   llm_chat:
     build:
       context: .
@@ -14,9 +55,6 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    ports:
-      - "7860:7860"
-      - "8000:8000"
     entrypoint:
       - /bin/bash
       - ./start_chat.sh
@@ -25,3 +63,15 @@ services:
       - ../root/.cache/huggingface/Mistral-7B-Instruct-v0.1  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
 #      - --max-gpu-memory
 #      - 14Gib
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.llm-chat.rule=PathPrefix(`/api/llm`)"
+      - "traefik.http.routers.llm-chat.entrypoints=websecure"
+      - "traefik.http.routers.llm-chat.tls=true"
+      - "traefik.http.routers.llm-chat.tls.certresolver=le"
+      - "traefik.http.routers.llm-chat.middlewares=llm-chat-stripprefix,llm-chat-addprefix"
+      - "traefik.http.middlewares.llm-chat-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.llm-chat-addprefix.addPrefix.prefix=/api"
+
+volumes:
+  traefik-public-certificates:

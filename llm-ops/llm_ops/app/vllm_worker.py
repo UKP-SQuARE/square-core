@@ -9,25 +9,30 @@ import asyncio
 import json
 from typing import List
 
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, APIRouter
 from fastapi.responses import StreamingResponse, JSONResponse
-import torch
+from fastapi.middleware.cors import CORSMiddleware
+
 import uvicorn
 from vllm import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-from fastchat.serve.model_worker import (
+from llm_ops.core.config import (
+    API_PREFIX,
+    APP_NAME,
+    APP_VERSION,
+    OPENAPI_URL,
+)
+from llm_ops.app.model_worker import (
     BaseModelWorker,
     logger,
     worker_id,
 )
 from fastchat.utils import get_context_length
 
-
-app = FastAPI()
-
+router = APIRouter(tags=["prediction"])
 
 class VLLMWorker(BaseModelWorker):
     def __init__(
@@ -139,7 +144,7 @@ def create_background_tasks(request_id):
     return background_tasks
 
 
-@app.post("/worker_generate_stream")
+@router.post("/worker_generate_stream")
 async def api_generate_stream(request: Request):
     params = await request.json()
     await acquire_worker_semaphore()
@@ -150,7 +155,7 @@ async def api_generate_stream(request: Request):
     return StreamingResponse(generator, background=background_tasks)
 
 
-@app.post("/worker_generate")
+@router.post("/worker_generate")
 async def api_generate(request: Request):
     params = await request.json()
     await acquire_worker_semaphore()
@@ -162,25 +167,42 @@ async def api_generate(request: Request):
     return JSONResponse(output)
 
 
-@app.post("/count_token")
+@router.post("/count_token")
 async def api_count_token(request: Request):
     params = await request.json()
     return worker.count_token(params)
 
 
-@app.get("/worker_status")
+@router.get("/worker_status")
 async def api_get_status():
     return worker.get_status()
 
 
-@app.get("/worker_conv_template")
+@router.get("/worker_conv_template")
 async def api_get_conv():
     return worker.get_conv_template()
 
 
-@app.get("/model_details")
+@router.get("/model_details")
 async def api_model_details():
     return {"context_length": worker.context_len}
+
+
+def get_app() -> FastAPI:
+    fast_app = FastAPI(
+        title=APP_NAME,
+        version=APP_VERSION,
+        openapi_url=OPENAPI_URL,
+    )
+    fast_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    fast_app.include_router(router, prefix=API_PREFIX)
+    return fast_app
 
 
 if __name__ == "__main__":
@@ -224,4 +246,5 @@ if __name__ == "__main__":
         engine,
         args.conv_template,
     )
-    uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+    fast_app = get_app()
+    uvicorn.run(fast_app, host=args.host, port=args.port, log_level="info")

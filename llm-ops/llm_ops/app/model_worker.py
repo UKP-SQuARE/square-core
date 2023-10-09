@@ -14,8 +14,10 @@ import time
 from typing import List, Optional
 import uuid
 
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, APIRouter
 from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 import requests
 
 try:
@@ -44,6 +46,12 @@ from llm_ops.llms.base_model import (
     get_conversation_template,
     get_generate_stream_function,
 )
+from llm_ops.core.config import (
+    API_PREFIX,
+    APP_NAME,
+    APP_VERSION,
+    OPENAPI_URL,
+)
 
 from fastchat.constants import WORKER_HEART_BEAT_INTERVAL, ErrorCode, SERVER_ERROR_MSG
 from fastchat.utils import (
@@ -57,7 +65,7 @@ from fastchat.utils import (
 worker_id = str(uuid.uuid4())[:8]
 logger = build_logger("model_worker", f"model_worker_{worker_id}.log")
 
-app = FastAPI()
+router = APIRouter(tags=["prediction"])
 
 
 def heart_beat_worker(obj):
@@ -415,22 +423,22 @@ def create_background_tasks():
 ###############################
 
 
-@app.get("/worker_status")
+@router.get("/worker_status")
 async def api_get_status():
     return worker.get_status()
 
 
-@app.get("/worker_conv_template")
+@router.get("/worker_conv_template")
 async def api_get_conv():
     return worker.get_conv_template()
 
 
-@app.get("/model_details")
+@router.get("/model_details")
 async def api_model_details():
     return {"context_length": worker.context_len}
 
 
-@app.post("/worker_generate_stream")
+@router.post("/worker_generate_stream")
 async def api_generate_stream(request: Request):
     params = await request.json()
     await acquire_worker_semaphore()
@@ -439,7 +447,7 @@ async def api_generate_stream(request: Request):
     return StreamingResponse(generator, background=background_tasks)
 
 
-@app.post("/worker_generate")
+@router.post("/worker_generate")
 async def api_generate(request: Request):
     params = await request.json()
     await acquire_worker_semaphore()
@@ -448,7 +456,7 @@ async def api_generate(request: Request):
     return JSONResponse(output)
 
 
-@app.post("/worker_get_embeddings")
+@router.post("/worker_get_embeddings")
 async def api_get_embeddings(request: Request):
     params = await request.json()
     await acquire_worker_semaphore()
@@ -457,10 +465,26 @@ async def api_get_embeddings(request: Request):
     return JSONResponse(content=embedding)
 
 
-@app.post("/count_token")
+@router.post("/count_token")
 async def api_count_token(request: Request):
     params = await request.json()
     return worker.count_token(params)
+
+def get_app() -> FastAPI:
+    fast_app = FastAPI(
+        title=APP_NAME,
+        version=APP_VERSION,
+        openapi_url=OPENAPI_URL,
+    )
+    fast_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    fast_app.include_router(router, prefix=API_PREFIX)
+    return fast_app
 
 
 def create_model_worker():
@@ -510,7 +534,6 @@ def create_model_worker():
             )
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
 
-    print(args.model_path)
     worker = ModelWorker(
         args.controller_address,
         args.worker_address,
@@ -539,4 +562,5 @@ if __name__ == "__main__":
     if is_dev_mode:
         uvicorn.run("llm_ops.app.model_worker:app", host=args.host, port=args.port, log_level="info", reload=True)
     else:
-        uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+        fast_app = get_app()
+        uvicorn.run(fast_app, host=args.host, port=args.port, log_level="info")

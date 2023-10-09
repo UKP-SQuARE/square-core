@@ -5,6 +5,7 @@ import json
 import requests
 
 from llm_ops.llms.base_model import get_conversation_template
+from llm_ops.core.config import API_PREFIX
 
 
 def main():
@@ -30,7 +31,7 @@ def main():
     if worker_addr == "":
         print(f"No available workers for {model_name}")
         return
-
+    worker_addr = worker_addr+API_PREFIX
     conv = get_conversation_template(model_name)
     conv.append_message(conv.roles[0], args.message)
     conv.append_message(conv.roles[1], None)

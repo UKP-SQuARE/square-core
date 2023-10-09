@@ -28,6 +28,7 @@ from fastchat.constants import (
 )
 from llm_ops.llms.base_model import get_conversation_template
 from llm_ops.app.model_registry import get_model_info, model_info
+from llm_ops.core.config import API_PREFIX
 
 from fastchat.serve.api_provider import (
     anthropic_api_stream_iter,
@@ -391,7 +392,7 @@ def bot_response(state, temperature, top_p, max_new_tokens, request: gr.Request)
         stream_iter = model_worker_stream_iter(
             conv,
             model_name,
-            worker_addr,
+            worker_addr+API_PREFIX,
             prompt,
             temperature,
             repetition_penalty,
@@ -773,6 +774,7 @@ if __name__ == "__main__":
         args.add_claude,
         args.add_palm,
     )
+    print("GET MODEL LIST: ", models)
 
     # Set authorization credentials
     auth = None

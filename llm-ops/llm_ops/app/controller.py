@@ -27,6 +27,8 @@ from fastchat.constants import (
 )
 from fastchat.utils import build_logger
 
+from llm_ops.core.config import API_PREFIX
+
 
 logger = build_logger("controller", "controller.log")
 
@@ -98,7 +100,7 @@ class Controller:
     def get_worker_status(self, worker_name: str):
         # print(worker_name)
         try:
-            r = requests.get(worker_name + "/worker_status", timeout=5)
+            r = requests.get(worker_name + f"{API_PREFIX}/worker_status", timeout=5)
         except requests.exceptions.RequestException as e:
             logger.error(f"Get status fails: {worker_name}, {e}")
             return None
@@ -245,7 +247,7 @@ class Controller:
 
         try:
             response = requests.post(
-                worker_addr + "/worker_generate_stream",
+                worker_addr + f"{API_PREFIX}/worker_generate_stream",
                 json=params,
                 stream=True,
                 timeout=WORKER_API_TIMEOUT,

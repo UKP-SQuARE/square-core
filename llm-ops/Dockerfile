@@ -34,12 +34,4 @@ VOLUME [ "/deps" ]
 VOLUME [ "/apps" ]
 VOLUME [ "/root/.cache/huggingface" ]
 
-EXPOSE 7860
-EXPOSE 8000
-
-ENV FS_ENABLE_WEB=true
-ENV FS_ENABLE_OPENAI_API=true
-ENV FS_ENABLE_HF_API=false
-
-#ENTRYPOINT [ "/bin/bash", "./start_chat.sh" ]
-#CMD ["--model-path ../root/.cache/huggingface/vicuna-7b-v1.3 --max-gpu-memory 14Gib"]
+EXPOSE 21002
