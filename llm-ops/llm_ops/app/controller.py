@@ -13,8 +13,9 @@ import time
 from typing import List, Union
 import threading
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 import requests
 import uvicorn
@@ -27,8 +28,14 @@ from fastchat.constants import (
 )
 from fastchat.utils import build_logger
 
-from llm_ops.core.config import API_PREFIX
+from llm_ops.core.config import (
+    API_PREFIX,
+    APP_NAME,
+    APP_VERSION,
+    OPENAPI_URL,
+)
 
+router = APIRouter(tags=["prediction"])
 
 logger = build_logger("controller", "controller.log")
 
@@ -100,7 +107,7 @@ class Controller:
     def get_worker_status(self, worker_name: str):
         # print(worker_name)
         try:
-            r = requests.get(worker_name + f"{API_PREFIX}/worker_status", timeout=5)
+            r = requests.get(worker_name + f"/worker_status", timeout=5)
         except requests.exceptions.RequestException as e:
             logger.error(f"Get status fails: {worker_name}, {e}")
             return None
@@ -247,7 +254,7 @@ class Controller:
 
         try:
             response = requests.post(
-                worker_addr + f"{API_PREFIX}/worker_generate_stream",
+                worker_addr + f"/worker_generate_stream",
                 json=params,
                 stream=True,
                 timeout=WORKER_API_TIMEOUT,
@@ -259,10 +266,7 @@ class Controller:
             yield self.handle_worker_timeout(worker_addr)
 
 
-app = FastAPI()
-
-
-@app.post("/register_worker")
+@router.post("/register_worker")
 async def register_worker(request: Request):
     data = await request.json()
     controller.register_worker(
@@ -270,44 +274,44 @@ async def register_worker(request: Request):
     )
 
 
-@app.post("/refresh_all_workers")
+@router.post("/refresh_all_workers")
 async def refresh_all_workers():
     models = controller.refresh_all_workers()
 
 
-@app.post("/worker_generate_stream")
+@router.post("/worker_generate_stream")
 async def worker_api_generate_stream(request: Request):
     params = await request.json()
     generator = controller.worker_api_generate_stream(params)
     return StreamingResponse(generator)
 
 
-@app.post("/get_worker_address")
+@router.post("/get_worker_address")
 async def get_worker_address(request: Request):
     data = await request.json()
     addr = controller.get_worker_address(data["model"])
     return {"address": addr}
 
 
-@app.post("/receive_heart_beat")
+@router.post("/receive_heart_beat")
 async def receive_heart_beat(request: Request):
     data = await request.json()
     exist = controller.receive_heart_beat(data["worker_name"], data["queue_length"])
     return {"exist": exist}
 
 
-@app.get("/list_models")
+@router.get("/list_models")
 async def list_models():
     models = controller.list_models()
     return {"models": models}
 
 
-@app.get("/worker_status")
+@router.get("/worker_status")
 async def worker_api_get_status():
     return controller.worker_api_get_status()
 
 
-@app.get("/test_connection")
+@router.get("/test_connection")
 async def worker_api_get_status():
     return "success"
 
@@ -337,12 +341,29 @@ def create_controller():
     controller = Controller(args.dispatch_method)
     return args, controller
 
+def get_app() -> FastAPI:
+    fast_app = FastAPI(
+        title=APP_NAME,
+        version=APP_VERSION,
+        openapi_url=OPENAPI_URL,
+    )
+    fast_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    fast_app.include_router(router, prefix=API_PREFIX)
+    return fast_app
+
 
 if __name__ == "__main__":
     args, controller = create_controller()
+    fast_app = get_app()
     if args.ssl:
         uvicorn.run(
-            app,
+            fast_app,
             host=args.host,
             port=args.port,
             log_level="info",
@@ -350,4 +371,4 @@ if __name__ == "__main__":
             ssl_certfile=os.environ["SSL_CERTFILE"],
         )
     else:
-        uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+        uvicorn.run(fast_app, host=args.host, port=args.port, log_level="info")

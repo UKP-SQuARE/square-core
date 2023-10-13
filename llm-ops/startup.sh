@@ -13,11 +13,8 @@ echo "Worker args: $@"
 echo "Enable web: $FS_ENABLE_WEB"
 echo "Enable OpenAI API: $FS_ENABLE_OPENAI_API"
 
-# Start the controller
-python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
-
 # Start the model worker
 python3 -m llm_ops.app.vllm_worker --host 0.0.0.0 \
                                     --port 21002 \
-                                    --worker-address http://localhost:21002 \
-                                    --controller-address http://localhost:21001 $@
+                                    --worker-address http://llm_worker:21002 \
+                                    --controller-address http://llm_controller:21001 $@

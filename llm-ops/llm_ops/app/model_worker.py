@@ -118,7 +118,7 @@ class BaseModelWorker:
     def register_to_controller(self):
         logger.info("Register to controller")
 
-        url = self.controller_addr + "/register_worker"
+        url = self.controller_addr + f"{API_PREFIX}/register_worker"
         data = {
             "worker_name": self.worker_addr,
             "check_heart_beat": True,
@@ -135,7 +135,7 @@ class BaseModelWorker:
             f"worker_id: {self.worker_id}. "
         )
 
-        url = self.controller_addr + "/receive_heart_beat"
+        url = self.controller_addr + f"{API_PREFIX}/receive_heart_beat"
 
         while True:
             try:
@@ -483,7 +483,7 @@ def get_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    fast_app.include_router(router, prefix=API_PREFIX)
+    fast_app.include_router(router)
     return fast_app
 
 
@@ -491,9 +491,9 @@ def create_model_worker():
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="localhost")
     parser.add_argument("--port", type=int, default=21002)
-    parser.add_argument("--worker-address", type=str, default="http://localhost:21002")
+    parser.add_argument("--worker-address", type=str, default="http://llm_worker:21002")
     parser.add_argument(
-        "--controller-address", type=str, default="http://localhost:21001"
+        "--controller-address", type=str, default="http://llm_controller:21001"
     )
     add_model_args(parser)
     parser.add_argument(

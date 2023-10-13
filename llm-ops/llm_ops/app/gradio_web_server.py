@@ -124,9 +124,9 @@ def get_model_list(
     controller_url, register_openai_compatible_models, add_chatgpt, add_claude, add_palm
 ):
     if controller_url:
-        ret = requests.post(controller_url + "/refresh_all_workers")
+        ret = requests.post(controller_url + f"{API_PREFIX}/refresh_all_workers")
         assert ret.status_code == 200
-        ret = requests.get(controller_url + "/list_models")
+        ret = requests.get(controller_url + f"{API_PREFIX}/list_models")
         models = ret.json()["models"]
     else:
         models = []
@@ -360,7 +360,7 @@ def bot_response(state, temperature, top_p, max_new_tokens, request: gr.Request)
     else:
         # Query worker address
         ret = requests.post(
-            controller_url + "/get_worker_address", json={"model": model_name}
+            controller_url + f"{API_PREFIX}/get_worker_address", json={"model": model_name}
         )
         worker_addr = ret.json()["address"]
         logger.info(f"model_name: {model_name}, worker_addr: {worker_addr}")
@@ -392,7 +392,7 @@ def bot_response(state, temperature, top_p, max_new_tokens, request: gr.Request)
         stream_iter = model_worker_stream_iter(
             conv,
             model_name,
-            worker_addr+API_PREFIX,
+            worker_addr,
             prompt,
             temperature,
             repetition_penalty,
@@ -711,7 +711,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--controller-url",
         type=str,
-        default="http://localhost:21001",
+        default="http://llm_controller:21001",
         help="The address of the controller",
     )
     parser.add_argument(

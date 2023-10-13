@@ -201,7 +201,7 @@ def get_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    fast_app.include_router(router, prefix=API_PREFIX)
+    fast_app.include_router(router)
     return fast_app
 
 
@@ -209,9 +209,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="localhost")
     parser.add_argument("--port", type=int, default=21002)
-    parser.add_argument("--worker-address", type=str, default="http://localhost:21002")
+    parser.add_argument("--worker-address", type=str, default="http://llm_worker:21002")
     parser.add_argument(
-        "--controller-address", type=str, default="http://localhost:21001"
+        "--controller-address", type=str, default="http://llm_controller:21001"
     )
     parser.add_argument("--model-path", type=str, default="lmsys/vicuna-7b-v1.3")
     parser.add_argument(

@@ -16,14 +16,14 @@ def main():
         worker_addr = args.worker_address
     else:
         controller_addr = args.controller_address
-        ret = requests.post(controller_addr + "/refresh_all_workers")
-        ret = requests.get(controller_addr + "/list_models")
+        ret = requests.post(controller_addr + f"{API_PREFIX}/refresh_all_workers")
+        ret = requests.get(controller_addr + f"{API_PREFIX}/list_models")
         models = ret.json()["models"]
         models.sort()
         print(f"Models: {models}")
 
         ret = requests.post(
-            controller_addr + "/get_worker_address", json={"model": model_name}
+            controller_addr + f"{API_PREFIX}/get_worker_address", json={"model": model_name}
         )
         worker_addr = ret.json()["address"]
         print(f"worker_addr: {worker_addr}")
@@ -31,7 +31,6 @@ def main():
     if worker_addr == "":
         print(f"No available workers for {model_name}")
         return
-    worker_addr = worker_addr+API_PREFIX
     conv = get_conversation_template(model_name)
     conv.append_message(conv.roles[0], args.message)
     conv.append_message(conv.roles[1], None)
@@ -69,7 +68,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--controller-address", type=str, default="http://localhost:21001"
+        "--controller-address", type=str, default="http://llm_controller:21001"
     )
     parser.add_argument("--worker-address", type=str)
     parser.add_argument("--model-name", type=str, required=True)
