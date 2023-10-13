@@ -81,6 +81,20 @@ services:
       - "traefik.http.middlewares.llm-controller-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.llm-controller-addprefix.addPrefix.prefix=/api"
       
+  open_ai_api: 
+    build:
+      context: .
+      dockerfile: Dockerfile.open_ai_api
+    container_name: open_ai_api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.openai-api.rule=PathPrefix(`/api/openai`)"
+      - "traefik.http.routers.openai-api.entrypoints=websecure"
+      - "traefik.http.routers.openai-api.tls=true"
+      - "traefik.http.routers.openai-api.tls.certresolver=le"
+      - "traefik.http.routers.openai-api.middlewares=openai-api-stripprefix,openai-api-addprefix"
+      - "traefik.http.middlewares.openai-api-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.openai-api-addprefix.addPrefix.prefix=/api"
 
 volumes:
   traefik-public-certificates:

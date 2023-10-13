@@ -2,10 +2,9 @@
 
 - Chat Completions. (Reference: https://platform.openai.com/docs/api-reference/chat)
 - Completions. (Reference: https://platform.openai.com/docs/api-reference/completions)
-- Embeddings. (Reference: https://platform.openai.com/docs/api-reference/embeddings)
 
 Usage:
-python3 -m fastchat.serve.openai_api_server
+python3 -m llm.app.openai_api_server
 """
 import asyncio
 import argparse
@@ -16,7 +15,7 @@ from typing import Generator, Optional, Union, Dict, List, Any
 
 import aiohttp
 import fastapi
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -61,6 +60,10 @@ from fastchat.protocol.api_protocol import (
     APITokenCheckResponseItem,
 )
 
+from llm_ops.core.config import (
+    API_PREFIX,
+)
+
 logger = logging.getLogger(__name__)
 
 conv_template_map = {}
@@ -68,12 +71,21 @@ conv_template_map = {}
 fetch_timeout = aiohttp.ClientTimeout(total=3 * 3600)
 
 
-async def fetch_remote(url, pload=None, name=None):
-    async with aiohttp.ClientSession(timeout=fetch_timeout) as session:
-        async with session.post(url, json=pload) as response:
-            chunks = []
-            async for chunk, _ in response.content.iter_chunks():
-                chunks.append(chunk)
+async def fetch_remote(url, method='post', pload=None, name=None):
+    async with aiohttp.ClientSession() as session:
+        if method == 'get':
+            async with session.get(url) as response:
+                chunks = []
+                async for chunk, _ in response.content.iter_chunks():
+                    chunks.append(chunk)
+        elif method == 'post':
+            async with session.post(url, json=pload) as response:
+                chunks = []
+                async for chunk, _ in response.content.iter_chunks():
+                    chunks.append(chunk)
+        else:
+            raise ValueError('method should be either "post" or "get"')
+
         output = b"".join(chunks)
 
     if name is not None:
@@ -87,12 +99,13 @@ async def fetch_remote(url, pload=None, name=None):
 
 class AppSettings(BaseSettings):
     # The address of the model controller.
-    controller_address: str = "http://localhost:21001"
+    controller_address: str = f"http://llm_controller:21001{API_PREFIX}"
     api_keys: Optional[List[str]] = None
 
 
 app_settings = AppSettings()
 app = fastapi.FastAPI()
+router = APIRouter(tags=["prediction"])
 headers = {"User-Agent": "FastChat API Server"}
 get_bearer_token = HTTPBearer(auto_error=False)
 
@@ -134,7 +147,7 @@ async def check_model(request) -> Optional[JSONResponse]:
     controller_address = app_settings.controller_address
     ret = None
 
-    models = await fetch_remote(controller_address + "/list_models", None, "models")
+    models = await fetch_remote(controller_address + "/list_models", "get", None, "models")
     if request.model not in models:
         ret = create_error_response(
             ErrorCode.INVALID_MODEL,
@@ -144,20 +157,26 @@ async def check_model(request) -> Optional[JSONResponse]:
 
 
 async def check_length(request, prompt, max_tokens, worker_addr):
-    if (
-        not isinstance(max_tokens, int) or max_tokens <= 0
-    ):  # model worker not support max_tokens=None
-        max_tokens = 1024 * 1024
-
     context_len = await fetch_remote(
-        worker_addr + "/model_details", {"model": request.model}, "context_length"
+        worker_addr + "/model_details", "get", {"model": request.model}, "context_length"
     )
     token_num = await fetch_remote(
         worker_addr + "/count_token",
+        "post",
         {"model": request.model, "prompt": prompt},
         "count",
     )
-    return min(max_tokens, context_len - token_num)
+    if token_num + max_tokens > context_len:
+        return create_error_response(
+            ErrorCode.CONTEXT_OVERFLOW,
+            f"This model's maximum context length is {context_len} tokens. "
+            f"However, you requested {max_tokens + token_num} tokens "
+            f"({token_num} in the messages, "
+            f"{max_tokens} in the completion). "
+            f"Please reduce the length of the messages or completion.",
+        )
+    else:
+        return None
 
 
 def check_requests(request) -> Optional[JSONResponse]:
@@ -270,6 +289,8 @@ async def get_gen_params(
         conv.append_message(conv.roles[1], None)
         prompt = conv.get_prompt()
 
+    if max_tokens is None:
+        max_tokens = 512
     gen_params = {
         "model": model_name,
         "prompt": prompt,
@@ -300,7 +321,7 @@ async def get_worker_address(model_name: str) -> str:
     """
     controller_address = app_settings.controller_address
     worker_addr = await fetch_remote(
-        controller_address + "/get_worker_address", {"model": model_name}, "address"
+        controller_address + "/get_worker_address", "post", {"model": model_name}, "address"
     )
 
     # No available worker
@@ -314,17 +335,17 @@ async def get_conv(model_name: str, worker_addr: str):
     conv_template = conv_template_map.get((worker_addr, model_name))
     if conv_template is None:
         conv_template = await fetch_remote(
-            worker_addr + "/worker_get_conv_template", {"model": model_name}, "conv"
+            worker_addr + "/worker_conv_template", "get", {"model": model_name}, "conv"
         )
         conv_template_map[(worker_addr, model_name)] = conv_template
     return conv_template
 
 
-@app.get("/v1/models", dependencies=[Depends(check_api_key)])
+@router.get("/v1/models", dependencies=[Depends(check_api_key)])
 async def show_available_models():
     controller_address = app_settings.controller_address
-    ret = await fetch_remote(controller_address + "/refresh_all_workers")
-    models = await fetch_remote(controller_address + "/list_models", None, "models")
+    ret = await fetch_remote(controller_address + "/refresh_all_workers", "post", None, None)
+    models = await fetch_remote(controller_address + "/list_models", "get", None, "models")
 
     models.sort()
     # TODO: return real model permission details
@@ -334,7 +355,7 @@ async def show_available_models():
     return ModelList(data=model_cards)
 
 
-@app.post("/v1/chat/completions", dependencies=[Depends(check_api_key)])
+@router.post("/v1/chat/completions", dependencies=[Depends(check_api_key)])
 async def create_chat_completion(request: ChatCompletionRequest):
     """Creates a completion for the chat message"""
     error_check_ret = await check_model(request)
@@ -356,12 +377,14 @@ async def create_chat_completion(request: ChatCompletionRequest):
         echo=False,
         stop=request.stop,
     )
-    gen_params["max_new_tokens"] = await check_length(
+    error_check_ret = await check_length(
         request,
         gen_params["prompt"],
         gen_params["max_new_tokens"],
         worker_addr,
     )
+    if error_check_ret is not None:
+        return error_check_ret
 
     if request.stream:
         generator = chat_completion_stream_generator(
@@ -453,7 +476,7 @@ async def chat_completion_stream_generator(
     yield "data: [DONE]\n\n"
 
 
-@app.post("/v1/completions", dependencies=[Depends(check_api_key)])
+@router.post("/v1/completions", dependencies=[Depends(check_api_key)])
 async def create_completion(request: CompletionRequest):
     error_check_ret = await check_model(request)
     if error_check_ret is not None:
@@ -466,9 +489,11 @@ async def create_completion(request: CompletionRequest):
 
     worker_addr = await get_worker_address(request.model)
     for text in request.prompt:
-        max_tokens = await check_length(request, text, request.max_tokens, worker_addr)
-        if isinstance(max_tokens, int) and max_tokens < request.max_tokens:
-            request.max_tokens = max_tokens
+        error_check_ret = await check_length(
+            request, text, request.max_tokens, worker_addr
+        )
+        if error_check_ret is not None:
+            return error_check_ret
 
     if request.stream:
         generator = generate_completion_stream_generator(
@@ -599,70 +624,13 @@ async def generate_completion_stream(payload: Dict[str, Any], worker_addr: str):
 
 
 async def generate_completion(payload: Dict[str, Any], worker_addr: str):
-    return await fetch_remote(worker_addr + "/worker_generate", payload, "")
-
-
-@app.post("/v1/embeddings", dependencies=[Depends(check_api_key)])
-@app.post("/v1/engines/{model_name}/embeddings", dependencies=[Depends(check_api_key)])
-async def create_embeddings(request: EmbeddingsRequest, model_name: str = None):
-    """Creates embeddings for the text"""
-    if request.model is None:
-        request.model = model_name
-    error_check_ret = await check_model(request)
-    if error_check_ret is not None:
-        return error_check_ret
-
-    request.input = process_input(request.model, request.input)
-
-    data = []
-    token_num = 0
-    batch_size = WORKER_API_EMBEDDING_BATCH_SIZE
-    batches = [
-        request.input[i : min(i + batch_size, len(request.input))]
-        for i in range(0, len(request.input), batch_size)
-    ]
-    for num_batch, batch in enumerate(batches):
-        payload = {
-            "model": request.model,
-            "input": batch,
-            "encoding_format": request.encoding_format,
-        }
-        embedding = await get_embedding(payload)
-        if "error_code" in embedding and embedding["error_code"] != 0:
-            return create_error_response(embedding["error_code"], embedding["text"])
-        data += [
-            {
-                "object": "embedding",
-                "embedding": emb,
-                "index": num_batch * batch_size + i,
-            }
-            for i, emb in enumerate(embedding["embedding"])
-        ]
-        token_num += embedding["token_num"]
-    return EmbeddingsResponse(
-        data=data,
-        model=request.model,
-        usage=UsageInfo(
-            prompt_tokens=token_num,
-            total_tokens=token_num,
-            completion_tokens=None,
-        ),
-    ).dict(exclude_none=True)
-
-
-async def get_embedding(payload: Dict[str, Any]):
-    controller_address = app_settings.controller_address
-    model_name = payload["model"]
-    worker_addr = await get_worker_address(model_name)
-
-    embedding = await fetch_remote(worker_addr + "/worker_get_embeddings", payload)
-    return json.loads(embedding)
+    return await fetch_remote(worker_addr + "/worker_generate", "post", payload, "")
 
 
 ### GENERAL API - NOT OPENAI COMPATIBLE ###
 
 
-@app.post("/api/v1/token_check")
+@router.post("/v1/token_check")
 async def count_tokens(request: APITokenCheckRequest):
     """
     Checks the token count for each message in your list
@@ -674,12 +642,14 @@ async def count_tokens(request: APITokenCheckRequest):
 
         context_len = await fetch_remote(
             worker_addr + "/model_details",
+            "get",
             {"prompt": item.prompt, "model": item.model},
             "context_length",
         )
 
         token_num = await fetch_remote(
             worker_addr + "/count_token",
+            "post",
             {"prompt": item.prompt, "model": item.model},
             "count",
         )
@@ -697,7 +667,7 @@ async def count_tokens(request: APITokenCheckRequest):
     return APITokenCheckResponse(prompts=checkedList)
 
 
-@app.post("/api/v1/chat/completions")
+@router.post("/v1/chat/completions")
 async def create_chat_completion(request: APIChatCompletionRequest):
     """Creates a completion for the chat message"""
     error_check_ret = await check_model(request)
@@ -723,12 +693,14 @@ async def create_chat_completion(request: APIChatCompletionRequest):
     if request.repetition_penalty is not None:
         gen_params["repetition_penalty"] = request.repetition_penalty
 
-    gen_params["max_new_tokens"] = await check_length(
+    error_check_ret = await check_length(
         request,
         gen_params["prompt"],
         gen_params["max_new_tokens"],
         worker_addr,
     )
+    if error_check_ret is not None:
+        return error_check_ret
 
     if request.stream:
         generator = chat_completion_stream_generator(
@@ -773,7 +745,7 @@ def create_openai_api_server():
     parser.add_argument("--host", type=str, default="localhost", help="host name")
     parser.add_argument("--port", type=int, default=8000, help="port number")
     parser.add_argument(
-        "--controller-address", type=str, default="http://localhost:21001"
+        "--controller-address", type=str, default=f"http://llm_controller:21001{API_PREFIX}"
     )
     parser.add_argument(
         "--allow-credentials", action="store_true", help="allow credentials"
@@ -810,6 +782,8 @@ def create_openai_api_server():
     )
     app_settings.controller_address = args.controller_address
     app_settings.api_keys = args.api_keys
+
+    app.include_router(router, prefix=API_PREFIX)
 
     logger.info(f"args: {args}")
     return args

@@ -1,0 +1,34 @@
+FROM python:3.10.8-slim-buster as base
+
+# display python output as it happens
+ENV PYTHONUNBUFFERED=1 
+
+# disable pip cache
+ENV PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install
+
+RUN pip install --upgrade pip
+
+# create sym links for py
+RUN ln -sf $(which ${PYTHON}) /usr/local/bin/python && \
+    ln -sf $(which ${PYTHON}) /usr/local/bin/python3 && \
+    ln -sf $(which ${PYTHON}) /usr/bin/python && \
+    ln -sf $(which ${PYTHON}) /usr/bin/python3
+
+WORKDIR /llm-ops
+
+COPY requirements.open_ai_api.txt requirements.open_ai_api.txt
+
+# --no-cache-dir is necessary to avoid a bug with pip cache
+RUN pip install --no-cache-dir --upgrade -r requirements.open_ai_api.txt
+
+COPY ./llm_ops ./llm_ops
+
+VOLUME [ "/deps" ]
+VOLUME [ "/apps" ]
+VOLUME [ "/root/.cache/huggingface" ]
+
+CMD ["python3", "-m", "llm_ops.app.openai_api_server", "--host", "0.0.0.0", "--port", "8000", "--api-keys", "my_key"]
+
+EXPOSE 8000
