@@ -4,4 +4,5 @@ uvicorn==0.23.2
 fastapi>=0.103.0
 vllm==0.2.0
 transformers==4.34.0
+xformers == 0.0.22
 # git+https://github.com/huggingface/transformers  # for mistral models
