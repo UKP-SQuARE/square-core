@@ -34,23 +34,15 @@ tiiuae/falcon-180B-chat
 
 ### Usage
 
-1. For direct chat via terminal
+1. Using docker 
 ```python
-python3 -m llm_ops.app.chat_cli --model-path meta-llama/Llama-2-7b-chat-hf
-```
 
-
-2. Using docker 
-```python
+# build application
 cd llm-ops
-docker compose up -d --build
-
-# to check docker logs
-docker compose logs -f llm_chat
+make build
 
 # shutdown application
-docker compose down
+make clean
 ```
 
-If the container starts successfully, the application should be running
-on http://localhost:7860
+Once the applications are up and running, you can use the apis listed in the file `api.http`
