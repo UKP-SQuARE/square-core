@@ -22,6 +22,9 @@ RUN ln -sf $(which ${PYTHON}) /usr/local/bin/python && \
 
 WORKDIR /llm-ops
 
+COPY config.ini /llm-ops/
+ENV APP_CONFIG_PATH=/llm-ops/config.ini
+
 COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
 
@@ -34,4 +37,4 @@ VOLUME [ "/deps" ]
 VOLUME [ "/apps" ]
 VOLUME [ "/root/.cache/huggingface" ]
 
-EXPOSE 21002
+EXPOSE 8000

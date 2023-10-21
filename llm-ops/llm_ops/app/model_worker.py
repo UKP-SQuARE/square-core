@@ -46,12 +46,7 @@ from llm_ops.llms.base_model import (
     get_conversation_template,
     get_generate_stream_function,
 )
-from llm_ops.core.config import (
-    API_PREFIX,
-    APP_NAME,
-    APP_VERSION,
-    OPENAPI_URL,
-)
+from llm_ops.core.config import settings
 
 from fastchat.constants import WORKER_HEART_BEAT_INTERVAL, ErrorCode, SERVER_ERROR_MSG
 from fastchat.utils import (
@@ -472,9 +467,9 @@ async def api_count_token(request: Request):
 
 def get_app() -> FastAPI:
     fast_app = FastAPI(
-        title=APP_NAME,
-        version=APP_VERSION,
-        openapi_url=OPENAPI_URL,
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        openapi_url=settings.OPENAPI_URL,
     )
     fast_app.add_middleware(
         CORSMiddleware,
@@ -483,7 +478,7 @@ def get_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    fast_app.include_router(router, prefix=API_PREFIX)
+    fast_app.include_router(router, prefix=settings.API_PREFIX)
     return fast_app
 
 

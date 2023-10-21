@@ -228,6 +228,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     """
     deploy a new model to the platform
     """
+    identifier = model_params.identifier
     model_name = model_params.model_name
     model_type = model_params.model_type
 
@@ -249,7 +250,7 @@ async def deploy_new_model(request: Request, model_params: DeployRequest):
     user_id = await utils.get_user_id(request)
     env = {
         "USER_ID": user_id,
-        "IDENTIFIER": model_name,
+        "IDENTIFIER": identifier,
         "UUID": str(uuid.uuid1()),
         "MODEL_NAME": model_name,
         "ONNX_USE_QUANTIZED": model_params.onnx_use_quantized,

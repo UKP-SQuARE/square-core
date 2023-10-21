@@ -19,12 +19,7 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-from llm_ops.core.config import (
-    API_PREFIX,
-    APP_NAME,
-    APP_VERSION,
-    OPENAPI_URL,
-)
+from llm_ops.core.config import settings
 from llm_ops.app.model_worker import (
     BaseModelWorker,
     logger,
@@ -190,9 +185,9 @@ async def api_model_details():
 
 def get_app() -> FastAPI:
     fast_app = FastAPI(
-        title=APP_NAME,
-        version=APP_VERSION,
-        openapi_url=OPENAPI_URL,
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        openapi_url=settings.OPENAPI_URL,
     )
     fast_app.add_middleware(
         CORSMiddleware,
@@ -201,7 +196,7 @@ def get_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    fast_app.include_router(router, prefix=API_PREFIX)
+    fast_app.include_router(router, prefix=settings.API_PREFIX)
     return fast_app
 
 

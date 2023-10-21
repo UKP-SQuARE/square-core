@@ -18,6 +18,6 @@ python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
 
 # Start the model worker
 python3 -m llm_ops.app.vllm_worker --host 0.0.0.0 \
-                                    --port 21002 \
-                                    --worker-address http://localhost:21002 \
+                                    --port 8000 \
+                                    --worker-address http://localhost:8000 \
                                     --controller-address http://localhost:21001 $@
