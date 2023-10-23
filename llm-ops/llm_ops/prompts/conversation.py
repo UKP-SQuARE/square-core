@@ -317,18 +317,18 @@ register_conv_template(
     )
 )
 
-# mistral 7B models
+# Mistral template
+# source: https://docs.mistral.ai/llm/mistral-instruct-v0.1#chat-template
 register_conv_template(
     Conversation(
         name="mistral",
-        system_template="",
+        system_template="[INST]{system_message}\n",
         roles=("[INST]", "[/INST]"),
         sep_style=SeparatorStyle.LLAMA2,
         sep=" ",
-        sep2="</s> ",
+        sep2="</s>",
     )
 )
-
 
 # print(conv_templates)
 

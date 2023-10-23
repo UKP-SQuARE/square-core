@@ -320,7 +320,6 @@ def chat_loop(
         revision=revision,
         debug=debug,
     )
-    print("We are in the chat mode!!!")
     generate_stream_func = get_generate_stream_function(model, model_path)
 
     model_type = str(type(model)).lower()
