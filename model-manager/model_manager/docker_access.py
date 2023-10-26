@@ -23,34 +23,15 @@ def create_docker_labels(identifier: str, uid: str) -> dict:
     """
     creates the labels to enable traefik for the docker container
     """
-    traefik_identifier = identifier.replace("/", "-") + uid
     labels = {
         "traefik.enable": "true",
-        "traefik.http.routers.model-"
-        + traefik_identifier
-        + ".rule": "PathPrefix(`/api/"
-        + identifier
-        + "`)",
-        "traefik.http.routers.model-"
-        + traefik_identifier
-        + ".entrypoints": "websecure",
-        "traefik.http.routers.model-" + traefik_identifier + ".tls": "true",
-        "traefik.http.routers.model-" + traefik_identifier + ".tls.certresolver": "le",
-        "traefik.http.routers.model-"
-        + traefik_identifier
-        + ".middlewares": "model-"
-        + traefik_identifier
-        + "-stripprefix, "
-        + "model-"
-        + traefik_identifier
-        + "-addprefix",
-        "traefik.http.middlewares.model-"
-        + traefik_identifier
-        + "-stripprefix.stripprefix.prefixes": "/api/"
-        + identifier,
-        "traefik.http.middlewares.model-"
-        + traefik_identifier
-        + "-addprefix.addPrefix.prefix": "/api",
+        f"traefik.http.routers.model-{uid}.rule": f"PathPrefix(`/api/{identifier}`)",
+        f"traefik.http.routers.model-{uid}.entrypoints": "websecure",
+        f"traefik.http.routers.model-{uid}.tls": "true",
+        f"traefik.http.routers.model-{uid}.tls.certresolver": "le",
+        f"traefik.http.routers.model-{uid}.middlewares": f"model-{uid}-stripprefix,model-{uid}-addprefix",
+        f"traefik.http.middlewares.model-{uid}-stripprefix.stripprefix.prefixes": f"/api/{identifier}",
+        f"traefik.http.middlewares.model-{uid}-addprefix.addPrefix.prefix": "/api",
     }
     return labels
 
@@ -83,12 +64,6 @@ def start_new_model_container(identifier: str, uid: str, env):
         reference_container.attrs["NetworkSettings"]["Networks"].values()
     )[0]["NetworkID"]
 
-    # path = ":".join(reference_container.attrs["HostConfig"]["Binds"][1].split(":")[:-2])
-    # logger.info("Path: {}".format(path))
-    # # in case of windows the next step is necessary
-    # path = path.replace("\\", "/")
-    # path = os.path.dirname(os.path.dirname(path))
-
     network = docker_client.networks.get(network_id)
     worker_name = (
         network.name + "-model-" + identifier.replace("/", "-") + "-worker-" + uid
@@ -105,9 +80,15 @@ def start_new_model_container(identifier: str, uid: str, env):
     env["REDIS_USER"] = os.getenv("REDIS_USER", "ukp")
     env["REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD", "secret")
     env["CONFIG_PATH"] = os.getenv("CONFIG_PATH", "/model_configs")
+    env["MODEL_STORAGE_PATH"] = os.getenv("MODEL_STORAGE_PATH", "/home/rachneet/hf_models")
 
     model_api_base_image = os.getenv("MODEL_API_IMAGE", "ukpsquare/model-inference")
     image_tag = os.getenv("MODEL_API_IMAGE_TAG", "latest")
+
+    volumes = [
+              "/:/usr/src/app",
+              "/var/run/docker.sock:/var/run/docker.sock"
+    ]
 
     image = ""
     # select the image based on the model type
@@ -119,7 +100,19 @@ def start_new_model_container(identifier: str, uid: str, env):
         image = f"{model_api_base_image}-graph-transformer:{image_tag}"
     if env["MODEL_TYPE"] in ["onnx"]:
         image = f"{model_api_base_image}-onnx:{image_tag}"
-
+    if env["MODEL_TYPE"] in ["llm"]:
+        image = f"{model_api_base_image}-llm:{image_tag}"
+        entrypoint = "/bin/bash ./start_chat.sh"
+        command = f"--model-path ../root/.cache/huggingface/{env['MODEL_NAME']}"  # store in cache
+        runtime = "nvidia"
+        labels = create_docker_labels(identifier=identifier, uid=uid)
+        # append volume for LLM model storage
+        volumes.append(f"{env['MODEL_STORAGE_PATH']}:/root/.cache/huggingface")
+    else:
+        entrypoint = None
+        runtime = None
+        labels = None
+        command = f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info"
     logger.info("Starting container with image: {}".format(image))
 
     try:
@@ -130,13 +123,16 @@ def start_new_model_container(identifier: str, uid: str, env):
         logger.info(f"CONFIG_VOLUME={CONFIG_VOLUME}")
         container = docker_client.containers.run(
             image,
-            command=f"celery -A tasks worker -Q {identifier.replace('/', '-')} --loglevel=info",
+            entrypoint=entrypoint,
+            command=command,
             name=worker_name,
             cpuset_cpus=cpuset_cpus,
             detach=True,
+            labels=labels,
+            runtime=runtime,
             environment=env,
             network=network.name,
-            volumes=["/:/usr/src/app", "/var/run/docker.sock:/var/run/docker.sock"],
+            volumes=volumes,
             mounts=[
                 Mount(
                     target=env["CONFIG_PATH"],
@@ -152,6 +148,7 @@ def start_new_model_container(identifier: str, uid: str, env):
             "RABBITMQ_DEFAULT_PASS",
             "REDIS_USER",
             "REDIS_PASSWORD",
+            "MODEL_STORAGE_PATH"
         ]
         for k in entries_to_remove:
             env.pop(k, None)

@@ -1,5 +1,5 @@
 square-elk-json-formatter==0.0.3
 square-datastore-client==0.0.3
 square-model-client==0.0.10
-square-skill-api==0.0.45
+square-skill-api==0.0.47
 requests==2.28.2

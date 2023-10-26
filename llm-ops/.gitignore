@@ -1,0 +1,16 @@
+.idea/
+*iml
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.venv
+.pytest_cache
+.es-data
+.DS_Store
+*.egg-info
+
+*.jar
+*.jsonl
+
+http-client.env.json

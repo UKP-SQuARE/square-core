@@ -1,0 +1,109 @@
+###
+
+# @name get_token
+POST {{domain_prod}}/auth/realms/square/protocol/openid-connect/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_secret}}
+
+> {% client.global.set("auth_token", response.body.access_token); %}
+
+###
+# @name deploy_llm
+POST {{domain}}/api/models/deploy HTTP/1.1
+Content-Type: application/json
+
+{
+  "identifier": "Llama-2-7b-chat",
+  "model_name": "Llama-2-7b-chat",
+  "model_type": "llm",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "model_class": "from_config",
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "return_plaintext_arrays": false
+}
+
+###
+# @name test_llm
+GET {{domain}}/api/Llama-2-7b-chat/worker_status
+
+###
+# @name llm_generate
+POST {{domain}}/api/Llama-2-7b-chat/worker_generate
+Content-Type: application/json
+
+{
+  "prompt": "Hi"
+}
+
+
+###
+# @name deploy_transformer
+POST {{domain}}/api/models/deploy
+Content-Type: application/json
+
+{
+  "identifier": "roberta-base",
+  "model_name": "deepset/roberta-base-squad2",
+  "model_type": "transformer",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "model_class": "from_config",
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "return_plaintext_arrays": false
+}
+
+###
+# @name test_transformer
+POST {{domain}}/api/main/roberta-base/question-answering
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+   "input": [
+    ["Who is the Loreds?",
+      "Architecturally, the school has a Catholic character. Atop the Main Building's gold dome is a golden statue of the Virgin Mary. Immediately in front of the Main Building and facing it, is a copper statue of Christ with arms upraised with the legend 'Venite Ad Me Omnes'."]
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {},
+  "task_kwargs": {},
+  "adapter_name": "AdapterHub/roberta-base-pf-squad"
+}
+
+###
+# @name remove_model
+DELETE {{domain}}/api/models/remove/Llama-2-7b-chat
+#Authorization: Bearer {{auth_token}}
+
+
+###
+
+# @name dpr
+POST {{domain}}/api/main/facebook/dpr-question_encoder-single-nq-base/embedding
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "input": [
+    "Do aliens exist?"
+  ],
+  "is_preprocessed": false,
+  "preprocessing_kwargs": {},
+  "model_kwargs": {},
+  "task_kwargs": {},
+  "adapter_name": ""
+}
+
+###
+# @name list_models
+GET {{domain}}/api/models/deployed-models
+
+
+###
+# @name task_output
+GET {{domain}}/api/models/task_result/4f11033f-359e-4b77-ae18-9bdec7c975ed
+Content-Type: application/json
