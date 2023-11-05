@@ -18,6 +18,9 @@ from vllm import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
+from llm_ops.llms.base_model import (
+    get_conversation_template,
+)
 
 from llm_ops.core.config import settings
 from llm_ops.app.model_worker import (
@@ -139,9 +142,24 @@ def create_background_tasks(request_id):
     return background_tasks
 
 
+def get_conversation_prompt(params) -> str:
+    conv = get_conversation_template(params["model_identifier"])
+    conv.set_system_message(params["system_message"])
+    for message in params["messages"]:
+        if message["role"] == "human":
+            conv.append_message(conv.roles[0], message["text"])
+        elif message["role"] == "ai":
+            conv.append_message(conv.roles[1], message["text"])
+    conv.append_message(conv.roles[1], None)
+    conv_prompt = conv.get_prompt()
+    return conv_prompt
+
+
 @router.post("/worker_generate_stream")
 async def api_generate_stream(request: Request):
     params = await request.json()
+    params["prompt"] = get_conversation_prompt(params)
+
     await acquire_worker_semaphore()
     request_id = random_uuid()
     params["request_id"] = request_id
@@ -153,10 +171,13 @@ async def api_generate_stream(request: Request):
 @router.post("/worker_generate")
 async def api_generate(request: Request):
     params = await request.json()
+    params["prompt"] = get_conversation_prompt(params)
+
     await acquire_worker_semaphore()
     request_id = random_uuid()
     params["request_id"] = request_id
     output = await worker.generate(params)
+
     release_worker_semaphore()
     await engine.abort(request_id)
     return JSONResponse(output)

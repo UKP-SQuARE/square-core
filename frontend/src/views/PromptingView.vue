@@ -7,7 +7,16 @@
             <div class="col col-4 d-none d-md-block">
               <div style="height: 35rem; overflow-y: auto; overflow-x: hidden;">
                 <div class="form-group pb-2">
-                  <div class="row">
+                  <div class="form-group">
+                    <label for="selectedModel" class="form-label">Chat Model</label>
+                    <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
+                      <option v-for="model in localChatModels.concat(openAIChatModels)" :key="model" :value="model">
+                        {{ model }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div v-if="openAIChatModels.includes(chatConfig.selectedModel)" class="row mt-3">
                     <div>
                       <label for="open-ai-key" class="form-label">
                         OpenAI key
@@ -49,17 +58,6 @@
                     <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
                       data-bs-parent="#chatControl">
                       <div class="accordion-body">
-                        <div class="form-group">
-                          <label for="selectedModel" class="form-label">Chat Model</label>
-                          <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
-                            <option v-for="model in chatModelList" :key="model.id" :value="model.id">
-                              {{ model.id }}
-                            </option>
-                          </select>
-                        </div>
-
-                        <hr />
-
                         <div class="form-group">
                           <label for="tempRange" class="form-label">Tempreture: {{ this.chatConfig.temperature
                           }}</label>
@@ -282,6 +280,11 @@ import {
   MessagesPlaceholder,
 } from "langchain/prompts";
 import VueTippy from "vue-tippy";
+import { 
+  getOpenAIModels,
+  getLocalLLMs 
+} from '@/api';
+import CustomChatModel from "../services/custom_llm";
 
 Vue.use(VueTippy);
 
@@ -320,7 +323,13 @@ export default {
     chatText: "",
     messages: [],
     openAIApiKey: "",
-    chatModelList: [],
+    openAIChatModels: [
+      "gpt-3.5-turbo-16k-0613",
+      "gpt-3.5-turbo-0613",
+      "gpt-3.5-turbo",
+      "gpt-3.5-turbo-0301",
+    ],
+    localChatModels: [],
     availableTools: [],
     addingNewTool: false,
     initialToolsNumber: 0,
@@ -337,7 +346,7 @@ export default {
 
     chatConfig: {
       chatMode: "normal_chat",
-      selectedModel: "gpt-3.5-turbo",
+      selectedModel: "Llama-2-7b-chat",
       temperature: 0.7,
       maxTokens: 256,
       top_p: 0.9,
@@ -362,10 +371,8 @@ export default {
   created() {
     this.messages = [];
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
-    if (this.openAIApiKey != null) {
-      this.initChatModel();
-      this.fetchModels();
-    }
+    this.fetchModels();
+    this.initChatModel();
     this.initTools();
   },
 
@@ -452,74 +459,99 @@ export default {
       this.chatConfig.tools.splice(index, 1);
     },
 
+    addUserMessage() {
+      let text = this.chatText;
+      this.messages.push({
+        author: this.user.name,
+        text,
+        uid: this.user.id,
+        isMine: true,
+      });
+      Vue.nextTick(() => {
+        this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+      });
+    },
+
     async onSubmit() {
-      if (this.chatText != "") {
-        let text = this.chatText;
-        this.chatText = "";
+      this.addUserMessage()
+      let text = this.chatText;
+      this.chatText = "";
+      
+      try {
+        let response = "";
+        if (this.openAIChatModels.includes(this.chatConfig.selectedModel) && this.openAIApiKey === ""){
+          this.errorToast.message = "Please enter your OpenAI key first.";
+          this.errorToast.show = true;
+          return;
+        }
+
         this.messages.push({
-          author: this.user.name,
-          text,
-          uid: this.user.id,
-          isMine: true,
+          author: "AI",
+          text: "",
+          uid: 1,
+          isMine: false,
         });
 
-        Vue.nextTick(() => {
-          this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-        });
+        if (this.chatConfig.chatMode === "normal_chat") {
+          const self = this;
 
-        try {
-          if (this.openAIApiKey === "") {
-            this.errorToast.message = "Please enter your OpenAI key first.";
-            this.errorToast.show = true;
-          } else {
-            const res = await this.chatModel.call({ input: text });
-            let response = "";
-            if (this.chatConfig.chatMode === "normal_chat") {
-              response = res.response;
-            } else {
-              if (res.intermediateSteps.length > 0) {
-                response += "```\n";
-                for (let i = 0; i < res.intermediateSteps.length; i++) {
-                  const step = res.intermediateSteps[i];
-                  console.log(step);
-                  response += `Action [${i + 1}] tool:\t ${step.action.tool
-                    } \n`;
-                  response += `Action [${i + 1}] Input:\t ${step.action.toolInput
-                    } \n`;
-                  response += `Action [${i + 1}] Output:\t ${step.observation
-                    } \n`;
-                  response +=
-                    "============================================== \n";
+          if(this.localChatModels.includes(this.chatConfig.selectedModel)){
+            // TODO: make this stream too
+            const res = await this.chatModel.call({ input: text }); 
+            response = res.response;
+            this.messages[this.messages.length - 1].text = response;
+          }else{ 
+            await this.chatModel.call({
+              input: text,
+              callbacks: [
+                {
+                  handleLLMNewToken: (token) => {
+                    this.messages[this.messages.length - 1].text += token;
+                    Vue.nextTick(() => {
+                      self.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+                    });
+                    response += token;
+                  }
                 }
-                response += "```\n";
-                response += "Final Answer: " + res.output;
-              } else {
-                response = res.output;
-              }
+              ]
+            });
+          }
+          console.log(response);
+        }
+
+        // TODO: make this stream too 
+        else { // agent chat
+          const res = await this.chatModel.call({ input: text });
+          if (res.intermediateSteps.length > 0) {
+            response += "```\n";
+            for (let i = 0; i < res.intermediateSteps.length; i++) {
+              const step = res.intermediateSteps[i];
+              console.log(step);
+              response += `Action [${i + 1}] tool:\t ${step.action.tool
+                } \n`;
+              response += `Action [${i + 1}] Input:\t ${step.action.toolInput
+                } \n`;
+              response += `Action [${i + 1}] Output:\t ${step.observation
+                } \n`;
+              response +=
+                "============================================== \n";
             }
-
-            console.log(response);
-
-            this.messages.push({
-              author: "AI",
-              text: response,
-              uid: 1,
-              isMine: false,
-            });
-
-            Vue.nextTick(() => {
-              this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-            });
-          }
-        } catch (err) {
-          console.log(err.message);
-          if (err.response.data.error.code === "invalid_api_key") {
-            this.errorToast.message = "Please enter a valid OpenAI key.";
-            this.errorToast.show = true;
+            response += "```\n";
+            response += "Final Answer: " + res.output;
           } else {
-            this.errorToast.message = "Something went wrong. Please try again."
-            this.errorToast.show = true;
+            response = res.output;
           }
+          this.messages[this.messages.length - 1].text = response;
+        }
+        
+      } catch (err) {
+        console.log(err.message);
+        if (err.response.data.error.code === "invalid_api_key") {
+          this.errorToast.message = "Please enter a valid OpenAI key.";
+          this.errorToast.show = true;
+        } else {
+          this.errorToast.message = "Something went wrong. Please try again."
+          this.errorToast.show = true;
         }
       }
     },
@@ -531,68 +563,86 @@ export default {
     },
 
     async initChatModel() {
-      // see ChatOpenAI class: https://api.python.langchain.com/en/latest/chat_models/langchain.chat_models.openai.ChatOpenAI.html#langchain.chat_models.openai.ChatOpenAI
-      const chat = new ChatOpenAI({
-        openAIApiKey: this.openAIApiKey,
-        modelName: this.chatConfig.selectedModel,
-        temperature: this.chatConfig.temperature,
-        maxTokens: this.chatConfig.max_tokens,
-        top_p: this.chatConfig.top_p,
-      });
+      let chat = null;
 
-      const chatPrompt = ChatPromptTemplate.fromPromptMessages([
-        SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt),
-        new MessagesPlaceholder("chat_history"),
-        HumanMessagePromptTemplate.fromTemplate("{input}"),
-      ]);
-
-      const memory = new BufferMemory({ returnMessages: true, memoryKey: "chat_history" });
-
-      if (this.chatConfig.chatMode === "normal_chat") {
-        this.chatModel = new ConversationChain({
-          memory: memory,
-          llm: chat,
-          prompt: chatPrompt,
+      if (this.localChatModels.includes(this.chatConfig.selectedModel)) {
+        chat = new CustomChatModel({
+          model_identifier: this.chatConfig.selectedModel,
+          temperature: this.chatConfig.temperature,
+          max_new_tokens: this.chatConfig.max_tokens,
+          top_p: this.chatConfig.top_p,
+          streaming: false,
         });
-      } else if (this.chatConfig.chatMode === "agent_chat") {
-        process.env.LANGCHAIN_HANDLER = "langchain";
-
-        // filter the tools that are checked
-        const selectedTools = this.chatConfig.tools.filter((tool) => tool.checked);
-
-        const actualTools = this.availableTools.filter((tool) => {
-          return selectedTools.some((selectedTool) => selectedTool.toolId === tool.toolId);
-        }).map((tool) => tool.tool);
-
-        this.chatModel = await initializeAgentExecutorWithOptions(
-          actualTools,
-          chat,
-          {
-            agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
-            returnIntermediateSteps: true,
-            verbose: true,
-          },
-        );
       }
+      else if (this.openAIChatModels.includes(this.chatConfig.selectedModel)) {
+        chat = new ChatOpenAI({
+          openAIApiKey: this.openAIApiKey,
+          modelName: this.chatConfig.selectedModel,
+          temperature: this.chatConfig.temperature,
+          maxTokens: this.chatConfig.max_tokens,
+          top_p: this.chatConfig.top_p,
+          streaming: true, 
+        });
+      }
+
+      if (chat !== null) {
+        const chatPrompt = ChatPromptTemplate.fromPromptMessages([
+          SystemMessagePromptTemplate.fromTemplate(this.chatConfig.systemPrompt),
+          new MessagesPlaceholder("chat_history"),
+          HumanMessagePromptTemplate.fromTemplate("{input}"),
+        ]);
+
+        const memory = new BufferMemory({ returnMessages: true, memoryKey: "chat_history" });
+
+        if (this.chatConfig.chatMode === "normal_chat") {
+
+          this.chatModel = new ConversationChain({
+            memory: memory,
+            llm: chat,
+            prompt: chatPrompt,
+          });
+
+        } else if (this.chatConfig.chatMode === "agent_chat") {
+          process.env.LANGCHAIN_HANDLER = "langchain";
+
+          // filter the tools that are checked
+          const selectedTools = this.chatConfig.tools.filter((tool) => tool.checked);
+
+          const actualTools = this.availableTools.filter((tool) => {
+            return selectedTools.some((selectedTool) => selectedTool.toolId === tool.toolId);
+          }).map((tool) => tool.tool);
+
+          this.chatModel = await initializeAgentExecutorWithOptions(
+            actualTools,
+            chat,
+            {
+              agentType: "chat-conversational-react-description", // automatically creates and uses BufferMemory with the executor.
+              returnIntermediateSteps: true,
+              verbose: true,
+            },
+          );
+        }
+      }
+
     },
 
-    fetchModels() {
-      fetch("https://api.openai.com/v1/models", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.openAIApiKey}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          this.chatModelList = data.data.filter(
-            (model) =>
-              model.id.startsWith("gpt") &&
-              model.owned_by === "openai" &&
-              !model.id.includes("curie")
-          );
-        });
+    async fetchModels() {
+      if (this.openAIApiKey !== "") {
+        let response = await getOpenAIModels(this.openAIApiKey);
+        this.openAIChatModels = response.data.data.filter(
+          (model) =>
+            model.id.startsWith("gpt") &&
+            model.owned_by === "openai" &&
+            !model.id.includes("curie")
+        ).map((model) => model.id);
+      }
+
+      let response = await getLocalLLMs();
+      this.localChatModels = response.data.filter(
+        (model) => 
+          model.model_type === "llm"
+      ).map((model) => model.identifier);
+      this.localChatModels.push("Llama-2-7b-chat"); // TODO: remove when models are available in production
     },
 
     initTools() {
@@ -733,8 +783,12 @@ export default {
 
     'openAIApiKey': {
       /* eslint-disable no-unused-vars */
-      handler(newKey, oldKey) {
+      async handler(newKey, oldKey) {
         localStorage.setItem("openAIApiKey", newKey);
+        if (newKey !== "") {
+          await this.fetchModels();
+          await this.initChatModel();
+        }
       }
     },
 
