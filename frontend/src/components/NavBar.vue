@@ -21,6 +21,9 @@
                 <router-link class="nav-link" to="/behavioral_tests" exact-active-class="active">Behavioral
                   Tests</router-link>
               </li>
+              <li class="nav-item">
+                <router-link class="nav-link" to="/sensitivity" exact-active-class="active">Sensitivity</router-link>
+              </li>
             <!-- <li class="nav-item">
                 <router-link class="nav-link" to="/leaderboard" exact-active-class="active">Leaderboard</router-link>
                                     </li> -->

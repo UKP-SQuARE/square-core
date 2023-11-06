@@ -20,6 +20,7 @@ const News = () => import('../views/News')
 const Publications = () => import('../views/Publications')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
+const Sensitivity = () => import('../views/Sensitivity')
 
 
 Vue.use(VueRouter)
@@ -111,6 +112,11 @@ const routes = [
     path: '*',
     name: 'notfound',
     component: NotFound
+  }, 
+  {
+    path: '/sensitivity',
+    name: 'sensitivity',
+    component: Sensitivity
   }
 ]
 
