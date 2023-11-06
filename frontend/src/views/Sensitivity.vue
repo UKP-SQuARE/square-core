@@ -80,7 +80,7 @@
                           <hr />
                           <div class="form-group">
                             <label for="promptTemplate" class="form-label">promptTemplate</label>
-                            <textarea v-autosize class="form-control" id="promptTemplate"
+                            <textarea class="form-control" id="promptTemplate"
                               v-model="modelConfig.promptTemplate" />
                           </div>
                         </div>
@@ -320,13 +320,15 @@ export default {
 
     async getPrompt(input) {
       const prompt = new PromptTemplate({
-        template: this.promptTemplate,
+        template: this.modelConfig.promptTemplate,
         inputVariables: ["sentence"]
       });
       let formattedPrompt = await prompt.format({
         sentence: input
       });
-      return this.promptTemplate + formattedPrompt;
+      // TODO: make sure that this is the correct way to do this
+      console.log(formattedPrompt);
+      return formattedPrompt;
     },
 
     getDatasets() {
@@ -370,7 +372,7 @@ export default {
       /* eslint-disable no-unused-vars */
       async handler(newTemperature, oldTemperature) {
         this.modelConfig.temperature = parseFloat(newTemperature);
-        // this.modelConfig.llm.temperature = this.modelConfig.temperature;
+        this.generativeModel.temperature = this.modelConfig.temperature;
       }
     },
 
@@ -378,7 +380,7 @@ export default {
       /* eslint-disable no-unused-vars */
       async handler(newTopP, oldTopP) {
         this.modelConfig.top_p = parseFloat(newTopP);
-        // this.modelConfig.llm.top_p = this.modelConfig.top_p;
+        this.generativeModel.top_p = this.modelConfig.top_p;
       }
     },
 
@@ -386,7 +388,7 @@ export default {
       /* eslint-disable no-unused-vars */
       async handler(newMaxTokens, oldMaxTokens) {
         this.modelConfig.maxTokens = parseInt(newMaxTokens);
-        this.modelConfig.llm.maxTokens = this.modelConfig.maxTokens;
+        this.generativeModel.maxTokens = this.modelConfig.maxTokens;
       }
     },
 
