@@ -201,7 +201,7 @@
 
                     <!-- add h1 with that is a little transparent -->
 
-                    <h1 class="display-4">Start a conversation</h1>
+                    <h1 class="display-4">Start a conversation!</h1>
                     <p class="lead">
                       Start a conversation with the AI by typing in the box
                       below.
@@ -462,7 +462,7 @@ export default {
     addUserMessage() {
       let text = this.chatText;
       this.messages.push({
-        author: this.user.name,
+        author: this.user.name.toUpperCase(),
         text,
         uid: this.user.id,
         isMine: true,
@@ -486,7 +486,7 @@ export default {
         }
 
         this.messages.push({
-          author: "AI",
+          author: this.chatConfig.selectedModel.toUpperCase(),
           text: "",
           uid: 1,
           isMine: false,
@@ -569,7 +569,7 @@ export default {
         chat = new CustomChatModel({
           model_identifier: this.chatConfig.selectedModel,
           temperature: this.chatConfig.temperature,
-          max_new_tokens: this.chatConfig.max_tokens,
+          max_new_tokens: this.chatConfig.maxTokens,
           top_p: this.chatConfig.top_p,
           streaming: false,
         });
@@ -579,7 +579,7 @@ export default {
           openAIApiKey: this.openAIApiKey,
           modelName: this.chatConfig.selectedModel,
           temperature: this.chatConfig.temperature,
-          maxTokens: this.chatConfig.max_tokens,
+          maxTokens: this.chatConfig.maxTokens,
           top_p: this.chatConfig.top_p,
           streaming: true, 
         });
@@ -642,7 +642,7 @@ export default {
         (model) => 
           model.model_type === "llm"
       ).map((model) => model.identifier);
-      this.localChatModels.push("Llama-2-7b-chat"); // TODO: remove when models are available in production
+      this.localChatModels.push("Llama-2-7B-Chat-AWQ"); // TODO: remove when models are available in production
     },
 
     initTools() {
@@ -730,6 +730,7 @@ export default {
       async handler(newMaxTokens, oldMaxTokens) {
         this.chatConfig.maxTokens = parseInt(newMaxTokens);
         this.chatModel.llm.maxTokens = this.chatConfig.maxTokens;
+        this.chatModel.llm.max_new_tokens = this.chatConfig.maxTokens;
       }
     },
 

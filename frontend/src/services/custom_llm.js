@@ -48,8 +48,6 @@ export default class CustomChatModel extends BaseChatModel {
 
   async _generate(messages) {
     const [messageHistory, systemMessage] = this._parseChatHistory(messages);
-    console.log(messageHistory)
-    console.log(`systemMessage: ${systemMessage}`)
     const bodyData = {
       model_identifier: this.model_identifier,
       messages: messageHistory,
