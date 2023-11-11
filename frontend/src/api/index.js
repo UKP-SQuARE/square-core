@@ -11,8 +11,9 @@ import https from "https";
 const SKILL_MANAGER_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`;
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`;
 const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`;
-const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
-const LLM_MODELS_URL = `${process.env.VUE_APP_LLM_MODELS_URL}`
+// const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
+const MODEL_MANAGER_URL = `https://localhost:8443/api/models`;
+const LLM_MODELS_URL = `https://localhost:8443/api`;
 
 /**
  * Get a list of available skill types.
@@ -264,15 +265,24 @@ export function getLocalLLMs() {
 
 export function generateText(params, streaming) {
     let url;
-    if(streaming){
-        url = `${LLM_MODELS_URL}/${params.model_identifier}/worker_generate_stream`
-    }else{
+    if(!streaming){
         url = `${LLM_MODELS_URL}/${params.model_identifier}/worker_generate`
+        const response = axios.post(url, params, {
+            httpAgent: new https.Agent({ rejectUnauthorized: false}),
+            headers:{
+                'Content-Type': 'application/json'
+            }
+        });
+        return response;
+    }else{
+        url = `${LLM_MODELS_URL}/${params.model_identifier}/worker_generate_stream`
+        const response = fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(params),
+        });
+        return response;
     }
-    return axios.post(url, params, {
-        httpAgent: new https.Agent({ rejectUnauthorized: false}),
-        headers:{
-            'Content-Type': 'application/json'
-        }
-    });
 }

@@ -329,7 +329,9 @@ export default {
       "gpt-3.5-turbo",
       "gpt-3.5-turbo-0301",
     ],
-    localChatModels: [],
+    localChatModels: [
+    "Llama-2-7b-chat",
+    ],
     availableTools: [],
     addingNewTool: false,
     initialToolsNumber: 0,
@@ -350,7 +352,7 @@ export default {
       temperature: 0.7,
       maxTokens: 256,
       top_p: 0.9,
-      systemPrompt: "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+      systemPrompt: ``, // TODO: add a default system prompt
       tools: [],
     },
 
@@ -494,33 +496,23 @@ export default {
 
         if (this.chatConfig.chatMode === "normal_chat") {
           const self = this;
-
-          if(this.localChatModels.includes(this.chatConfig.selectedModel)){
-            // TODO: make this stream too
-            const res = await this.chatModel.call({ input: text }); 
-            response = res.response;
-            this.messages[this.messages.length - 1].text = response;
-          }else{ 
-            await this.chatModel.call({
-              input: text,
-              callbacks: [
-                {
-                  handleLLMNewToken: (token) => {
-                    this.messages[this.messages.length - 1].text += token;
-                    Vue.nextTick(() => {
-                      self.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-                    });
-                    response += token;
-                  }
+          const res = await this.chatModel.call({ 
+            input: text, 
+            callbacks: [
+              {
+                handleLLMNewToken: (token) => {
+                  this.messages[this.messages.length - 1].text += token;
+                  Vue.nextTick(() => {
+                    self.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+                  });
                 }
-              ]
-            });
-          }
+              }
+            ]
+          });
+          response = res.response;
           console.log(response);
-        }
-
         // TODO: make this stream too 
-        else { // agent chat
+        } else { // agent chat
           const res = await this.chatModel.call({ input: text });
           if (res.intermediateSteps.length > 0) {
             response += "```\n";
@@ -571,7 +563,7 @@ export default {
           temperature: this.chatConfig.temperature,
           max_new_tokens: this.chatConfig.maxTokens,
           top_p: this.chatConfig.top_p,
-          streaming: false,
+          streaming: true,
         });
       }
       else if (this.openAIChatModels.includes(this.chatConfig.selectedModel)) {
@@ -642,7 +634,7 @@ export default {
         (model) => 
           model.model_type === "llm"
       ).map((model) => model.identifier);
-      this.localChatModels.push("Llama-2-7B-Chat-AWQ"); // TODO: remove when models are available in production
+      this.localChatModels.push("Llama-2-7b-chat"); // TODO: remove when models are available in production
     },
 
     initTools() {

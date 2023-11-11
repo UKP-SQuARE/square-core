@@ -1,6 +1,9 @@
 <template>
   <div :class="['message', { dark }]">
-    <strong>{{ author }}</strong>
+    <strong>{{ author }} </strong>
+    <div v-if="text == ''" class="spinner-border spinner-border-sm" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
     <br />
     <div v-html="markdownToHtml(text)"></div>
   </div>

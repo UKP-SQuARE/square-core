@@ -6,13 +6,14 @@ import {
 import { 
   AIMessage,
   // AIMessageChunk
-} from 'langchain/dist/schema';
+} from 'langchain/schema';
 
 export default class CustomChatModel extends BaseChatModel {
   model_identifier = "";
   temperature = 0.7;
   top_p = 0.9;
   max_new_tokens = 1000;
+  streaming = false;
 
   constructor(params) {
     super(params);
@@ -45,8 +46,11 @@ export default class CustomChatModel extends BaseChatModel {
     return [chatHistory, systemMessage];
   }
 
-
-  async _generate(messages) {
+  async _generate(
+    messages, 
+    options,
+    runManager
+  ) {
     const [messageHistory, systemMessage] = this._parseChatHistory(messages);
     const bodyData = {
       model_identifier: this.model_identifier,
@@ -68,25 +72,46 @@ export default class CustomChatModel extends BaseChatModel {
           generations: generations,
           llmOutput: { tokenUsage: response.data.usage }
         }
-      } 
+      } else {
+        let readableStream = await generateText(bodyData, this.streaming);
+        readableStream = readableStream.body;
+        const decoder = new TextDecoder();
+        const reader = readableStream.getReader();
+        let buffer = '';
+        let receivedText = '';
+        let lastLength = 0;
+        let done, value; 
 
-      // TODO: see openai file of the langchainjs repo for the streaming implementation
-      // else {
-      //   const stream = generateTextStream(bodyData);
-      //   const finalChunks = {};
+        while (!done){
+          ({done, value} = await reader.read()); 
+          
+          const messageChunk =  decoder.decode(value, { stream: true });
+          buffer += messageChunk;
 
-      //   for await (const chunk of stream) {
-      //     const index =
-      //       (chunk.generationInfo as NewTokenIndices)?.completion ?? 0;
-      //     if (finalChunks[index] === undefined) {
-      //       finalChunks[index] = chunk;
-      //     } else {
-      //       finalChunks[index] = finalChunks[index].concat(chunk);
-      //     }
-      //   }
-      // }
-
-
+          // sometimes the buffer contains several messages so we split them
+          const parts = buffer.split('\u0000');
+          for (let i = 0; i < parts.length - 1; i++) {
+            try {
+              const jsonChunk = JSON.parse(parts[i]);
+              const newText = jsonChunk.text.substring(lastLength);
+              lastLength = jsonChunk.text.length;
+              receivedText += newText;
+              runManager.handleLLMNewToken(newText, jsonChunk.usage)
+            } catch (error) {
+              console.error(error);
+            }
+          }
+          // Keep the last incomplete part in the buffer
+          buffer = parts[parts.length - 1];
+        }
+        const generations = [
+          {text: receivedText, message: new AIMessage(receivedText)}
+        ]
+        return {
+          generations: generations,
+          llmOutput: { tokenUsage: 0 }
+        }
+      }
     } catch (error) {
       console.log(error)
       return { error: error }
