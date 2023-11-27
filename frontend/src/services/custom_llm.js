@@ -161,7 +161,6 @@ export class CustomGenerativeModel extends BaseLLM {
       echo: false, // false will make model return only last message
     }
     try {
-      console.log('using the custom generative model')
       const response = await generateText(bodyData, this.streaming)
       const generations = [[
         {

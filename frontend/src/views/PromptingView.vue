@@ -514,7 +514,7 @@ export default {
           result = key;
         }
       }
-      return result;
+      return parseInt(result);
     },
 
     async getPrompt(input) {
@@ -846,10 +846,15 @@ export default {
       if (this.openAIApiKey !== "") {
         let response = await getOpenAIModels(this.openAIApiKey);
         this.openAIChatModels = response.data.data.filter(
-          (model) =>
-            model.id.startsWith("gpt") &&
-            model.owned_by === "openai" &&
-            !model.id.includes("curie")
+          (model) =>{
+            if (this.chatConfig.chatMode !== "sensitivity"){
+              return model.id.startsWith("gpt") &&
+              !model.id.includes("curie")
+            } else {
+              return (model.id.startsWith("gpt") || model.id.startsWith("text") || model.id.startsWith("davinci")) && 
+              !model.id.includes("curie")
+            }
+          }
         ).map((model) => model.id);
       }
 
@@ -972,6 +977,7 @@ export default {
       /* eslint-disable no-unused-vars */
       async handler(newChatMode, oldChatMode) {
         this.chatConfig.chatMode = newChatMode;
+        await this.fetchModels();
         await this.initChatModel();
         this.initGenerativeModel();
         this.resetConv();
