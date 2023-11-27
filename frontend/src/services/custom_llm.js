@@ -63,10 +63,6 @@ export class CustomChatModel extends BaseChatModel {
       max_new_tokens: this.max_new_tokens,
       echo: false, // false will make model return only last message
     }
-
-    console.log("bodyData of custom chat model")
-    console.log(bodyData)
-
     try {
       if (this.streaming === false) {
         const response = await generateText(bodyData, this.streaming)
@@ -108,6 +104,11 @@ export class CustomChatModel extends BaseChatModel {
           }
           // Keep the last incomplete part in the buffer
           buffer = parts[parts.length - 1];
+
+          if (options.signal.aborted){
+            throw new Error("AbortError");
+          }
+
         }
         const generations = [
           {text: receivedText, message: new AIMessage(receivedText)}

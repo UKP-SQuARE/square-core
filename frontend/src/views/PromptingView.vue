@@ -411,6 +411,7 @@ export default {
     availableTools: [],
     addingNewTool: false,
     initialToolsNumber: 0,
+    abortController: new AbortController(),
 
     newTool: {
       name: 'Search',
@@ -718,23 +719,25 @@ export default {
           isMine: false,
         });
 
+        this.abortController = new AbortController();
         if (this.chatConfig.chatMode === "normal_chat") {
           const self = this;
           const res = await this.chatModel.call({ 
             input: text, 
+            signal: this.abortController.signal,
             callbacks: [
               {
                 handleLLMNewToken: (token) => {
                   this.messages[this.messages.length - 1].text += token;
-                  Vue.nextTick(() => {
-                    self.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-                  });
                 }
               }
             ]
           });
           response = res.response;
           console.log(response);
+          Vue.nextTick(() => {
+            self.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+          });
         // TODO: make this stream too 
         } else { // agent chat
           const res = await this.chatModel.call({ input: text });
@@ -762,9 +765,11 @@ export default {
         
       } catch (err) {
         console.log(err.message);
-        if (err.response.data.error.code === "invalid_api_key") {
+        if (err.response && err.response.data && err.response.data.error.code === "invalid_api_key") {
           this.errorToast.message = "Please enter a valid OpenAI key.";
           this.errorToast.show = true;
+        }else if(err.message === "AbortError"){
+          console.log("Request aborted")
         } else {
           this.errorToast.message = "Something went wrong. Please try again."
           this.errorToast.show = true;
@@ -773,6 +778,7 @@ export default {
     },
 
     resetConv() {
+      this.abortController.abort();
       this.chatText = "";
       this.messages.splice(0, this.messages.length);
       this.chatModel.memory.clear();
@@ -966,6 +972,7 @@ export default {
     'chatConfig.selectedModel': {
       /* eslint-disable no-unused-vars */
       async handler(newModel, oldModel) {
+        console.log("resetting conversation!!!");
         this.chatConfig.selectedModel = newModel;
         await this.initChatModel();
         this.initGenerativeModel();
