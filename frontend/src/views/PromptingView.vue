@@ -35,24 +35,29 @@
                   </div>
                   <hr />
                 </div>
-
                 <div class="form-group">
-                  <label for="chat-mode" class="form-label">Chat Mode</label>
+                  <label for="chat-mode" class="form-label">Mode</label>
                   <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
                     <option value="normal_chat">Normal Chat</option>
                     <option value="agent_chat">Agent Chat</option>
+                    <option value="sensitivity">Sensitivity</option>
                   </select>
                 </div>
-
                 <hr />
-
+                <div class="form-group mb-3" v-if="chatConfig.chatMode === 'sensitivity'">
+                  <label for="selectedDataset" class="form-label">Dataset (to show examples form)</label>
+                  <select v-model="selectedDatasetName" class="form-select" id="selectedDataset">
+                    <option v-for="datasetName in datasetNameList" :key="datasetName" :value="datasetName">
+                      {{ datasetName }}
+                    </option>
+                  </select>
+                </div>
                 <div class="accordion" id="chatControl">
-
                   <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        Chat Controls
+                        Controls
                       </button>
                     </h2>
                     <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
@@ -64,35 +69,28 @@
                           <input v-model="chatConfig.temperature" type="range" class="form-range" min="0" max="1"
                             step="0.1" id="tempRange">
                         </div>
-
                         <hr />
-
                         <div class="form-group">
 
                           <label for="maxTokens" class="form-label">Max Tokens</label>
                           <input type="number" class="form-control" id="maxTokens" min="0" max="32768"
                             v-model="chatConfig.maxTokens" />
                         </div>
-
                         <hr />
-
                         <div class="form-group">
                           <label for="top_pRange" class="form-label">top_p: {{ this.chatConfig.top_p }}</label>
                           <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1"
                             id="top_pRange">
                         </div>
-
-                        <hr class="form-group" v-if="chatConfig.chatMode === 'normal_chat'" />
-
-                        <div class="form-group" v-if="chatConfig.chatMode === 'normal_chat'">
+                        <hr class="form-group" v-if="['normal_chat', 'sensitivity'].includes(chatConfig.chatMode)" />
+                        <div class="form-group" v-if="['normal_chat', 'sensitivity'].includes(chatConfig.chatMode)">
                           <label for="systemPrompt" class="form-label">System Prompt</label>
-                          <textarea v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt" />
+                          <textarea v-if="chatConfig.chatMode === 'normal_chat'" v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt" />
+                          <textarea v-if="chatConfig.chatMode === 'sensitivity'" v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.sensitivityPromptTemplate" />
                         </div>
-
                       </div>
                     </div>
                   </div>
-
                   <div class="accordion-item" v-if="chatConfig.chatMode === 'agent_chat'">
                     <h2 class="accordion-header" id="headingTwo">
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -188,7 +186,10 @@
                 </div>
               </div>
             </div>
-            <div class="col col-md-8 border rounded p-3 bg-white" style="height: 77vh">
+            <div 
+              class="col col-md-8 border rounded p-3 bg-white" 
+              style="height: 77vh" 
+              v-if="['normal_chat', 'agent_chat'].includes(chatConfig.chatMode)">
               <div style="height: 100%; flex-direction: column; display: flex">
                 <div ref="messages" class="messages" style="flex-grow: 1; overflow: auto; padding: 1rem">
                   <MessageView v-for="message in messages" :key="message.id"
@@ -236,6 +237,67 @@
                 </div>
               </div>
             </div>
+            <div class="col col-md-8 rounded" v-else>
+              <form class="form" @submit.prevent="getSensitivity">
+
+                <div class="me-auto mt-4 mt-md-0">
+                  <div class="bg-light border border-primary rounded h-100 p-3">
+                    <div class="w-100">
+                      <label for="originalInput" class="form-label">1. Enter your original input</label>
+                      <textarea v-model="currentOriginalInput" @keydown.enter.exact.prevent
+                        class="form-control form-control mb-2" style="resize: none; height: calc(48px);"
+                        id="originalInput" placeholder="original input" required />
+                      <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
+                      <span role="button" v-for="(example, index) in currentExamples" :key="index"
+                        v-on:click="selectExample(example)" class="badge bg-success m-1 text-wrap lh-base">{{
+                          example.original
+                        }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="me-auto mt-4 pt-4 mt-md-0">
+                  <div class="bg-light border border-secondary rounded h-100 p-3">
+                    <div class="w-100">
+                      <div class="row">
+                        <label for="perturbed_loop" class="form-label">2. Enter your perturbed input</label>
+                        <div class="row g-0" v-for="(choice, index) in listPerturbedInput" :key="index"
+                          id="perturbed_loop">
+                          <div class="col-sm">
+                            <div class="input-group input-group-sm mb-3 px-3">
+                              <span class="input-group-text" id="basic-addon1">{{ index + 1 }}</span>
+                              <input v-model="listPerturbedInput[index]" type="text"
+                                class="form-control form-control-sm" required>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-inline">
+                          <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addChoice">Add
+                            Input</button>
+                          <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove
+                            Input</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-4  d-flex justify-content-center w-100">
+                  <button type="submit" class="btn btn-danger btn-lg shadow text-white d-flex align-items-center"
+                    :disabled="waiting">
+                    <span v-show="waiting" class="spinner-border spinner-border-sm" role="status" />
+                    &nbsp;Calculate Sensitivity&nbsp;&nbsp;
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd"
+                        d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+                      <path fill-rule="evenodd"
+                        d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -260,6 +322,18 @@
         </div>
       </div>
     </div>
+
+    <div v-if="showResults" class="bg-light border rounded shadow p-3 mt-4">
+      <div class="w-100">
+        <div class="mb-1">
+          <div class="container-fluid">
+            <h1>
+              Model {{ chatConfig.selectedModel }} has a sensitivity of {{ currentModelSensitivity }}.
+            </h1>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -268,6 +342,7 @@ import MessageView from "@/components/MessageView";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
+import { OpenAI } from "langchain/llms/openai";
 import { Calculator } from "langchain/tools/calculator";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { AWSLambda } from "langchain/tools/aws_lambda";
@@ -278,13 +353,14 @@ import {
   HumanMessagePromptTemplate,
   SystemMessagePromptTemplate,
   MessagesPlaceholder,
+  PromptTemplate,
 } from "langchain/prompts";
 import VueTippy from "vue-tippy";
 import { 
   getOpenAIModels,
   getLocalLLMs 
 } from '@/api';
-import CustomChatModel from "../services/custom_llm";
+import { CustomChatModel, CustomGenerativeModel } from "../services/custom_llm";
 
 Vue.use(VueTippy);
 
@@ -354,6 +430,7 @@ export default {
       top_p: 0.9,
       systemPrompt: ``, // TODO: add a default system prompt
       tools: [],
+      sensitivityPromptTemplate: 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER:',
     },
 
     oldTools: null,
@@ -368,6 +445,19 @@ export default {
       name: "You",
       id: 2,
     },
+
+    generativeModel: null,
+    currentModelSensitivity: 0,
+    // showSuccessToast: false,
+    currentOriginalInput: "",
+    currentExamples: [],
+    listPerturbedInput: ["", "", "", "", ""],
+    waiting: false,
+    selectedDatasetName: "cola",
+    datasetNameList: [],
+    datasets: {},
+    exampleNumber: 3,
+    showResults: false,
   }),
 
   created() {
@@ -375,10 +465,143 @@ export default {
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
     this.fetchModels();
     this.initChatModel();
+    this.initGenerativeModel()
     this.initTools();
+    this.getDatasets();
+    this.getExamples();
   },
 
   methods: {
+    selectExample(example) {
+      this.currentOriginalInput = example.original;
+      for (let i = 0; i < this.listPerturbedInput.length; i++) {
+        this.listPerturbedInput[i] = Object.entries(example.synthetic)[i][1]
+      }
+    },
+
+    addChoice() {
+      this.listPerturbedInput.push("");
+    },
+
+    removeChoice() {
+      this.listPerturbedInput.pop();
+    },
+
+    calculateSensitivity(results) {
+      let s = 1 - (this.f_m(results) / results.length);
+      return s;
+    },
+
+    f_m(results) {
+      let result = this.mode(results);
+      let count = 0;
+      results.forEach(val => {
+        if (val === result) {
+          count++;
+        }
+      });
+      return count;
+    },
+
+    mode(results) {
+      let frequency = {};
+      results.forEach(val => frequency[val] = (frequency[val] || 0) + 1);
+      let max = 0;
+      let result;
+      for (const key in frequency) {
+        if (frequency[key] > max) {
+          max = frequency[key];
+          result = key;
+        }
+      }
+      return result;
+    },
+
+    async getPrompt(input) {
+      const prompt = new PromptTemplate({
+        template: this.chatConfig.sensitivityPromptTemplate,
+        inputVariables: ["sentence"]
+      });
+      let formattedPrompt = await prompt.format({
+        sentence: input
+      });
+      return formattedPrompt;
+    },
+
+    parseAnswer(answer) {
+       if (answer.includes('1')) {
+        return 1;
+      } else if (answer.includes('0')) {
+        return 0;
+      } else if (answer.toLowerCase().includes('acceptable')) {
+        return 1;
+      } else if (answer.toLowerCase().includes('unacceptable')) {
+        return 0;
+      } else {
+        return 0;
+      }
+    },
+
+    async getSensitivity() {
+      this.waiting = true;
+      if (this.selectedDatasetName === 'cola') {
+        const results = [];
+
+        // get the result of the original input
+        let prompt = await this.getPrompt(this.currentOriginalInput);
+        let res = await this.generativeModel.call(prompt);
+        results.push(this.parseAnswer(res.trim()));
+
+        // get the result of the perturbed inputs
+        for (let i = 0; i < this.listPerturbedInput.length; i++) {
+          prompt = await this.getPrompt(this.listPerturbedInput[i]);
+          res = await this.generativeModel.call(prompt);
+          results.push(this.parseAnswer(res.trim()));
+        }
+        console.log(results)
+        this.currentModelSensitivity = this.calculateSensitivity(results);
+        this.showResults = true;
+      }
+      this.waiting = false;
+    },
+
+    getExamples() {
+      let selectedDataset = this.datasets[this.selectedDatasetName]
+      for (let i = 0; i < this.exampleNumber; i++) {
+        this.currentExamples.push(selectedDataset[i])
+      }
+    },
+
+    getDatasets() {
+      let requireComponent = require.context('../../perturbed_datasets', false, /[a-z0-9]+\.json$/)
+      this.datasets = Object.assign({}, ...requireComponent.keys().map(fileName => ({
+        [fileName.substr(2, fileName.length - 7)]: requireComponent(fileName)
+      })))
+      this.datasetNameList = Object.keys(this.datasets)
+    },
+
+    async initGenerativeModel() {
+      if (this.localChatModels.includes(this.chatConfig.selectedModel)) {
+        this.generativeModel = new CustomGenerativeModel({
+          model_identifier: this.chatConfig.selectedModel,
+          temperature: this.chatConfig.temperature,
+          max_new_tokens: this.chatConfig.maxTokens,
+          top_p: this.chatConfig.top_p,
+          streaming: false,
+        });
+      }
+      else if (this.openAIChatModels.includes(this.chatConfig.selectedModel)) {
+        // see https://js.langchain.com/docs/modules/model_io/models/llms/integrations/openai
+        this.generativeModel = new OpenAI({
+          model: this.chatConfig.selectedModel,
+          openAIApiKey: this.openAIApiKey,
+          temperature: this.chatConfig.temperature,
+          maxTokens: this.chatConfig.maxTokens,
+          top_p: this.chatConfig.top_p,
+        });
+      }
+    },
+
     async addNewTool() {
       if (this.newTool.name !== ''
         && this.newTool.description !== ''
@@ -455,6 +678,7 @@ export default {
       // if the tool is checked, reset the conversation because tool is not available anymore
       if (this.chatConfig.tools[index].checked) {
         await this.initChatModel();
+        this.initGenerativeModel();
         this.resetConv();
       }
 
@@ -739,6 +963,7 @@ export default {
       async handler(newModel, oldModel) {
         this.chatConfig.selectedModel = newModel;
         await this.initChatModel();
+        this.initGenerativeModel();
         this.resetConv();
       }
     },
@@ -748,6 +973,7 @@ export default {
       async handler(newChatMode, oldChatMode) {
         this.chatConfig.chatMode = newChatMode;
         await this.initChatModel();
+        this.initGenerativeModel();
         this.resetConv();
       }
     },
@@ -757,6 +983,7 @@ export default {
       async handler(newTools) {
         if (this.oldTools && newTools.length === this.oldTools.length) {
           await this.initChatModel();
+          this.initGenerativeModel();
           this.resetConv();
         }
         this.oldTools = JSON.parse(JSON.stringify(newTools));
@@ -781,6 +1008,7 @@ export default {
         if (newKey !== "") {
           await this.fetchModels();
           await this.initChatModel();
+          this.initGenerativeModel();
         }
       }
     },
