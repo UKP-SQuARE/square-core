@@ -198,7 +198,7 @@
                 </div>
 
                 <div v-if="messages.length === 0" class="d-flex justify-content-center" style="flex-grow: 1">
-                  <div class="text-center opacity-50">
+                  <div class="text-center opacity-50 unselectable">
 
                     <!-- add h1 with that is a little transparent -->
 
@@ -211,7 +211,7 @@
                 </div>
 
                 <div class="mt-3">
-                  <form @submit.prevent="onSubmit">
+                  <form>
                     <div class="row">
                       <div class="col-2 px-0 d-flex align-items-end justify-content-end">
                         <button :disabled="messages.length === 1" type="button" @click="resetConv"
@@ -220,15 +220,18 @@
                         </button>
                       </div>
                       <div class="col-8">
-                        <textarea v-autosize v-model="chatText" placeholder="Write a message" type="text"
-                          class="form-control border-0 p-2 m-0 auto-resize" style="
+                        <textarea v-autosize ref="textAreaRef" v-model="chatText" placeholder="Write a message"
+                          type="text" class="form-control border p-2 m-0 auto-resize" style="
                             background: rgba(0, 0, 0, 0.1);
-                            max-height: 12rem;
-                            height: 2rem;
-                          " @keydown.enter.prevent="onSubmit" />
+                            max-height: 40vh;
+                            height: 2.5rem;
+                            min-height: 2.5rem;"
+                          @keydown.enter="handleEnterKey" />
                       </div>
                       <div class="col-2 px-0 d-flex align-items-end">
-                        <button :disabled="chatText === ''" class="btn btn-danger text-white">
+                        <button @click.prevent="onSubmit" 
+                        :disabled="chatText === ''" 
+                        class="btn btn-danger text-white">
                           Send
                         </button>
                       </div>
@@ -473,6 +476,15 @@ export default {
   },
 
   methods: {
+
+    handleEnterKey (event) {
+      if (event.shiftKey) {
+        return; // If Shift+Enter is pressed, do the default action (add a newline)
+      }
+      event.preventDefault();
+      this.onSubmit();
+    },
+
     selectExample(example) {
       this.currentOriginalInput = example.original;
       for (let i = 0; i < this.listPerturbedInput.length; i++) {
@@ -972,7 +984,7 @@ export default {
     'chatConfig.selectedModel': {
       /* eslint-disable no-unused-vars */
       async handler(newModel, oldModel) {
-        console.log("resetting conversation!!!");
+        this.showResults = false;
         this.chatConfig.selectedModel = newModel;
         await this.initChatModel();
         this.initGenerativeModel();
@@ -983,6 +995,7 @@ export default {
     'chatConfig.chatMode': {
       /* eslint-disable no-unused-vars */
       async handler(newChatMode, oldChatMode) {
+        this.showResults = false;
         this.chatConfig.chatMode = newChatMode;
         await this.fetchModels();
         await this.initChatModel();
@@ -1052,5 +1065,12 @@ export default {
 
 button:disabled {
   opacity: 0.5;
+}
+
+.unselectable {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Opera, and W3C */
 }
 </style>
