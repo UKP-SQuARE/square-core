@@ -18,9 +18,6 @@
                 <router-link class="nav-link" to="/qa_hub" exact-active-class="active">QA Hub</router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" to="/prompting" exact-active-class="active">Prompting</router-link>
-              </li>
-              <li class="nav-item">
                 <router-link class="nav-link" to="/behavioral_tests" exact-active-class="active">Behavioral
                   Tests</router-link>
               </li>
@@ -29,6 +26,9 @@
                                     </li> -->
               <li class="nav-item">
                 <router-link class="nav-link" to="/publications" exact-active-class="active">Publications</router-link>
+              </li>
+              <li class="nav-item">
+                <router-link class="nav-link" to="/chatbot_rating" exact-active-class="active">ChatBot Rating</router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/docs/" target="_blank">Docs</a>
@@ -61,10 +61,18 @@
                 </svg>
                 &nbsp;{{ userInfo.preferred_username }}
               </a>
+              <!-- <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+
+                  <router-link class="nav-link" to="/profile" exact-active-class="active">Profile</router-link>
+                </li>
+              </ul> -->
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
-                <li><router-link class="dropdown-item" to="/evaluations">Evaluate skills</router-link></li>
-                <li><a v-on:click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a></li>
+                <!-- <li><router-link class="dropdown-item" to="/skills">My skills</router-link></li>
+                <li><router-link class="dropdown-item" to="/evaluations">Evaluate skills</router-link></li> -->
+                <li><router-link class="dropdown-item" to="/profile">My Profile</router-link></li>
+                <!-- <li><a v-on:click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a></li> -->
                 <li>
                   <hr class="dropdown-divider">
                 </li>

@@ -1,0 +1,453 @@
+<!-- The Home Page. Questions are asked and the results are displayed here. -->
+<template>
+  <div class="bg-light border rounded shadow p-3">
+    <div class="w-100">
+      <div class="mb-3">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col col-3 d-none d-md-block">
+              <div class="container text-start"></div>
+              <div class="row">
+                <div class="col text-start">
+                  <h4>Domain
+                    <svg
+                        content="A Skill is a single domain if it was trained on a single dataset, and thus is expected to only perform well in that dataset.<br/>A Skill is a multi domain if it was trained on multiple datasets to be more general.<br/>A Skill is a Meta-Skill if it combines multiple Skills."
+                        v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-info-circle" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                      <path
+                          d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                    </svg>
+                  </h4>
+
+                  <span role="button" v-on:click="addRemoveScopeFilter('single_skill')"
+                        class="btn btn-outline-primary btn-sm me-1 mb-1" id="single_skill">
+                    Single Domain</span>
+                  <span role="button" v-on:click="addRemoveScopeFilter('multi_skill')"
+                        class="btn btn-outline-primary btn-sm me-1 mb-1" id="multi_skill">
+                    Multi Domain</span>
+                  <span role="button" v-on:click="addRemoveScopeFilter('meta_skill')"
+                        class="btn btn-outline-primary btn-sm me-1 mb-1" id="meta_skill">
+                    Meta-Skill</span>
+                </div>
+              </div>
+            </div>
+            <div class="col col-md-9">
+              <!-- Write Selected Model in bold -->
+              <span class="fw-bold">Selected Model:</span> {{ strSelectedModels }}
+
+              <!-- Search Bar -->
+              <div class="input-group input-group-sm mb-2">
+                <span class="input-group-text" id="basic-addon1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+                       viewBox="0 0 16 16">
+                    <path
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z">
+                    </path>
+                  </svg>
+                </span>
+                <input v-model="searchText" placeholder="Search Model" class="form-control form-control-xs" />
+              </div>
+
+              <!-- Skills -->
+              <div class="row row-cols-1 row-cols-sm-2">
+                <div class="col mb-2" v-for="(skill, index) in filteredSkillsPage" :key="skill.id">
+                  <div class="d-flex flex-wrap">
+                    <input class="btn-check"
+                           type="checkbox"
+                           v-on:input="selectSkill(skill.id, index)"
+                           v-bind:value="skill.id"
+                           :disabled="waiting || (selectedSkills.length >= 3 && !selectedSkills.includes(skill.id)) || !isModelAvailable(skill.name)"
+                           :id="skill.id">
+                    <label
+                        class="btn btn-outline-primary d-flex align-middle align-items-center justify-content-center w-100 h-100"
+                        :for="skill.id"
+                        :content="getSkillInfo(skill)"
+                        v-tippy
+                        :class="{ 'disabled': !isModelAvailable(skill.name) }"
+                        style="--bs-bg-opacity: 1"
+                        :id="'lbl-' + skill.id">
+                      <span class="text-break">{{ skill.name }}
+                        <span v-if="!isModelAvailable(skill.name)" class="ms-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                          </svg>
+                        </span>
+                        <br>
+                        <small class="text-muted">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                               class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path
+                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                            <path fill-rule="evenodd"
+                                  d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                          </svg>
+                          {{ skill.skill_type }}
+                          <!-- <span class="px-1.5 text-gray-300">• </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-aspect-ratio" viewBox="0 1 16 16">
+                              <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                              <path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H3v2.5a.5.5 0 0 1-1 0v-3zm12 7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H13V8.5a.5.5 0 0 1 1 0v3z"/>
+                            </svg>
+                                                                                                                                                                                                                                                                                                                                                                                                                              300M -->
+                        </small>
+                        <small v-if="skill.meta_skill" class="text-muted">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                               class="bi bi-boxes" viewBox="0 0 16 16">
+                            <path
+                                d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434L7.752.066ZM4.25 7.504 1.508 9.071l2.742 1.567 2.742-1.567L4.25 7.504ZM7.5 9.933l-2.75 1.571v3.134l2.75-1.571V9.933Zm1 3.134 2.75 1.571v-3.134L8.5 9.933v3.134Zm.508-3.996 2.742 1.567 2.742-1.567-2.742-1.567-2.742 1.567Zm2.242-2.433V3.504L8.5 5.076V8.21l2.75-1.572ZM7.5 8.21V5.076L4.75 3.504v3.134L7.5 8.21ZM5.258 2.643 8 4.21l2.742-1.567L8 1.076 5.258 2.643ZM15 9.933l-2.75 1.571v3.134L15 13.067V9.933ZM3.75 14.638v-3.134L1 9.933v3.134l2.75 1.571Z" />
+                          </svg>
+                          Meta-Skill
+                        </small>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+              </div> <!-- end of skill list -->
+              <v-page :total-row="filteredSkills.length" align="center" v-model="currentPage" ref="page"
+                      @page-change="pageSkillChange" :page-size-menu="[10, 20, 30, 40]" language="en"></v-page>
+
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+              <!-- router link to qa2 with query params runQueryParams -->
+              <router-link :to="{ name: 'chatbot', query: runQueryParams }" class="btn btn-danger btn-lg text-white">
+                Run
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd"
+                        d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z" />
+                  <path fill-rule="evenodd"
+                        d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                </svg>
+              </router-link>
+            </div>
+          </div>
+        </div> <!-- end of skill list container -->
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import Vue from 'vue'
+import VueTippy from "vue-tippy";
+import { Page } from 'v-page'
+
+Vue.use(VueTippy);
+
+import { getDataSets, getSkillTypes } from '@/api'
+
+export default Vue.component('chatbot-hub', {
+  data() {
+    return {
+      searchText: '',
+      waiting: false,
+      chosenSkillType: null,
+      selectedSkillScope: null,
+      skillTypes: [],
+      availableDatasets: [],
+      availableModels: ['CommonsenseQA BERT Adapter', 'DROP BERT Adapter', 'CosmosQA RoBERTa Adapter', 'MultiRC BERT Adapter'],
+      selectedDatasets: [],
+      options: {
+        selectedSkills: []
+      },
+      currentPage: 1,
+      pageLength: 10,
+      filteredSkillsPage: [],
+    }
+  },
+  components: {
+    'v-page': Page
+  },
+  computed: {
+    strSelectedSkills() {
+      let availableSkills = this.$store.state.availableSkills;
+      // filter available skills to only include selected skills
+      availableSkills = availableSkills.filter(skill => this.selectedSkills.includes(skill.id));
+      // return a string of the selected skills
+      return availableSkills.map(skill => skill.name).join(', ');
+    },
+    dynamicAvailableModels() {
+      // If the user is not logged in, return only the first model
+      if (!this.$store.state.userInfo || Object.keys(this.$store.state.userInfo).length === 0) {
+        return ['CommonsenseQA BERT Adapter'];
+      }
+      // Get available models for this particular user
+      // return this.$store.state.getAvailableModels;
+      return this.availableModels;
+    },
+    isModelAvailable() {
+      return (modelName) => this.dynamicAvailableModels.includes(modelName);
+    },
+    filteredSkills() {
+      let availableSkills = this.availableSkills
+      // Apply skill type filter
+      if (this.chosenSkillType) {
+        availableSkills = availableSkills.filter(skill => skill.skill_type == this.chosenSkillType)
+      }
+      // Apply search filter
+      if (this.searchText) {
+        availableSkills = availableSkills.filter((item) => this.searchText
+            .toLowerCase()
+            .split(" ")
+            .every(v => item.name.toLowerCase().includes(v)))
+      }
+      // Apply selected datasets filer
+      if (this.selectedDatasets.length > 0) {
+        // for each selected dataset, filter available skills by dataset_id
+        for (let dataset of this.selectedDatasets) {
+          availableSkills = availableSkills.filter(skill => skill.data_sets.includes(dataset))
+        }
+      }
+      // Apply filter based on selected skills
+      // if at least one skill is selected
+      if (this.options.selectedSkills.filter(skill => skill == 'None').length != 3) {
+        availableSkills = availableSkills.filter(skill => skill.skill_type === this.skillSettings.skillType
+            && skill.skill_settings.requires_context === this.skillSettings.requiresContext)
+      }
+      // Apply filter based on Skill Scope (single vs multi-skill)
+      if (this.selectedSkillScope === 'single_skill') {
+        availableSkills = availableSkills.filter(skill => skill.data_sets.length <= 1)
+      } else if (this.selectedSkillScope === 'multi_skill') {
+        availableSkills = availableSkills.filter(skill => skill.data_sets.length > 1)
+      } else if (this.selectedSkillScope === 'meta_skill') {
+        availableSkills = availableSkills.filter(skill => skill.meta_skill)
+      }
+      return availableSkills
+    },
+    availableSkills() {
+      let availableSkills = this.$store.state.availableSkills
+      // Apply optional filter from props
+      if (this.skillFilter !== undefined) {
+        return availableSkills.filter(skill => this.skillFilter(skill.id))
+      } else {
+        return availableSkills
+      }
+    },
+    selectedSkills() {
+      return this.options.selectedSkills.filter(skill => skill !== 'None')
+    },
+    runQueryParams() {
+      let params = {}
+      for (let i = 0; i < this.selectedSkills.length; i++) {
+        params['skill' + (i + 1)] = this.selectedSkills[i]
+      }
+      return params
+    },
+    skillSettings() {
+      let settings = {
+        skillType: null,
+        requiresContext: false,
+        requiresMultipleChoices: 0
+      }
+      this.selectedSkills.forEach((skillId, index) => {
+        this.availableSkills.forEach(skill => {
+          if (skillId === skill.id) {
+            if (index === 0) {
+              settings.skillType = skill.skill_type
+              settings.requiresContext = skill.skill_settings.requires_context
+            } else if (skill.skill_type !== settings.skillType || skill.skill_settings.requires_context !== settings.requiresContext) {
+              this.options.selectedSkills[index] = 'None'
+            }
+            // Require a minimum of 1 line if context is required else pick from the maximum of selected skills
+            settings.requiresMultipleChoices = Math.max(
+                settings.requiresContext ? 1 : 0,
+                settings.requiresMultipleChoices,
+                skill.skill_settings.requires_multiple_choices)
+          }
+        })
+      })
+      return settings
+    }
+  },
+  watch: {
+    filteredSkills() {
+      this.pageSkillChange({ pageSize: this.pageLength, pageNumber: 1 })
+      // reset page to 1 because we may have less pages now than before
+      // we could have a page overlflow otherwise
+    },
+    filteredSkillsPage() {
+      this.$nextTick(() => {
+        // set to active the selected skill if appears in the current page
+        let list_skills_id_page = this.filteredSkillsPage.map(skill => skill.id)
+        // remove active class from lbl-skill.id in the current page except the selected skills (add active to them)
+        list_skills_id_page.forEach(skill => {
+          if (!this.selectedSkills.includes(skill)) {
+            this.forceUnselectSkillButton(skill)
+          } else {
+            document.getElementById('lbl-' + skill).classList.add('active')
+          }
+        })
+      })
+    }
+  },
+  methods: {
+    pageSkillChange(pInfo) {
+      this.currentPage = pInfo.pageNumber
+      this.pageLength = pInfo.pageSize
+      this.filteredSkillsPage.splice(0, this.filteredSkillsPage.length);
+      let start = 0,
+          end = 0;
+      start = pInfo.pageSize * (pInfo.pageNumber - 1);
+      end = start + pInfo.pageSize;
+      if (end > this.filteredSkills.length) end = this.filteredSkills.length;
+      for (let i = start; i < end; i++) {
+        this.filteredSkillsPage.push(this.filteredSkills[i]);
+      }
+    },
+    minSkillsSelected(num) {
+      return this.selectedSkills.length >= num
+    },
+    addRemoveDatasetFilter(dataset) {
+      dataset = dataset.name
+      if (this.selectedDatasets.includes(dataset)) {
+        // remove dataset from selectedDatasets
+        let index = this.selectedDatasets.indexOf(dataset)
+        this.selectedDatasets.splice(index, 1)
+        // remove active class to dataset button
+        document.getElementById(dataset).classList.remove('active')
+      } else {
+        // add dataset to selectedDatasets
+        this.selectedDatasets.push(dataset)
+        // add active class to dataset button
+        document.getElementById(dataset).classList.add('active')
+      }
+      // unselect all skills (changing the filter will change the available skills, so we need to unselect all)
+      this.unselectAllSkills()
+    },
+    addRemoveSkillTypeFilter(skillType) {
+      // remove all active classes from skill type buttons
+      for (let type of this.skillTypes) {
+        document.getElementById(type).classList.remove('active')
+      }
+      if (this.chosenSkillType === skillType) {
+        this.chosenSkillType = null
+      } else {
+        this.chosenSkillType = skillType
+        document.getElementById(skillType).classList.add('active')
+      }
+      // unselect all skills (changing the filter will change the available skills, so we need to unselect all)
+      this.unselectAllSkills()
+    },
+    addRemoveScopeFilter(scope) {
+      // remove all active classes from scope buttons
+      for (let scope of ['single_skill', 'multi_skill', 'meta_skill']) {
+        document.getElementById(scope).classList.remove('active')
+      }
+      if (this.selectedSkillScope === scope) {
+        this.selectedSkillScope = null
+      } else {
+        this.selectedSkillScope = scope
+        document.getElementById(scope).classList.add('active')
+      }
+      // unselect all skills (changing the filter will change the available skills, so we need to unselect all)
+      this.unselectAllSkills()
+    },
+    selectSkill(skill_id) {
+      if (this.options.selectedSkills.includes(skill_id)) {
+        let index = this.options.selectedSkills.indexOf(skill_id)
+        this.$set(this.options.selectedSkills, index, "None")
+      }
+      else {
+        let index = this.options.selectedSkills.indexOf('None')
+        this.$set(this.options.selectedSkills, index, skill_id)
+      }
+      this.$store.dispatch('selectSkill', { skillOptions: this.options, selectorTarget: this.selectorTarget })
+      // this.$emit('input', this.options, this.skillSettings)
+
+    },
+    unselectAllSkills() {
+      for (let i = 0; i < this.options.selectedSkills.length; i++) {
+        this.selectSkill(this.options.selectedSkills[i])
+      }
+    },
+    forceUnselectSkillButton(skill_id) {
+      let checkbox = document.getElementById(skill_id)
+      if (checkbox) {
+        checkbox.checked = false
+      }
+      let label = document.getElementById('lbl-' + skill_id)
+      if (label) {
+        label.classList.remove('active')
+      }
+    },
+    skillBaseModel(skill) {
+      // if skill.default_skill_args['base_model'] is not null
+      if (skill.default_skill_args && skill.default_skill_args['base_model']) {
+        return skill.default_skill_args['base_model']
+      } else {
+        return 'N/A'
+      }
+    },
+    skillAdapter(skill) {
+      // if skill.default_skill_args['adapter'] is not null
+      if (skill.default_skill_args && skill.default_skill_args['adapter']) {
+        return skill.default_skill_args['adapter']
+      } else {
+        return ''
+      }
+    },
+    getSkillInfo(skill) {
+      let skillInfo = ''
+      if (skill.description !== '') {
+        skillInfo += skill.description + '<br/>'
+      }
+
+      skillInfo += this.boxIcon() + ' HuggingFace\'s ID: ' + this.skillBaseModel(skill)
+
+      if (this.skillAdapter(skill) !== '') {
+        skillInfo += '<br/>' + this.boxIcon() + ' Adapter: ' + this.skillAdapter(skill)
+      }
+      return skillInfo
+    },
+    boxIcon() {
+      return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16"> <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z" /></svg>'
+    },
+
+  },
+  beforeMount() {
+    this.waiting = true
+    this.$store.dispatch('updateSkills')
+        .then(() => {
+          this.$store.state.skillOptions['qa'].selectedSkills.forEach((skill, index) => {
+            this.$set(this.options.selectedSkills, index, skill)
+          })
+          this.$emit('input', this.options, this.skillSettings)
+          this.$refs.page.reload()
+        }).finally(() => {
+      this.waiting = false
+    })
+    // get available datasets
+    getDataSets(this.$store.getters.authenticationHeader())
+        .then((response) => {
+          this.availableDatasets = response.data
+          // sort datasets by name
+          this.availableDatasets.sort((a, b) => {
+            if (a.name < b.name) {
+              return -1
+            }
+            if (a.name > b.name) {
+              return 1
+            }
+            return 0
+          })
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    // get skill types
+    getSkillTypes(this.$store.getters.authenticationHeader())
+        .then((response) => {
+          this.skillTypes = response.data
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+  },
+})
+</script>
