@@ -29,6 +29,7 @@
     "tippy.js": "^6.3.7",
     "v-page": "^2.1.0",
     "vue": "^2.6.14",
+    "vue-apexcharts": "^1.6.2",
     "vue-multiselect": "^2.1.6",
     "vue-router": "^3.5.3",
     "vue-tippy": "^4.16.0",

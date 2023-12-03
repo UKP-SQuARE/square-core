@@ -1,18 +1,18 @@
 <template>
   <div> <!-- Root element -->
     <!-- Certificate Preview -->
-    <div class="certificate-preview" @click="showModal = true">
+    <div class="certificate-preview" @click="showModal(certificateId)">
       <h5>{{ certificateTitle }}</h5>
       <!-- Design in progress -->
     </div>
 
     <!-- Modal -->
-    <div v-if="showModal" class="modal fade show" style="display: block;" @click.self="showModal = false">
+    <div v-if="activeModal === certificateId" class="modal fade show" style="display: block;" @click.self="closeModal">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="certificateModalLabel">{{ certificateTitle }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close" @click="closeModal"></button>
           </div>
           <div class="modal-body">
             <div class="card mx-auto my-5 border-0">
@@ -44,7 +44,7 @@
         </div>
       </div>
     </div>
-    <div v-if="showModal" class="modal-backdrop fade show"></div> <!-- Modal backdrop -->
+    <div v-if="activeModal" class="modal-backdrop fade show"></div> <!-- Modal backdrop -->
   </div>
 </template>
 
@@ -80,9 +80,17 @@ export default {
   },
   data() {
     return {
-      showModal: false,
+      activeModal: null,
     };
   },
+  methods: {
+    showModal(id) {
+      this.activeModal = id;
+    },
+    closeModal() {
+      this.activeModal = null;
+    }
+  }
 }
 </script>
 

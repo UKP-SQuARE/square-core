@@ -1,10 +1,24 @@
 <template>
     <div class="profile-container">
-      <div class="profile-sidebar">
-        <!-- Profile Data -->
-        <div class="tile">
-          <div class="tile-header">Profile</div>
-          <user-profile :user="user" />
+      <div class="profile-container">
+        <div class="profile-sidebar">
+          <!-- Profile Data -->
+          <div class="tile">
+            <div class="tile-header">Profile</div>
+            <user-profile :user="user" />
+
+            <!-- Navigation Links -->
+            <div class="profile-links">
+              <!-- Link to My Skills Page -->
+              <router-link class="dropdown-item" to="/skills">My skills</router-link>
+
+              <!-- Link to Evaluate Skills Page -->
+              <router-link class="dropdown-item" to="/evaluations">Evaluate skills</router-link>
+
+              <!-- Manage Account -->
+              <a @click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a>
+            </div>
+          </div>
         </div>
       </div>
       <div class="profile-main">
@@ -63,8 +77,9 @@ export default {
       showFullLeaderboard: false,
       // Mock user data, replace with real data from an API or store
       badges: [
-        { id: 1, title: 'Expert', description: 'Top Contributor', icon: '🏆', type: 'gold' },
-        { id: 2, title: 'Intermediate', description: 'Great Participation', icon: '🥈', type: 'silver' },
+
+        { id: 1, title: 'Expert', description: 'Top Contributor', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Eslogan_Oficial.png', type: 'gold' },
+        { id: 2, title: 'Intermediate', description: 'Great Participation', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Eslogan_Oficial.png', type: 'silver' },
       ],
       submissions: [
         { date: '2023-11-12', llmName: 'Llama-2' },
