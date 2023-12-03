@@ -4,7 +4,8 @@
       <div class="mb-3">
         <div class="container-fluid">
           <div class="row">
-            <div class="col col-4 d-none d-md-block">
+            <!-- Config -->
+            <div class="col col-3 d-none d-md-block">
               <div style="height: 35rem; overflow-y: auto; overflow-x: hidden;">
                 <div class="form-group pb-2">
                   <div class="form-group">
@@ -20,14 +21,9 @@
                     <div>
                       <label for="open-ai-key" class="form-label">
                         OpenAI key
-                        <svg
-                          content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer."
-                          v-tippy xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                          class="bi bi-info-circle" viewBox="0 0 16 16">
-                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                          <path
-                            d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
-                        </svg>
+                        <ToolTip 
+                          content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer.">
+                        </ToolTip>
                       </label>
                       <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key"
                         v-model="openAIApiKey" />
@@ -82,15 +78,15 @@
                           <input v-model="chatConfig.top_p" type="range" class="form-range" min="0" max="1" step="0.1"
                             id="top_pRange">
                         </div>
-                        <hr class="form-group" v-if="['normal_chat', 'sensitivity'].includes(chatConfig.chatMode)" />
-                        <div class="form-group" v-if="['normal_chat', 'sensitivity'].includes(chatConfig.chatMode)">
+                        <hr class="form-group" v-if="['normal_chat'].includes(chatConfig.chatMode)" />
+                        <div class="form-group" v-if="['normal_chat'].includes(chatConfig.chatMode)">
                           <label for="systemPrompt" class="form-label">System Prompt</label>
                           <textarea v-if="chatConfig.chatMode === 'normal_chat'" v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.systemPrompt" />
-                          <textarea v-if="chatConfig.chatMode === 'sensitivity'" v-autosize class="form-control" id="systemPrompt" v-model="chatConfig.sensitivityPromptTemplate" />
                         </div>
                       </div>
                     </div>
                   </div>
+                  <!-- Tools Configuration -->
                   <div class="accordion-item" v-if="chatConfig.chatMode === 'agent_chat'">
                     <h2 class="accordion-header" id="headingTwo">
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -186,8 +182,9 @@
                 </div>
               </div>
             </div>
+            <!-- Messages View -->
             <div 
-              class="col col-md-8 border rounded p-3 bg-white" 
+              class="col col-md-9 border rounded p-3 bg-white" 
               style="height: 77vh" 
               v-if="['normal_chat', 'agent_chat'].includes(chatConfig.chatMode)">
               <div style="height: 100%; flex-direction: column; display: flex">
@@ -240,15 +237,53 @@
                 </div>
               </div>
             </div>
-            <div class="col col-md-8 rounded" v-else>
+            <!-- Sensitivity -->
+            <div class="col col-md-9 rounded" v-else>
               <form class="form" @submit.prevent="getSensitivity">
 
+                <!-- System Prompt + Examples -->
                 <div class="me-auto mt-4 mt-md-0">
                   <div class="bg-light border border-primary rounded h-100 p-3">
                     <div class="w-100">
-                      <label for="originalInput" class="form-label">1. Enter your original input</label>
+                      <label for="sensitivityPromptTemplate" class="form-label">
+                        1. Prompt Template 
+                        <ToolTip 
+                          content="Your template for the prompt must include the placeholder {sentence} and {answer}. 
+                          These placeholders will be replaced with actual sentences (and answers in case of few show examples) when prompting the model.">
+                        </ToolTip>
+                      </label>
+                      <textarea v-autosize class="form-control" id="sensitivityPromptTemplate" v-model="chatConfig.sensitivityPromptTemplate" required/>
+                      <div class="form-inline mt-3">
+                        <label for="fewShotExamples" class="form-label">2. Enter your few shot examples</label>
+                        <div class="row g-0" v-for="(choice, index) in listFewShotExamples" :key="index" id="fewShotExamples">
+                          <div class="col col-9">
+                            <div class="input-group input-group-sm mb-3">
+                              <span class="input-group-text" id="basic-addon1">{{ index + 1 }}</span>
+                              <input placeholder="SENTENCE" v-model="listFewShotExamples[index].sentence" type="text" class="form-control form-control-sm" required>
+                            </div>
+                          </div>
+                          <div class="col col-3">
+                            <div class="input-group input-group-sm mb-3 ps-2">
+                              <input placeholder="ANSWER" v-model="listFewShotExamples[index].answer" type="text" class="form-control form-control-sm" required>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-inline">
+                          <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addFewShotExample">Add Example</button>
+                          <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeFewShotExample">Remove Example</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Original Input -->
+                <div class="me-auto mt-4 pt-3 mt-md-0">
+                  <div class="bg-light border border-primary rounded h-100 p-3">
+                    <div class="w-100">
+                      <label for="originalInput" class="form-label">2. Enter your original input</label>
                       <textarea v-model="currentOriginalInput" @keydown.enter.exact.prevent
-                        class="form-control form-control mb-2" style="resize: none; height: calc(48px);"
+                        class="form-control form-control mb-2" style="resize: none; height: calc(40px);"
                         id="originalInput" placeholder="original input" required />
                       <p v-if="currentExamples.length > 0" class="form-label">Or try one of these examples</p>
                       <span role="button" v-for="(example, index) in currentExamples" :key="index"
@@ -259,11 +294,12 @@
                   </div>
                 </div>
 
-                <div class="me-auto mt-4 pt-4 mt-md-0">
+                <!-- Perturbed Input -->
+                <div class="me-auto mt-4 pt-3 mt-md-0">
                   <div class="bg-light border border-secondary rounded h-100 p-3">
                     <div class="w-100">
                       <div class="row">
-                        <label for="perturbed_loop" class="form-label">2. Enter your perturbed input</label>
+                        <label for="perturbed_loop" class="form-label">3. Enter your perturbed input</label>
                         <div class="row g-0" v-for="(choice, index) in listPerturbedInput" :key="index"
                           id="perturbed_loop">
                           <div class="col-sm">
@@ -333,7 +369,34 @@
             <h1>
               Model {{ chatConfig.selectedModel }} has a sensitivity of {{ currentModelSensitivity }}.
             </h1>
-          </div>
+            <hr/>
+            <div class="row">
+              <div class="col-7"></div>
+              <div class="col-3 h5"> Actual Answer </div>
+              <div class="col-2 h5"> Interpreted As </div>
+            <div class="row"></div>
+              <div class="col-7 h5 mb-4"> 
+                &bull; Original Input: {{ currentOriginalInput }}
+              </div>
+              <div class="col-3" style="overflow-x: auto; white-space: nowrap;"> 
+                {{ currentModelSensitivityResults[0].result }} 
+              </div>
+              <div class="col-2" > 
+                {{ currentModelSensitivityResults[0].numResult ? 'acceptable': 'unacceptable' }}                 
+              </div>
+            </div>
+              <div class="row mb-3" v-for="(text, index) in listHighlightedPerturbedInput" :key="index" id="perturbed_result">
+                <div class="col-7">
+                  <span class="h5" v-html="(index+1) + '. ' + text"></span>
+                </div>
+                <div class="col-3" style="overflow-x: auto; white-space: nowrap;"> 
+                  {{ currentModelSensitivityResults[index+1].result }} 
+                </div>
+                <div class="col-2" > 
+                  {{ currentModelSensitivityResults[index+1].numResult ? 'acceptable': 'unacceptable' }}                 
+                </div>
+              </div>
+            </div>
         </div>
       </div>
     </div>
@@ -342,6 +405,7 @@
 
 <script>
 import MessageView from "@/components/MessageView";
+import ToolTip from "@/components/ToolTip";
 import { BufferMemory } from "langchain/memory";
 import { ConversationChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
@@ -357,6 +421,7 @@ import {
   SystemMessagePromptTemplate,
   MessagesPlaceholder,
   PromptTemplate,
+  FewShotPromptTemplate,
 } from "langchain/prompts";
 import VueTippy from "vue-tippy";
 import { 
@@ -371,6 +436,7 @@ export default {
   name: "prompting-view",
   components: {
     MessageView,
+    ToolTip,
   },
 
   // to change the size of the textarea dynamically
@@ -425,16 +491,15 @@ export default {
       functionName: 'my_random_function',
     },
 
-
     chatConfig: {
-      chatMode: "normal_chat",
+      chatMode: "sensitivity",
       selectedModel: "Llama-2-7b-chat",
       temperature: 0.7,
       maxTokens: 256,
       top_p: 0.9,
-      systemPrompt: ``, // TODO: add a default system prompt
+      systemPrompt: ``, 
       tools: [],
-      sensitivityPromptTemplate: 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER:',
+      sensitivityPromptTemplate: 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER: {answer}',
     },
 
     oldTools: null,
@@ -462,6 +527,17 @@ export default {
     datasets: {},
     exampleNumber: 3,
     showResults: false,
+    currentModelSensitivityResults: [],
+    listFewShotExamples: [{
+      sentence: 'The sailors rode the breeze clear of the rocks.', 
+      answer: '1'
+    }, {
+      sentence: 'The weights made the rope stretch over the pulley.',
+      answer: '1'
+    }, {
+      sentence: 'The mechanical doll next itself loose.', 
+      answer: '0'
+    }]
   }),
 
   created() {
@@ -475,7 +551,63 @@ export default {
     this.getExamples();
   },
 
+  computed: {
+    listHighlightedPerturbedInput: function(){
+      if (this.listPerturbedInput.length === 0 || this.currentOriginalInput === "") return [];
+
+      const escapeHtml = (unsafe) => unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+      const tokenize = (sentence) => {
+        const result = sentence.match(/\S+/g);
+        return result ? result : [];
+      }
+
+      const highlight = (token) => `<mark class="bg-danger text-white">${escapeHtml(token)}</mark>`;
+
+      const findDifferences = (originalTokens, perturbedTokens) => {
+        let indexOriginal = 0;
+
+        if (originalTokens.length === perturbedTokens.length){ // there is a token changed, highlight the changed token
+          return perturbedTokens.map(perturbedToken => {
+            let tokenToReturn = perturbedToken === originalTokens[indexOriginal] ? perturbedToken : highlight(perturbedToken);
+            indexOriginal++;
+            return tokenToReturn;
+          }).join(" ");
+        } else if (originalTokens.length < perturbedTokens.length){ // there is a token added, highlight the added token
+          return perturbedTokens.map(perturbedToken => {
+            let tokenToReturn = originalTokens.includes(perturbedToken) ? perturbedToken : highlight(perturbedToken);
+            return tokenToReturn;
+          }).join(" ");
+        } else { // there is a token removed 
+          return perturbedTokens.join(" "); // there is nothing to highlight
+        }
+      };
+
+      const originalTokens = tokenize(this.currentOriginalInput);
+      return this.listPerturbedInput.map(sentence => {
+        const perturbedTokens = tokenize(sentence);
+        return findDifferences(originalTokens, perturbedTokens);
+      });
+    }
+  },
+
   methods: {
+
+    addFewShotExample() {
+      this.listFewShotExamples.push({
+        sentence: '', 
+        answer: ''
+      });
+    },
+
+    removeFewShotExample() {
+      this.listFewShotExamples.pop();
+    },
 
     handleEnterKey (event) {
       if (event.shiftKey) {
@@ -486,6 +618,7 @@ export default {
     },
 
     selectExample(example) {
+      this.showResults = false;
       this.currentOriginalInput = example.original;
       for (let i = 0; i < this.listPerturbedInput.length; i++) {
         this.listPerturbedInput[i] = Object.entries(example.synthetic)[i][1]
@@ -494,10 +627,14 @@ export default {
 
     addChoice() {
       this.listPerturbedInput.push("");
+      this.showResults = false;
     },
 
     removeChoice() {
-      this.listPerturbedInput.pop();
+      if(this.listPerturbedInput.length > 1){
+        this.listPerturbedInput.pop();
+        this.showResults = false;
+      }
     },
 
     calculateSensitivity(results) {
@@ -530,47 +667,78 @@ export default {
       return parseInt(result);
     },
 
+    validateSensitivityTemplate(template) {
+      return template.includes('{sentence}') && template.includes('{answer}');
+    },
+
     async getPrompt(input) {
-      const prompt = new PromptTemplate({
+      if (!this.validateSensitivityTemplate(this.chatConfig.sensitivityPromptTemplate)) {
+        throw new Error("Your template for the system prompt must include the placeholders {sentence} and {answer}.");
+      }
+
+      const promptTemplate = new PromptTemplate({
         template: this.chatConfig.sensitivityPromptTemplate,
-        inputVariables: ["sentence"]
+        inputVariables: ["sentence", "answer"]
       });
-      let formattedPrompt = await prompt.format({
-        sentence: input
+
+      const fewShotPrompt = new FewShotPromptTemplate({
+        suffix: this.chatConfig.sensitivityPromptTemplate, // template for the actual sentence, not the few shot examples
+        prefix: 'Respond to the last question in the with the following format:', // telling the model what to do with the few shot examples
+        examplePrompt: promptTemplate, // template for the few shot
+        examples: this.listFewShotExamples,
+        inputVariables: ["sentence", "answer"], // variables in the actual sentence template, not the few shot examples
+      });
+      
+      let formattedPrompt = await fewShotPrompt.format({
+        sentence: input,
+        answer: ''
       });
       return formattedPrompt;
     },
 
-    parseAnswer(answer) {
-       if (answer.includes('1')) {
-        return 1;
-      } else if (answer.includes('0')) {
-        return 0;
-      } else if (answer.toLowerCase().includes('acceptable')) {
-        return 1;
-      } else if (answer.toLowerCase().includes('unacceptable')) {
-        return 0;
-      } else {
-        return 0;
-      }
-    },
-
     async getSensitivity() {
       this.waiting = true;
+      this.showResults = false;
       if (this.selectedDatasetName === 'cola') {
-        const results = [];
-
+        this.currentModelSensitivityResults = [];
         // get the result of the original input
-        let prompt = await this.getPrompt(this.currentOriginalInput);
-        let res = await this.generativeModel.call(prompt);
-        results.push(this.parseAnswer(res.trim()));
-
-        // get the result of the perturbed inputs
-        for (let i = 0; i < this.listPerturbedInput.length; i++) {
-          prompt = await this.getPrompt(this.listPerturbedInput[i]);
-          res = await this.generativeModel.call(prompt);
-          results.push(this.parseAnswer(res.trim()));
+        let prompt; 
+        try{
+          prompt = await this.getPrompt(this.currentOriginalInput);
+        } catch (e) {
+          console.error(e)
+          this.errorToast.show = true;
+          this.errorToast.message = e.message;
+          this.waiting = false;
+          return;
         }
+        
+        let res = await this.generativeModel.call(prompt);
+        const results = []
+        const numResult = res == 1 ? 1 : 0; // if the model returns anything other than 1 or 0, we assume it is 0
+        this.currentModelSensitivityResults.push({
+          result: res, 
+          numResult: numResult
+        });
+        results.push(numResult);
+
+        const promises = this.listPerturbedInput.map(async (input) => {
+          const prompt = await this.getPrompt(input);
+          const res = await this.generativeModel.call(prompt);
+          const numResult = res == 1 ? 1 : 0;
+          return {
+            result: res,
+            numResult: numResult
+          };
+        });
+
+        const resultsArray = await Promise.all(promises);
+
+        resultsArray.forEach(resultObj => {
+          this.currentModelSensitivityResults.push(resultObj);
+          results.push(resultObj.numResult);
+        });
+
         console.log(results)
         this.currentModelSensitivity = this.calculateSensitivity(results);
         this.showResults = true;
@@ -776,7 +944,7 @@ export default {
         }
         
       } catch (err) {
-        console.log(err.message);
+        console.error(err.message);
         if (err.response && err.response.data && err.response.data.error.code === "invalid_api_key") {
           this.errorToast.message = "Please enter a valid OpenAI key.";
           this.errorToast.show = true;
@@ -793,7 +961,7 @@ export default {
       this.abortController.abort();
       this.chatText = "";
       this.messages.splice(0, this.messages.length);
-      this.chatModel.memory.clear();
+      this.chatModel?.memory.clear();
     },
 
     async initChatModel() {

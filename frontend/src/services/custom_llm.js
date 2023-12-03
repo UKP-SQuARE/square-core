@@ -155,7 +155,7 @@ export class CustomGenerativeModel extends BaseLLM {
     const bodyData = {
       model_identifier: this.model_identifier,
       messages: promptMessage,
-      system_message: "Answer only with 1 or 0.",
+      system_message: "",
       temperature: this.temperature,
       top_p: this.top_p,
       max_new_tokens: this.max_new_tokens,

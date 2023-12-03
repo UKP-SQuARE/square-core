@@ -25,7 +25,7 @@
     "dompurify": "^2.3.3",
     "highlight.js": "^11.8.0",
     "keycloak-js": "^17.0.0",
-    "langchain": "^0.0.173",
+    "langchain": "^0.0.200",
     "marked": "^5.1.1",
     "marked-highlight": "^2.0.1",
     "masonry-layout": "^4.2.2",
