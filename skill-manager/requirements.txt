@@ -1,12 +1,15 @@
 fastapi==0.89.1
 httpx==0.23.3
-pydantic==1.10.4
+pydantic==1.10.13
 pymongo==4.3.3
-redis==4.4.2
+redis==4.4.4
 requests-cache==0.9.8
-requests==2.28.2
+requests==2.31.0
 square-auth==0.0.14
 square-elk-json-formatter==0.0.3
 square-skill-api==0.0.47
 uvicorn==0.20.0
 square-model-client==0.0.10
+aiohttp>=3.9.0 # not directly required, pinned by Snyk to avoid a vulnerability
+numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
+starlette>=0.27.0 # not directly required, pinned by Snyk to avoid a vulnerability
