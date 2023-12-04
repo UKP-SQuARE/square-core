@@ -36,8 +36,8 @@
               </div>
             </div>
             <div class="col col-md-9">
-              <!-- Write Selected Model in bold -->
-              <span class="fw-bold">Selected Model:</span> {{ strSelectedModels }}
+              <!-- Choose the LLM -->
+              <span class="fw-bold">Available Models:</span>
 
               <!-- Search Bar -->
               <div class="input-group input-group-sm mb-2">
@@ -53,31 +53,53 @@
                 <input v-model="searchText" placeholder="Search Model" class="form-control form-control-xs"/>
               </div>
 
-              <!-- Model cards -->
-              <div class="col mb-2" v-for="(model) in paginatedModels" :key="model.id">
-                <div class="card h-100" @click="navigateToModel(model)"
-                     :class="{ 'disabled': !isModelAvailable(model) }">
-                  <div class="card-body">
-                    <h5 class="card-title">{{ model.name }}</h5>
-                    <span v-if="!isModelAvailable(model)" class="locked-icon">
+              <!-- Models -->
+              <div class="row row-cols-2 g-3">
+                <div class="col" v-for="model in paginatedModels" :key="model.id">
+                  <div class="card h-100" :class="{'text-muted': !isModelAvailable(model)}" style="height: 25vh !important;">
+                    <div class="card-body d-flex flex-column align-items-center">
+                      <h5 class="card-title text-primary">{{ model.name }}</h5>
+                      <p class="text-muted text-center">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.
+                      </p>
+                      <span v-if="!isModelAvailable(model)" class="mt-auto">
+                        <router-link :to="{ name: 'market', query: runQueryParams }"
+                                     class="btn btn-primary btn-lg text-white">
+                          Unlock
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                class="bi bi-lock" viewBox="0 0 16 16">
                             <path
                                 d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
                           </svg>
-                       </span>
+                        </router-link>
+                      </span>
+                      <span v-else class="mt-auto">
+                        <router-link :to="{ name: 'chatbot', query: runQueryParams }"
+                                     class="btn btn-danger btn-lg text-white">
+                          Run
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                               class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                  d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z"/>
+                            <path fill-rule="evenodd"
+                                  d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                          </svg>
+                        </router-link>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
+
               <!-- Pagination Component -->
               <v-page :total-row="filteredModels.length" align="center" v-model="currentPage" ref="page"
-                      @page-change="pageModelChange" :page-size="4" language="en" :page-count="pageCount"></v-page>
-
+                      @page-change="pageModelChange" :page-count="pageCount" :page-size-menu="[4]"
+                      class="mt-4" hide-on-single-page="true" language="en"></v-page>
             </div>
-          </div>
 
-        </div> <!-- end of skill list container -->
+          </div> <!-- end of skill list container -->
+        </div>
       </div>
     </div>
   </div>
@@ -122,6 +144,13 @@ export default Vue.component('chatbot-hub', {
       const end = start + 4;
       return this.filteredModels.slice(start, end);
     },
+    modelPairs() {
+      let pairs = [];
+      for (let i = 0; i < this.paginatedModels.length; i += 2) {
+        pairs.push(this.paginatedModels.slice(i, i + 2));
+      }
+      return pairs;
+    },
   },
   watch: {
     filteredModels() {
@@ -130,11 +159,23 @@ export default Vue.component('chatbot-hub', {
     },
   },
   methods: {
-    navigateToModel(model) {
-      this.$router.push({name: 'modelDetail', params: {modelId: model.id}});
-    },
     pageModelChange(pInfo) {
       this.currentPage = pInfo.pageNumber;
+      this.updatePaginatedModels();
+    },
+    handleLockClick() {
+      if (!this.isUserLoggedIn()) {
+        // Redirect to login page or show login modal
+        this.showLoginModal();
+      } else {
+        // User is logged in but the model is not available
+        // Handle accordingly, perhaps showing a message or an upgrade option
+      }
+    },
+    updatePaginatedModels() {
+      const start = (this.currentPage - 1) * 4;
+      const end = start + 4;
+      this.paginatedModels = this.filteredModels.slice(start, end);
     },
     isModelAvailable(model) {
       if (this.isUserLoggedIn()) {
@@ -147,5 +188,9 @@ export default Vue.component('chatbot-hub', {
       return this.$store.state.userInfo && Object.keys(this.$store.state.userInfo).length > 0;
     },
   },
+  mounted() {
+    this.pageCount = Math.ceil(this.filteredModels.length / 4); // Initialize pageCount on mount
+    this.updatePaginatedModels();
+  }
 })
 </script>
