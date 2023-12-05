@@ -8,15 +8,20 @@
             <div class="col col-3 d-none d-md-block">
               <div class="container text-start"></div>
               <div class="row">
-                <div class="col text-start">
-                  <h4>Chatbot Rating Interface</h4>
-                  <p class="mb-1">
-                    <br>
-                    Shape the future of conversational AI! <br><br>
-                    Engage with various models <br> Provide valuable feedback <br> Earn points to unlock new features <br><br>
-                    Start your journey today to become a certified LLM expert! <br><br>
-                  </p>
-                  <div v-if="isUserLoggedIn()" class="mt-5">
+
+                <!-- Description and Points -->
+
+                <!-- Description of the Chatbot Rating Interface
+                <h4>Chatbot Rating Interface</h4>
+                <p class="mb-1">
+                  <br>
+                  Shape the future of conversational AI! <br><br>
+                  Engage with various! modelsProvide valuable feedback! Earn points to unlock new features!
+                  Start your journey today to become a certified LLM expert!
+                </p>
+                -->
+                <div v-if="isUserLoggedIn()">
+                  <div class="col text-start">
                     <h4>Available Points:</h4>
                     <span class="badge bg-primary ms-auto" style="font-size: 1.5em;">
                       {{ points }}
@@ -27,12 +32,22 @@
                       <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
                     </svg>
                     </span>
+                    <!-- <h4>Leaderboard Place:</h4>
+                    <span class="badge bg-primary ms-auto" style="font-size: 1.5em;">
+                      {{ lbPlace }} out of 50
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                           class="bi bi-award-fill" viewBox="0 0 16 16">
+                      <path
+                          d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z"/>
+                      <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                    </svg>
+                    </span> -->
                   </div>
-                  <div v-else>
-                    <button class="btn btn-primary mt-3" @click="showLoginModal">
-                      Log in to collect points
-                    </button>
-                  </div>
+                </div>
+                <div v-else>
+                  <router-link class="btn btn-primary mt-3" to="/signin">
+                    Sign in to earn points!
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -40,9 +55,9 @@
 
             <div class="col col-md-9">
               <!-- Choose the LLM -->
-              <span class="fw-bold">Available Models:</span>
+              <span class="fw-bold">Models:</span>
 
-              <!-- Search Bar -->
+              <!-- Search Bar
               <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text" id="basic-addon1">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -55,20 +70,21 @@
                 </span>
                 <input v-model="searchText" placeholder="Search Model" class="form-control form-control-xs"/>
               </div>
+              -->
 
               <!-- Models -->
               <div class="row row-cols-2 g-3">
                 <div class="col" v-for="model in paginatedModels" :key="model.id">
                   <div class="card h-100" :class="{'text-muted': !isModelAvailable(model)}"
-                       style="height: 25vh !important;">
+                       style="height: 15vh !important;">
                     <div class="card-body d-flex flex-column align-items-center">
                       <h5 class="card-title text-primary">{{ model.name }}</h5>
                       <p class="text-muted text-center">
-                        {{model.description}}
+                        {{ model.description }}
                       </p>
-                      <span v-if="!isModelAvailable(model)" class="mt-auto">
+                      <span v-if="!isModelAvailable(model)" class="mt-0">
                         <router-link :to="{ name: 'market', query: runQueryParams }"
-                                     class="btn btn-primary btn-lg text-white">
+                                     class="btn btn-primary btn-sm text-white">
                           Unlock
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                class="bi bi-lock" viewBox="0 0 16 16">
@@ -77,9 +93,9 @@
                           </svg>
                         </router-link>
                       </span>
-                      <span v-else class="mt-auto">
+                      <span v-else class="mt-0">
                         <router-link :to="{ name: 'chatbot', query: runQueryParams }"
-                                     class="btn btn-danger btn-lg text-white">
+                                     class="btn btn-success btn-sm text-white">
                           Run
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
@@ -102,7 +118,25 @@
                       class="mt-4" hide-on-single-page="true" language="en"></v-page>
             </div>
 
-          </div> <!-- end of skill list container -->
+            <!-- Promo -->
+            <div class="bg-light border rounded shadow p-5 text-center">
+              <div class="feature-icon bg-success bg-gradient">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-chat-heart" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd"
+                        d="M2.965 12.695a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6c0 3.193-3.004 6-7 6a8.06 8.06 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a10.97 10.97 0 0 0 .398-2m-.8 3.108.02-.004c1.83-.363 2.948-.842 3.468-1.105A9.06 9.06 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.437 10.437 0 0 1-.524 2.318l-.003.011a10.722 10.722 0 0 1-.244.637c-.079.186.074.394.273.362a21.673 21.673 0 0 0 .693-.125ZM8 5.993c1.664-1.711 5.825 1.283 0 5.132-5.825-3.85-1.664-6.843 0-5.132"/>
+                </svg>
+              </div>
+              <h2 class="display-5">Chatbot Rating Interface</h2>
+              <p class="lead fs-2">Engage with various <span class="text-success">ChatBots</span> and shape the future
+                of conversational <span class="text-success">AI</span>!</p>
+              <p class="lead fs-2">Provide valuable feedback. Earn <span class="text-success">points</span> to unlock
+                new features.</p>
+              <p class="lead fs-2"><span class="text-success">Start</span> your journey today to become a <span
+                  class="text-success">certified</span> LLM expert!</p>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
@@ -125,14 +159,19 @@ export default Vue.component('chatbot-hub', {
       pageCount: 0,
       waiting: false,
       availableModels: [
-        {id: 1, name: 'CommonsenseQA BERT Adapter', description: 'A model specialized in common sense question answering'},
-        {id: 2, name: 'Llama', description: 'Versatile model adept at processing natural language'},
-        {id: 3, name: 'ChatGPT-3.5', description: 'Advanced conversational agent for realistic dialogue'},
-        {id: 4, name: 'ChatGPT-4.0', description: 'State-of-the-art language model with nuanced understanding'},
+        {
+          id: 1,
+          name: 'CommonsenseQA BERT Adapter',
+          description: 'A model specialized in common sense question answering'
+        },
+        {id: 2, name: 'Llama-2-7b-chat', description: 'Versatile model adept at processing natural language'},
+        {id: 3, name: 'GPT-3.5-turbo', description: 'Advanced conversational agent for realistic dialogue'},
+        {id: 4, name: 'ChatGPT-4.0', description: 'State-of-the-art model with nuanced understanding'},
         {id: 5, name: 'Perplexity AI', description: 'AI designed for deep contextual comprehension and interaction.'},
       ],
       availableModelNamesForLoggedUser: ['CommonsenseQA BERT Adapter', 'ChatGPT-3.5'],
       points: 1500,
+      lbPlace: 2,
     }
   },
   components: {
@@ -194,7 +233,7 @@ export default Vue.component('chatbot-hub', {
     },
   },
   mounted() {
-    this.pageCount = Math.ceil(this.filteredModels.length / 4); // Initialize pageCount on mount
+    this.pageCount = Math.ceil(this.filteredModels.length / 4);
     this.updatePaginatedModels();
   }
 })
