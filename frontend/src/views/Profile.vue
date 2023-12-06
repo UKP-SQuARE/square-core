@@ -91,8 +91,8 @@ export default {
       isFullLeaderboard: false,
       // Mock user data, replace with real data from an API or store
       badges: [
-        { id: 1, title: 'Expert', description: 'Top Contributor', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Eslogan_Oficial.png', type: 'gold' },
-        { id: 2, title: 'Intermediate', description: 'Great Participation', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Eslogan_Oficial.png', type: 'silver' },
+        { id: 1, title: 'Expert', description: 'Top Contributor', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png', type: '#ffd700' },
+        { id: 2, title: 'Intermediate', description: 'Great Participation', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png', type: 'silver' },
       ],
       submissions: [
         { date: '2023-11-12', llmName: 'Llama-2' },
