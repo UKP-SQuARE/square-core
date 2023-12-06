@@ -15,6 +15,9 @@
         required: true
       }
     },
+    mounted() {
+    console.log(this.user); // Check the user data
+  },
     computed: {
         profilePictureUrl() {
         return this.user.profilePicture || 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg';

@@ -54,6 +54,29 @@ export default {
 </script>
 
 <style scoped>
+.badges-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns by default */
+  grid-gap: 10px; /* Adjust the gap as needed */
+  /* Add more styling as needed */
+}
+
+@media (max-width: 768px) {
+  .badges-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .badges-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on very small screens */
+  }
+}
+
+.badge-item {
+  /* Styles for individual badge items */
+}
+
 .badge-preview {
   position: relative;
   width: 100px; /* Adjust as needed */

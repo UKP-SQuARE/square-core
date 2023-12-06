@@ -1,64 +1,78 @@
 <template>
-    <div class="profile-container">
-      <div class="profile-container">
-        <div class="profile-sidebar">
-          <!-- Profile Data -->
-          <div class="tile">
+  <div class="bg-light border rounded shadow p-3">
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-md-3">
+          <div class="profile-sidebar">
+            <!-- Profile Data -->
             <div class="tile-header">Profile</div>
             <user-profile :user="user" />
-
+            
+            <hr>
             <!-- Navigation Links -->
             <div class="profile-links">
-              <!-- Link to My Skills Page -->
               <router-link class="dropdown-item" to="/skills">My skills</router-link>
-
-              <!-- Link to Evaluate Skills Page -->
               <router-link class="dropdown-item" to="/evaluations">Evaluate skills</router-link>
-
-              <!-- Manage Account -->
               <a @click.prevent="$emit('account')" href="#" class="dropdown-item">Manage account</a>
             </div>
           </div>
         </div>
-      </div>
-      <div class="profile-main">
-        <!-- Badges, Certificates, Leaderboard, Submissions -->
-        <div class="tile">
-          <div class="tile-header">Badges</div>
-          <badges :badges="badges" />
-        </div>
-        <div class="tile">
-          <div class="tile-header">Certificates</div>
-          <div class="certificates">
-            <certificate-card
-              v-for="certificate in certificates"
-              :key="certificate.id"
-              :certificate-id="certificate.id"
-              :certificate-title="certificate.title"
-              :student-name="certificate.studentName"
-              :score="certificate.score"
-              :evaluation-type="certificate.evaluationType"
-              :issue-date="certificate.issueDate"
-            />
+
+        <!-- Profile Main Content -->
+        <div class="col-md-9">
+          <div class="profile-main">
+            <!-- Badges Section -->
+            <div class="tile mb-3">
+              <div class="tile-header">Badges</div>
+              <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+                <badges :badges="badges" />
+              </div>
+            </div>
+
+            <!-- Certificates Section -->
+            <div class="tile mb-3">
+              <div class="tile-header">Certificates</div>
+              <div class="certificates d-grid gap-1 d-md-flex justify-content-md-center">
+                <certificate-card
+                  v-for="certificate in certificates"
+                  :key="certificate.id"
+                  :certificate-id="certificate.id"
+                  :certificate-title="certificate.title"
+                  :student-name="certificate.studentName"
+                  :score="certificate.score"
+                  :evaluation-type="certificate.evaluationType"
+                  :issue-date="certificate.issueDate"
+                />
+              </div>
+            </div>
+
+            <!-- Leaderboard Section -->
+            <div class="tile mb-3">
+              <div class="tile-header">Leaderboard</div>
+              <leaderboard-table :full.sync="isFullLeaderboard" />
+            </div>
+
+            <!-- Submissions Section -->
+            <div class="tile mb-3">
+              <div class="tile-header">Submissions</div>
+              <submissions-list :submissions="submissions" />
+            </div>
           </div>
-        </div>
-        <div class="profile-leaderboard">
-            <h3>Mini Leaderboard</h3>
-            <show-leaderboard v-if="showFullLeaderboard"></show-leaderboard>
-            <button @click="toggleLeaderboard">
-            {{ showFullLeaderboard ? 'Hide' : 'Extend' }}
-            </button>
-        </div>
-        <div class="tile">
-        <div class="tile-header">Submissions</div>
-            <submissions-list :submissions="submissions" />
         </div>
       </div>
     </div>
+  </div>
 </template>
 
+
+
 <script>
-import ShowLeaderboard from '../views/Leaderboard.vue'; 
+import Vue from "vue"
+import { BootstrapVue } from "bootstrap-vue"
+import "bootstrap-vue/dist/bootstrap-vue.css"
+Vue.use(BootstrapVue)
+import LeaderboardTable from '@/components/LeaderboardTable.vue'; 
 import UserProfile from '@/components/UserProfile.vue';
 import CertificateCard from '@/components/Certificates.vue';
 import SubmissionsList from '@/components/SubmissionsList.vue';
@@ -66,7 +80,7 @@ import Badges from '@/components/Badges.vue';
 export default {
   name: 'ProfilePage',
   components: {
-    ShowLeaderboard,
+    LeaderboardTable,
     UserProfile,
     CertificateCard,
     SubmissionsList,
@@ -74,10 +88,9 @@ export default {
   },
   data() {
     return {
-      showFullLeaderboard: false,
+      isFullLeaderboard: false,
       // Mock user data, replace with real data from an API or store
       badges: [
-
         { id: 1, title: 'Expert', description: 'Top Contributor', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Eslogan_Oficial.png', type: 'gold' },
         { id: 2, title: 'Intermediate', description: 'Great Participation', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Eslogan_Oficial.png', type: 'silver' },
       ],
@@ -118,20 +131,6 @@ export default {
 </script>
 
 <style scoped>
-.profile-container {
-  display: grid;
-  grid-template-columns: 1fr 2fr; /* 1:2 ratio for sidebar:main */
-  gap: 20px;
-  width: 90%; /* Using 90% of the screen width */
-  margin: auto; /* Centering the grid */
-  padding: 20px;
-}
-
-.profile-main {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
 
 .tile {
   background: #fff; /* or any color you prefer */
@@ -149,44 +148,6 @@ export default {
   margin-bottom: 15px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .profile-container {
-    grid-template-columns: 1fr; /* Full width for smaller screens */
-  }
-}
 
-.profile-sidebar {
-  /* Styles for the sidebar */
-}
-
-.badges, .certificates, .leaderboard, .submissions {
-  margin-bottom: 20px;
-  /* Additional styling for each section */
-}
-
-.profile-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-}
-
-.profile-header {
-  text-align: center;
-}
-
-.profile-picture {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.info-section, .posts-section {
-  margin-top: 20px;
-}
 
 </style>

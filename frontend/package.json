@@ -22,6 +22,7 @@
     "cytoscape-dagre": "^2.4.0",
     "cytoscape-popper": "^2.0.0",
     "dompurify": "^2.3.3",
+    "jspdf": "^2.5.1",
     "keycloak-js": "^17.0.0",
     "masonry-layout": "^4.2.2",
     "package.json": "^2.0.1",

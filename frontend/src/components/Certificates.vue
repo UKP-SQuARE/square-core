@@ -2,8 +2,9 @@
   <div> <!-- Root element -->
     <!-- Certificate Preview -->
     <div class="certificate-preview" @click="showModal(certificateId)">
-      <h5>{{ certificateTitle }}</h5>
-      <!-- Design in progress -->
+      <h5 class="preview-title">{{ certificateTitle }}</h5>
+      <p class="preview-date">Issued: {{ issueDate }}</p>
+      <!-- Add more details as needed -->
     </div>
 
     <!-- Modal -->
@@ -15,6 +16,7 @@
             <button type="button" class="btn-close" @click="closeModal"></button>
           </div>
           <div class="modal-body">
+            <button @click="downloadCertificate" class="btn btn-outline-primary">Download PDF</button>
             <div class="card mx-auto my-5 border-0">
               <div class="card-body p-4 bg-light shadow">
                 <div class="text-center mb-4">
@@ -49,6 +51,8 @@
 </template>
 
 <script>
+import jsPDF from 'jspdf';
+
 export default {
   name: 'CertificateCard',
   props: {
@@ -89,7 +93,20 @@ export default {
     },
     closeModal() {
       this.activeModal = null;
-    }
+    },
+    downloadCertificate() {
+      const doc = new jsPDF();
+      
+      // Add content to the PDF
+      doc.text(this.certificateTitle, 10, 10);
+      doc.text(`Issued to: ${this.studentName}`, 10, 20);
+      doc.text(`Score: ${this.score}`, 10, 30);
+      doc.text(`Issue Date: ${this.issueDate}`, 10, 40);
+      // Add more content as needed
+
+      // Save the PDF
+      doc.save(`Certificate-${this.certificateId}.pdf`);
+    },
   }
 }
 </script>
@@ -98,7 +115,23 @@ export default {
 
 .certificate-preview {
   cursor: pointer;
-  /* Add your styles for the preview */
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.preview-title {
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.preview-date {
+  font-size: 0.8em;
+  color: #666;
 }
 
 .modal-backdrop {
