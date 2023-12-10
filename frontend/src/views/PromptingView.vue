@@ -33,11 +33,11 @@
                 </div>
                 <div class="form-group">
                   <label for="chat-mode" class="form-label">Mode</label>
-                  <select v-model="chatConfig.chatMode" class="form-select" id="chat-mode">
-                    <option value="normal_chat">Normal Chat</option>
-                    <option value="agent_chat">Agent Chat</option>
-                    <option value="sensitivity">Sensitivity</option>
-                  </select>
+                  <div class="list-group" id="chat-mode">
+                    <a href="#" class="list-group-item list-group-item-action" v-on:click.prevent="chatConfig.chatMode = 'normal_chat'" :class="{'active': chatConfig.chatMode == 'normal_chat'}">Normal Chat</a>
+                    <a href="#" class="list-group-item list-group-item-action" v-on:click.prevent="chatConfig.chatMode = 'agent_chat'" :class="{'active': chatConfig.chatMode == 'agent_chat'}">Agent Chat</a>
+                    <a href="#" class="list-group-item list-group-item-action" v-on:click.prevent="chatConfig.chatMode = 'sensitivity'" :class="{'active': chatConfig.chatMode == 'sensitivity'}">Sensitivity</a>
+                  </div>
                 </div>
                 <hr />
                 <div class="form-group mb-3" v-if="chatConfig.chatMode === 'sensitivity'">
