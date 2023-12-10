@@ -26,6 +26,23 @@ Content-Type: application/json
 }
 
 ###
+# @name deploy_llm
+POST {{domain}}/api/models/deploy HTTP/1.1
+Content-Type: application/json
+
+{
+  "identifier": "xlnet-large-cased",
+  "model_name": "xlnet-large-cased",
+  "model_type": "llm",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "model_class": "from_config",
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "return_plaintext_arrays": false
+}
+
+###
 # @name test_llm
 GET {{domain}}/api/Llama-2-7b-chat/worker_status
 
@@ -94,7 +111,7 @@ Content-Type: application/json
 
 ###
 # @name remove_model
-DELETE {{domain}}/api/models/remove/Llama-2-7b-chat
+DELETE {{domain}}/api/models/remove/xlnet-large-cased
 #Authorization: Bearer {{auth_token}}
 
 
