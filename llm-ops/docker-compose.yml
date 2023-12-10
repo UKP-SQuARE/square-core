@@ -61,8 +61,8 @@ services:
     command:
       - --model-path
       - ../root/.cache/huggingface/Llama-2-7b-chat  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
-  #      - --max-gpu-memory
-  #      - 14Gib
+      # - --max-gpu-memory
+      # - 14Gib
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.llm-chat.rule=PathPrefix(`/api/Llama-2-7b-chat`)"
@@ -280,6 +280,8 @@ services:
     entrypoint: "/bin/bash -c 'python3 -m llm_ops.app.sensitivity'"
     volumes:
       - /home/sihebi/hf_models:/root/.cache/huggingface
+    depends_on:
+      - llm_chat
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sensitivity.rule=PathPrefix(`/api/sensitivity`)"

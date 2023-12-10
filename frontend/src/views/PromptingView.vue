@@ -315,6 +315,10 @@
                             Input</button>
                           <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove
                             Input</button>
+                          <button :disabled="alternativesWaiting || perturbedListNotEmpty" type="button" class="btn btn-sm btn-primary ms-3" v-on:click="generateAlternatives">
+                            Generate Alternatives&nbsp;
+                            <span v-show="alternativesWaiting" class="spinner-border spinner-border-sm" role="status" />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -426,7 +430,8 @@ import {
 import VueTippy from "vue-tippy";
 import { 
   getOpenAIModels,
-  getLocalLLMs 
+  getLocalLLMs, 
+  getAlternatives
 } from '@/api';
 import { CustomChatModel, CustomGenerativeModel } from "../services/custom_llm";
 
@@ -537,7 +542,9 @@ export default {
     }, {
       sentence: 'The mechanical doll next itself loose.', 
       answer: '0'
-    }]
+    }], 
+
+    alternativesWaiting: false,
   }),
 
   created() {
@@ -593,10 +600,51 @@ export default {
         const perturbedTokens = tokenize(sentence);
         return findDifferences(originalTokens, perturbedTokens);
       });
+    }, 
+
+    perturbedListNotEmpty: function(){
+      let oneIsEmpty = false; 
+      this.listPerturbedInput.forEach(input => {
+        if (input === "") oneIsEmpty = true;
+      });
+      return !oneIsEmpty;
     }
   },
 
   methods: {
+
+    async generateAlternatives(){
+      if(this.currentOriginalInput === ""){
+        this.errorToast.show = true;
+        this.errorToast.message = "Please enter an original input."
+        return;
+      }
+
+      this.alternativesWaiting = true;
+
+      try{
+        let alternatives = await getAlternatives(this.currentOriginalInput.trim());
+        alternatives = alternatives.data.alternatives; 
+
+        let counter = 0; 
+        let idx = 0;
+
+        // this is needed because sometimes the alternatives are equal to the original input
+        while (counter < this.listPerturbedInput.length && idx < alternatives.length){
+          let alternative = alternatives[idx];
+          if (alternative.trim() !== this.currentOriginalInput.trim()){
+            this.listPerturbedInput[counter] = alternative;
+            counter++;
+          }
+          idx++;
+        }
+      } catch (e) {
+        console.error(e)
+        this.errorToast.show = true;
+        this.errorToast.message = "Something went wrong when generating alternatives. Please try again later."
+      }
+      this.alternativesWaiting = false;
+    },
 
     addFewShotExample() {
       this.listFewShotExamples.push({

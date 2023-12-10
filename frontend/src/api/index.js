@@ -286,3 +286,17 @@ export function generateText(params, streaming) {
         return response;
     }
 }
+
+
+export function getAlternatives(text){
+    const params = {
+        text: text
+    }
+    const response = axios.post(`${LLM_MODELS_URL}/sensitivity/generate_alternatives`, params, {
+        httpAgent: new https.Agent({ rejectUnauthorized: false}),
+        headers:{
+            'Content-Type': 'application/json'
+        }
+    });
+    return response;
+}

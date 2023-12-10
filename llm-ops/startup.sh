@@ -20,6 +20,6 @@ python3 -m llm_ops.app.controller --host 0.0.0.0 --port 21001 &
 python3 -m llm_ops.app.vllm_worker --host 0.0.0.0 \
                                     --port 8000 \
                                     --worker-address http://localhost:8000 \
-                                    --controller-address http://localhost:21001 $@
-                                    # --gpu-memory-utilization 0.3 \
+                                    --controller-address http://localhost:21001 \
+                                    --gpu-memory-utilization 0.7 $@
                                     # --quantization awq $@
