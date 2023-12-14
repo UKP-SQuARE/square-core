@@ -6,7 +6,7 @@
           <div class="row">
             <!-- Config -->
             <div class="col col-3 d-none d-md-block">
-              <div style="height: 35rem; overflow-y: auto; overflow-x: hidden;">
+              <div style="height: 100%; overflow-y: auto; overflow-x: hidden;">
                 <div class="form-group pb-2">
                   <div class="form-group">
                     <label for="selectedModel" class="form-label">Chat Model</label>
@@ -281,7 +281,7 @@
                 <div class="me-auto mt-4 pt-3 mt-md-0">
                   <div class="bg-light border border-primary rounded h-100 p-3">
                     <div class="w-100">
-                      <label for="originalInput" class="form-label">2. Enter your original input</label>
+                      <label for="originalInput" class="form-label">3. Enter your original input</label>
                       <textarea v-model="currentOriginalInput" @keydown.enter.exact.prevent
                         class="form-control form-control mb-2" style="resize: none; height: calc(40px);"
                         id="originalInput" placeholder="original input" required />
@@ -299,7 +299,7 @@
                   <div class="bg-light border border-secondary rounded h-100 p-3">
                     <div class="w-100">
                       <div class="row">
-                        <label for="perturbed_loop" class="form-label">3. Enter your perturbed input</label>
+                        <label for="perturbed_loop" class="form-label">4. Enter your perturbed input</label>
                         <div class="row g-0" v-for="(choice, index) in listPerturbedInput" :key="index"
                           id="perturbed_loop">
                           <div class="col-sm">
@@ -316,7 +316,7 @@
                           <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeChoice">Remove
                             Input</button>
                           <button :disabled="alternativesWaiting || perturbedListNotEmpty" type="button" class="btn btn-sm btn-primary ms-3" v-on:click="generateAlternatives">
-                            Generate Alternatives&nbsp;
+                            Auto-Generate Perturbed Sentences&nbsp;
                             <span v-show="alternativesWaiting" class="spinner-border spinner-border-sm" role="status" />
                           </button>
                         </div>
@@ -366,7 +366,7 @@
       </div>
     </div>
 
-    <div v-if="showResults" class="bg-light border rounded shadow p-3 mt-4">
+    <div v-if="showSensitivityResults" class="bg-light border rounded shadow p-3 mt-4">
       <div class="w-100">
         <div class="mb-1">
           <div class="container-fluid">
@@ -376,11 +376,12 @@
             <hr/>
             <div class="row">
               <div class="col-7"></div>
-              <div class="col-3 h5"> Actual Answer </div>
+              <div class="col-3 h5"> Model Answer </div>
               <div class="col-2 h5"> Interpreted As </div>
             <div class="row"></div>
               <div class="col-7 h5 mb-4"> 
-                &bull; Original Input: {{ currentOriginalInput }}
+                &bull; 
+                <mark class="bg-success text-white">{{currentOriginalInput}}</mark>
               </div>
               <div class="col-3" style="overflow-x: auto; white-space: nowrap;"> 
                 {{ currentModelSensitivityResults[0].result }} 
@@ -531,7 +532,7 @@ export default {
     datasetNameList: [],
     datasets: {},
     exampleNumber: 3,
-    showResults: false,
+    showSensitivityResults: false,
     currentModelSensitivityResults: [],
     listFewShotExamples: [{
       sentence: 'The sailors rode the breeze clear of the rocks.', 
@@ -666,7 +667,7 @@ export default {
     },
 
     selectExample(example) {
-      this.showResults = false;
+      this.showSensitivityResults = false;
       this.currentOriginalInput = example.original;
       for (let i = 0; i < this.listPerturbedInput.length; i++) {
         this.listPerturbedInput[i] = Object.entries(example.synthetic)[i][1]
@@ -675,13 +676,13 @@ export default {
 
     addChoice() {
       this.listPerturbedInput.push("");
-      this.showResults = false;
+      this.showSensitivityResults = false;
     },
 
     removeChoice() {
       if(this.listPerturbedInput.length > 1){
         this.listPerturbedInput.pop();
-        this.showResults = false;
+        this.showSensitivityResults = false;
       }
     },
 
@@ -731,7 +732,7 @@ export default {
 
       const fewShotPrompt = new FewShotPromptTemplate({
         suffix: this.chatConfig.sensitivityPromptTemplate, // template for the actual sentence, not the few shot examples
-        prefix: 'Respond to the last question in the with the following format:', // telling the model what to do with the few shot examples
+        prefix: '', // TODO: make this configurable
         examplePrompt: promptTemplate, // template for the few shot
         examples: this.listFewShotExamples,
         inputVariables: ["sentence", "answer"], // variables in the actual sentence template, not the few shot examples
@@ -741,56 +742,70 @@ export default {
         sentence: input,
         answer: ''
       });
-      return formattedPrompt;
+
+      return formattedPrompt.trim();
+    },
+
+    getNumResult(text){
+      if (text.startsWith('1') || text.endsWith('1')) return 1;
+      if (text.startsWith('0') || text.endsWith('0')) return 0;
+
+      // remove numbers between () becasue they are not relevant
+      text = text.replace(/\(\d+\)/g, '');
+
+      if (text.includes('1')) return 1;
+      if (text.includes('0')) return 0;
+
+      return 0;
     },
 
     async getSensitivity() {
       this.waiting = true;
-      this.showResults = false;
-      if (this.selectedDatasetName === 'cola') {
-        this.currentModelSensitivityResults = [];
-        // get the result of the original input
-        let prompt; 
-        try{
-          prompt = await this.getPrompt(this.currentOriginalInput);
-        } catch (e) {
-          console.error(e)
-          this.errorToast.show = true;
-          this.errorToast.message = e.message;
-          this.waiting = false;
-          return;
-        }
-        
-        let res = await this.generativeModel.call(prompt);
-        const results = []
-        const numResult = res == 1 ? 1 : 0; // if the model returns anything other than 1 or 0, we assume it is 0
-        this.currentModelSensitivityResults.push({
-          result: res, 
-          numResult: numResult
-        });
-        results.push(numResult);
-
-        const promises = this.listPerturbedInput.map(async (input) => {
-          const prompt = await this.getPrompt(input);
-          const res = await this.generativeModel.call(prompt);
-          const numResult = res == 1 ? 1 : 0;
-          return {
-            result: res,
-            numResult: numResult
-          };
-        });
-
-        const resultsArray = await Promise.all(promises);
-
-        resultsArray.forEach(resultObj => {
-          this.currentModelSensitivityResults.push(resultObj);
-          results.push(resultObj.numResult);
-        });
-
-        console.log(results)
-        this.currentModelSensitivity = this.calculateSensitivity(results);
-        this.showResults = true;
+      this.showSensitivityResults = false;
+      this.currentModelSensitivityResults = [];
+      // get the result of the original input
+      let prompt; 
+      try{
+        prompt = await this.getPrompt(this.currentOriginalInput);
+        console.log(prompt)
+      } catch (e) {
+        console.error(e)
+        this.errorToast.show = true;
+        this.errorToast.message = e.message;
+        this.waiting = false;
+        return;
       }
+      
+      let res = await this.generativeModel.call(prompt);
+      const results = []
+      const numResult = this.getNumResult(res);
+      this.currentModelSensitivityResults.push({
+        result: res, 
+        numResult: numResult
+      });
+      results.push(numResult);
+
+      const promises = this.listPerturbedInput.map(async (input) => {
+        const prompt = await this.getPrompt(input);
+        const res = await this.generativeModel.call(prompt);
+        const numResult = this.getNumResult(res);
+        return {
+          result: res,
+          numResult: numResult
+        };
+      });
+
+      const resultsArray = await Promise.all(promises);
+
+      resultsArray.forEach(resultObj => {
+        this.currentModelSensitivityResults.push(resultObj);
+        results.push(resultObj.numResult);
+      });
+
+      console.log(results)
+      this.currentModelSensitivity = this.calculateSensitivity(results);
+      this.showSensitivityResults = true;
+
       this.waiting = false;
     },
 
@@ -1200,7 +1215,7 @@ export default {
     'chatConfig.selectedModel': {
       /* eslint-disable no-unused-vars */
       async handler(newModel, oldModel) {
-        this.showResults = false;
+        this.showSensitivityResults = false;
         this.chatConfig.selectedModel = newModel;
         await this.initChatModel();
         this.initGenerativeModel();
@@ -1211,7 +1226,7 @@ export default {
     'chatConfig.chatMode': {
       /* eslint-disable no-unused-vars */
       async handler(newChatMode, oldChatMode) {
-        this.showResults = false;
+        this.showSensitivityResults = false;
         this.chatConfig.chatMode = newChatMode;
         await this.fetchModels();
         await this.initChatModel();
@@ -1229,6 +1244,20 @@ export default {
           this.resetConv();
         }
         this.oldTools = JSON.parse(JSON.stringify(newTools));
+      }
+    },
+
+    'listPerturbedInput':{
+      deep: true,
+      async handler(newListPerturbedInput, oldListPerturbedInput){
+        this.showSensitivityResults = false;
+        this.currentModelSensitivityResults = []; 
+      }
+    },
+
+    'currentOriginalInput':{
+      async handler(newCurrentOriginalInput, oldCurrentOriginalInput){
+        this.showSensitivityResults = false;
       }
     },
 

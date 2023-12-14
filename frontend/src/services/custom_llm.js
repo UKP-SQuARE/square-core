@@ -3,11 +3,9 @@ import { BaseLLM } from 'langchain/llms/base';
 
 import { 
   generateText,
-  // generateTextStream
 } from '@/api'
 import { 
   AIMessage,
-  // AIMessageChunk
 } from 'langchain/schema';
 
 export class CustomChatModel extends BaseChatModel {
@@ -62,6 +60,7 @@ export class CustomChatModel extends BaseChatModel {
       top_p: this.top_p,
       max_new_tokens: this.max_new_tokens,
       echo: false, // false will make model return only last message
+      generation_mode: "chat"
     }
     try {
       if (this.streaming === false) {
@@ -145,21 +144,16 @@ export class CustomGenerativeModel extends BaseLLM {
     return 'custom_generative_model'
   }
 
-  _parsePrompt(prompt){
-    const promptMessage = { role: "human", text: prompt }; // doing this to work with chat models we deploy
-    return [promptMessage];
-  }
-
   async _generate(prompts) {
-    const promptMessage = this._parsePrompt(prompts[0]);
     const bodyData = {
       model_identifier: this.model_identifier,
-      messages: promptMessage,
+      prompt: prompts[0],
       system_message: "",
       temperature: this.temperature,
       top_p: this.top_p,
       max_new_tokens: this.max_new_tokens,
       echo: false, // false will make model return only last message
+      generation_mode: "completion"
     }
     try {
       const response = await generateText(bodyData, this.streaming)

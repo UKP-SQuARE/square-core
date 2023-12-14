@@ -158,7 +158,13 @@ def get_conversation_prompt(params) -> str:
 @router.post("/worker_generate_stream")
 async def api_generate_stream(request: Request):
     params = await request.json()
-    params["prompt"] = get_conversation_prompt(params)
+
+    if "generation_mode" in params and params["generation_mode"] == "chat":
+        params["prompt"] = get_conversation_prompt(params)
+    elif "prompt" not in params:  # prompt is required if chat mode is not specified
+        return JSONResponse(
+            {"error_code": 1, "error_message": "Prompt is required."}, status_code=400
+        )
 
     await acquire_worker_semaphore()
     request_id = random_uuid()
@@ -171,7 +177,13 @@ async def api_generate_stream(request: Request):
 @router.post("/worker_generate")
 async def api_generate(request: Request):
     params = await request.json()
-    params["prompt"] = get_conversation_prompt(params)
+
+    if "generation_mode" in params and params["generation_mode"] == "chat":
+        params["prompt"] = get_conversation_prompt(params)
+    elif "prompt" not in params:  # prompt is required if chat mode is not specified
+        return JSONResponse(
+            {"error_code": 1, "error_message": "Prompt is required."}, status_code=400
+        )
 
     await acquire_worker_semaphore()
     request_id = random_uuid()
