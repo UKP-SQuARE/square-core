@@ -14,6 +14,7 @@
     "@aws-sdk/client-lambda": "^3.370.0",
     "@johmun/vue-tags-input": "^2.1.0",
     "@popperjs/core": "^2.11.5",
+    "autosize": "^6.0.1",
     "axios": "^0.24.0",
     "bootstrap": "^5.2.3",
     "bootstrap-icons-vue": "^1.8.1",

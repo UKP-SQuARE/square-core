@@ -6,7 +6,7 @@
           <div class="row">
             <!-- Config -->
             <div class="col col-3 d-none d-md-block">
-              <div style="height: 100%; overflow-y: auto; overflow-x: hidden;">
+              <div style="height: 80hv; overflow-y: auto; overflow-x: hidden;">
                 <div class="form-group pb-2">
                   <div class="form-group">
                     <label for="selectedModel" class="form-label">Chat Model</label>
@@ -344,6 +344,9 @@
           </div>
         </div>
       </div>
+
+
+
     </div>
     <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
       <div id="toastBootstrap" class="toast text-white bg-primary border-0" role="alert" aria-live="assertive"
@@ -366,6 +369,15 @@
       </div>
     </div>
 
+
+    <div 
+      v-if="waiting || showSensitivityResults"
+      class="border rounded p-3 bg-white mt-4" 
+      style="min-height: 40vh; max-height: 40vh; overflow-y: auto;" 
+    >
+      <div v-html="markdownToHtml(sensitivityLog)"></div>
+    </div>
+
     <div v-if="showSensitivityResults" class="bg-light border rounded shadow p-3 mt-4">
       <div class="w-100">
         <div class="mb-1">
@@ -380,7 +392,6 @@
               <div class="col-2 h5"> Interpreted As </div>
             <div class="row"></div>
               <div class="col-7 h5 mb-4"> 
-                &bull; 
                 <mark class="bg-success text-white">{{currentOriginalInput}}</mark>
               </div>
               <div class="col-3" style="overflow-x: auto; white-space: nowrap;"> 
@@ -419,6 +430,8 @@ import { Calculator } from "langchain/tools/calculator";
 import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { AWSLambda } from "langchain/tools/aws_lambda";
 import { v4 as uuidv4 } from "uuid";
+import autosize from "autosize";
+import { marked } from "marked";
 import Vue from "vue";
 import {
   ChatPromptTemplate,
@@ -546,7 +559,18 @@ export default {
     }], 
 
     alternativesWaiting: false,
+
+    sensitivityLog: "",
   }),
+
+  mounted() {
+    // autosize(this.$refs.textAreaRef);
+    autosize(this.$refs.logTextarea);
+  },
+
+  beforeDestroy() {
+    autosize.destroy(this.$refs.textAreaRef);
+  },
 
   created() {
     this.messages = [];
@@ -613,6 +637,10 @@ export default {
   },
 
   methods: {
+
+    markdownToHtml(md) {
+      return marked.parse(md);
+    },
 
     async generateAlternatives(){
       if(this.currentOriginalInput === ""){
@@ -759,15 +787,41 @@ export default {
       return 0;
     },
 
+    addSensitivityToLog(text, type){
+      if (type === 'prompt'){
+        this.sensitivityLog += '\n\n--------------------------------------------------\n\n';
+        this.sensitivityLog += `${text}`;
+      } else if (type === 'first_log') {
+        this.sensitivityLog += `${text}`;
+      } else {
+        this.sensitivityLog += `${text}`;
+      }
+    },
+
+    cleanSensitivityLog(){
+      this.sensitivityLog = '';
+    },
+
+    highlight(text, type){
+      if (type === "success"){
+        return `<mark class="bg-success text-white">${text}</mark>`;
+      } else if (type === "info"){
+        return `<mark class="bg-info text-white">${text}</mark>`;
+      } else {
+        return `<mark class="bg-info text-white">${text}</mark>`;
+      }
+    },
+
     async getSensitivity() {
       this.waiting = true;
       this.showSensitivityResults = false;
       this.currentModelSensitivityResults = [];
+      this.cleanSensitivityLog();
       // get the result of the original input
       let prompt; 
       try{
         prompt = await this.getPrompt(this.currentOriginalInput);
-        console.log(prompt)
+        this.addSensitivityToLog(this.highlight("Model prompt for original input:") + "\n\n" + prompt);
       } catch (e) {
         console.error(e)
         this.errorToast.show = true;
@@ -777,6 +831,7 @@ export default {
       }
       
       let res = await this.generativeModel.call(prompt);
+      this.addSensitivityToLog(this.highlight(res, "success"));
       const results = []
       const numResult = this.getNumResult(res);
       this.currentModelSensitivityResults.push({
@@ -785,8 +840,11 @@ export default {
       });
       results.push(numResult);
 
+      const promptsList = []
+
       const promises = this.listPerturbedInput.map(async (input) => {
         const prompt = await this.getPrompt(input);
+        promptsList.push(prompt);
         const res = await this.generativeModel.call(prompt);
         const numResult = this.getNumResult(res);
         return {
@@ -797,12 +855,16 @@ export default {
 
       const resultsArray = await Promise.all(promises);
 
+      promptsList.forEach((prompt, idx) => {
+        this.addSensitivityToLog(this.highlight("Prompt for perturbed sentence " + (idx + 1), "info") + ":\n\n" + prompt, 'prompt');
+        this.addSensitivityToLog(this.highlight(resultsArray[idx].result, "success"));
+      });
+
       resultsArray.forEach(resultObj => {
         this.currentModelSensitivityResults.push(resultObj);
         results.push(resultObj.numResult);
       });
 
-      console.log(results)
       this.currentModelSensitivity = this.calculateSensitivity(results);
       this.showSensitivityResults = true;
 
@@ -829,7 +891,7 @@ export default {
         this.generativeModel = new CustomGenerativeModel({
           model_identifier: this.chatConfig.selectedModel,
           temperature: this.chatConfig.temperature,
-          max_new_tokens: this.chatConfig.maxTokens,
+          max_new_tokens: 2,
           top_p: this.chatConfig.top_p,
           streaming: false,
         });
@@ -840,7 +902,7 @@ export default {
           model: this.chatConfig.selectedModel,
           openAIApiKey: this.openAIApiKey,
           temperature: this.chatConfig.temperature,
-          maxTokens: this.chatConfig.maxTokens,
+          maxTokens: 2,
           top_p: this.chatConfig.top_p,
         });
       }
