@@ -8,7 +8,6 @@
             <div class="col col-3 d-none d-md-block">
               <div style="overflow-y: auto; overflow-x: hidden;" 
                 :style="{height: ['normal_chat', 'agent_chat'].includes(chatConfig.chatMode) ? '77vh': '100%'}">
-              >
                 <div class="form-group pb-2">
                   <div class="form-group">
                     <label for="selectedModel" class="form-label">Chat Model</label>
@@ -254,6 +253,9 @@
                           These placeholders will be replaced with actual sentences (and answers in case of few show examples) when prompting the model.">
                         </ToolTip>
                       </label>
+                      <div class="input-group input-group-sm mb-2">
+                        <input placeholder="PREFIX (Optional)" v-model="senPromptPrefix" type="text" class="form-control form-control-sm" required>
+                      </div>
                       <textarea v-autosize class="form-control" id="sensitivityPromptTemplate" v-model="chatConfig.sensitivityPromptTemplate" required/>
                       <div class="form-inline mt-3">
                         <label for="fewShotExamples" class="form-label">2. Enter your few shot examples</label>
@@ -372,13 +374,27 @@
     </div>
 
 
-    <div 
-      v-if="waiting || showSensitivityResults"
-      class="border rounded p-3 bg-white mt-4" 
-      style="min-height: 40vh; max-height: 40vh; overflow-y: auto;" 
-    >
-      <div v-html="markdownToHtml(sensitivityLog)"></div>
+    <div class="accordion" id="log">
+      <div class="accordion-item" v-if="waiting || showSensitivityResults">
+        <button class="accordion-button accordion-header collapsed fs-4" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseLog" aria-expanded="true" aria-controls="collapseLog">
+          Model Prompting Log
+        </button>
+        <div id="collapseLog" class="accordion-collapse collapse" aria-labelledby="headingLog"
+          data-bs-parent="#log">
+          <div class="accordion-body">
+            <div 
+              class="border rounded p-3 bg-white mt-4" 
+              style="min-height: 40vh; max-height: 40vh; overflow-y: auto;" 
+            >
+              <div v-html="markdownToHtml(sensitivityLog)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    
 
     <div v-if="showSensitivityResults" class="bg-light border rounded shadow p-3 mt-4">
       <div class="w-100">
@@ -549,6 +565,7 @@ export default {
     exampleNumber: 3,
     showSensitivityResults: false,
     currentModelSensitivityResults: [],
+    senPromptPrefix: "Given these examples, continue in the same format:",
     listFewShotExamples: [{
       sentence: 'The sailors rode the breeze clear of the rocks.', 
       answer: '1'
@@ -762,7 +779,7 @@ export default {
 
       const fewShotPrompt = new FewShotPromptTemplate({
         suffix: this.chatConfig.sensitivityPromptTemplate, // template for the actual sentence, not the few shot examples
-        prefix: '', // TODO: make this configurable
+        prefix: this.senPromptPrefix, 
         examplePrompt: promptTemplate, // template for the few shot
         examples: this.listFewShotExamples,
         inputVariables: ["sentence", "answer"], // variables in the actual sentence template, not the few shot examples
