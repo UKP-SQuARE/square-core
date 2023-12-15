@@ -6,7 +6,9 @@
           <div class="row">
             <!-- Config -->
             <div class="col col-3 d-none d-md-block">
-              <div style="height: 80hv; overflow-y: auto; overflow-x: hidden;">
+              <div style="overflow-y: auto; overflow-x: hidden;" 
+                :style="{height: ['normal_chat', 'agent_chat'].includes(chatConfig.chatMode) ? '77vh': '100%'}">
+              >
                 <div class="form-group pb-2">
                   <div class="form-group">
                     <label for="selectedModel" class="form-label">Chat Model</label>
@@ -185,7 +187,7 @@
             <!-- Messages View -->
             <div 
               class="col col-md-9 border rounded p-3 bg-white" 
-              style="height: 77vh" 
+              style="height: 77vh"
               v-if="['normal_chat', 'agent_chat'].includes(chatConfig.chatMode)">
               <div style="height: 100%; flex-direction: column; display: flex">
                 <div ref="messages" class="messages" style="flex-grow: 1; overflow: auto; padding: 1rem">
