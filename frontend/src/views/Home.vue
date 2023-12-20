@@ -5,10 +5,11 @@
     <div class="bg-primary bg-gradient text-white">
       <div class="container-sm text-center py-5">
 
-        <!-- Promo Chatbot Rating Interface -->
+        <!-- 2st Promo Chatbot Rating Interface -->
         <router-link class="btn btn-danger btn-lg px-4 text-white" to="/chatbot_rating">
-          2) Try Out Chatbot Rating Interface!
+          Try Out Chatbot Rating Interface!
         </router-link>
+
 
         <h1 class="display-1 fw-bold">UKP-SQuARE</h1>
         <p class="fs-3">Software for Question Answering Research</p>
