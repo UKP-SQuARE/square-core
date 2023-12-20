@@ -3,7 +3,6 @@
  */
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import ChatbotHello from "@/views/ChatbotHome.vue";
 
 // Use lazy loading to improve page size
 const Home = () => import('../views/Home')
@@ -23,6 +22,9 @@ const News = () => import('../views/News')
 const Publications = () => import('../views/Publications')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
+
+const ChatbotHome = () => import('@/views/ChatbotHome.vue')
+
 
 
 Vue.use(VueRouter)
@@ -116,7 +118,7 @@ const routes = [
   {
     path: '/chatbot_rating',
     name: 'chatbot_rating',
-    component: ChatbotHello
+    component: ChatbotHome
   },
   {
     path: '/terms-and-conditions',

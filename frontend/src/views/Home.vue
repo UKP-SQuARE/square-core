@@ -1,10 +1,18 @@
 <!-- The landing page. Contains information about this project -->
 <template>
   <div>
+
     <div class="bg-primary bg-gradient text-white">
       <div class="container-sm text-center py-5">
+
+        <!-- Promo Chatbot Rating Interface -->
+        <router-link class="btn btn-danger btn-lg px-4 text-white" to="/chatbot_rating">
+          2) Try Out Chatbot Rating Interface!
+        </router-link>
+
         <h1 class="display-1 fw-bold">UKP-SQuARE</h1>
         <p class="fs-3">Software for Question Answering Research</p>
+
         <p class="leader">Watch our demo video to learn more</p>
         <DemoVideo />
         <div class="d-grid gap-2 d-flex justify-content-center mt-5">
@@ -20,6 +28,7 @@
         </div>
       </div>
     </div>
+
     <div class="container-xl my-2">
       <div class="d-flex flex-column flex-md-row w-100 ps-md-3">
         <div class="bg-light flex-fill my-2 me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">

@@ -169,7 +169,7 @@ export default Vue.component('chatbot-hub', {
         {id: 4, name: 'ChatGPT-4.0', description: 'State-of-the-art model with nuanced understanding'},
         {id: 5, name: 'Perplexity AI', description: 'AI designed for deep contextual comprehension and interaction.'},
       ],
-      availableModelNamesForLoggedUser: ['CommonsenseQA BERT Adapter', 'ChatGPT-3.5'],
+      availableModelNamesForLoggedUser: ['CommonsenseQA BERT Adapter', 'GPT-3.5-turbo'],
       points: 1500,
       lbPlace: 2,
     }
