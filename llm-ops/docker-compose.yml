@@ -1,0 +1,276 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      # Enable https port 443
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Uncomment staging certs for testing
+      - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.le.acme.email=sachdeva@ukp.informatik.tu-darmstadt.de
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      # Enable dashboard and logging
+      - --api.dashboard=true
+      - --log.level=DEBUG
+    ports:
+      - "8989:80"  # http port
+      - "8443:443"  # https port
+      - "8080:8080"  # web UI port
+    labels:
+      - "traefik.enable=true"
+      # Global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+
+      # Middleware redirect from HTTP to HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.port=8443"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # mount volume to store certificates
+      - traefik-public-certificates:/certificates
+
+  llm_chat:
+    build:
+      context: .
+    container_name: llm_chat
+    volumes:
+      - /home/rachneet/hf_models:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    entrypoint:
+      - /bin/bash
+      - ./start_chat.sh
+    command:
+      - --model-path
+      - ../root/.cache/huggingface/Llama-2-7b-chat  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
+  #      - --max-gpu-memory
+  #      - 14Gib
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.llm-chat.rule=PathPrefix(`/api/Llama-2-7b-chat`)"
+      - "traefik.http.routers.llm-chat.entrypoints=websecure"
+      - "traefik.http.routers.llm-chat.tls=true"
+      - "traefik.http.routers.llm-chat.tls.certresolver=le"
+      - "traefik.http.routers.llm-chat.middlewares=llm-chat-stripprefix,llm-chat-addprefix"
+      - "traefik.http.middlewares.llm-chat-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.llm-chat-addprefix.addPrefix.prefix=/api"
+
+  # llm_chat2:
+  #   build:
+  #     context: .
+  #   container_name: llm_chat2
+  #   volumes:
+  #     - /home/sihebi/hf_models:/root/.cache/huggingface
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   entrypoint:
+  #     - /bin/bash
+  #     - ./start_chat.sh
+  #   command:
+  #     - --model-path
+  #     - ../root/.cache/huggingface/Llama-2-7B-Chat-AWQ  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
+  # #      - --max-gpu-memory
+  # #      - 14Gib
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.llm-chat.rule=PathPrefix(`/api/Llama-2-7B-Chat-AWQ2`)"
+  #     - "traefik.http.routers.llm-chat.entrypoints=websecure"
+  #     - "traefik.http.routers.llm-chat.tls=true"
+  #     - "traefik.http.routers.llm-chat.tls.certresolver=le"
+  #     - "traefik.http.routers.llm-chat.middlewares=llm-chat-stripprefix,llm-chat-addprefix"
+  #     - "traefik.http.middlewares.llm-chat-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+  #     - "traefik.http.middlewares.llm-chat-addprefix.addPrefix.prefix=/api"
+
+  mongo:
+    hostname: mongo
+    image: mongo:5.0.4
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - 27017:27017
+    env_file:
+      - ../model-manager/.env
+
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3.9.14-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    env_file:
+      - ../model-manager/.env
+
+  redis:
+    hostname: redis
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    env_file:
+      - .env
+    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
+
+  maintaining_worker:
+    #    image: ukpsquare/square-model-management-v2:latest
+    #    build: ./management_server
+    build:
+      context: ../model-manager
+      dockerfile: Dockerfile
+    #iner_name: maintaining_worker
+    command: celery -A tasks worker --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ../model-manager/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - MODEL_API_IMAGE=ukpsquare/model-inference
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - CONFIG_VOLUME=llm-ops_model_configs
+    links:
+      - rabbit
+      - redis
+    depends_on:
+      - maintaining
+      - rabbit
+      - redis
+
+  maintaining:
+    #    image: ukpsquare/square-model-management-v2:latest
+    command: uvicorn model_manager.main:app --host 0.0.0.0 --port 9001 --log-config logging.conf
+    #iner_name: maintaining
+    build:
+      context: ../model-manager
+      dockerfile: Dockerfile
+    ports:
+      - 9001:9001
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    links:
+      - mongo
+    depends_on:
+      - mongo
+    env_file:
+      - ../model-manager/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - MODEL_API_IMAGE=ukpsquare/model-inference
+      - VERIFY_SSL=0
+      - WEB_CONCURRENCY=1
+      - ONNX_VOLUME=model-inference_onnx-models
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - CONFIG_PATH=/model_configs
+      - MODEL_STORAGE_PATH=/home/rachneet/hf_models
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintaining.rule=PathPrefix(`/api/models`)"
+      - "traefik.http.routers.maintaining.entrypoints=websecure"
+      - "traefik.http.routers.maintaining.tls=true"
+      - "traefik.http.routers.maintaining.tls.certresolver=le"
+      - "traefik.http.routers.maintaining.middlewares=maintaining-stripprefix,maintaining-addprefix"
+      - "traefik.http.middlewares.maintaining-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.maintaining-addprefix.addPrefix.prefix=/api"
+
+  main_model:
+    #    image: ukpsquare/model-inference-transformer:latest
+    build:
+      context: ../model-inference
+      dockerfile: Dockerfile
+      args:
+        - MODEL_TYPE=transformer
+        - TEST_SETUP=transformer
+    #container_name: main_model
+    command: uvicorn model_inference.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ../model-inference/model_configurations/.env.dpr
+      - ../model-inference/.env
+    environment:
+      - WEB_CONCURRENCY=1
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - QUEUE=facebook-dpr-question_encoder-single-nq-base
+      - CONFIG_PATH=/model_configs
+    #      - TEST=1   # for testing model config
+    volumes:
+      - ./.cache/:/etc/huggingface/.cache/
+      - model_configs:/model_configs
+    #      - onnx-models:/onnx_models
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.model-dpr.rule=PathPrefix(`/api/main`)"
+      - "traefik.http.routers.model-dpr.entrypoints=websecure"
+      - "traefik.http.routers.model-dpr.tls=true"
+      - "traefik.http.routers.model-dpr.tls.certresolver=le"
+      - "traefik.http.routers.model-dpr.middlewares=model-dpr-stripprefix,model-dpr-addprefix"
+      - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main"
+      - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
+
+
+  dpr_worker:
+    build:
+      context: ../model-inference
+      dockerfile: Dockerfile
+      args:
+        - MODEL_TYPE=transformer
+        - TEST_SETUP=transformer
+    command: celery -A tasks worker -Q facebook-dpr-question_encoder-single-nq-base --loglevel=info
+    volumes:
+      - ./:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - model_configs:/model_configs
+    env_file:
+      - ../model-inference/model_configurations/.env.dpr
+      - ../model-inference/.env
+    environment:
+      - DOCKER_HOST_URL=https://172.17.0.1:8443
+      - VERIFY_SSL=0
+      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+      - REALM=square
+      - CLIENT_ID=models
+      - QUEUE=facebook-dpr-question_encoder-single-nq-base
+      - CONFIG_PATH=/model_configs
+    links:
+      - rabbit
+      - redis
+    depends_on:
+      - maintaining
+      - rabbit
+      - redis
+
+volumes:
+  traefik-public-certificates:
+
+  mongo-data:
+    driver: local
+
+  model_configs:
+    driver: local

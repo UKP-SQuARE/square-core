@@ -6,8 +6,10 @@ import VueRouter from 'vue-router'
 
 // Use lazy loading to improve page size
 const Home = () => import('../views/Home')
+const Profile = () => import('../views/Profile')
 const QAHub = () => import('../views/QAHub')
 const QA = () => import('../views/QA')
+const Chatbot = () => import('../views/Chatbot')
 const BehavioralTests = () => import('../views/BehavioralTests')
 const Skills = () => import('../views/Skills')
 const Skill = () => import('../views/Skill')
@@ -20,6 +22,9 @@ const News = () => import('../views/News')
 const Publications = () => import('../views/Publications')
 const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
+
+const ChatbotHome = () => import('@/views/ChatbotHome.vue')
+
 
 
 Vue.use(VueRouter)
@@ -39,6 +44,11 @@ const routes = [
     path: '/qa',
     name: 'qa',
     component: QA
+  },
+  {
+    path: '/chatbot',
+    name: 'chatbot',
+    component: Chatbot
   },
   {
     path: '/skills',
@@ -62,6 +72,14 @@ const routes = [
     component: Evaluations,
     meta: {
       requiresAuthentication: true
+    }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
+    meta: {
+      requiresAuthentication: false
     }
   },
   {
@@ -96,6 +114,11 @@ const routes = [
     path: '/publications',
     name: 'publications',
     component: Publications
+  },
+  {
+    path: '/chatbot_rating',
+    name: 'chatbot_rating',
+    component: ChatbotHome
   },
   {
     path: '/terms-and-conditions',
