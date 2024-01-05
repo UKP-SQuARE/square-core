@@ -20,9 +20,7 @@ export default {
   data() {
     return {
       leaderboardData: [
-        { id: 1, name: 'Alice', score: 98 },
-        { id: 2, name: 'Bob', score: 95 },
-        // ... more entries ...
+        //first empty
       ],
     };
   },
@@ -41,6 +39,15 @@ export default {
     toggleFullView() {
       this.$emit('update:full', !this.full);
     }
+  },
+  beforeMount() {
+    getPositions(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        for (let i = 0; i < response.data.length; i++) {
+          position = { id: response.data[i].id, name: response.data[i].name, score: response.data[i].score }
+          this.leaderboardData.push(position)
+        }
+      })
   }
 };
 </script>

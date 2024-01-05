@@ -91,14 +91,21 @@ export default {
       isFullLeaderboard: false,
       // Mock user data, replace with real data from an API or store
       badges: [
+        //load
+
         { id: 1, title: 'Expert', description: 'Top Contributor', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png', type: '#ffd700' },
         { id: 2, title: 'Intermediate', description: 'Great Participation', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png', type: 'silver' },
       ],
       submissions: [
+        //load
+
+
         { date: '2023-11-12', llmName: 'Llama-2' },
         { date: '2023-11-23', llmName: 'phi-1_5' },
       ],
       certificates: [
+        //load
+
         {
           id: 1,
           title: 'Certificate of Excellence',
@@ -109,6 +116,9 @@ export default {
         },
       ],
       user: {
+        //load
+
+
         name: 'John Doe',
         bio: 'Lorem ipsum dolor sit amet...',
         // profilePicture: 'tbd',
@@ -127,6 +137,29 @@ export default {
             this.showFullLeaderboard = !this.showFullLeaderboard;
         },
   },
+  beforeMount() {
+    getBadges(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        
+      })
+    getSubmissions(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        // for (let i = 0; i < response.data.length; i++) {
+        //   this.skillsPublishedState[response.data[i].name] = response.data[i].published
+        //   this.skillIDs[response.data[i].name] = response.data[i].id
+        //   this.skills.push(response.data[i].name)
+        // }
+    })
+    getCertificates(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        
+    })
+    getCertificates(this.$store.getters.authenticationHeader())
+      .then((response) => {
+        
+    })
+  }
+  
 };
 </script>
 
