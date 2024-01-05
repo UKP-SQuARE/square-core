@@ -77,6 +77,7 @@ import UserProfile from '@/components/UserProfile.vue';
 import CertificateCard from '@/components/Certificates.vue';
 import SubmissionsList from '@/components/SubmissionsList.vue';
 import Badges from '@/components/Badges.vue';
+import { getSubmissions, getBadges, getCertificates } from '@/api'
 export default {
   name: 'ProfilePage',
   components: {
@@ -90,35 +91,10 @@ export default {
     return {
       isFullLeaderboard: false,
       // Mock user data, replace with real data from an API or store
-      badges: [
-        { id: 1, title: 'Expert', description: 'Top Contributor', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png', type: '#ffd700' },
-        { id: 2, title: 'Intermediate', description: 'Great Participation', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png', type: 'silver' },
-      ],
-      submissions: [
-        { date: '2023-11-12', llmName: 'Llama-2' },
-        { date: '2023-11-23', llmName: 'phi-1_5' },
-      ],
-      certificates: [
-        {
-          id: 1,
-          title: 'Certificate of Excellence',
-          studentName: 'John Doe',
-          score: '95%',
-          evaluationType: 'Language Model Proficiency',
-          issueDate: 'January 1, 2023'
-        },
-      ],
-      user: {
-        name: 'John Doe',
-        bio: 'Lorem ipsum dolor sit amet...',
-        // profilePicture: 'tbd',
-        email: 'john@example.com',
-        phone: '123-456-7890',
-        posts: [
-          { id: 1, title: 'Post 1' },
-          { id: 2, title: 'Post 2' },
-        ],
-      },
+      badges: [],
+      submissions: [],
+      certificates: [],
+      user: {},
       
     };
   },
@@ -126,7 +102,42 @@ export default {
         toggleLeaderboard() {
             this.showFullLeaderboard = !this.showFullLeaderboard;
         },
+        loadBadges() {
+          getBadges(this.$store.getters.authenticationHeader())
+            .then((response) => {
+              this.badges = response.data;
+            })
+            .catch((error) => {
+              console.error("Error loading badges:", error);
+            });
+        },
+
+        loadSubmissions() {
+          getSubmissions(this.$store.getters.authenticationHeader())
+            .then((response) => {
+              this.submissions = response.data;
+            })
+            .catch((error) => {
+              console.error("Error loading submissions:", error);
+            });
+        },
+
+        loadCertificates() {
+          getCertificates(this.$store.getters.authenticationHeader())
+            .then((response) => {
+              this.certificates = response.data;
+            })
+            .catch((error) => {
+              console.error("Error loading certificates:", error);
+            });
+        }
   },
+  beforeMount() {
+    this.loadBadges();
+    this.loadSubmissions();
+    this.loadCertificates();
+  }
+  
 };
 </script>
 

@@ -232,6 +232,40 @@ services:
       - #@ template.replace(traefik_tls("skill-manager"))
       - #@ template.replace(traefik_prefix("skill-manager"))
 
+  profile-manager:
+    image: #@ "ukpsquare/profile-manager:" + data.values.tag
+    build: 
+      context: ./profile-manager
+      target: build
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    env_file:
+      - ./mongodb/.env
+      - ./redis/.env
+      - ./profile-manager/.env
+    environment:
+      API_PREFIX: profile-manager
+      WEB_CONCURRENCY: 8
+      KEYCLOAK_BASE_URL: #@ data.values.keycloak_base_url_https[data.values.environment]
+      REALM: #@ data.values.realm
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      VERIFY_ISSUER: #@ str(data.values.verify_issuer[data.values.environment])
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SQUARE_URL: #@ data.values.square_url[data.values.environment]
+    depends_on:
+      - mongodb
+      - redis
+    labels:
+      - "traefik.enable=true"
+      - #@ template.replace(traefik_tls("skill-manager"))
+      - #@ template.replace(traefik_prefix("skill-manager"))
+
+
+
   evaluator:
     image: #@ "ukpsquare/evaluator:" + data.values.tag
     build: 
