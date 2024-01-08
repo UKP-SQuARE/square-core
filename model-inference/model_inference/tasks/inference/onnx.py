@@ -49,6 +49,7 @@ class Onnx(Transformer):
              kwargs: Not used
         """
         self.task = None
+
         self.gradients = None
 
         self._load_model(

@@ -341,7 +341,6 @@ curl --request POST 'https://square.ukp-lab.de/api/models/deploy' \
 }'
 ```
 
-
 ### Removing models via API
 Removing the deployed distilbert model.
 ```bash

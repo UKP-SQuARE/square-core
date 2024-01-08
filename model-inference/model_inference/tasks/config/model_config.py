@@ -25,6 +25,8 @@ class ModelConfig(Mapping):
     # See square_model_inference.core.event_handlers.MODEL_MAPPING for all available names with corresponding model
     model_type: str = None
 
+    is_encoder_decoder: bool = False
+
     # data paths to store additional data
     data_path: str = None
     # model path
