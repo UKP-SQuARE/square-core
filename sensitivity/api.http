@@ -1,0 +1,8 @@
+###
+# @name sensitivity_generate_alternatives
+POST {{domain}}/api/sensitivity/generate_alternatives HTTP/1.1
+Content-Type: application/json'
+
+{
+  "text": "I would love to eat an apple"
+}

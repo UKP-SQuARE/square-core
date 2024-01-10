@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik-square
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.log.json
+      # Enable https port 443
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Uncomment staging certs for testing
+      - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.le.acme.email=sachdeva@ukp.informatik.tu-darmstadt.de
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      # Enable dashboard and logging
+      - --api.dashboard=true
+      - --log.level=DEBUG
+    ports:
+      - "8989:80"  # http port
+      - "8443:443"  # https port
+      - "8083:8080"  # web UI port
+    labels:
+      - "traefik.enable=true"
+      # Global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=https-redirect"
+
+      # Middleware redirect from HTTP to HTTPS
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.port=8443"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # mount volume to store certificates
+      - traefik-public-certificates:/certificates
+
+  sensitivity: 
+    build:
+      context: .
+    container_name: sensitivity
+    volumes:
+      - /home/sihebi/hf_models:/root/.cache/huggingface
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sensitivity.rule=PathPrefix(`/api/sensitivity`)"
+      - "traefik.http.routers.sensitivity.entrypoints=websecure"
+      - "traefik.http.routers.sensitivity.tls=true"
+      - "traefik.http.routers.sensitivity.tls.certresolver=le"
+      - "traefik.http.routers.sensitivity.middlewares=sensitivity-stripprefix,sensitivity-addprefix"
+      - "traefik.http.middlewares.sensitivity-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.sensitivity-addprefix.addPrefix.prefix=/api"
+
+volumes:
+  traefik-public-certificates:

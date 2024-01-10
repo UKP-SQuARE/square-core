@@ -289,6 +289,7 @@ export function generateText(params, streaming) {
 
 
 export function getAlternatives(text){
+    console.log(text)
     const params = {
         text: text
     }

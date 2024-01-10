@@ -235,6 +235,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42, help="random seed for initialization")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--cache_dir", type=str, default="/root/.cache/huggingface")
+    parser.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args()
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
@@ -250,9 +251,15 @@ if __name__ == "__main__":
     tokenizer = tokenizer_class.from_pretrained('xlnet-large-cased', cache_dir=args.cache_dir)
     model = model_class.from_pretrained('xlnet-large-cased', cache_dir=args.cache_dir)
     model.to(args.device)
-    GENERATION_VOCABULARY_MASK = torch.cuda.FloatTensor(
-        [float("-inf") if ("<" in tokenizer.convert_ids_to_tokens(x)) else 0 for x in range(32000)]
-    ).view(1, 1, -1)
+
+    if args.n_gpu == 0: 
+        GENERATION_VOCABULARY_MASK = torch.FloatTensor(
+            [float("-inf") if ("<" in tokenizer.convert_ids_to_tokens(x)) else 0 for x in range(32000)]
+        ).view(1, 1, -1)
+    else:
+        GENERATION_VOCABULARY_MASK = torch.cuda.FloatTensor(
+            [float("-inf") if ("<" in tokenizer.convert_ids_to_tokens(x)) else 0 for x in range(32000)]
+        ).view(1, 1, -1)
 
     fast_app = get_app()
-    uvicorn.run(fast_app, host='0.0.0.0', port=8000, log_level="info")
+    uvicorn.run(fast_app, host='0.0.0.0', port=args.port, log_level="info")
