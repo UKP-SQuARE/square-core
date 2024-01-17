@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
 
-from skill_manager.mongo.mongo_model import MongoModel
-from skill_manager.mongo.py_object_id import PyObjectId
+from profile_manager.mongo.mongo_model import MongoModel
+from profile_manager.mongo.py_object_id import PyObjectId
 
 from pydantic import BaseModel
 from typing import List, Optional

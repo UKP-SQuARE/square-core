@@ -14,11 +14,11 @@ from square_auth.auth import Auth
 from profile_manager import mongo_client
 from profile_manager.core.session_cache import SessionCache
 from profile_manager.models import Badge, Submission, Certificate
-from profile_manager.settings import SkillManagerSettings
+from profile_manager.settings import ProfileManagerSettings
 
 logger = logging.getLogger(__name__)
 
-settings = SkillManagerSettings()
+settings = ProfileManagerSettings()
 router = APIRouter(prefix="/profile")
 auth = Auth()
 session_cache = SessionCache()

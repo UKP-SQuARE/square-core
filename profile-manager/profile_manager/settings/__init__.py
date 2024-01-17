@@ -1,4 +1,3 @@
-from skill_manager.settings.keycloak_settings import KeycloakSettings
-from skill_manager.settings.mongo_settings import MongoSettings
-from skill_manager.settings.redis_settings import RedisSettings
-from skill_manager.settings.skill_manager_settings import SkillManagerSettings
+from profile_manager.settings.keycloak_settings import KeycloakSettings
+from profile_manager.settings.mongo_settings import MongoSettings
+from profile_manager.settings.profile_manager_settings import ProfileManagerSettings
