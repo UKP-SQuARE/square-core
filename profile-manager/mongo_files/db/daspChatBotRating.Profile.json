@@ -1,0 +1,60 @@
+[{
+  "_id": {
+    "$oid": "65a96ae085793b268a90d510"
+  },
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "certificates": [
+    {
+      "_id": {
+        "$oid": "65a96ae085793b268a90d50a"
+      },
+      "domain": "NLP Basics"
+    },
+    {
+      "_id": {
+        "$oid": "65a96ae085793b268a90d50b"
+      },
+      "domain": "Advanced NLP"
+    }
+  ],
+  "badges": [
+    {
+      "_id": {
+        "$oid": "65a96ae085793b268a90d50c"
+      },
+      "domain": "NLP Enthusiast"
+    },
+    {
+      "_id": {
+        "$oid": "65a96ae085793b268a90d50d"
+      },
+      "domain": "NLP Practitioner"
+    }
+  ],
+  "reviews": [
+    {
+      "_id": {
+        "$oid": "65a96ae085793b268a90d50e"
+      },
+      "questions": [
+        "What is NLP?",
+        "Applications of NLP"
+      ],
+      "answers": [
+        "Natural Language Processing",
+        "Text analysis, language translation"
+      ],
+      "archievedPoints": 85,
+      "results": [
+        {
+          "_id": {
+            "$oid": "65a96ae085793b268a90d50f"
+          },
+          "metric1": "Accuracy",
+          "metric2": "Relevance"
+        }
+      ]
+    }
+  ]
+}]

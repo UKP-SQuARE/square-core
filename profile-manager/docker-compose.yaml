@@ -22,6 +22,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SQUARE_PRIVATE_KEY_FILE: /app/private_key.pem
+      SQUARE_URL: "http://square"
     depends_on:
     - mongodb
     - redis
