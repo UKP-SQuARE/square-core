@@ -7,7 +7,7 @@
 
         <!-- Promo Chatbot Rating Interface -->
         <router-link class="btn btn-danger btn-lg px-4 text-white" to="/chatbot_rating">
-          2) Try Out Chatbot Rating Interface!
+          Try Out Chatbot Rating Interface!
         </router-link>
 
         <h1 class="display-1 fw-bold">UKP-SQuARE</h1>
