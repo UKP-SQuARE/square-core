@@ -28,7 +28,7 @@
                 <router-link class="nav-link" to="/publications" exact-active-class="active">Publications</router-link>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link btn btn-danger" to="/chatbot_rating" exact-active-class="active">1) ChatBot Rating</router-link>
+                <router-link class="nav-link" to="/chatbot_rating" exact-active-class="active">ChatBot Rating</router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/docs/" target="_blank">Docs</a>
