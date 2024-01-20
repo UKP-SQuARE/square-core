@@ -105,7 +105,9 @@ export default {
         loadBadges() {
           getBadges(this.$store.getters.authenticationHeader())
             .then((response) => {
-              this.badges = response.data;
+              this.badges = response.data.map((badge, index) => {
+                return { ...badge, id: badge.someUniqueProperty || `badge-${index}` };
+              });
             })
             .catch((error) => {
               console.error("Error loading badges:", error);
@@ -125,7 +127,9 @@ export default {
         loadCertificates() {
           getCertificates(this.$store.getters.authenticationHeader())
             .then((response) => {
-              this.certificates = response.data;
+              this.certificates = response.data.map((certificate, index) => {
+                return { ...certificate, id: certificate.someUniqueProperty || `certificate-${index}` };
+              });
             })
             .catch((error) => {
               console.error("Error loading certificates:", error);

@@ -52,7 +52,6 @@
 
 <script>
 import jsPDF from 'jspdf';
-
 export default {
   name: 'CertificateCard',
   props: {

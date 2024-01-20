@@ -1,60 +1,49 @@
 [{
-  "_id": {
-    "$oid": "65a96ae085793b268a90d510"
-  },
-  "email": "john.doe@example.com",
-  "password": "password123",
-  "certificates": [
-    {
-      "_id": {
-        "$oid": "65a96ae085793b268a90d50a"
-      },
-      "domain": "NLP Basics"
-    },
-    {
-      "_id": {
-        "$oid": "65a96ae085793b268a90d50b"
-      },
-      "domain": "Advanced NLP"
-    }
-  ],
   "badges": [
     {
-      "_id": {
-        "$oid": "65a96ae085793b268a90d50c"
-      },
-      "domain": "NLP Enthusiast"
+      "title": "Expert",
+      "description": "Top Contributor",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png",
+      "type": "#ffd700"
     },
     {
-      "_id": {
-        "$oid": "65a96ae085793b268a90d50d"
-      },
-      "domain": "NLP Practitioner"
+      "title": "Intermediate",
+      "description": "Great Participation",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Earth_fluent_design_icon_2023_%28raster_graphics%29.png",
+      "type": "silver"
     }
   ],
-  "reviews": [
+  "submissions": [
     {
-      "_id": {
-        "$oid": "65a96ae085793b268a90d50e"
-      },
-      "questions": [
-        "What is NLP?",
-        "Applications of NLP"
-      ],
-      "answers": [
-        "Natural Language Processing",
-        "Text analysis, language translation"
-      ],
-      "archievedPoints": 85,
-      "results": [
-        {
-          "_id": {
-            "$oid": "65a96ae085793b268a90d50f"
-          },
-          "metric1": "Accuracy",
-          "metric2": "Relevance"
-        }
-      ]
+      "date": "2023-11-12",
+      "llmName": "Llama-2"
+    },
+    {
+      "date": "2023-11-23",
+      "llmName": "phi-1_5"
     }
-  ]
+  ],
+  "certificates": [
+    {
+      "title": "Certificate of Excellence",
+      "studentName": "John Doe",
+      "score": "95%",
+      "evaluationType": "Language Model Proficiency",
+      "issueDate": "January 1, 2023"
+    }
+  ],
+  "user": {
+    "name": "John Doe",
+    "bio": "Lorem ipsum dolor sit amet...",
+    "email": "john@example.com",
+    "phone": "123-456-7890",
+    "posts": [
+      {
+        "title": "Post 1"
+      },
+      {
+        "title": "Post 2"
+      }
+    ]
+  }
 }]
