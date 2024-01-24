@@ -24,6 +24,8 @@ const SignIn = () => import('../views/SignIn')
 const NotFound = () => import('../views/NotFound')
 
 const ChatbotHome = () => import('@/views/ChatbotHome.vue')
+const FeedbackValidation = () => import('@/views/FeedbackValidation.vue')
+
 
 
 
@@ -119,6 +121,11 @@ const routes = [
     path: '/chatbot_rating',
     name: 'chatbot_rating',
     component: ChatbotHome
+  },
+  {
+    path: '/feedback_validation',
+    name: 'feedback_validation',
+    component: FeedbackValidation
   },
   {
     path: '/terms-and-conditions',

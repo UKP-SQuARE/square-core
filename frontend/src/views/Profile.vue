@@ -91,10 +91,12 @@ export default {
     return {
       isFullLeaderboard: false,
       // Mock user data, replace with real data from an API or store
+
       badges: [],
       submissions: [],
       certificates: [],
       user: {},
+
       
     };
   },
@@ -137,9 +139,11 @@ export default {
         }
   },
   beforeMount() {
+
     this.loadBadges();
     this.loadSubmissions();
     this.loadCertificates();
+
   }
   
 };
