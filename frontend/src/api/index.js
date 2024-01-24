@@ -11,6 +11,42 @@ const SKILL_MANAGER_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`
 const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`
 const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
+const PROFILE_MANAGER_URL = `${process.env.VUE_APP_PROFILE_MANAGER_URL}`
+
+/**
+ * Get a list of available submission.
+ * @param {Object} headers optional authentication header
+ */
+export function getSubmissions(headers) {
+    return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
+}
+
+
+/**
+ * Get a list of available badges.
+ * @param {Object} headers optional authentication header
+ */
+export function getBadges(headers) {
+    return axios.get(`${PROFILE_MANAGER_URL}/badges`, { headers: headers })
+}
+
+/**
+ * Get a list of available certificates.
+ * @param {Object} headers optional authentication header
+ */
+export function getCertificates(headers) {
+    return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
+}
+
+/**
+ * Get a list of available positions.
+ * @param {Object} headers optional authentication header
+ */
+export function getPositions(headers) {
+    return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
+}
+
+
 
 /**
  * Get a list of available skill types.
