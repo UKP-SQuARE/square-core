@@ -27,7 +27,7 @@
               </div>
               <div class="row mt-4">
                 <div class="d-grid gap-1 d-md-flex justify-content-md-center">
-                  <div class="btn btn-danger btn-lg text-white" @click="openPopup = true">
+                  <div class="btn btn-danger btn-lg text-white" @click="openSubmitPopup">
                     Submit Feedback
                   </div>
                 </div>
@@ -56,7 +56,10 @@
                               <div class="p-2 me-2 border" style="border-radius: 15px; background-color: #fbfbfb;">
                                 <p class="small mb-0"> {{ question.answer.text }}</p>
                               </div>
-                              <button type="button" class="btn btn-success" @click="openFeedback = true">Feedback</button>
+                              <button @click="openFeedbackHandler(question.text)" class="round-blue-button">
+
+                                <div> &#8618;</div>
+                              </button>
                             </div>
 
                             <div v-if="openFeedback" class="modal fade show" style="display: block;"
@@ -69,17 +72,23 @@
                                       @click="openFeedback = false"></button>
                                   </div>
                                   <div class="starplot-container">
-                                    <div v-for="metric in metrics" :key="metric" class="starplot-item">
+                                    <div v-for="metric in metricIds" :key="metric" class="starplot-item">
                                       <div class="row m-1">
                                         <div class="col">
-                                          <label :for="'element_' + metric">{{ metric }}</label>
+                                          <label :for="'element_' + metric">{{ metrics[metric] }}</label>
                                         </div>
                                         <div class="col">
-                                          <input type="range" class="form-control-range" :id="'element_' + metric"
-                                            v-model="values[metric]" min="1" max="5" />
-                                          <span>{{ values[metric] }}</span>
+                                          <input type="range" class="form-control-range" :id="'element_'+ metric"
+                                            v-model="currentValues[metric]" min="1" max="5" />
+                                          <span>{{ currentValues[metric] }}</span>
                                         </div>
 
+                                      </div>
+                                    </div>
+                                    <div class="d-grid gap-1 d-md-flex justify-content-md-center m-2">
+                                      <div class="btn btn-danger btn-lg text-white"
+                                        @click="submitAnswerFeedback(question.text)">
+                                        Submit
                                       </div>
                                     </div>
                                   </div>
@@ -121,7 +130,7 @@
           </div>
           <div class="modal-body">
             <div id="chart">
-              <apexchart type="radar" height="350" :options="chartOptions" :series="series"></apexchart>
+              <apexchart type="radar" height="350" :options="chartOptions" :series="results"></apexchart>
             </div>
             <div class="row">
               <div class="col mt-4">
@@ -160,21 +169,17 @@ export default Vue.component('run-qa', {
 
 
     return {
+      metricIds:[0,1,2,3,4,5],
       metrics: ['Factual correctness', 'Language generation', 'Context', 'Coverage', 'Clarity of response', 'Harmfulness'],
       newQuestion: '',
       questions: [],
       answers: [],
       openPopup: false,
       openFeedback: false,
-      values: [1, 1, 1, 1, 1],
-      series: [{
-        name: 'Your Feedback',
-        data: [1, 2, 3, 4, 5, 4],
-      },
-      {
-        name: 'Others Feedback',
-        data: [2, 3, 4, 5, 4, 5],
-      }
+      currentValues: [],
+      defaultValues: ['3', '3', '3', '3', '3', '3'],
+      answerValues: { },
+      results: [
       ],
       chartOptions: {
         chart: {
@@ -182,7 +187,7 @@ export default Vue.component('run-qa', {
           type: 'radar',
         },
         title: {
-          text: 'Feeback'
+          text: 'Feedback'
         },
         xaxis: {
           categories: ['Factual correctness', 'Language generation', 'Context', 'Coverage', 'Clarity of response', 'Harmfulness']
@@ -225,21 +230,63 @@ export default Vue.component('run-qa', {
         sender: 'A', // Du kannst hier den Benutzernamen ändern
         text: "dummy",
       })
-    }
-  },
-  submitFeedback() {
+    },
+    openFeedbackHandler(text){
+      if(text in this.answerValues){
+        this.currentValues=this.answerValues[text];
+      }
+      else{
+        this.currentValues=this.defaultValues;
+      }
+      this.openFeedback=true;
 
-  },
-  cancel() {
-    // Logik für den "Cancel"-Button
-    console.log('Cancel button clicked');
-  },
-  submitFeedback() {
-    // Logik für den "Submit Feedback"-Button
-    console.log('Submit Feedback button clicked');
-  },
+    },
+    submitAnswerFeedback(text) {
+      this.answerValues[text]=this.currentValues;
+      this.currentValues=[];
+      this.openFeedback = false;
 
+    },
+    openSubmitPopup() {
+      if (this.answerValues.length == 0) {
+        this.results[0]={
+          name: "Default Data",
+          data: this.defaultValues};
+        
+
+      }
+      else {
+        var keys= Object.keys(this.answerValues)
+        var averageValues = this.answerValues[keys[0]].map(i=>parseInt(i));
+
+        for (let k = 0; k < averageValues.length; k++) {
+          for (let i = 1; i < keys.length; i++) {
+            averageValues[k] = parseInt(this.answerValues[keys[i]]) + averageValues[k];
+          }
+          averageValues[k] = averageValues[k] / keys.length;
+        }
+        this.results[0]={
+          name: "Calculated Feedback",
+          data: averageValues
+        }
+        
+      }
+      this.openPopup = true;
+    },
+    submitFeedback() {
+
+    },
+    cancel() {
+      // Logik für den "Cancel"-Button
+      console.log('Cancel button clicked');
+    },
+    submitFeedback() {
+      // Logik für den "Submit Feedback"-Button
+      console.log('Submit Feedback button clicked');
+    },
+  }
 })
+
 </script>
 
 <style scoped>
@@ -273,5 +320,21 @@ export default Vue.component('run-qa', {
 .chat-box {
   height: 400px;
   overflow-y: auto;
+}
+
+.round-blue-button {
+  display: inline-block;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  background-color: #3498db;
+  /* Blaue Farbe, du kannst dies nach Bedarf ändern */
+  transition: background-color 0.3s ease;
 }
 </style>
