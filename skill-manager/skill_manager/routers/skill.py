@@ -107,6 +107,11 @@ async def create_skill(
         }
     skill.client_id = client["clientId"]
 
+    if skill.models is not None: 
+        model_type = next(iter(skill.models))
+        model_name = skill.models[model_type]
+        skill.default_skill_args['base_model'] = model_name
+
     skill_id = mongo_client.client.skill_manager.skills.insert_one(
         skill.mongo()
     ).inserted_id
@@ -116,11 +121,6 @@ async def create_skill(
 
     # check if the model exists, if not deploy
     has_skill_args = skill.default_skill_args is not None
-
-    if skill.models is not None: 
-        model_type = next(iter(skill.models))
-        model_name = skill.models[model_type]
-        skill.default_skill_args['base_model'] = model_name
 
     if has_skill_args and "base_model" in skill.default_skill_args:
         deploy_thread = Thread(
