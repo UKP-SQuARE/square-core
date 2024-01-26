@@ -348,20 +348,7 @@
           </div>
         </div>
       </div>
-
-
-
     </div>
-    <!-- <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
-      <div id="toastBootstrap" class="toast text-white bg-primary border-0" role="alert" aria-live="assertive"
-        aria-atomic="true" v-bind:class="{ show: showSuccessToast }">
-        <div class="d-flex">
-          <div class="toast-body">
-            Key was saved successfully.
-          </div>
-        </div>
-      </div>
-    </div> -->
     <div class="position-fixed bottom-0 d-flex justify-content-center w-100 p-3">
       <div id="toastBootstrapError" class="toast text-white bg-danger border-0" role="alert" aria-live="assertive"
         aria-atomic="true" v-bind:class="{ show: errorToast.show }">
@@ -511,21 +498,19 @@ export default {
       "gpt-3.5-turbo",
       "gpt-3.5-turbo-0301",
     ],
-    localChatModels: [
-    "Llama-2-7b-chat",
-    ],
+    localChatModels: [],
     availableTools: [],
     addingNewTool: false,
     initialToolsNumber: 0,
     abortController: new AbortController(),
 
     newTool: {
-      name: 'Search',
-      description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
-      region: 'eu-north-1',
+      name: '', // e.g.,  Search
+      description: '', // e.g., A search engine. Useful for when you need to answer questions about current events. Input should be a search query.
+      region: '', // e.g., eu-north-1
       accessKeyId: '',
       secretAccessKey: '',
-      functionName: 'my_random_function',
+      functionName: '', // e.g., my_random_function
     },
 
     chatConfig: {
@@ -541,7 +526,6 @@ export default {
 
     oldTools: null,
     addNewToolErrorMessage: null,
-    // showSuccessToast: false,
     errorToast: {
       show: false,
       message: "",
@@ -554,7 +538,6 @@ export default {
 
     generativeModel: null,
     currentModelSensitivity: 0,
-    // showSuccessToast: false,
     currentOriginalInput: "",
     currentExamples: [],
     listPerturbedInput: ["", "", "", "", ""],
@@ -583,7 +566,6 @@ export default {
   }),
 
   mounted() {
-    // autosize(this.$refs.textAreaRef);
     autosize(this.$refs.logTextarea);
   },
 
@@ -1193,7 +1175,7 @@ export default {
         (model) => 
           model.model_type === "llm"
       ).map((model) => model.identifier);
-      this.localChatModels.push("Llama-2-7b-chat"); // TODO: remove when models are available in production
+      // this.localChatModels.push("Llama-2-7b-chat"); // TODO: remove when models are available in production
     },
 
     initTools() {
@@ -1206,6 +1188,7 @@ export default {
         }
       ];
 
+      // Leave this here for now, we might want to add it back later
       // const searchLambdaFunction = new AWSLambda({
       //   name: 'Search',
       //   description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
@@ -1341,17 +1324,6 @@ export default {
         this.showSensitivityResults = false;
       }
     },
-
-    // 'showSuccessToast': {
-    //   /* eslint-disable no-unused-vars */
-    //   async handler(newShowSuccessToast, oldShowSuccessToast) {
-    //     if (newShowSuccessToast) {
-    //       setTimeout(() => {
-    //         this.showSuccessToast = false;
-    //       }, 2000);
-    //     }
-    //   }
-    // },
 
     'openAIApiKey': {
       /* eslint-disable no-unused-vars */

@@ -11,9 +11,10 @@ import https from "https";
 const SKILL_MANAGER_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`;
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`;
 const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`;
-// const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
-const MODEL_MANAGER_URL = `https://localhost:8443/api/models`;
-const LLM_MODELS_URL = `https://localhost:8443/api`;
+const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
+// const MODEL_MANAGER_URL = `https://localhost:8443/api/models`; // TODO: change to env variable
+// const LLM_MODELS_URL = `https://localhost:8443/api`; // TODO: change to env variable
+const LLM_MODELS_URL = `https://test.square.ukp-lab.de/api`
 
 /**
  * Get a list of available skill types.
@@ -246,7 +247,7 @@ export function getOpenAIModels(openAIApiKey) {
  */
 export function getLocalLLMs() {
     return axios.get(`${MODEL_MANAGER_URL}/deployed-models`, {
-        httpAgent: new https.Agent({ rejectUnauthorized: false }),
+        // httpAgent: new https.Agent({ rejectUnauthorized: false }),
     });
 }
 
@@ -268,7 +269,7 @@ export function generateText(params, streaming) {
     if(!streaming){
         url = `${LLM_MODELS_URL}/${params.model_identifier}/worker_generate`
         const response = axios.post(url, params, {
-            httpAgent: new https.Agent({ rejectUnauthorized: false}),
+            // httpAgent: new https.Agent({ rejectUnauthorized: false}),
             headers:{
                 'Content-Type': 'application/json'
             }
@@ -289,12 +290,11 @@ export function generateText(params, streaming) {
 
 
 export function getAlternatives(text){
-    console.log(text)
     const params = {
         text: text
     }
     const response = axios.post(`${LLM_MODELS_URL}/sensitivity/generate_alternatives`, params, {
-        httpAgent: new https.Agent({ rejectUnauthorized: false}),
+        // httpAgent: new https.Agent({ rejectUnauthorized: false}),
         headers:{
             'Content-Type': 'application/json'
         }
