@@ -2,7 +2,7 @@ Jinja2>=3.0.1
 elasticsearch[async]>=7.16.1
 fastapi>=0.73.0
 filelock>=3.0.12
-pydantic>=1.8.2
+pydantic==1.10.14
 python-dotenv>=0.18.0
 python-multipart>=0.0.5
 requests>=2.25.1
