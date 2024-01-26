@@ -1,6 +1,28 @@
 <!-- The Home Page to choose an LLM to communicate with -->
 <template>
   <div class="bg-light border rounded shadow p-3">
+
+    <div v-if="isModalVisible" class="modal fade show" style="display: block;" @click.self="openPopup = false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Purchase Model Access</h5>
+            <button type="button" class="btn-close" aria-label="Close" @click="toggleModal(false)"></button>
+          </div>
+          <div class="modal-body">
+            <p>Do you want to buy the model access for 1000 points?</p>
+            <div v-if="feedbackMessage" :class="['feedback-message', feedbackMessageType === 'error' ? 'text-danger' : 'text-success']">
+              {{ feedbackMessage }}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success btn-lg text-white" @click="unlockModel(selectedModelId)">Yes</button>
+            <button type="button" class="btn btn-secondary btn-lg text-white" @click="toggleModal(false)">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="w-100">
       <div class="mb-3">
         <div class="container-fluid">
@@ -82,17 +104,18 @@
                       <p class="text-muted text-center">
                         {{ model.description }}
                       </p>
-                      <span v-if="!isModelAvailable(model)" class="mt-0">
-                        <router-link :to="{ name: 'market', query: runQueryParams }"
-                                     class="btn btn-primary btn-sm text-white">
-                          Unlock
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                               class="bi bi-lock" viewBox="0 0 16 16">
-                            <path
-                                d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
-                          </svg>
-                        </router-link>
-                      </span>
+                      <button
+                          v-if="!isModelAvailable(model)"
+                          class="btn btn-primary btn-sm text-white"
+                          @click="toggleModal(true, model.id)"
+                      >
+                        Unlock
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-lock" viewBox="0 0 16 16">
+                          <path
+                              d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                        </svg>
+                      </button>
                       <span v-else class="mt-0">
                         <router-link :to="{ name: 'chatbot', query: runQueryParams }"
                                      class="btn btn-success btn-sm text-white">
@@ -172,6 +195,10 @@ export default Vue.component('chatbot-hub', {
       availableModelNamesForLoggedUser: ['CommonsenseQA BERT Adapter', 'GPT-3.5-turbo'],
       points: 1500,
       lbPlace: 2,
+      isModalVisible: false,
+      selectedModelId: null,
+      feedbackMessage: '',
+      feedbackMessageType: '', // 'success' or 'error'
     }
   },
   components: {
@@ -203,6 +230,29 @@ export default Vue.component('chatbot-hub', {
     },
   },
   methods: {
+    toggleModal(visibility, modelId = null) {
+      this.isModalVisible = visibility
+      this.selectedModelId = modelId
+    },
+    unlockModel(modelId) {
+      if (!this.isUserLoggedIn()) {
+        this.feedbackMessage = 'You need to log in to earn points and unlock new models.';
+        this.feedbackMessageType = 'error';
+      } else if (this.points < 1000) {
+        this.feedbackMessage = 'You do not have enough points.';
+        this.feedbackMessageType = 'error';
+      } else {
+        this.points -= 1000;
+        const modelName = this.availableModels.find(model => model.id === modelId).name;
+        this.availableModelNamesForLoggedUser.push(modelName);
+        this.feedbackMessage = 'Model unlocked successfully!';
+        this.feedbackMessageType = 'success';
+        setTimeout(() => {
+          this.toggleModal(false);
+          this.feedbackMessage = '';
+        }, 1000);
+      }
+    },
     pageModelChange(pInfo) {
       this.currentPage = pInfo.pageNumber;
       this.updatePaginatedModels();

@@ -9,6 +9,7 @@
 
 
 <script>
+import { getPositions } from '@/api'
 export default {
   name: 'LeaderboardTable',
   props: {
@@ -44,10 +45,15 @@ export default {
     getPositions(this.$store.getters.authenticationHeader())
       .then((response) => {
         for (let i = 0; i < response.data.length; i++) {
-          position = { id: response.data[i].id, name: response.data[i].name, score: response.data[i].score }
+
+          let position = { id: response.data[i].id, name: response.data[i].name, score: response.data[i].score }
           this.leaderboardData.push(position)
         }
       })
+      .catch((error) => {
+      console.error("Error fetching leaderboard positions:", error);
+    });
+
   }
 };
 </script>
