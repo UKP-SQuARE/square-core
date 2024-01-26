@@ -9,7 +9,7 @@ from typing import Dict, List
 import requests
 from fastapi import APIRouter, Request
 from square_auth.auth import Auth
-
+from bson.objectid import ObjectId
 
 from profile_manager import mongo_client
 from profile_manager.core.session_cache import SessionCache
@@ -22,17 +22,20 @@ auth = Auth()
 session_cache = SessionCache()
 
 
-@router.get("/badges", response_model=List[Badge])
-async def get_badges(request: Request):
-    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
-    badges = [badge for profile in profiles for badge in profile.get('badges', [])]
-    logger.debug(
-        "get_badges: {badges}".format(
-            badges=", ".join(["{}".format(str(s)) for s in badges])
+@router.get("/badges/{email}", response_model=List[Badge])
+async def get_badges(request: Request, email: str = None):
+    profile = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
+    if profile:
+        badge_ids = [ObjectId(badge) for badge in profile["Badges"]]
+        badges = list(mongo_client.client.daspChatBotRating.Badge.find({"_id": {"$in": badge_ids}}))
+        logger.debug(
+            "get_badges: {badges}".format(
+                badges=", ".join(["{}".format(str(badges)) for s in badges])
+            )
         )
-    )
-    badges = [Badge.from_mongo(badge) for badge in badges]
-    return badges
+        badges = [Badge.from_mongo(badge) for badge in badges]
+        return badges
+    return []
 
 @router.get("/submissions", response_model=List[Submission])
 async def get_submissions(request: Request):  

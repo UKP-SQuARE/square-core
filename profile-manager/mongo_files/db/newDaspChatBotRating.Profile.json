@@ -1,0 +1,20 @@
+[
+  {
+    "email": "l.stockum@hotmail.de",
+    "overallPoints": 120,
+    "currentPoints": 100,
+    "Certificates": [{"$oid": "5f50c31e88a1e7001742c39b"}],
+    "Badges": [{"$oid": "5f50c31e88a1e7001742c39c"}],
+    "Reviews": [{"$oid": "5f50c31e88a1e7001742c39d"}],
+    "availableModels": [{"$oid": "5f50c31e88a1e7001742c39e"}]
+  },
+  {
+    "email": "user2@example.com",
+    "overallPoints": 150,
+    "currentPoints": 120,
+    "Certificates": [{"$oid": "5f50c31e88a1e7001742c39f"}],
+    "Badges": [{"$oid": "5f50c31e88a1e7001742c3a0"}],
+    "Reviews": [{"$oid": "5f50c31e88a1e7001742c3a1"}],
+    "availableModels": [{"$oid": "5f50c31e88a1e7001742c3a2"}]
+  }
+]

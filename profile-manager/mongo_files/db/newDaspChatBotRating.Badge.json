@@ -1,0 +1,9 @@
+[
+  {
+    "_id": {"$oid": "5f50c31e88a1e7001742c39c"},
+    "title": "NLP Master",
+    "description": "Awarded for mastering NLP",
+    "icon": "https://example.com/nlp-master-icon.png",
+    "type": "Gold"
+  }
+]

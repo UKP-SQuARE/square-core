@@ -1,0 +1,15 @@
+[
+  {
+    "Questions": ["Question 1?", "Question 2?"],
+    "Answers": ["Answer 1", "Answer 2"],
+    "Results": {
+      "Metric1": "Value1",
+      "Metric2": "Value2",
+      "Metric3": "Value3",
+      "metrics": ["Factual correctness", "Language generation", "Context", "Coverage", "Clarity of response", "Harmfulness"]
+    },
+    "AchievedPoints": 85,
+    "Date": "2024-01-01",
+    "LLM": {"$oid": "5f50c31e88a1e7001742c3a3"}
+  }
+]

@@ -105,7 +105,7 @@ export default {
             this.showFullLeaderboard = !this.showFullLeaderboard;
         },
         loadBadges() {
-          getBadges(this.$store.getters.authenticationHeader())
+          getBadges(this.$store.getters.authenticationHeader(), this.user.email)
             .then((response) => {
               this.badges = response.data.map((badge, index) => {
                 return { ...badge, id: badge.someUniqueProperty || `badge-${index}` };
@@ -117,7 +117,7 @@ export default {
         },
 
         loadSubmissions() {
-          getSubmissions(this.$store.getters.authenticationHeader())
+          getSubmissions(this.$store.getters.authenticationHeader(), this.user.email)
             .then((response) => {
               this.submissions = response.data;
             })
@@ -127,7 +127,7 @@ export default {
         },
 
         loadCertificates() {
-          getCertificates(this.$store.getters.authenticationHeader())
+          getCertificates(this.$store.getters.authenticationHeader(), this.user.email)
             .then((response) => {
               this.certificates = response.data.map((certificate, index) => {
                 return { ...certificate, id: certificate.someUniqueProperty || `certificate-${index}` };
@@ -136,6 +136,10 @@ export default {
             .catch((error) => {
               console.error("Error loading certificates:", error);
             });
+        },
+        loadUserInfo() {
+          this.user.name = this.$store.state.userInfo.name
+          this.user.email = this.$store.state.userInfo.email
         }
   },
   beforeMount() {
