@@ -46,7 +46,24 @@ export function getPositions(headers) {
     return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
 }
 
+/**
+ * Get the profile of a user.
+ * @param {Object} headers optional authentication header
+ * @param {String} email Email of the user
+ */
+export function getProfile(headers, email) {
+    return axios.get(`${PROFILE_MANAGER_URL}/profiles/${email}`, { headers: headers })
+}
 
+/**
+ * Update the profile of a user.
+ * @param {Object} headers optional authentication header
+ * @param {String} email Email of the user
+ * @param {Object} profileData Data to update the profile with
+ */
+export function putProfile(headers, email, profileData) {
+    return axios.put(`${PROFILE_MANAGER_URL}/profiles/${email}`, profileData, { headers: headers })
+}
 
 /**
  * Get a list of available skill types.

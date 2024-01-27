@@ -171,6 +171,8 @@
 import Vue from 'vue'
 import VueTippy from "vue-tippy";
 import {Page} from 'v-page'
+import { getProfile, putProfile } from '@/api'
+
 
 Vue.use(VueTippy);
 
@@ -224,34 +226,92 @@ export default Vue.component('chatbot-hub', {
     },
   },
   watch: {
+    '$store.state.userInfo': {
+      handler(userInfo) {
+        if (userInfo && Object.keys(userInfo).length > 0) {
+          this.fetchProfile(); // Fetch profile when user info is updated (e.g., user logs in)
+        }
+      },
+      deep: true
+    },
     filteredModels() {
       this.currentPage = 1;
       this.pageCount = Math.ceil(this.filteredModels.length / 4);
     },
   },
   methods: {
+
+    fetchProfile() {
+      const email = this.$store.state.userInfo.email; // Get the email from the store
+      const headers = {}; // Set headers if needed, for example for authentication
+      getProfile(headers, email).then(response => {
+        this.points = response.data.currentPoints; // Update points
+      }).catch(error => {
+        console.error("Failed to fetch profile:", error);
+        // Handle error, for example, show a notification
+      });
+    },
     toggleModal(visibility, modelId = null) {
       this.isModalVisible = visibility
       this.selectedModelId = modelId
     },
+
+    updateProfile() {
+      const email = this.$store.state.userInfo.email;
+      const headers = {}; // Set headers if needed, for example for authentication
+
+      // Fetch the latest profile data before attempting to update
+      getProfile(headers, email).then(response => {
+        const profileData = {
+          ...response.data, // Spread operator to copy all properties
+          currentPoints: this.points // Overwrite just the points
+        };
+
+        // Now send the updated profile data to the server
+        putProfile(headers, email, profileData).then(response => {
+          console.log(response.data)
+        }).catch(error => {
+          console.error("Failed to update profile:", error);
+          // Handle error, for example, show a notification
+        });
+      }).catch(error => {
+        console.error("Failed to fetch profile for update:", error);
+        // Handle error, for example, show a notification
+      });
+    },
+
     unlockModel(modelId) {
       if (!this.isUserLoggedIn()) {
         this.feedbackMessage = 'You need to log in to earn points and unlock new models.';
         this.feedbackMessageType = 'error';
-      } else if (this.points < 1000) {
+        return;
+      }
+
+      if (this.points < 1000) {
         this.feedbackMessage = 'You do not have enough points.';
         this.feedbackMessageType = 'error';
-      } else {
-        this.points -= 1000;
-        const modelName = this.availableModels.find(model => model.id === modelId).name;
-        this.availableModelNamesForLoggedUser.push(modelName);
-        this.feedbackMessage = 'Model unlocked successfully!';
-        this.feedbackMessageType = 'success';
-        setTimeout(() => {
-          this.toggleModal(false);
-          this.feedbackMessage = '';
-        }, 1000);
+        return;
       }
+
+      // Deduct the cost of the model from the user's current points
+      this.points -= 1000;
+
+      // Add the unlocked model to the user's available models
+      const unlockedModel = this.availableModels.find(model => model.id === modelId);
+      if (unlockedModel && !this.availableModelNamesForLoggedUser.includes(unlockedModel.name)) {
+        this.availableModelNamesForLoggedUser.push(unlockedModel.name);
+      }
+
+      // Update the profile in the backend
+      this.updateProfile();
+
+      // Show success message
+      this.feedbackMessage = 'Model unlocked successfully!';
+      this.feedbackMessageType = 'success';
+      setTimeout(() => {
+        this.toggleModal(false);
+        this.feedbackMessage = '';
+      }, 1000);
     },
     pageModelChange(pInfo) {
       this.currentPage = pInfo.pageNumber;
@@ -283,6 +343,9 @@ export default Vue.component('chatbot-hub', {
     },
   },
   mounted() {
+    if (this.isUserLoggedIn()) {
+      this.fetchProfile(); // Fetch profile when the component is mounted
+    }
     this.pageCount = Math.ceil(this.filteredModels.length / 4);
     this.updatePaginatedModels();
   }
