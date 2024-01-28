@@ -13,7 +13,7 @@ from bson.objectid import ObjectId
 
 from profile_manager import mongo_client
 from profile_manager.core.session_cache import SessionCache
-from profile_manager.models import LLM, Badge, Submission, Certificate, Profile
+from profile_manager.models import LLM, Badge, Review, Certificate, Profile, LeaderboardEntry
 
 logger = logging.getLogger(__name__)
 
@@ -21,30 +21,61 @@ router = APIRouter(prefix="/profiles")
 auth = Auth()
 session_cache = SessionCache()
 
-@router.get("/submissions", response_model=List[Submission])
-async def get_submissions(request: Request):
-    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
-    submissions = [submission for profile in profiles for submission in profile.get('submissions', [])]
-    logger.debug(
-        "get_submissions: {submissions}".format(
-            submissions=", ".join(["{}".format(str(s)) for s in submissions])
+@router.get("/submissions/{email}", response_model=List[Review])
+async def get_submissions(request: Request, email: str = None):
+    profile = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
+    if profile:
+        submission_ids = [ObjectId(submission) for submission in profile["Reviews"]]
+        submissions = list(mongo_client.client.daspChatBotRating.Review.find({"_id": {"$in": submission_ids}}))
+        logger.debug(
+            "get_submissions: {submissions}".format(
+                submissions=", ".join(["{}".format(str(s)) for s in submissions])
+            )
         )
-    )
-    submissions = [Submission.from_mongo(submission) for submission in submissions]
-
-    return submissions
-
-@router.get("/certificates", response_model=List[Certificate])
-async def get_certificates(request: Request):
-    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
-    certificates = [certificate for profile in profiles for certificate in profile.get('certificates', [])]
-    logger.debug(
-        "get_certificates: {certificates}".format(
-            certificates=", ".join(["{}".format(str(s)) for s in certificates])
+        # Dereferencing Ratings for each submission and its messages
+        for submission in submissions:
+            llm_id = submission['LLM']
+            submission['LLM'] = mongo_client.client.daspChatBotRating.LLM.find_one({"_id": llm_id})
+            if 'Rating' in submission and isinstance(submission['Rating'], ObjectId):
+                rating_id = submission['Rating']
+                submission['Rating'] = mongo_client.client.daspChatBotRating.Rating.find_one({"_id": rating_id})
+            for message in submission.get('Messages', []):
+                if 'Rating' in message and message['Rating'] and isinstance(message['Rating'], ObjectId):
+                    rating_id = message['Rating']
+                    message['Rating'] = mongo_client.client.daspChatBotRating.Rating.find_one({"_id": rating_id})
+        logger.debug(
+            "get_submissions: {submissions}".format(
+                submissions=", ".join(["{}".format(str(s)) for s in submissions])
+            )
         )
-    )
-    certificates = [Certificate.from_mongo(certificate) for certificate in certificates]
-    return certificates
+        submissions = [Review.from_mongo(submission) for submission in submissions]
+        return submissions
+    return []
+            
+
+@router.get("/certificates/{email}", response_model=List[Certificate])
+async def get_certificates(request: Request, email: str = None):
+    profile = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
+    if profile:
+        certificate_ids = [ObjectId(certificate) for certificate in profile["Certificates"]]
+        certificates = list(mongo_client.client.daspChatBotRating.Certificate.find({"_id": {"$in": certificate_ids}}))
+        logger.debug(
+            "get_certificates: {certificates}".format(
+                certificates=", ".join(["{}".format(str(s)) for s in certificates])
+            )
+        )
+        certificates = [Certificate.from_mongo(certificate) for certificate in certificates]
+        return certificates
+    return []
+
+@router.get("/leaderboard", response_model=List[LeaderboardEntry])
+async def get_leaderboard(request: Request):
+    profiles = mongo_client.client.daspChatBotRating.Profile.find({}, {"email": 1, "overallPoints": 1})
+    profiles = [LeaderboardEntry.from_mongo(profile) for profile in profiles]
+    
+    leaderboard = [{"email": profile.email, "overallPoints": profile.overallPoints} for profile in profiles]
+
+    return leaderboard
 
 @router.get("/llms", response_model=List[LLM])
 async def get_llms(request: Request):

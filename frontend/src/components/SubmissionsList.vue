@@ -22,12 +22,22 @@ export default {
   computed: {
     fields() {
       return [
-        { key: 'date', label: 'Date', sortable: true },
-        { key: 'llmName', label: 'LLM Name' }
+        { key: 'Date', label: 'Date', sortable: true },
+        { key: 'LLM_Name', label: 'LLM Name' }
       ];
     },
     topSubmissions() {
-      return this.submissions.slice(0, 5);
+      return this.processSubmissions(this.submissions.slice(0, 5));
+    }
+  },
+  methods: {
+    processSubmissions(submissions) {
+      return submissions.map(submission => {
+        return {
+          ...submission,
+          LLM_Name: submission.LLM ? submission.LLM.Name : 'N/A' // Extract LLM Name
+        };
+      });
     }
   }
 };

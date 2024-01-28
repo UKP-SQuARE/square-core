@@ -9,7 +9,7 @@
 
 
 <script>
-import { getPositions } from '@/api'
+import { getLeaderboard } from '@/api'
 export default {
   name: 'LeaderboardTable',
   props: {
@@ -42,11 +42,11 @@ export default {
     }
   },
   beforeMount() {
-    getPositions(this.$store.getters.authenticationHeader())
+    getLeaderboard(this.$store.getters.authenticationHeader())
       .then((response) => {
         for (let i = 0; i < response.data.length; i++) {
 
-          let position = { id: response.data[i].id, name: response.data[i].name, score: response.data[i].score }
+          let position = { id: i, name: response.data[i].email, score: response.data[i].overallPoints }
           this.leaderboardData.push(position)
         }
       })

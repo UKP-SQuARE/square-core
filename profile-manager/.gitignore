@@ -5,3 +5,5 @@ mongo_files/db/*.lock
 mongo_files/db/journal/*
 mongo_files/db/diagnostic.data/*
 **/WiredTiger.*
+**/WiredTiger
+**/storage.bson

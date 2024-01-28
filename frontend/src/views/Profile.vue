@@ -37,12 +37,12 @@
                 <certificate-card
                   v-for="certificate in certificates"
                   :key="certificate.id"
-                  :certificate-id="certificate.id"
-                  :certificate-title="certificate.title"
-                  :student-name="certificate.studentName"
+                  :id="certificate.id"
+                  :title="certificate.title"
+                  :name="certificate.name"
                   :score="certificate.score"
                   :evaluation-type="certificate.evaluationType"
-                  :issue-date="certificate.issueDate"
+                  :date="certificate.date"
                 />
               </div>
             </div>
@@ -130,7 +130,7 @@ export default {
           getCertificates(this.$store.getters.authenticationHeader(), this.user.email)
             .then((response) => {
               this.certificates = response.data.map((certificate, index) => {
-                return { ...certificate, id: certificate.someUniqueProperty || `certificate-${index}` };
+                return { ...certificate, name: this.user.name,id: certificate.someUniqueProperty || `certificate-${index}` };
               });
             })
             .catch((error) => {
@@ -143,7 +143,7 @@ export default {
         }
   },
   beforeMount() {
-
+    this.loadUserInfo();
     this.loadBadges();
     this.loadSubmissions();
     this.loadCertificates();

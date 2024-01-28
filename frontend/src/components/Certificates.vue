@@ -2,8 +2,8 @@
   <div> <!-- Root element -->
     <!-- Certificate Preview -->
     <div class="certificate-preview" @click="showModal(certificateId)">
-      <h5 class="preview-title">{{ certificateTitle }}</h5>
-      <p class="preview-date">Issued: {{ issueDate }}</p>
+      <h5 class="preview-title">{{ title }}</h5>
+      <p class="preview-date">Issued: {{ date }}</p>
       <!-- Add more details as needed -->
     </div>
 
@@ -12,7 +12,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="certificateModalLabel">{{ certificateTitle }}</h5>
+            <h5 class="modal-title" id="certificateModalLabel">{{ title }}</h5>
             <button type="button" class="btn-close" @click="closeModal"></button>
           </div>
           <div class="modal-body">
@@ -20,15 +20,15 @@
             <div class="card mx-auto my-5 border-0">
               <div class="card-body p-4 bg-light shadow">
                 <div class="text-center mb-4">
-                  <h3 class="card-title">{{ certificateTitle }}</h3>
+                  <h3 class="card-title">{{ title }}</h3>
                   <p class="text-muted">{{ evaluationType }}</p>
                 </div>
                 <div class="certificate-body bg-white border p-4">
-                  <h5 class="text-center fw-bold">{{ studentName }}</h5>
+                  <h5 class="text-center fw-bold">{{ name }}</h5>
                   <p class="text-center">has achieved a score of</p>
                   <p class="text-center fw-bold">{{ score }}</p>
                   <div class="text-center mt-4">
-                    <p class="text-muted">Issued on {{ issueDate }}</p>
+                    <p class="text-muted">Issued on {{ date }}</p>
                   </div>
                   <!-- Social Sharing Links -->
                   <div class="text-center mt-4">
@@ -55,16 +55,16 @@ import jsPDF from 'jspdf';
 export default {
   name: 'CertificateCard',
   props: {
-    certificateId: {
+    id: {
       type: Number,
       required: true,
       default: 1
     },
-    certificateTitle: {
+    title: {
       type: String,
       default: 'LLM Evaluation Certificate'
     },
-    studentName: {
+    name: {
       type: String,
       default: 'John Doe'
     },
@@ -76,7 +76,7 @@ export default {
       type: String,
       default: 'Language Model Proficiency'
     },
-    issueDate: {
+    date: {
       type: String,
       default: 'January 1, 2023'
     }
@@ -100,7 +100,7 @@ export default {
       doc.text(this.certificateTitle, 10, 10);
       doc.text(`Issued to: ${this.studentName}`, 10, 20);
       doc.text(`Score: ${this.score}`, 10, 30);
-      doc.text(`Issue Date: ${this.issueDate}`, 10, 40);
+      doc.text(`Issue Date: ${this.date}`, 10, 40);
       // Add more content as needed
 
       // Save the PDF

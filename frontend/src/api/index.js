@@ -17,8 +17,8 @@ const PROFILE_MANAGER_URL = `${process.env.VUE_APP_PROFILE_MANAGER_URL}`
  * Get a list of available submission.
  * @param {Object} headers optional authentication header
  */
-export function getSubmissions(headers) {
-    return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
+export function getSubmissions(headers, email) {
+    return axios.get(`${PROFILE_MANAGER_URL}/submissions/${email}`, { headers: headers })
 }
 
 
@@ -34,16 +34,16 @@ export function getBadges(headers, email) {
  * Get a list of available certificates.
  * @param {Object} headers optional authentication header
  */
-export function getCertificates(headers) {
-    return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
+export function getCertificates(headers, email) {
+    return axios.get(`${PROFILE_MANAGER_URL}/certificates/${email}`, { headers: headers })
 }
 
 /**
  * Get a list of available positions.
  * @param {Object} headers optional authentication header
  */
-export function getPositions(headers) {
-    return axios.get(`${PROFILE_MANAGER_URL}/submissions`, { headers: headers })
+export function getLeaderboard(headers) {
+    return axios.get(`${PROFILE_MANAGER_URL}/leaderboard`, { headers: headers })
 }
 
 /**
@@ -212,15 +212,15 @@ export function skillHeartbeat(headers, id) {
     return axios.get(`${SKILL_MANAGER_URL}/health/${id}/heartbeat`, { headers: headers })
 }
 
-/**
- * Get leaderboard data.
- * @param {String} dataset_name Name of the dataset to get the leaderboard for.
- * @param {String} metric_name Name of the metric to get the leaderboard for.
- * @param {Object} headers Authentication header
- */
-export function getLeaderboard(dataset_name, metric_name, headers) {
-    return axios.get(`${EVALUATOR_URL}/leaderboard/${dataset_name}/${metric_name}`, { headers: headers })
-}
+// /**
+//  * Get leaderboard data.
+//  * @param {String} dataset_name Name of the dataset to get the leaderboard for.
+//  * @param {String} metric_name Name of the metric to get the leaderboard for.
+//  * @param {Object} headers Authentication header
+//  */
+// export function getLeaderboard(dataset_name, metric_name, headers) {
+//     return axios.get(`${EVALUATOR_URL}/leaderboard/${dataset_name}/${metric_name}`, { headers: headers })
+// }
 
 /**
  * Get all user and public evaluations.
