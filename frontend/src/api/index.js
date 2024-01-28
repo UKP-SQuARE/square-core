@@ -65,6 +65,16 @@ export function putProfile(headers, email, profileData) {
     return axios.put(`${PROFILE_MANAGER_URL}/profiles/${email}`, profileData, { headers: headers })
 }
 
+export function getLLMs(headers) {
+    return axios.get(`${PROFILE_MANAGER_URL}/llms`, { headers: headers });
+}
+
+// Get a list of LLMs based on the profile email
+export function getLLMsByemail(headers, email) {
+    return axios.get(`${PROFILE_MANAGER_URL}/llms/${email}`, { headers: headers });
+}
+
+
 /**
  * Get a list of available skill types.
  * @param {Object} headers optional authentication header

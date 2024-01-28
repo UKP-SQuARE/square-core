@@ -13,13 +13,43 @@ from bson.objectid import ObjectId
 
 from profile_manager import mongo_client
 from profile_manager.core.session_cache import SessionCache
-from profile_manager.models import Badge, Submission, Certificate, Profile
+from profile_manager.models import LLM, Badge, Submission, Certificate, Profile
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/profiles")
 auth = Auth()
 session_cache = SessionCache()
+
+@router.get("/submissions", response_model=List[Submission])
+async def get_submissions(request: Request):
+    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
+    submissions = [submission for profile in profiles for submission in profile.get('submissions', [])]
+    logger.debug(
+        "get_submissions: {submissions}".format(
+            submissions=", ".join(["{}".format(str(s)) for s in submissions])
+        )
+    )
+    submissions = [Submission.from_mongo(submission) for submission in submissions]
+
+    return submissions
+
+@router.get("/certificates", response_model=List[Certificate])
+async def get_certificates(request: Request):
+    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
+    certificates = [certificate for profile in profiles for certificate in profile.get('certificates', [])]
+    logger.debug(
+        "get_certificates: {certificates}".format(
+            certificates=", ".join(["{}".format(str(s)) for s in certificates])
+        )
+    )
+    certificates = [Certificate.from_mongo(certificate) for certificate in certificates]
+    return certificates
+
+@router.get("/llms", response_model=List[LLM])
+async def get_llms(request: Request):
+    llms = list(mongo_client.client.daspChatBotRating.LLM.find({}))
+    return [LLM.from_mongo(llm) for llm in llms]
 
 
 @router.get("/badges/{email}", response_model=List[Badge])
@@ -37,6 +67,22 @@ async def get_badges(request: Request, email: str = None):
         return badges
     return []
 
+
+@router.get("/llms/{email}", response_model=List[LLM])
+async def get_llms_byemail(request: Request, email: str = None):
+    profile = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
+    if profile:
+        llm_ids = [ObjectId(llm) for llm in profile["availableModels"]]
+        llms = list(mongo_client.client.daspChatBotRating.LLM.find({"_id": {"$in": llm_ids}}))
+        logger.debug(
+            "get_llms_byemail: {llms}".format(
+                llms=", ".join(["{}".format(str(llms)) for s in llms])
+            )
+        )
+        llms = [LLM.from_mongo(llm) for llm in llms]
+        return llms
+    return []
+
 @router.get("/profiles/{email}", response_model=Profile)
 async def get_profile(request: Request, email: str):
     profile_data = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
@@ -45,32 +91,6 @@ async def get_profile(request: Request, email: str):
 
     # Return the profile data as is (without resolving links)
     return Profile.from_mongo(profile_data)
-
-
-@router.get("/submissions", response_model=List[Submission])
-async def get_submissions(request: Request):  
-    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
-    submissions = [submission for profile in profiles for submission in profile.get('submissions', [])]
-    logger.debug(
-        "get_submissions: {submissions}".format(
-            submissions=", ".join(["{}".format(str(s)) for s in submissions])
-        )
-    )
-    submissions = [Submission.from_mongo(submission) for submission in submissions]
-    
-    return submissions
-
-@router.get("/certificates", response_model=List[Certificate])
-async def get_certificates(request: Request):
-    profiles = mongo_client.client.daspChatBotRating.Profile.find({})
-    certificates = [certificate for profile in profiles for certificate in profile.get('certificates', [])]
-    logger.debug(
-        "get_certificates: {certificates}".format(
-            certificates=", ".join(["{}".format(str(s)) for s in certificates])
-        )
-    )
-    certificates = [Certificate.from_mongo(certificate) for certificate in certificates]
-    return certificates
 
 @router.post("/badges", response_model=Badge)
 async def add_badge(badge: Badge):
@@ -119,6 +139,20 @@ async def create_profile(profile: Profile):
         return Profile.from_mongo(created_profile)
     raise HTTPException(status_code=500, detail="Profile creation failed")
 
+@router.post("/llms", response_model=LLM)
+async def create_llm(llm: LLM):
+    llm_data = llm.dict(by_alias=True)
+    if not llm_data.get('id'):
+        llm_data['_id'] = ObjectId()
+    else:
+        llm_data['_id'] = llm_data.pop('id')
+
+    new_llm = mongo_client.client.daspChatBotRating.LLM.insert_one(llm_data)
+    created_llm = mongo_client.client.daspChatBotRating.LLM.find_one({"_id": new_llm.inserted_id})
+
+    if created_llm:
+        return LLM.from_mongo(created_llm)
+    raise HTTPException(status_code=500, detail="LLM creation failed")
 
 @router.put("/profiles/{email}", response_model=Profile)
 async def update_profile(email: str, profile: Profile):
@@ -145,3 +179,9 @@ async def update_profile(email: str, profile: Profile):
     updated_profile = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
     return Profile.from_mongo(updated_profile)
 
+@router.delete("/llms/{llm_id}", response_model=dict)
+async def delete_llm(llm_id: str):
+    result = mongo_client.client.daspChatBotRating.LLM.delete_one({"_id": ObjectId(llm_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="LLM not found")
+    return {"status": "success", "message": "LLM deleted"}

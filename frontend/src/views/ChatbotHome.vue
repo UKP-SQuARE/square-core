@@ -54,6 +54,9 @@
                       <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
                     </svg>
                     </span>
+                    <div class="text-muted" style="font-size: 0.8em;">
+                      Total Earned Points: {{ overallPoints }}
+                    </div>
                     <!-- <h4>Leaderboard Place:</h4>
                     <span class="badge bg-primary ms-auto" style="font-size: 1.5em;">
                       {{ lbPlace }} out of 50
@@ -171,8 +174,7 @@
 import Vue from 'vue'
 import VueTippy from "vue-tippy";
 import {Page} from 'v-page'
-import { getProfile, putProfile } from '@/api'
-
+import { getProfile, putProfile, getLLMs, getLLMsByemail } from '@/api';
 
 Vue.use(VueTippy);
 
@@ -183,19 +185,11 @@ export default Vue.component('chatbot-hub', {
       currentPage: 1,
       pageCount: 0,
       waiting: false,
-      availableModels: [
-        {
-          id: 1,
-          name: 'CommonsenseQA BERT Adapter',
-          description: 'A model specialized in common sense question answering'
-        },
-        {id: 2, name: 'Llama-2-7b-chat', description: 'Versatile model adept at processing natural language'},
-        {id: 3, name: 'GPT-3.5-turbo', description: 'Advanced conversational agent for realistic dialogue'},
-        {id: 4, name: 'ChatGPT-4.0', description: 'State-of-the-art model with nuanced understanding'},
-        {id: 5, name: 'Perplexity AI', description: 'AI designed for deep contextual comprehension and interaction.'},
-      ],
-      availableModelNamesForLoggedUser: ['CommonsenseQA BERT Adapter', 'GPT-3.5-turbo'],
-      points: 1500,
+      allModels: [],
+      availableModelNamesForEachLoggedUser: ['CommonsenseQA BERT Adapter', 'GPT-3.5-turbo'],
+      availableModels: [],
+      points: 0,
+      overallPoints: 0,
       lbPlace: 2,
       isModalVisible: false,
       selectedModelId: null,
@@ -245,7 +239,8 @@ export default Vue.component('chatbot-hub', {
       const email = this.$store.state.userInfo.email; // Get the email from the store
       const headers = {}; // Set headers if needed, for example for authentication
       getProfile(headers, email).then(response => {
-        this.points = response.data.currentPoints; // Update points
+        this.points = response.data.currentPoints; // Update current points
+        this.overallPoints = response.data.overallPoints; // Update overall points
       }).catch(error => {
         console.error("Failed to fetch profile:", error);
         // Handle error, for example, show a notification
@@ -279,8 +274,7 @@ export default Vue.component('chatbot-hub', {
         // Handle error, for example, show a notification
       });
     },
-
-    unlockModel(modelId) {
+    async unlockModel(modelId) {
       if (!this.isUserLoggedIn()) {
         this.feedbackMessage = 'You need to log in to earn points and unlock new models.';
         this.feedbackMessageType = 'error';
@@ -296,22 +290,40 @@ export default Vue.component('chatbot-hub', {
       // Deduct the cost of the model from the user's current points
       this.points -= 1000;
 
-      // Add the unlocked model to the user's available models
-      const unlockedModel = this.availableModels.find(model => model.id === modelId);
-      if (unlockedModel && !this.availableModelNamesForLoggedUser.includes(unlockedModel.name)) {
-        this.availableModelNamesForLoggedUser.push(unlockedModel.name);
+      try {
+        const email = this.$store.state.userInfo.email;
+        const headers = {}; // Set headers if needed, for example for authentication
+
+        // Fetch the latest profile data
+        const profileResponse = await getProfile(headers, email);
+        const profileData = profileResponse.data;
+        profileData.currentPoints = this.points;
+
+        // Add the unlocked model to the user's available models if it's not already there
+        if (!profileData.availableModels.includes(modelId)) {
+          profileData.availableModels.push(modelId);
+        }
+
+        // Send the updated profile data to the server
+        await putProfile(headers, email, profileData);
+
+        // Fetch the updated list of user LLMs and all LLMs
+        await this.fetchUserLLMs();
+        await this.fetchAllLLMs();
+
+        // Show success message
+        this.feedbackMessage = 'Model unlocked successfully!';
+        this.feedbackMessageType = 'success';
+      } catch (error) {
+        console.error("Failed during model unlock process:", error);
+        this.feedbackMessage = 'Failed to unlock the model. Please try again.';
+        this.feedbackMessageType = 'error';
+      } finally {
+        setTimeout(() => {
+          this.toggleModal(false);
+          this.feedbackMessage = '';
+        }, 2000);
       }
-
-      // Update the profile in the backend
-      this.updateProfile();
-
-      // Show success message
-      this.feedbackMessage = 'Model unlocked successfully!';
-      this.feedbackMessageType = 'success';
-      setTimeout(() => {
-        this.toggleModal(false);
-        this.feedbackMessage = '';
-      }, 1000);
     },
     pageModelChange(pInfo) {
       this.currentPage = pInfo.pageNumber;
@@ -326,6 +338,53 @@ export default Vue.component('chatbot-hub', {
         // Handle accordingly, perhaps showing a message or an upgrade option
       }
     },
+    fetchAllLLMs() {
+      const headers = {}; // Set headers if needed, for example for authentication
+      getLLMs(headers).then(response => {
+        this.allModels = response.data; // Array of all LLMs
+        this.setAvailableModels(); // Set available models based on all models and user-specific models
+      }).catch(error => {
+        console.error("Failed to fetch all LLMs:", error);
+        // Handle error, for example, show a notification
+      });
+    },
+    fetchUserLLMs() {
+      if (!this.isUserLoggedIn()) {
+        return;
+      }
+      const email = this.$store.state.userInfo.email;
+      const headers = {}; // Set headers if needed, for example for authentication
+      getLLMsByemail(headers, email).then(response => {
+        const userLLMs = response.data; // Array of LLMs from the user's profile
+
+        // Combine availableModelNamesForEachLoggedUser with names of fetched userLLMs, avoiding duplicates
+        const userLLMNames = userLLMs.map(llm => llm.Name);
+        this.availableModelNamesForEachLoggedUser = [...new Set([...this.availableModelNamesForEachLoggedUser, ...userLLMNames])];
+
+        this.setAvailableModels(); // Set available models based on all models and user-specific models
+      }).catch(error => {
+        console.error("Failed to fetch user LLMs:", error);
+        // Handle error, for example, show a notification
+      });
+    },
+    setAvailableModels() {
+      this.availableModels = this.allModels.map(llm => ({
+        id: llm.id,
+        name: llm.Name,
+        description: this.getDescriptionForLLM(llm.Name),
+        available: this.availableModelNamesForEachLoggedUser.includes(llm.Name)
+      }));
+    },
+    getDescriptionForLLM(name) {
+      const descriptions = {
+        'CommonsenseQA BERT Adapter': 'A model specialized in common sense question answering',
+        'Llama-2-7b-chat': 'Versatile model adept at processing natural language',
+        'GPT-3.5-turbo': 'Advanced conversational agent for realistic dialogue',
+        'ChatGPT-4.0': 'State-of-the-art model with nuanced understanding',
+        'Perplexity AI': 'AI designed for deep contextual comprehension and interaction'
+      };
+      return descriptions[name] || 'No description available';
+    },
     updatePaginatedModels() {
       const start = (this.currentPage - 1) * 4;
       const end = start + 4;
@@ -333,7 +392,7 @@ export default Vue.component('chatbot-hub', {
     },
     isModelAvailable(model) {
       if (this.isUserLoggedIn()) {
-        return this.availableModelNamesForLoggedUser.includes(model.name);
+        return this.availableModelNamesForEachLoggedUser.includes(model.name);
       } else {
         return this.availableModels[0].name === model.name;
       }
@@ -343,11 +402,14 @@ export default Vue.component('chatbot-hub', {
     },
   },
   mounted() {
+    // Fetch all LLMs and user-specific LLMs (if user is logged in)
+    this.fetchAllLLMs();
     if (this.isUserLoggedIn()) {
-      this.fetchProfile(); // Fetch profile when the component is mounted
+      this.fetchProfile();
+      this.fetchUserLLMs();
     }
-    this.pageCount = Math.ceil(this.filteredModels.length / 4);
+    this.pageCount = Math.ceil(this.availableModels.length / 4);
     this.updatePaginatedModels();
-  }
+  },
 })
 </script>

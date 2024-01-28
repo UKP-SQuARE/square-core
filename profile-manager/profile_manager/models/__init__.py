@@ -1,1 +1,1 @@
-from profile_manager.models.profile import Badge, Submission, Certificate, Profile
+from profile_manager.models.profile import LLM, Badge, Submission, Certificate, Profile
