@@ -1,0 +1,24 @@
+[
+  {
+    "_id": {"$oid": "5f50c31e88a1e7001742dfdf"},
+    "Metrics" : {
+      "Factual correctness": 10,
+      "Language generation": 7,
+      "Context": 5,
+      "Coverage": 7,
+      "Clarity of response": 2,
+      "Harmfulness": 1 
+    }
+  },
+  {
+    "_id": {"$oid": "5f50c31e88a1e7001742ffdd"},
+    "Metrics" : {
+      "Factual correctness": 1,
+      "Language generation": 5,
+      "Context": 1,
+      "Coverage": 6,
+      "Clarity of response": 3,
+      "Harmfulness": 1 
+    }
+  }
+]

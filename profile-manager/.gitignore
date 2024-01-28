@@ -1,2 +1,7 @@
 .coverage
 private_key.pem
+**/*.wt
+mongo_files/db/*.lock
+mongo_files/db/journal/*
+mongo_files/db/diagnostic.data/*
+**/WiredTiger.*
