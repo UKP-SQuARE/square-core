@@ -224,6 +224,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SQUARE_URL: #@ data.values.square_url[data.values.environment]
+      SQUARE_API_URL: #@ data.values.square_api_url[data.values.environment]
     depends_on:
       - mongodb
       - redis
