@@ -38,9 +38,9 @@ class Profile(MongoModel):
     email: str
     overallPoints: int
     currentPoints: int
-    certificates: List[PyObjectId] = []    # Default to empty list
-    badges: List[PyObjectId] = []          # Default to empty list
-    submissions: List[PyObjectId] = []     # Default to empty list
+    Certificates: List[PyObjectId] = []    # Default to empty list
+    Badges: List[PyObjectId] = []          # Default to empty list
+    Reviews: List[PyObjectId] = []     # Default to empty list
     availableModels: List[PyObjectId] = [] # References to LLM models
 
 class LeaderboardEntry(MongoModel):
