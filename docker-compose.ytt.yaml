@@ -720,3 +720,5 @@ volumes:
     driver: local
   virtuoso-db: 
     driver: local
+  hf_models:
+    driver: local
