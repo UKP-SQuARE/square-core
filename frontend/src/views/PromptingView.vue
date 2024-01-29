@@ -218,13 +218,13 @@
                         </button>
                       </div>
                       <div class="col-8">
-                        <textarea v-autosize ref="textAreaRef" v-model="chatText" placeholder="Write a message"
-                          type="text" class="form-control border p-2 m-0 auto-resize" style="
+                        <textarea ref="textAreaRef" v-model="chatText" placeholder="Write a message"
+                          type="text" class="form-control border m-0" style="
                             background: rgba(0, 0, 0, 0.1);
-                            max-height: 40vh;
+                            max-height: 60vh;
                             height: 2.5rem;
                             min-height: 2.5rem;"
-                          @keydown.enter="handleEnterKey" />
+                          @keydown.enter="handleEnterKey" @input="autoResizeTextarea"/>
                       </div>
                       <div class="col-2 px-0 d-flex align-items-end">
                         <button @click.prevent="onSubmit" 
@@ -514,8 +514,8 @@ export default {
     },
 
     chatConfig: {
-      chatMode: "sensitivity",
-      selectedModel: "Llama-2-7b-chat",
+      chatMode: "normal_chat",
+      selectedModel: "gpt-3.5-turbo-0613",
       temperature: 0.7,
       maxTokens: 256,
       top_p: 0.9,
@@ -638,6 +638,14 @@ export default {
   },
 
   methods: {
+
+    autoResizeTextarea () {
+      const textArea = this.$refs.textAreaRef;
+      const initialHeight = '2.5rem';
+      textArea.style.height = initialHeight;
+      const newHeight = Math.max(textArea.scrollHeight, textArea.clientHeight);
+      textArea.style.height = this.chatText === "" ? initialHeight : `${newHeight}px`;
+    },
 
     markdownToHtml(md) {
       return marked.parse(md);
@@ -1009,6 +1017,7 @@ export default {
       this.addUserMessage()
       let text = this.chatText;
       this.chatText = "";
+      this.autoResizeTextarea();
       
       try {
         let response = "";
