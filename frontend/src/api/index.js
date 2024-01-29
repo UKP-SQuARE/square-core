@@ -3,7 +3,7 @@
  * Endpoint documentation is found in the documentation of the backend and skill server
  */
 import axios from "axios";
-import https from "https";
+// import https from "https";
 
 /**
  * URLs to the SQuARE backend servers
@@ -14,7 +14,7 @@ const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`;
 const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
 // const MODEL_MANAGER_URL = `https://localhost:8443/api/models`; // TODO: change to env variable
 // const LLM_MODELS_URL = `https://localhost:8443/api`; // TODO: change to env variable
-const LLM_MODELS_URL = `https://test.square.ukp-lab.de/api`
+const LLM_MODELS_URL = MODEL_MANAGER_URL.replace('/models', '');
 
 /**
  * Get a list of available skill types.

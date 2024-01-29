@@ -430,6 +430,22 @@ services:
       - "traefik.http.middlewares.model-dpr-stripprefix.stripprefix.prefixes=/api/main"
       - "traefik.http.middlewares.model-dpr-addprefix.addPrefix.prefix=/api"
 
+  sensitivity: 
+    image: #@ "ukpsquare/sensitivity:" + data.values.tag
+    build:
+      context: ./sensitivity
+    volumes:
+      - hf_models:/root/.cache/huggingface
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sensitivity.rule=PathPrefix(`/api/sensitivity`)"
+      - "traefik.http.routers.sensitivity.entrypoints=websecure"
+      - "traefik.http.routers.sensitivity.tls=true"
+      - "traefik.http.routers.sensitivity.tls.certresolver=le"
+      - "traefik.http.routers.sensitivity.middlewares=sensitivity-stripprefix,sensitivity-addprefix"
+      - "traefik.http.middlewares.sensitivity-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.sensitivity-addprefix.addPrefix.prefix=/api"
+
   dpr_worker:
     image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
     build:

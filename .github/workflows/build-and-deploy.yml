@@ -48,6 +48,7 @@ jobs:
           "skill-multiple-choice-metaqa",
           "skill-kgqa-kqapro",
           "evaluator",
+          "sensitivity",
         ]
         include:
           - build-args: ""
@@ -115,6 +116,8 @@ jobs:
             build-args: "skill=kgqa-kqapro"
           - service: evaluator
             context: ./evaluator
+          - service: sensitivity
+            context: ./sensitivity
     steps:
       - name: Checkout
         uses: actions/checkout@v3
