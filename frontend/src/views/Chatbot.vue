@@ -161,7 +161,6 @@ import Vue from 'vue'
 import Query from '@/components/Query.vue'
 import Results from '@/components/Results.vue'
 import VueApexCharts from 'vue-apexcharts'
-import RadarChart from '../components/RadarChart.vue'
 import axios from 'axios'
 export default Vue.component('run-qa', {
   data() {
