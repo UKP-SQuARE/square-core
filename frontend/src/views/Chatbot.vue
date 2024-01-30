@@ -232,22 +232,20 @@ export default Vue.component('run-qa', {
     async generateAnswer(questionId) {
       try {
         var questionText = this.questions[questionId]
-        var postData = { "model": "phi", "messages": [{ "role": "user", "content": questionText }], "stream": false }
+        var postData = { "model": "phi", "messages": [{ "role": "user", "content": questionText["text"] }], "stream": false }
+
         const response = await axios.post('http://194.163.130.51:11434/api/chat', postData)
         var answer = ""
         var jsonData = response.data
-        const jsonLines = jsonData.split('\n');
-
-        const contents = jsonLines.map(line => {
-          try {
-            const json = JSON.parse(line);
-            return json.message.content;
-          } catch (error) {
-            console.error(`Fehler beim Parsen der Zeile: ${line}`);
-            return null;
-          }
-        });
-        answer = contents.join(" ");
+        //console.log(jsonData["message"]["content"])
+        var contents = ""
+        try {
+          contents = jsonData["message"]["content"];
+        } catch (error) {
+          console.error(`Fehler beim Parsen der Zeile: ${line}`);
+          return null;
+        }
+        answer = contents;
         this.answers[questionId]=answer
       } catch (error) {
         this.answers[questionId]="Connection Error"
