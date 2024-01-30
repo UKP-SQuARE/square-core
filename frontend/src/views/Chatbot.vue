@@ -11,7 +11,7 @@
               <!-- Infobox auf der linken Seite -->
               <div class="bg-light border rounded shadow p-3">
                 <!-- Dummy-Text -->
-                <h4>Sprachmodell</h4>
+                <h4>Language model</h4>
               </div>
 
               <!-- Buttons auf der linken Seite -->
@@ -50,14 +50,16 @@
                                 <p class="small mb-0"> {{ question.text }}</p>
                               </div>
                             </div>
-                            <div class="d-flex flex-row justify-content-start mb-4">
+                            <div v-if="answers[question.id]!== undefined || answerGenerated " class="d-flex flex-row justify-content-start mb-4">
                               <div class="p-2 me-2 border" style="border-radius: 15px; background-color: #fbfbfb;">
-                                <p class="small mb-0"> {{ question.answer.text }}</p>
+                                <p class="small mb-0"> {{ answers[question.id] }}</p>
                               </div>
-                              <button @click="openFeedbackHandler(question.text)" class="round-blue-button">
-
+                              <button @click="openFeedbackHandler(question.id)" class="round-blue-button">
                                 <div> &#8618;</div>
                               </button>
+                            </div>
+                            <div v-else>
+                              <pulse-loader></pulse-loader>
                             </div>
 
                             <div v-if="openFeedback" class="modal fade show" style="display: block;"
@@ -75,7 +77,12 @@
                                         <div class="col">
                                           <label :for="'element_' + metric">{{ metrics[metric] }}</label>
                                         </div>
-                                        <div class="col">
+                                        <div v-if="answerValues[question.id] !== undefined" class="col">
+                                          <input type="range" class="form-control-range" :id="'element_' + metric"
+                                            v-model="answerValues[question.id][metric]" min="1" max="5" />
+                                          <span>{{ answerValues[question.id][metric] }}</span>
+                                        </div>
+                                        <div v-else class="col">
                                           <input type="range" class="form-control-range" :id="'element_' + metric"
                                             v-model="currentValues[metric]" min="1" max="5" />
                                           <span>{{ currentValues[metric] }}</span>
@@ -85,7 +92,7 @@
                                     </div>
                                     <div class="d-grid gap-1 d-md-flex justify-content-md-center m-2">
                                       <div class="btn btn-danger btn-lg text-white"
-                                        @click="submitAnswerFeedback(question.text)">
+                                        @click="submitAnswerFeedback(question.id)">
                                         Submit
                                       </div>
                                     </div>
@@ -104,9 +111,9 @@
                     <div class="col">
                       <div class="input-group">
                         <input v-model="newQuestion" @keyup.enter="sendQuestion" type="text" class="form-control"
-                          placeholder="Schreibe eine Nachricht..." />
+                          placeholder="Write a message" />
                         <div class="input-group-append">
-                          <button @click="sendQuestion" class="btn btn-primary">Senden</button>
+                          <button @click="sendQuestion" class="btn btn-primary">Send</button>
                         </div>
                       </div>
                     </div>
@@ -161,13 +168,14 @@ import Vue from 'vue'
 import Query from '@/components/Query.vue'
 import Results from '@/components/Results.vue'
 import VueApexCharts from 'vue-apexcharts'
-import RadarChart from '../components/RadarChart.vue'
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import axios from 'axios'
 export default Vue.component('run-qa', {
   data() {
 
 
     return {
+      answerGenerated: false,
       metricIds: [0, 1, 2, 3, 4, 5],
       metrics: ['Factual correctness', 'Language generation', 'Context', 'Coverage', 'Clarity of response', 'Harmfulness'],
       newQuestion: '',
@@ -178,8 +186,7 @@ export default Vue.component('run-qa', {
       currentValues: [],
       defaultValues: ['3', '3', '3', '3', '3', '3'],
       answerValues: {},
-      results: [
-      ],
+      results: [],
       chartOptions: {
         chart: {
           height: 350,
@@ -199,18 +206,22 @@ export default Vue.component('run-qa', {
     Query,
     Results,
     apexchart: VueApexCharts,
+    PulseLoader,
 
   },
   methods: {
     async sendQuestion() {
-      if (this.newQuestion.trim() !== '') {
+      var questionText = this.newQuestion.trim();
+      if (questionText !== '') {
+        var questionId = this.questions.length
         this.questions.push({
-          id: this.questions.length + 1,
+          id: questionId,
           sender: 'Q', // Du kannst hier den Benutzernamen ändern
-          text: this.newQuestion.trim(),
-          answer: await this.generateAnswer(this.newQuestion.trim())
+          text: questionText,
         });
-
+        this.answerGenerated=false
+        await this.generateAnswer(questionId)
+        this.answerGenerated=true
         // Scrollen zum Ende des Chats nach dem Senden einer Nachricht
         this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
 
@@ -218,10 +229,11 @@ export default Vue.component('run-qa', {
         this.newQuestion = '';
       }
     },
-    async generateAnswer(question) {
+    async generateAnswer(questionId) {
       try {
-        var postData = { "model": "phi", "messages": [{ "role": "user", "content": question }], "stream": true }
-        const response = await axios.post('http://194.163.130.51:11434/api/chat', postData);
+        var questionText = this.questions[questionId]
+        var postData = { "model": "phi", "messages": [{ "role": "user", "content": questionText }], "stream": false }
+        const response = await axios.post('http://194.163.130.51:11434/api/chat', postData)
         var answer = ""
         var jsonData = response.data
         const jsonLines = jsonData.split('\n');
@@ -235,22 +247,13 @@ export default Vue.component('run-qa', {
             return null;
           }
         });
-        answer=contents.join(" ");
-        this.answers.push({
-          id: this.answers.length + 1,
-          sender: 'A', 
-          text: answer,
-        });
+        answer = contents.join(" ");
+        this.answers[questionId]=answer
       } catch (error) {
+        this.answers[questionId]="Connection Error"
+        console.log(this.answers)
         console.error('Connection error', error);
       }
-
-
-      return ({
-        id: this.answers.length + 1,
-        sender: 'A', 
-        text: answer,
-      })
     },
     openFeedbackHandler(text) {
       if (text in this.answerValues) {
@@ -262,9 +265,9 @@ export default Vue.component('run-qa', {
       this.openFeedback = true;
 
     },
-    submitAnswerFeedback(text) {
-      this.answerValues[text] = this.currentValues;
-      this.currentValues = [];
+    submitAnswerFeedback(questionId) {
+      this.answerValues[questionId] = this.currentValues;
+      this.currentValues = this.defaultValues;
       this.openFeedback = false;
 
     },
