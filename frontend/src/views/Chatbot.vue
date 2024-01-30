@@ -7,13 +7,11 @@
           <div class="row row-cols-2">
             <!-- Chat Bereich -->
 
-
             <div class="col">
               <!-- Infobox auf der linken Seite -->
               <div class="bg-light border rounded shadow p-3">
                 <!-- Dummy-Text -->
                 <h4>Sprachmodell</h4>
-
               </div>
 
               <!-- Buttons auf der linken Seite -->
@@ -78,7 +76,7 @@
                                           <label :for="'element_' + metric">{{ metrics[metric] }}</label>
                                         </div>
                                         <div class="col">
-                                          <input type="range" class="form-control-range" :id="'element_'+ metric"
+                                          <input type="range" class="form-control-range" :id="'element_' + metric"
                                             v-model="currentValues[metric]" min="1" max="5" />
                                           <span>{{ currentValues[metric] }}</span>
                                         </div>
@@ -163,13 +161,13 @@ import Vue from 'vue'
 import Query from '@/components/Query.vue'
 import Results from '@/components/Results.vue'
 import VueApexCharts from 'vue-apexcharts'
-
+import axios from 'axios'
 export default Vue.component('run-qa', {
   data() {
 
 
     return {
-      metricIds:[0,1,2,3,4,5],
+      metricIds: [0, 1, 2, 3, 4, 5],
       metrics: ['Factual correctness', 'Language generation', 'Context', 'Coverage', 'Clarity of response', 'Harmfulness'],
       newQuestion: '',
       questions: [],
@@ -178,7 +176,7 @@ export default Vue.component('run-qa', {
       openFeedback: false,
       currentValues: [],
       defaultValues: ['3', '3', '3', '3', '3', '3'],
-      answerValues: { },
+      answerValues: {},
       results: [
       ],
       chartOptions: {
@@ -203,13 +201,13 @@ export default Vue.component('run-qa', {
 
   },
   methods: {
-    sendQuestion() {
+    async sendQuestion() {
       if (this.newQuestion.trim() !== '') {
         this.questions.push({
           id: this.questions.length + 1,
           sender: 'Q', // Du kannst hier den Benutzernamen ändern
           text: this.newQuestion.trim(),
-          answer: this.generateAnswer(this.newQuestion.trim())
+          answer: await this.generateAnswer(this.newQuestion.trim())
         });
 
         // Scrollen zum Ende des Chats nach dem Senden einer Nachricht
@@ -219,45 +217,68 @@ export default Vue.component('run-qa', {
         this.newQuestion = '';
       }
     },
-    generateAnswer() {
-      this.answers.push({
-        id: this.answers.length + 1,
-        sender: 'A', // Du kannst hier den Benutzernamen ändern
-        text: "dummy",
-      });
+    async generateAnswer(question) {
+      try {
+        var postData = { "model": "phi", "messages": [{ "role": "user", "content": question }], "stream": true }
+        const response = await axios.post('http://194.163.130.51:11434/api/chat', postData);
+        var answer = ""
+        var jsonData = response.data
+        const jsonLines = jsonData.split('\n');
+
+        const contents = jsonLines.map(line => {
+          try {
+            const json = JSON.parse(line);
+            return json.message.content;
+          } catch (error) {
+            console.error(`Fehler beim Parsen der Zeile: ${line}`);
+            return null;
+          }
+        });
+        answer=contents.join(" ");
+        this.answers.push({
+          id: this.answers.length + 1,
+          sender: 'A', 
+          text: answer,
+        });
+      } catch (error) {
+        console.error('Connection error', error);
+      }
+
+
       return ({
         id: this.answers.length + 1,
-        sender: 'A', // Du kannst hier den Benutzernamen ändern
-        text: "dummy",
+        sender: 'A', 
+        text: answer,
       })
     },
-    openFeedbackHandler(text){
-      if(text in this.answerValues){
-        this.currentValues=this.answerValues[text];
+    openFeedbackHandler(text) {
+      if (text in this.answerValues) {
+        this.currentValues = this.answerValues[text];
       }
-      else{
-        this.currentValues=this.defaultValues;
+      else {
+        this.currentValues = this.defaultValues;
       }
-      this.openFeedback=true;
+      this.openFeedback = true;
 
     },
     submitAnswerFeedback(text) {
-      this.answerValues[text]=this.currentValues;
-      this.currentValues=[];
+      this.answerValues[text] = this.currentValues;
+      this.currentValues = [];
       this.openFeedback = false;
 
     },
     openSubmitPopup() {
       if (this.answerValues.length == 0) {
-        this.results[0]={
+        this.results[0] = {
           name: "Default Data",
-          data: this.defaultValues};
-        
+          data: this.defaultValues
+        };
+
 
       }
       else {
-        var keys= Object.keys(this.answerValues)
-        var averageValues = this.answerValues[keys[0]].map(i=>parseInt(i));
+        var keys = Object.keys(this.answerValues)
+        var averageValues = this.answerValues[keys[0]].map(i => parseInt(i));
 
         for (let k = 0; k < averageValues.length; k++) {
           for (let i = 1; i < keys.length; i++) {
@@ -265,11 +286,11 @@ export default Vue.component('run-qa', {
           }
           averageValues[k] = averageValues[k] / keys.length;
         }
-        this.results[0]={
+        this.results[0] = {
           name: "Calculated Feedback",
           data: averageValues
         }
-        
+
       }
       this.openPopup = true;
     },
@@ -326,6 +347,8 @@ export default Vue.component('run-qa', {
   display: inline-block;
   padding: 5px 10px;
   font-size: 16px;
+  height: 50px;
+  width: 50px;
   font-weight: bold;
   text-align: center;
   text-decoration: none;
