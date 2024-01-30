@@ -1083,7 +1083,8 @@ export default {
         
       } catch (err) {
         console.error(err);
-        if (err.response && err.response.data && err.response.data.error.code === "invalid_api_key") {
+        console.log(err.error)
+        if (err.status === 401 && err.code === "invalid_api_key") {
           this.showErrorToast("Please enter a valid OpenAI key.");
         }else if(err.message === "AbortError"){
           console.log("Request aborted")
