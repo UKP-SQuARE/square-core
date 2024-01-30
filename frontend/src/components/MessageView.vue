@@ -1,11 +1,11 @@
 <template>
-  <div :class="['message', { dark }]">
-    <strong>{{ author }} </strong>
-    <div v-if="text == ''" class="spinner-border spinner-border-sm" role="status">
+  <div :class="['message', { dark }]" class="px-3">
+    <strong class="unselectable">{{ author }}&nbsp;&nbsp;</strong>
+    <div v-if="isGenerating && text === '' && !done" class="spinner-border spinner-border-sm" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
     <br />
-    <div v-html="markdownToHtml(text)"></div>
+    <div class="markdown-content" v-html="markdownToHtml(text)"></div>
   </div>
 </template>
 
@@ -32,35 +32,47 @@ export default {
   name: "MessageView",
   props: [
     "text", // Content of the message
-    "author", // Author of the message
-    "dark", // Background variant of the box
+    "role", // Role of the message
+    "isGenerating", // Whether the message is being generated
+    "done" // Whether the message has been generated
   ],
+
   methods: {
     markdownToHtml(md) {
       return marked.parse(md);
+    },
+  },
+
+  computed: {
+    author() {
+      return this.role === "human" ? "You" : "AI";
+    },
+    dark() {
+      return this.role === "human";
     },
   },
 };
 </script>
 
 
-
 <style scoped>
 .message {
-  background: #ebebeb;
+  background: rgba(0, 102, 145, 0.1);
   border-radius: 10px;
   padding: 0.77rem;
   width: fit-content;
+  max-width: 85%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 .message.dark {
-  background: #5fc9f8;
+  background: rgba(0, 102, 145, 0.3);
 }
 </style>
 
 <style>
 .hljs {
   display: block;
-  overflow-x: auto;
   padding: 0.5em;
   background: #d2d2d2;
 }

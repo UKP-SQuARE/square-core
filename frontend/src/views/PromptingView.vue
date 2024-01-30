@@ -191,8 +191,12 @@
               <div style="height: 100%; flex-direction: column; display: flex">
                 <div ref="messages" class="messages" style="flex-grow: 1; overflow: auto; padding: 1rem">
                   <MessageView v-for="message in messages" :key="message.id"
-                    :class="['message', { right: message.isMine }]" :dark="message.isMine" :text="message.text"
-                    :author="message.author" />
+                    :class="['message', { right: message.isMine }]" 
+                    :text="message.text"
+                    :role="message.isMine ? 'human' : 'ai'"
+                    :isGenerating="isGenerating"
+                    :done="message.done"
+                  />
                 </div>
 
                 <div v-if="messages.length === 0" class="d-flex justify-content-center" style="flex-grow: 1">
@@ -228,7 +232,7 @@
                       </div>
                       <div class="col-2 px-0 d-flex align-items-end">
                         <button @click.prevent="onSubmit" 
-                        :disabled="chatText === ''" 
+                        :disabled="chatText === '' || isGenerating" 
                         class="btn btn-danger text-white">
                           Send
                         </button>
@@ -531,11 +535,6 @@ export default {
       message: "",
     },
 
-    user: {
-      name: "You",
-      id: 2,
-    },
-
     generativeModel: null,
     currentModelSensitivity: 0,
     currentOriginalInput: "",
@@ -563,6 +562,8 @@ export default {
     alternativesWaiting: false,
 
     sensitivityLog: "",
+
+    isGenerating: false,
   }),
 
   mounted() {
@@ -653,8 +654,7 @@ export default {
 
     async generateAlternatives(){
       if(this.currentOriginalInput === ""){
-        this.errorToast.show = true;
-        this.errorToast.message = "Please enter an original input."
+        this.showErrorToast("Please enter an original input.");
         return;
       }
 
@@ -678,8 +678,7 @@ export default {
         }
       } catch (e) {
         console.error(e)
-        this.errorToast.show = true;
-        this.errorToast.message = "Something went wrong when generating alternatives. Please try again later."
+        this.showErrorToast("Something went wrong when generating alternatives. Please try again later.");
       }
       this.alternativesWaiting = false;
     },
@@ -698,6 +697,9 @@ export default {
     handleEnterKey (event) {
       if (event.shiftKey) {
         return; // If Shift+Enter is pressed, do the default action (add a newline)
+      } else if (this.isGenerating) {
+        event.preventDefault();
+        return;
       }
       event.preventDefault();
       this.onSubmit();
@@ -833,8 +835,7 @@ export default {
         this.addSensitivityToLog(this.highlight("Model prompt for original input:") + "\n\n" + prompt);
       } catch (e) {
         console.error(e)
-        this.errorToast.show = true;
-        this.errorToast.message = e.message;
+        this.showErrorToast(e.message);
         this.waiting = false;
         return;
       }
@@ -1003,40 +1004,40 @@ export default {
     addUserMessage() {
       let text = this.chatText;
       this.messages.push({
-        author: this.user.name.toUpperCase(),
         text,
-        uid: this.user.id,
         isMine: true,
+        done: true,
       });
-      Vue.nextTick(() => {
-        this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-      });
+      this.scrollDown();
     },
 
     async onSubmit() {
+      this.chatText = this.chatText.trim();
+      if (this.chatText === "") return;
       this.addUserMessage()
       let text = this.chatText;
       this.chatText = "";
       this.autoResizeTextarea();
+      this.isGenerating = true;
+      this.abortController = new AbortController();
+      let generatedText = "";
       
       try {
         let response = "";
         if (this.openAIChatModels.includes(this.chatConfig.selectedModel) && this.openAIApiKey === ""){
-          this.errorToast.message = "Please enter your OpenAI key first.";
-          this.errorToast.show = true;
+          this.showErrorToast("Please enter your OpenAI key first.");
+          this.isGenerating = false;
+          this.messages.splice(this.messages.length - 1, 1);
           return;
         }
 
         this.messages.push({
-          author: this.chatConfig.selectedModel.toUpperCase(),
           text: "",
-          uid: 1,
           isMine: false,
+          done: false,
         });
 
-        this.abortController = new AbortController();
         if (this.chatConfig.chatMode === "normal_chat") {
-          const self = this;
           const res = await this.chatModel.call({ 
             input: text, 
             signal: this.abortController.signal,
@@ -1044,15 +1045,17 @@ export default {
               {
                 handleLLMNewToken: (token) => {
                   this.messages[this.messages.length - 1].text += token;
+                  generatedText += token;
                 }
               }
             ]
           });
-          response = res.response;
+          generatedText = res.response.trim();
+          this.messages[this.messages.length - 1].text = generatedText;
           console.log(response);
-          Vue.nextTick(() => {
-            self.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-          });
+          this.isGenerating = false;
+          this.scrollDown();
+          this.messages[this.messages.length - 1].done = true;
         // TODO: make this stream too 
         } else { // agent chat
           const res = await this.chatModel.call({ input: text });
@@ -1079,21 +1082,36 @@ export default {
         }
         
       } catch (err) {
-        console.error(err.message);
+        console.error(err);
         if (err.response && err.response.data && err.response.data.error.code === "invalid_api_key") {
-          this.errorToast.message = "Please enter a valid OpenAI key.";
-          this.errorToast.show = true;
+          this.showErrorToast("Please enter a valid OpenAI key.");
         }else if(err.message === "AbortError"){
           console.log("Request aborted")
         } else {
-          this.errorToast.message = "Something went wrong. Please try again."
-          this.errorToast.show = true;
+          this.showErrorToast("Something went wrong. Please try again.");
         }
+        if(this.messages.length - 1 >= 0) { // if there is at least one message
+          this.messages[this.messages.length - 1].done = true;
+        }
+        this.isGenerating = false;
       }
     },
 
-    resetConv() {
+    showErrorToast (message) {
+      this.errorToast.message = message;
+      this.errorToast.show = true;
+    },
+
+    async abortGeneration() {
       this.abortController.abort();
+      this.isGenerating = false;
+      if (this.messages.length - 1 >= 0) { // if there is at least one message
+        this.messages[this.messages.length - 1].done = true;
+      }
+    },
+
+    async resetConv() {
+      if (this.isGenerating) await this.abortGeneration(); 
       this.chatText = "";
       this.messages.splice(0, this.messages.length);
       this.chatModel?.memory.clear();
@@ -1161,6 +1179,12 @@ export default {
         }
       }
 
+    },
+
+    scrollDown() {
+      Vue.nextTick(() => {
+        this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+      });
     },
 
     async fetchModels() {
