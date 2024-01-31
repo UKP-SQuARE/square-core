@@ -21,6 +21,14 @@ export function getSubmissions(headers, email) {
     return axios.get(`${PROFILE_MANAGER_URL}/submissions/${email}`, { headers: headers })
 }
 
+/**
+ * Get a badge by a title.
+ * @param {Object} headers optional authentication header
+ * @param {String} title Title of the badge to get
+ */
+export function getBadgeByTitle(headers, title) {
+    return axios.get(`${PROFILE_MANAGER_URL}/badges/title/${title}`, { title }, { headers: headers });
+}
 
 /**
  * Get a list of available badges.

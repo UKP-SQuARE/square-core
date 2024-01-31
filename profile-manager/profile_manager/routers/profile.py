@@ -32,7 +32,6 @@ async def get_submissions(request: Request, email: str = None):
                 submissions=", ".join(["{}".format(str(s)) for s in submissions])
             )
         )
-        # Dereferencing Ratings for each submission and its messages
         for submission in submissions:
             llm_id = submission['LLM']
             submission['LLM'] = mongo_client.client.daspChatBotRating.LLM.find_one({"_id": llm_id})
@@ -98,6 +97,13 @@ async def get_badges(request: Request, email: str = None):
         return badges
     return []
 
+@router.get("/badges/title/{badge_title}", response_model=Badge)
+async def get_badge_by_title(badge_title: str):
+    badge = mongo_client.client.daspChatBotRating.Badge.find_one({"title": badge_title})
+    if badge:
+        return Badge.from_mongo(badge)
+    else:
+        raise HTTPException(status_code=404, detail="Badge not found")
 
 @router.get("/llms/{email}", response_model=List[LLM])
 async def get_llms_byemail(request: Request, email: str = None):
@@ -120,27 +126,22 @@ async def get_profile(request: Request, email: str):
     if not profile_data:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    # Return the profile data as is (without resolving links)
     return Profile.from_mongo(profile_data)
 
 @router.post("/badges", response_model=Badge)
 async def add_badge(badge: Badge):
-    badge_data = badge.dict(by_alias=True)  # `by_alias=True` ensures that aliases (like 'id' for '_id') are used
+    badge_data = badge.dict(by_alias=True)
 
-    # Check if the badge has a custom ID provided
     if not badge_data.get('id'):
-        badge_data['_id'] = ObjectId()  # Generate new ObjectId if not provided
+        badge_data['_id'] = ObjectId()
     else:
-        badge_data['_id'] = badge_data.pop('id')  # Rename 'id' to '_id' for MongoDB compatibility
+        badge_data['_id'] = badge_data.pop('id')
 
-    # Check if a badge with the same ID already exists
     if mongo_client.client.daspChatBotRating.Badge.find_one({"_id": badge_data['_id']}):
         raise HTTPException(status_code=400, detail="Badge with this ID already exists")
 
-    # Create the badge in the database
     new_badge = mongo_client.client.daspChatBotRating.Badge.insert_one(badge_data)
 
-    # Retrieve the inserted badge to return it
     created_badge = mongo_client.client.daspChatBotRating.Badge.find_one({"_id": new_badge.inserted_id})
 
     if created_badge:
@@ -151,19 +152,15 @@ async def add_badge(badge: Badge):
 async def create_profile(profile: Profile):
     profile_data = profile.dict(by_alias=True)
 
-    # Check if a profile with the same email already exists
     if mongo_client.client.daspChatBotRating.Profile.find_one({"email": profile_data['email']}):
         raise HTTPException(status_code=400, detail="Profile with this email already exists")
 
-    # Default to empty lists if not provided
-    profile_data.setdefault('certificates', [])
-    profile_data.setdefault('badges', [])
-    profile_data.setdefault('submissions', [])
+    profile_data.setdefault('Certificates', [])
+    profile_data.setdefault('Badges', [])
+    profile_data.setdefault('Submissions', [])
     profile_data.setdefault('availableModels', [])
-    # Create the profile in the database
     new_profile = mongo_client.client.daspChatBotRating.Profile.insert_one(profile_data)
 
-    # Retrieve the inserted profile to return it
     created_profile = mongo_client.client.daspChatBotRating.Profile.find_one({"_id": new_profile.inserted_id})
 
     if created_profile:
@@ -187,26 +184,21 @@ async def create_llm(llm: LLM):
 
 @router.put("/profiles/{email}", response_model=Profile)
 async def update_profile(email: str, profile: Profile):
-    # Ensure the email in the request matches the email in the body
     if email != profile.email:
         raise HTTPException(status_code=400, detail="Email in URL and body must match")
 
-    # Convert Pydantic model to dictionary and exclude unset fields
     profile_data = profile.dict(exclude_unset=True)
 
-    # Update the database entry
     result = mongo_client.client.daspChatBotRating.Profile.replace_one(
         {"email": email},
         profile_data
     )
 
-    # Check if the profile was found and updated
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Profile not found")
     if result.modified_count == 0:
         raise HTTPException(status_code=400, detail="Profile not updated")
 
-    # Retrieve and return the updated profile
     updated_profile = mongo_client.client.daspChatBotRating.Profile.find_one({"email": email})
     return Profile.from_mongo(updated_profile)
 

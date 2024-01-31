@@ -2,7 +2,8 @@
 <template>
   <div class="bg-light border rounded shadow p-3">
 
-    <div v-if="isModalVisible" class="modal fade show" style="display: block;" @click.self="openPopup = false">
+    <!-- Modal for Purchasing Model -->
+    <div v-if="isModalVisible" class="modal fade show" style="display: block;" @click.self="toggleModal(false)">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -10,14 +11,17 @@
             <button type="button" class="btn-close" aria-label="Close" @click="toggleModal(false)"></button>
           </div>
           <div class="modal-body">
-            <p>Do you want to buy the model access for 1000 points?</p>
-            <div v-if="feedbackMessage" :class="['feedback-message', feedbackMessageType === 'error' ? 'text-danger' : 'text-success']">
+            <p>Do you want to buy access to {{ selectedModelName }} for {{ selectedModelPrice }} points?</p>
+            <div v-if="feedbackMessage"
+                 :class="['feedback-message', feedbackMessageType === 'error' ? 'text-danger' : 'text-success']">
               {{ feedbackMessage }}
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success btn-lg text-white" @click="unlockModel(selectedModelId)">Yes</button>
-            <button type="button" class="btn btn-secondary btn-lg text-white" @click="toggleModal(false)">Cancel</button>
+            <button type="button" class="btn btn-success btn-lg text-white" @click="unlockModel(selectedModelId)">Yes
+            </button>
+            <button type="button" class="btn btn-secondary btn-lg text-white" @click="toggleModal(false)">Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -30,28 +34,16 @@
             <div class="col col-3 d-none d-md-block">
               <div class="container text-start"></div>
               <div class="row">
-
-                <!-- Description and Points -->
-
-                <!-- Description of the Chatbot Rating Interface
-                <h4>Chatbot Rating Interface</h4>
-                <p class="mb-1">
-                  <br>
-                  Shape the future of conversational AI! <br><br>
-                  Engage with various! modelsProvide valuable feedback! Earn points to unlock new features!
-                  Start your journey today to become a certified LLM expert!
-                </p>
-                -->
                 <div v-if="isUserLoggedIn()">
                   <div class="col text-start">
                     <h4>Available Points:</h4>
                     <span class="badge bg-primary ms-auto" style="font-size: 1.5em;">
-                      {{ points }}
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                           class="bi bi-award-fill" viewBox="0 0 16 16">
-                      <path
-                          d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z"/>
-                      <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                    {{ points }}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-award-fill" viewBox="0 0 16 16">
+                    <path
+                        d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z"/>
+                    <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
                     </svg>
                     </span>
                     <div class="text-muted" style="font-size: 0.8em;">
@@ -59,12 +51,12 @@
                     </div>
                     <!-- <h4>Leaderboard Place:</h4>
                     <span class="badge bg-primary ms-auto" style="font-size: 1.5em;">
-                      {{ lbPlace }} out of 50
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                           class="bi bi-award-fill" viewBox="0 0 16 16">
-                      <path
-                          d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z"/>
-                      <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                    {{ lbPlace }} out of 50
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-award-fill" viewBox="0 0 16 16">
+                    <path
+                    d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4 6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8 12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854 1.337-1.32.842-1.68L6.331.864z"/>
+                    <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
                     </svg>
                     </span> -->
                   </div>
@@ -82,21 +74,6 @@
               <!-- Choose the LLM -->
               <span class="fw-bold">Models:</span>
 
-              <!-- Search Bar
-              <div class="input-group input-group-sm mb-2">
-                <span class="input-group-text" id="basic-addon1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                       class="bi bi-search"
-                       viewBox="0 0 16 16">
-                    <path
-                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z">
-                    </path>
-                  </svg>
-                </span>
-                <input v-model="searchText" placeholder="Search Model" class="form-control form-control-xs"/>
-              </div>
-              -->
-
               <!-- Models -->
               <div class="row row-cols-2 g-3">
                 <div class="col" v-for="model in paginatedModels" :key="model.id">
@@ -110,7 +87,7 @@
                       <button
                           v-if="!isModelAvailable(model)"
                           class="btn btn-primary btn-sm text-white"
-                          @click="toggleModal(true, model.id)"
+                          @click="toggleModal(true, model.id, model.name, model.price)"
                       >
                         Unlock
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -174,7 +151,7 @@
 import Vue from 'vue'
 import VueTippy from "vue-tippy";
 import {Page} from 'v-page'
-import { getProfile, putProfile, getLLMs, getLLMsByemail } from '@/api';
+import {getProfile, putProfile, getLLMs, getLLMsByemail, getBadgeByTitle} from '@/api';
 
 Vue.use(VueTippy);
 
@@ -186,15 +163,16 @@ export default Vue.component('chatbot-hub', {
       pageCount: 0,
       waiting: false,
       allModels: [],
-      availableModelNamesForEachLoggedUser: ['CommonsenseQA BERT Adapter', 'GPT-3.5-turbo'],
+      availableModelNamesForEachLoggedUser: ['phi'],
       availableModels: [],
       points: 0,
       overallPoints: 0,
-      lbPlace: 2,
       isModalVisible: false,
       selectedModelId: null,
+      selectedModelName: '',
+      selectedModelPrice: 0,
       feedbackMessage: '',
-      feedbackMessageType: '', // 'success' or 'error'
+      feedbackMessageType: '',
     }
   },
   components: {
@@ -211,19 +189,12 @@ export default Vue.component('chatbot-hub', {
       const end = start + 4;
       return this.filteredModels.slice(start, end);
     },
-    modelPairs() {
-      let pairs = [];
-      for (let i = 0; i < this.paginatedModels.length; i += 2) {
-        pairs.push(this.paginatedModels.slice(i, i + 2));
-      }
-      return pairs;
-    },
   },
   watch: {
     '$store.state.userInfo': {
       handler(userInfo) {
         if (userInfo && Object.keys(userInfo).length > 0) {
-          this.fetchProfile(); // Fetch profile when user info is updated (e.g., user logs in)
+          this.fetchProfile();
         }
       },
       deep: true
@@ -236,84 +207,122 @@ export default Vue.component('chatbot-hub', {
   methods: {
 
     fetchProfile() {
-      const email = this.$store.state.userInfo.email; // Get the email from the store
-      const headers = {}; // Set headers if needed, for example for authentication
+      const email = this.$store.state.userInfo.email;
+      const headers = {};
       getProfile(headers, email).then(response => {
-        this.points = response.data.currentPoints; // Update current points
-        this.overallPoints = response.data.overallPoints; // Update overall points
+        this.points = response.data.currentPoints;
+        this.overallPoints = response.data.overallPoints;
       }).catch(error => {
         console.error("Failed to fetch profile:", error);
-        // Handle error, for example, show a notification
       });
     },
-    toggleModal(visibility, modelId = null) {
-      this.isModalVisible = visibility
-      this.selectedModelId = modelId
-    },
-
     updateProfile() {
       const email = this.$store.state.userInfo.email;
-      const headers = {}; // Set headers if needed, for example for authentication
+      const headers = {};
 
-      // Fetch the latest profile data before attempting to update
       getProfile(headers, email).then(response => {
         const profileData = {
-          ...response.data, // Spread operator to copy all properties
-          currentPoints: this.points // Overwrite just the points
+          ...response.data,
+          currentPoints: this.points
         };
 
-        // Now send the updated profile data to the server
         putProfile(headers, email, profileData).then(response => {
           console.log(response.data)
         }).catch(error => {
           console.error("Failed to update profile:", error);
-          // Handle error, for example, show a notification
         });
       }).catch(error => {
         console.error("Failed to fetch profile for update:", error);
-        // Handle error, for example, show a notification
       });
+    },
+    toggleModal(visibility, modelId = null, modelName = '', modelPrice = 0) {
+      this.isModalVisible = visibility;
+      this.selectedModelId = modelId;
+      this.selectedModelName = modelName;
+      this.selectedModelPrice = modelPrice;
+      if (!visibility) {
+        this.feedbackMessage = '';
+      }
     },
     async unlockModel(modelId) {
       if (!this.isUserLoggedIn()) {
-        this.feedbackMessage = 'You need to log in to earn points and unlock new models.';
+        this.feedbackMessage = 'Log in to earn points and unlock models!';
         this.feedbackMessageType = 'error';
         return;
       }
 
-      if (this.points < 1000) {
-        this.feedbackMessage = 'You do not have enough points.';
+      const selectedModel = this.availableModels.find(model => model.id === modelId);
+      if (selectedModel) {
+        this.selectedModelName = selectedModel.name;
+        this.selectedModelPrice = selectedModel.price;
+      } else {
+        this.feedbackMessage = 'Model not found.';
         this.feedbackMessageType = 'error';
         return;
       }
 
-      // Deduct the cost of the model from the user's current points
-      this.points -= 1000;
+      if (this.points < selectedModel.price) {
+        this.feedbackMessage = `You do not have enough points. This model costs ${selectedModel.price} points.`;
+        this.feedbackMessageType = 'error';
+        return;
+      }
+
+      this.points -= selectedModel.price;
 
       try {
         const email = this.$store.state.userInfo.email;
-        const headers = {}; // Set headers if needed, for example for authentication
-
-        // Fetch the latest profile data
+        const headers = {};
         const profileResponse = await getProfile(headers, email);
         const profileData = profileResponse.data;
         profileData.currentPoints = this.points;
 
-        // Add the unlocked model to the user's available models if it's not already there
         if (!profileData.availableModels.includes(modelId)) {
           profileData.availableModels.push(modelId);
         }
 
-        // Send the updated profile data to the server
-        await putProfile(headers, email, profileData);
+// Construct the update payload
+        const updatePayload = {
+          email: profileData.email,
+          overallPoints: profileData.overallPoints,
+          currentPoints: profileData.currentPoints,
+          Certificates: profileData.Certificates,
+          Badges: profileData.Badges,
+          Reviews: profileData.Reviews,
+          availableModels: profileData.availableModels
+        };
 
-        // Fetch the updated list of user LLMs and all LLMs
+        const availableModelsCount = this.availableModels.filter(model => model.available === true).length;
+        console.log(availableModelsCount)
+        if (availableModelsCount >= 2) {
+          const badgeTitle = 'NLP Master';
+          try {
+            const badgeResponse = await getBadgeByTitle({}, badgeTitle);
+            if (badgeResponse && badgeResponse.data && !updatePayload.Badges.includes(badgeResponse.data.id)) {
+              updatePayload.Badges.push(badgeResponse.data.id);
+              const updateResponse = await putProfile(headers, email, updatePayload);
+              if (updateResponse && updateResponse.data) {
+                this.feedbackMessage = 'Wow, you earned a Badge by unlocking the Model, check your profile!\n';
+              } else {
+                console.error("Failed to update profile with new badge:", badgeTitle);
+              }
+            } else {
+              console.error("Badge already exists or failed to fetch badge by title:", badgeTitle);
+            }
+          } catch (error) {
+            console.error("Error in badge assignment process:", error);
+          }
+        } else {
+          this.feedbackMessage = 'Model unlocked successfully!';
+          this.feedbackMessageType = 'success';
+// Update profile even if no badge is awarded
+          const updateResponse = await putProfile(headers, email, updatePayload);
+          if (!updateResponse || !updateResponse.data) {
+            console.error("Failed to update profile:", updatePayload);
+          }
+        }
+
         await this.fetchUserLLMs();
         await this.fetchAllLLMs();
-
-        // Show success message
-        this.feedbackMessage = 'Model unlocked successfully!';
-        this.feedbackMessageType = 'success';
       } catch (error) {
         console.error("Failed during model unlock process:", error);
         this.feedbackMessage = 'Failed to unlock the model. Please try again.';
@@ -322,30 +331,23 @@ export default Vue.component('chatbot-hub', {
         setTimeout(() => {
           this.toggleModal(false);
           this.feedbackMessage = '';
-        }, 2000);
+        }, 2500);
       }
     },
     pageModelChange(pInfo) {
       this.currentPage = pInfo.pageNumber;
       this.updatePaginatedModels();
     },
-    handleLockClick() {
-      if (!this.isUserLoggedIn()) {
-        // Redirect to login page or show login modal
-        this.showLoginModal();
-      } else {
-        // User is logged in but the model is not available
-        // Handle accordingly, perhaps showing a message or an upgrade option
-      }
-    },
     fetchAllLLMs() {
-      const headers = {}; // Set headers if needed, for example for authentication
+      const headers = {};
       getLLMs(headers).then(response => {
-        this.allModels = response.data; // Array of all LLMs
-        this.setAvailableModels(); // Set available models based on all models and user-specific models
+        this.allModels = response.data.map(llm => ({
+          ...llm,
+          available: this.availableModelNamesForEachLoggedUser.includes(llm.Name)
+        }));
+        this.setAvailableModels();
       }).catch(error => {
         console.error("Failed to fetch all LLMs:", error);
-        // Handle error, for example, show a notification
       });
     },
     fetchUserLLMs() {
@@ -353,48 +355,38 @@ export default Vue.component('chatbot-hub', {
         return;
       }
       const email = this.$store.state.userInfo.email;
-      const headers = {}; // Set headers if needed, for example for authentication
+      const headers = {};
       getLLMsByemail(headers, email).then(response => {
-        const userLLMs = response.data; // Array of LLMs from the user's profile
-
-        // Combine availableModelNamesForEachLoggedUser with names of fetched userLLMs, avoiding duplicates
+        const userLLMs = response.data;
         const userLLMNames = userLLMs.map(llm => llm.Name);
         this.availableModelNamesForEachLoggedUser = [...new Set([...this.availableModelNamesForEachLoggedUser, ...userLLMNames])];
-
-        this.setAvailableModels(); // Set available models based on all models and user-specific models
+        this.setAvailableModels();
       }).catch(error => {
         console.error("Failed to fetch user LLMs:", error);
-        // Handle error, for example, show a notification
       });
     },
     setAvailableModels() {
       this.availableModels = this.allModels.map(llm => ({
         id: llm.id,
         name: llm.Name,
-        description: this.getDescriptionForLLM(llm.Name),
+        description: llm.description || 'No description available',
+        price: llm.price,
         available: this.availableModelNamesForEachLoggedUser.includes(llm.Name)
       }));
-    },
-    getDescriptionForLLM(name) {
-      const descriptions = {
-        'CommonsenseQA BERT Adapter': 'A model specialized in common sense question answering',
-        'Llama-2-7b-chat': 'Versatile model adept at processing natural language',
-        'GPT-3.5-turbo': 'Advanced conversational agent for realistic dialogue',
-        'ChatGPT-4.0': 'State-of-the-art model with nuanced understanding',
-        'Perplexity AI': 'AI designed for deep contextual comprehension and interaction'
-      };
-      return descriptions[name] || 'No description available';
     },
     updatePaginatedModels() {
       const start = (this.currentPage - 1) * 4;
       const end = start + 4;
       this.paginatedModels = this.filteredModels.slice(start, end);
     },
+
     isModelAvailable(model) {
       if (this.isUserLoggedIn()) {
-        return this.availableModelNamesForEachLoggedUser.includes(model.name);
+        return model.name === 'phi' ||
+            model.name === 'ChatGPT-3.5-turbo' ||
+            this.availableModelNamesForEachLoggedUser.includes(model.name);
       } else {
-        return this.availableModels[0].name === model.name;
+        return model.name === 'phi';
       }
     },
     isUserLoggedIn() {
@@ -402,7 +394,6 @@ export default Vue.component('chatbot-hub', {
     },
   },
   mounted() {
-    // Fetch all LLMs and user-specific LLMs (if user is logged in)
     this.fetchAllLLMs();
     if (this.isUserLoggedIn()) {
       this.fetchProfile();
