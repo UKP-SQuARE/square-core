@@ -1,7 +1,7 @@
 <template>
   <div class="leaderboard">
     <b-table striped hover :items="displayedData" :fields="fields"></b-table>
-    <button @click="toggleFullView">
+    <button @click="toggleFullView" class="btn btn-success btn-sm text-white">
       {{ full ? 'Show Less' : 'Show More' }}
     </button>
   </div>

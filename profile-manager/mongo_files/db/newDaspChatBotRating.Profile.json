@@ -5,7 +5,13 @@
     "currentPoints": 10000,
     "Certificates": [{"$oid": "5f50c31e88a1e7001742c39b"}],
     "Badges": [{"$oid": "5f50c31e88a1e7001742c39c"}],
-    "Reviews": [{"$oid": "5f50c31e88a1e7001742c39d"}],
+    "Reviews": [
+      {"$oid": "5f50c31e88a1e7001742c39d"},
+      {"$oid": "5f50c31e88a1e70017445675"},
+      {"$oid": "5f50c31e88a1e70017423456"},
+      {"$oid": "5f50c31e88a1e70017422345"},
+      {"$oid": "5f50c31e88a1e70017412345"} 
+  ],
     "availableModels": [{"$oid": "5f50c31e88a1e7001742c39e"}]
   },
   {
