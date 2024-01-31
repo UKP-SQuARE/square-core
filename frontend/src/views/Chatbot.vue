@@ -232,6 +232,7 @@ export default Vue.component('run-qa', {
     async generateAnswer(questionId) {
       try {
         var questionText = this.questions[questionId]
+        console.log(questionText)
         var postData = { "model": "phi", "messages": [{ "role": "user", "content": questionText }], "stream": false }
         const response = await axios.post('http://194.163.130.51:11434/api/chat', postData)
         var answer = ""
