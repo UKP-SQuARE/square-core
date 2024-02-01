@@ -11,7 +11,12 @@
               <!-- Infobox auf der linken Seite -->
               <div class="bg-light border rounded shadow p-3">
                 <!-- Dummy-Text -->
-                <h4>Language model</h4>
+                <h4 class="row m-3 ">{{ languageModel }}</h4>
+                <div class="bg-light border rounded shadow p-2 m-1"><h6 class="row m-2 p-1">Collected Points: {{ collectedPoints }}</h6></div>
+                <div class="bg-light border rounded shadow p-2 m-1"><h6 class="row m-2 p-1">Tasks:</h6>
+                  <div class="row m-1 p-1" v-for="task in tasks" :key="task">{{ task }}</div>
+                </div>
+
               </div>
 
               <!-- Buttons auf der linken Seite -->
@@ -37,7 +42,7 @@
                 <div class="container">
                   <!-- Chatbereich -->
                   <div class="row">
-                    <div class="col-md-8 offset-md-2">
+                    <div class="col md-1">
                       <div class="card">
                         <div class="card-header">
                           Chat
@@ -50,7 +55,8 @@
                                 <p class="small mb-0"> {{ question.text }}</p>
                               </div>
                             </div>
-                            <div v-if="answers[question.id]!== undefined || answerGenerated " class="d-flex flex-row justify-content-start mb-4">
+                            <div v-if="answers[question.id] !== undefined || answerGenerated"
+                              class="d-flex flex-row justify-content-start mb-4">
                               <div class="p-2 me-2 border" style="border-radius: 15px; background-color: #fbfbfb;">
                                 <p class="small mb-0"> {{ answers[question.id] }}</p>
                               </div>
@@ -75,17 +81,18 @@
                                     <div v-for="metric in metricIds" :key="metric" class="starplot-item">
                                       <div class="row m-1">
                                         <div class="col">
-                                          <label :for="'element_' + metric">{{ metrics[metric] }}</label>
+                                          <label :for="currentValues[metric]">{{ metrics[metric] }}</label>
                                         </div>
                                         <div v-if="answerValues[question.id] !== undefined" class="col">
-                                          <input type="range" class="form-control-range" :id="'element_' + metric"
+                                          <input type="range" class="form-control-range"
+                                            :id="answerValues[question.id][metric]"
                                             v-model="answerValues[question.id][metric]" min="1" max="5" />
                                           <span>{{ answerValues[question.id][metric] }}</span>
                                         </div>
                                         <div v-else class="col">
-                                          <input type="range" class="form-control-range" :id="'element_' + metric"
+                                          <input type="range" class="form-control-range" :id="currentValues[metric]"
                                             v-model="currentValues[metric]" min="1" max="5" />
-                                          <span>{{ currentValues[metric] }}</span>
+                                          <span>{{ defaultValues[metric] }}</span>
                                         </div>
 
                                       </div>
@@ -134,6 +141,8 @@
               @click="openPopup = false"></button>
           </div>
           <div class="modal-body">
+            <h6 class="row m-2 p-1">Collected Points: {{ collectedPoints+200}}</h6>
+
             <div id="chart">
               <apexchart type="radar" height="350" :options="chartOptions" :series="results"></apexchart>
             </div>
@@ -146,7 +155,7 @@
                 </div>
               </div>
               <div class="col mt-4">
-                <div class="d-grid gap-1 d-md-flex justify-content-md-center">
+                <div v-if="questions.length!== 0" class="d-grid gap-1 d-md-flex justify-content-md-center">
                   <div @click="submitFeedback()">
                     <router-link :to="{ name: 'chatbot_rating' }" class="btn btn-danger btn-lg text-white">
                       Submit
@@ -175,6 +184,9 @@ export default Vue.component('run-qa', {
 
 
     return {
+      languageModel: "Phi language model",
+      tasks: ["Ask something about the weather today.", "Ask general things!", "Ask personal things about the language model"],
+      collectedPoints: 100,
       answerGenerated: false,
       metricIds: [0, 1, 2, 3, 4, 5],
       metrics: ['Factual correctness', 'Language generation', 'Context', 'Coverage', 'Clarity of response', 'Harmfulness'],
@@ -185,7 +197,7 @@ export default Vue.component('run-qa', {
       openFeedback: false,
       currentValues: [],
       defaultValues: ['3', '3', '3', '3', '3', '3'],
-      answerValues: {},
+      answerValues: [],
       results: [],
       chartOptions: {
         chart: {
@@ -219,9 +231,9 @@ export default Vue.component('run-qa', {
           sender: 'Q', // Du kannst hier den Benutzernamen ändern
           text: questionText,
         });
-        this.answerGenerated=false
+        this.answerGenerated = false
         await this.generateAnswer(questionId)
-        this.answerGenerated=true
+        this.answerGenerated = true
         // Scrollen zum Ende des Chats nach dem Senden einer Nachricht
         this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
 
@@ -237,25 +249,23 @@ export default Vue.component('run-qa', {
         const response = await axios.post('http://194.163.130.51:11434/api/chat', postData)
         var answer = ""
         var jsonData = response.data
-        //console.log(jsonData["message"]["content"])
         var contents = ""
         try {
           contents = jsonData["message"]["content"];
         } catch (error) {
-          console.error(`Fehler beim Parsen der Zeile: ${line}`);
+          console.error(`Parse error ${line}`);
           return null;
         }
         answer = contents;
-        this.answers[questionId]=answer
+        this.answers[questionId] = answer
       } catch (error) {
-        this.answers[questionId]="Connection Error"
-        console.log(this.answers)
+        this.answers[questionId] = "Connection Error"
         console.error('Connection error', error);
       }
     },
-    openFeedbackHandler(text) {
-      if (text in this.answerValues) {
-        this.currentValues = this.answerValues[text];
+    openFeedbackHandler(id) {
+      if (id in this.answerValues) {
+        this.currentValues = this.answerValues[id];
       }
       else {
         this.currentValues = this.defaultValues;
@@ -263,11 +273,13 @@ export default Vue.component('run-qa', {
       this.openFeedback = true;
 
     },
-    submitAnswerFeedback(questionId) {
-      this.answerValues[questionId] = this.currentValues;
-      this.currentValues = this.defaultValues;
+    submitAnswerFeedback(id) {
+      if (this.answerValues[id] == undefined) {
+        this.answerValues[id] = this.currentValues;
+        this.currentValues = this.defaultValues;
+        this.collectedPoints += 50;
+      }
       this.openFeedback = false;
-
     },
     openSubmitPopup() {
       if (this.answerValues.length == 0) {
@@ -305,6 +317,7 @@ export default Vue.component('run-qa', {
     },
     submitFeedback() {
       // Logik für den "Submit Feedback"-Button
+      this.collectedPoints+=200;
       console.log('Submit Feedback button clicked');
     },
   }
