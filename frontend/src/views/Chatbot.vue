@@ -12,8 +12,11 @@
               <div class="bg-light border rounded shadow p-3">
                 <!-- Dummy-Text -->
                 <h4 class="row m-3 ">{{ languageModel }}</h4>
-                <div class="bg-light border rounded shadow p-2 m-1"><h6 class="row m-2 p-1">Collected Points: {{ collectedPoints }}</h6></div>
-                <div class="bg-light border rounded shadow p-2 m-1"><h6 class="row m-2 p-1">Tasks:</h6>
+                <div class="bg-light border rounded shadow p-2 m-1">
+                  <h6 class="row m-2 p-1">Collected Points: {{ collectedPoints }}</h6>
+                </div>
+                <div class="bg-light border rounded shadow p-2 m-1">
+                  <h6 class="row m-2 p-1">Tasks:</h6>
                   <div class="row m-1 p-1" v-for="task in tasks" :key="task">{{ task }}</div>
                 </div>
 
@@ -60,7 +63,7 @@
                               <div class="p-2 me-2 border" style="border-radius: 15px; background-color: #fbfbfb;">
                                 <p class="small mb-0"> {{ answers[question.id] }}</p>
                               </div>
-                              <button @click="openFeedbackHandler(question.id)" class="round-blue-button">
+                              <button @click="openFeedbackHandler(question)" class="round-blue-button">
                                 <div> &#8618;</div>
                               </button>
                             </div>
@@ -68,7 +71,7 @@
                               <pulse-loader></pulse-loader>
                             </div>
 
-                            <div v-if="openFeedback" class="modal fade show" style="display: block;"
+                            <div v-show="openFeedback" class="modal fade show" style="display: block;"
                               @click.self="openFeedback = false">
                               <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
@@ -83,23 +86,18 @@
                                         <div class="col">
                                           <label :for="currentValues[metric]">{{ metrics[metric] }}</label>
                                         </div>
-                                        <div v-if="answerValues[question.id] !== undefined" class="col">
-                                          <input type="range" class="form-control-range"
-                                            :id="answerValues[question.id][metric]"
-                                            v-model="answerValues[question.id][metric]" min="1" max="5" />
-                                          <span>{{ answerValues[question.id][metric] }}</span>
-                                        </div>
-                                        <div v-else class="col">
+                                        <div class="col">
                                           <input type="range" class="form-control-range" :id="currentValues[metric]"
                                             v-model="currentValues[metric]" min="1" max="5" />
-                                          <span>{{ defaultValues[metric] }}</span>
+                                          <span>{{ currentValues[metric] }}</span>
+
+
                                         </div>
 
                                       </div>
                                     </div>
                                     <div class="d-grid gap-1 d-md-flex justify-content-md-center m-2">
-                                      <div class="btn btn-danger btn-lg text-white"
-                                        @click="submitAnswerFeedback(question.id)">
+                                      <div class="btn btn-danger btn-lg text-white" @click="submitAnswerFeedback()">
                                         Submit
                                       </div>
                                     </div>
@@ -141,7 +139,7 @@
               @click="openPopup = false"></button>
           </div>
           <div class="modal-body">
-            <h6 class="row m-2 p-1">Collected Points: {{ collectedPoints+200}}</h6>
+            <h6 class="row m-2 p-1">Collected Points: {{ collectedPoints + 200 }}</h6>
 
             <div id="chart">
               <apexchart type="radar" height="350" :options="chartOptions" :series="results"></apexchart>
@@ -155,7 +153,7 @@
                 </div>
               </div>
               <div class="col mt-4">
-                <div v-if="questions.length!== 0" class="d-grid gap-1 d-md-flex justify-content-md-center">
+                <div v-if="questions.length !== 0" class="d-grid gap-1 d-md-flex justify-content-md-center">
                   <div @click="submitFeedback()">
                     <router-link :to="{ name: 'chatbot_rating' }" class="btn btn-danger btn-lg text-white">
                       Submit
@@ -199,6 +197,7 @@ export default Vue.component('run-qa', {
       defaultValues: ['3', '3', '3', '3', '3', '3'],
       answerValues: [],
       results: [],
+      currentQuestionId: 0,
       chartOptions: {
         chart: {
           height: 350,
@@ -228,21 +227,21 @@ export default Vue.component('run-qa', {
         var questionId = this.questions.length
         this.questions.push({
           id: questionId,
-          sender: 'Q', // Du kannst hier den Benutzernamen ändern
           text: questionText,
         });
+        this.newQuestion = '';
         this.answerGenerated = false
         await this.generateAnswer(questionId)
         this.answerGenerated = true
-        // Scrollen zum Ende des Chats nach dem Senden einer Nachricht
+
         this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
 
-        // Zurücksetzen des Eingabefelds
-        this.newQuestion = '';
+
       }
     },
     async generateAnswer(questionId) {
       try {
+        if (false) { }
         var questionText = this.questions[questionId]
         var postData = { "model": "phi", "messages": [{ "role": "user", "content": questionText["text"] }], "stream": false }
 
@@ -262,42 +261,54 @@ export default Vue.component('run-qa', {
         this.answers[questionId] = "Connection Error"
         console.error('Connection error', error);
       }
+
+
     },
-    openFeedbackHandler(id) {
-      if (id in this.answerValues) {
+    openFeedbackHandler(question) {
+      var id = question.id;
+      this.currentQuestionId = id;
+      if (this.answerValues[id] !== undefined) {
         this.currentValues = this.answerValues[id];
       }
       else {
-        this.currentValues = this.defaultValues;
+        this.currentValues = [...this.defaultValues];
       }
       this.openFeedback = true;
 
     },
-    submitAnswerFeedback(id) {
-      if (this.answerValues[id] == undefined) {
+    submitAnswerFeedback() {
+      var id = this.currentQuestionId;
+      if (this.answerValues[id] === undefined) {
         this.answerValues[id] = this.currentValues;
-        this.currentValues = this.defaultValues;
         this.collectedPoints += 50;
       }
+      else {
+        this.answerValues[id] = this.currentValues;
+      }
+      this.currentValues = [...this.defaultValues];
       this.openFeedback = false;
     },
     openSubmitPopup() {
       if (this.answerValues.length == 0) {
         this.results[0] = {
           name: "Default Data",
-          data: this.defaultValues
+          data: [...this.defaultValues]
         };
 
 
       }
       else {
-        var keys = Object.keys(this.answerValues)
-        var averageValues = this.answerValues[keys[0]].map(i => parseInt(i));
+        var keys = Object.keys(this.answerValues);
+        var averageValues = this.defaultValues.map(() => 0);
+
+        for (let i = 0; i < keys.length; i++) {
+          var currentValues = this.answerValues[keys[i]];
+          for (let j = 0; j < currentValues.length; j++) {
+            averageValues[j] += parseInt(currentValues[j]);
+          }
+        }
 
         for (let k = 0; k < averageValues.length; k++) {
-          for (let i = 1; i < keys.length; i++) {
-            averageValues[k] = parseInt(this.answerValues[keys[i]]) + averageValues[k];
-          }
           averageValues[k] = averageValues[k] / keys.length;
         }
         this.results[0] = {
@@ -317,7 +328,7 @@ export default Vue.component('run-qa', {
     },
     submitFeedback() {
       // Logik für den "Submit Feedback"-Button
-      this.collectedPoints+=200;
+      this.collectedPoints += 200;
       console.log('Submit Feedback button clicked');
     },
   }
