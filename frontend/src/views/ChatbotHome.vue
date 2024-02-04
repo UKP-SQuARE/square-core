@@ -97,7 +97,7 @@
                         </svg>
                       </button>
                       <span v-else class="mt-0">
-                        <router-link :to="{ name: 'chatbot', query: runQueryParams }"
+                        <router-link :to="{ name: 'chatbot', modelName: selectedModelName }"
                                      class="btn btn-success btn-sm text-white">
                           Run
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -163,7 +163,7 @@ export default Vue.component('chatbot-hub', {
       pageCount: 0,
       waiting: false,
       allModels: [],
-      availableModelNamesForEachLoggedUser: ['phi'],
+      availableModelNamesForEachLoggedUser: ['Phi'],
       availableModels: [],
       points: 0,
       overallPoints: 0,
@@ -292,12 +292,11 @@ export default Vue.component('chatbot-hub', {
         };
 
         const availableModelsCount = this.availableModels.filter(model => model.available === true).length;
-        console.log(availableModelsCount)
-        if (availableModelsCount >= 2) {
-          const badgeTitle = 'NLP Master';
+        const badgeTitle = 'NLP Master';
+        const badgeResponse = await getBadgeByTitle({}, badgeTitle);
+        if (availableModelsCount >= 2 && !updatePayload.Badges.includes(badgeResponse.data.id)) {
           try {
-            const badgeResponse = await getBadgeByTitle({}, badgeTitle);
-            if (badgeResponse && badgeResponse.data && !updatePayload.Badges.includes(badgeResponse.data.id)) {
+            if (badgeResponse && badgeResponse.data) {
               updatePayload.Badges.push(badgeResponse.data.id);
               const updateResponse = await putProfile(headers, email, updatePayload);
               if (updateResponse && updateResponse.data) {
@@ -366,14 +365,17 @@ export default Vue.component('chatbot-hub', {
       });
     },
     setAvailableModels() {
-      this.availableModels = this.allModels.map(llm => ({
-        id: llm.id,
-        name: llm.Name,
-        description: llm.description || 'No description available',
-        price: llm.price,
-        available: this.availableModelNamesForEachLoggedUser.includes(llm.Name)
-      }));
+      this.availableModels = this.allModels
+          .map(llm => ({
+            id: llm.id,
+            name: llm.Name,
+            description: llm.description || 'No description available',
+            price: llm.price,
+            available: this.availableModelNamesForEachLoggedUser.includes(llm.Name)
+          }))
+          .sort((a, b) => a.price - b.price);
     },
+
     updatePaginatedModels() {
       const start = (this.currentPage - 1) * 4;
       const end = start + 4;
@@ -382,11 +384,10 @@ export default Vue.component('chatbot-hub', {
 
     isModelAvailable(model) {
       if (this.isUserLoggedIn()) {
-        return model.name === 'phi' ||
-            model.name === 'ChatGPT-3.5-turbo' ||
+        return model.name === 'Phi' ||
             this.availableModelNamesForEachLoggedUser.includes(model.name);
       } else {
-        return model.name === 'phi';
+        return model.name === 'Phi';
       }
     },
     isUserLoggedIn() {
