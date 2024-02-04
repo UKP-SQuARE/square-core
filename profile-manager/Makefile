@@ -14,12 +14,9 @@ install-dev:
 ##		Format code base. Run before commiting.
 format:
 	black .
-	isort --profile black --filter-files skill_manager
+	isort --profile black --filter-files profile_manager
 	isort --profile black --filter-files tests
 
-##			Run tests.
-test:
-	python -m pytest --cov=skill_manager --cov-report=term-missing --cov-report=html
 
 ##			Setup authentication for local development.
 auth:
@@ -41,7 +38,7 @@ build:
 	docker compose --env-file .local.env build 
 ##			Show logs from the development environment.
 logs:
-	docker compose --env-file .local.env logs -f skill-manager
+	docker compose --env-file .local.env logs -f profile-manager
 
 
 # COLORS

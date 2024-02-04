@@ -81,7 +81,7 @@ const routes = [
     name: 'profile',
     component: Profile,
     meta: {
-      requiresAuthentication: false
+      requiresAuthentication: true
     }
   },
   {
