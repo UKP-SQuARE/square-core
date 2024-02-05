@@ -1,0 +1,16 @@
+
+badges:
+- title: "LM Master Reviewer"
+  description: "Awarded for mastering"
+  icon: "https://egor-zadorin-files.s3.eu-central-1.amazonaws.com/icons8-badge-96.png"
+  type: "Gold"
+
+- title: "LM Expert Reviewer"
+  description: "Awarded for mastering NLP"
+  icon: "https://egor-zadorin-files.s3.eu-central-1.amazonaws.com/Diamond-Badge-Transparent-PNG.png"
+  type: "Silver"
+
+- title: "Amateur Reviewer"
+  description: "Awarded for mastering NLP"
+  icon: "https://egor-zadorin-files.s3.eu-central-1.amazonaws.com/imgbin_silver-badge-award-badge-png.png"
+  type: "#add8e6"

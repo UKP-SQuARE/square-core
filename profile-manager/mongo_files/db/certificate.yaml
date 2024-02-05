@@ -1,0 +1,5 @@
+certificates:
+- title: "Advanced LLM Reviewer"
+  score: "95%"
+  evaluationType: "UKP-SQuARE"
+  date: "2024-02-06"

@@ -38,7 +38,7 @@ Before you begin, ensure you have met the following requirements:
 Before running the backend services, you need to set up authentication by generating a private key and a token.
 
 2. In the Profile-Manager directory, generate your authentication credentials:
-    ```bash
+    ```sh
     make auth
     ```
    This command will create a `private_key.pem` file in the root of the project and display a token for testing purposes.
@@ -82,6 +82,16 @@ For development, we use Docker to run MongoDB and to manage our data. The predef
 
 **Note**: The above command assumes that you have the JSON file `newDaspChatBotRating.Profile.json` in the `./mongo_files/db` directory, which is mounted to the container. Adjust the file path if your setup is different.
 
+## Postman Documentation
+
+To interact with our backend, the following [Postman CRUD calls](https://documenter.getpostman.com/view/30936078/2s9YywezKv) are available. This collection includes all necessary requests to test and interact with the API, providing a convenient way to understand and use the various endpoints.
+
+## Known Issues
+- **Certificate Buttons in Modal View**: In the frontend interface, within the modal view for certificates, there are bugs affecting the functionality of the "Share on Facebook," "Share on LinkedIn," and "Download" buttons. 
+- **Backend Queries Performance**: The backend queries are not optimized for handling a large number of entries, which may lead to performance issues.
+- **Points Spending During Unlock**: There is an issue where users can spend an excessive amount of points on unlocking a single LLM. This needs to be addressed to prevent point misuse.
+- **API Design**: The Backend API does not fully adhere to RESTful principles. This could affect the scalability and maintainability of the API.
+- **Badge Earning Logic**: The logic for earning badges is currently hardcoded, which limits flexibility and dynamic badge assignment based on user actions or achievements.
 
 ## Support
 

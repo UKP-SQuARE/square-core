@@ -292,7 +292,8 @@ export default Vue.component('chatbot-hub', {
         };
 
         const availableModelsCount = this.availableModels.filter(model => model.available === true).length;
-        const badgeTitle = 'NLP Master';
+        //TODO --> Make it dynamic
+        const badgeTitle = 'Amateur Reviewer';
         const badgeResponse = await getBadgeByTitle({}, badgeTitle);
         if (availableModelsCount >= 2 && !updatePayload.Badges.includes(badgeResponse.data.id)) {
           try {
@@ -394,7 +395,7 @@ export default Vue.component('chatbot-hub', {
       return this.$store.state.userInfo && Object.keys(this.$store.state.userInfo).length > 0;
     },
   },
-  mounted() {
+  beforeMount() {
     console.log( this.$store.state)
     this.fetchAllLLMs();
     if (this.isUserLoggedIn()) {

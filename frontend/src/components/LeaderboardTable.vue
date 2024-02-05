@@ -45,15 +45,14 @@ export default {
     getLeaderboard(this.$store.getters.authenticationHeader())
       .then((response) => {
         for (let i = 0; i < response.data.length; i++) {
-
           let position = { id: i, name: response.data[i].email, score: response.data[i].overallPoints }
           this.leaderboardData.push(position)
         }
+        this.leaderboardData.sort((a, b) => b.score - a.score); // Sort leaderboardData
       })
       .catch((error) => {
-      console.error("Error fetching leaderboard positions:", error);
-    });
-
+        console.error("Error fetching leaderboard positions:", error);
+      });
   }
 };
 </script>
