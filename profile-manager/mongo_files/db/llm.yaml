@@ -2,25 +2,25 @@ llms:
   - id: 1
     Name: "phi"
     version: "1.0"
-    description: "This is the first LLM model."
+    description: "Light-weight model available to everyone"
     price: 100
 
   - id: 2
     Name: "orca-mini"
-    version: "2.0"
-    description: "This is the second LLM model with advanced features."
-    price: 200
+    version: "1.0"
+    description: "Compact yet robust model for NLP"
+    price: 2000
 
   - id: 3
     Name: "llama2"
-    version: "3.0"
-    description: "This is the third LLM model, specialized in certain tasks."
-    price: 300
+    version: "1.0"
+    description: "Designed for large-scale language understanding"
+    price: 1500
 
   - id: 
     Name: "mistral"
-    version: "4.0"
-    description: "This is the fourth LLM model, specialized in certain tasks."
-    price: 400
+    version: "1.0"
+    description: "Model for adaptive learning and pattern recognition"
+    price: 2500
 
 # Add more LLMs as needed
