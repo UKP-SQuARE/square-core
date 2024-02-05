@@ -79,9 +79,15 @@ async def submit_review(email: str, request: Request):
         if not review_id:
             raise HTTPException(status_code=400, detail="Review could not be saved")
 
+        achieved_points = review_data.get("AchievedPoints", 0)
+
+        # Update the user's profile with the new review and increment points
         updated_profile = db.Profile.find_one_and_update(
             {"email": email},
-            {"$push": {"Reviews": review_id}},
+            {
+                "$push": {"Reviews": review_id},
+                "$inc": {"currentPoints": achieved_points, "overallPoints": achieved_points}
+            },
             return_document=ReturnDocument.AFTER
         )
         if updated_profile:
