@@ -88,8 +88,8 @@ To interact with our backend, the following [Postman CRUD calls](https://documen
 
 ## Known Issues
 - **Certificate Buttons in Modal View**: In the frontend interface, within the modal view for certificates, there are bugs affecting the functionality of the "Share on Facebook," "Share on LinkedIn," and "Download" buttons. 
-- **Backend Queries Performance**: The backend queries are not optimized for handling a large number of entries, which may lead to performance issues.
-- **Points Spending During Unlock**: There is an issue where users can spend an excessive amount of points on unlocking a single LLM. This needs to be addressed to prevent point misuse.
+- **Backend Queries Performance**: The backend queries are not optimized for handling a large number of entries, which may lead to issues.
+- **Points Spending During Unlock**: There is an issue where users can spend an excessive amount of points on unlocking a single LLM.
 - **API Design**: The Backend API does not fully adhere to RESTful principles. This could affect the scalability and maintainability of the API.
 - **Badge Earning Logic**: The logic for earning badges is currently hardcoded, which limits flexibility and dynamic badge assignment based on user actions or achievements.
 
