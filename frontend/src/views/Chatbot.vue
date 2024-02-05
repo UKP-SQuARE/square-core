@@ -177,12 +177,22 @@ import Results from '@/components/Results.vue'
 import VueApexCharts from 'vue-apexcharts'
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import axios from 'axios'
+import { submitReview } from '@/api'
 export default Vue.component('run-qa', {
+  props:  {
+    modelName: {
+      type: String,
+      required: true
+    },
+  },
+  mounted() {
+    console.log("Selected model name:", this.modelName); // Access the modelName
+  },
   data() {
 
 
     return {
-      languageModel: "Phi language model",
+      languageModel: this.modelName,
       tasks: ["Ask something about the weather today.", "Ask general things!", "Ask personal things about the language model"],
       collectedPoints: 100,
       answerGenerated: false,
@@ -221,6 +231,34 @@ export default Vue.component('run-qa', {
 
   },
   methods: {
+    async submitReviewData() {
+      const headers = this.$store.getters.authenticationHeader();
+      const email = this.$store.state.userInfo.email; 
+
+      const reviewData = {
+        // Format the review data as per your Review model structure
+        Messages: this.questions.map((question, index) => ({
+          Prompt: question.text,
+          Response: this.answers[question.id],
+          Rating: this.answerValues[question.id] 
+        })),
+        Rating: this.results[0].data, // Assuming this is your rating structure
+        AchievedPoints: this.collectedPoints,
+        Date: new Date().toISOString(),
+        LLM: this.modelName,
+      };
+
+      try {
+        const response = await submitReview(headers, email, reviewData);
+        if (response.data) {
+          // Handle successful submission
+          console.log('Review submitted successfully', response.data);
+        }
+      } catch (error) {
+        // Handle errors
+        console.error('Error submitting review:', error);
+      }
+    },
     async sendQuestion() {
       var questionText = this.newQuestion.trim();
       if (questionText !== '') {
@@ -243,9 +281,9 @@ export default Vue.component('run-qa', {
       try {
         if (false) { }
         var questionText = this.questions[questionId]
-        var postData = { "model": "phi", "messages": [{ "role": "user", "content": questionText["text"] }], "stream": false }
-
-        const response = await axios.post('http://194.163.130.51:11434/api/chat', postData)
+        var postData = { "model": this.modelName, "messages": [{ "role": "user", "content": questionText["text"] }], "stream": false }
+        const LLM_SERVER_URL = `${process.env.VUE_APP_LLM_SERVER_URL}`
+        const response = await axios.post(LLM_SERVER_URL, postData)
         var answer = ""
         var jsonData = response.data
         var contents = ""
@@ -319,9 +357,6 @@ export default Vue.component('run-qa', {
       }
       this.openPopup = true;
     },
-    submitFeedback() {
-
-    },
     cancel() {
       // Logik für den "Cancel"-Button
       console.log('Cancel button clicked');
@@ -330,6 +365,7 @@ export default Vue.component('run-qa', {
       // Logik für den "Submit Feedback"-Button
       this.collectedPoints += 200;
       console.log('Submit Feedback button clicked');
+      this.submitReviewData();
     },
   }
 })

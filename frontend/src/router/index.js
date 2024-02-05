@@ -50,7 +50,8 @@ const routes = [
   {
     path: '/chatbot',
     name: 'chatbot',
-    component: Chatbot
+    component: Chatbot,
+    props: (route) => ({ modelName: route.query.modelName })
   },
   {
     path: '/skills',

@@ -1,6 +1,7 @@
 import logging
 import os
-
+import yaml
+from pymongo.errors import BulkWriteError
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -58,9 +59,36 @@ app.openapi_schema = add_prefix_to_openapi()
 
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     mongo_client.connect()
     redis_client.connect()
+    await load_llms_to_db()
+
+async def load_llms_to_db():
+    llm_file_path = '/db/llm.yaml'  # Replace with your YAML file path
+    with open(llm_file_path, 'r') as file:
+        llm_data = yaml.safe_load(file)
+
+    llms = llm_data.get('llms', [])
+
+    if llms:
+        db = mongo_client.client.daspChatBotRating
+        try:
+            db.create_collection('LLM')
+            logger.info("LLM collection created in daspChatBotRating database.")
+        except Exception as e:
+            logger.info("LLM collection already exists in daspChatBotRating database.")
+        for llm in llms:
+            # Check if an LLM with the same Name already exists
+            if not db.LLM.find_one({"Name": llm["Name"]}):
+                try:
+                    result = db.LLM.insert_one(llm)
+                    logger.info(f"Inserted LLM '{llm['Name']}' into the database.")
+                except Exception as e:
+                    logger.error(f"Error inserting LLM '{llm['Name']}' into the database: {e}")
+            else:
+                logger.info(f"LLM '{llm['Name']}' already exists in the database.")
+
 
 
 @app.on_event("shutdown")

@@ -97,7 +97,7 @@
                         </svg>
                       </button>
                       <span v-else class="mt-0">
-                        <router-link :to="{ name: 'chatbot', modelName: selectedModelName }"
+                        <router-link :to="{ name: 'chatbot', query: { modelName: model.name } }"
                                      class="btn btn-success btn-sm text-white">
                           Run
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -395,6 +395,7 @@ export default Vue.component('chatbot-hub', {
     },
   },
   mounted() {
+    console.log( this.$store.state)
     this.fetchAllLLMs();
     if (this.isUserLoggedIn()) {
       this.fetchProfile();

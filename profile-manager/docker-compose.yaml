@@ -25,8 +25,8 @@ services:
       SQUARE_URL: "http://square"
     depends_on:
     - mongodb
-    - redis
     volumes:
+      - ./mongo_files/db:/db
       - ./profile_manager:/app/profile_manager
       - ./private_key.pem:/app/private_key.pem
   mongodb:
@@ -38,15 +38,6 @@ services:
     - 27017
     env_file:
     - .local.env
-  redis:
-    image: redis:latest
-    ports:
-    - 6379:6379
-    env_file:
-    - .local.env
-    command:
-    - redis-server
-    - --requirepass ${REDIS_PASSWORD}
 
 # volumes:
 #   mongo-data:

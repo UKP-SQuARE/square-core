@@ -13,6 +13,12 @@ const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`
 const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
 const PROFILE_MANAGER_URL = `${process.env.VUE_APP_PROFILE_MANAGER_URL}`
 
+// Function to submit a review
+export function submitReview(headers, email, reviewData) {
+    return axios.post(`${PROFILE_MANAGER_URL}/reviews/${email}`, reviewData, { headers: headers });
+}
+
+
 /**
  * Get a list of available submission.
  * @param {Object} headers optional authentication header

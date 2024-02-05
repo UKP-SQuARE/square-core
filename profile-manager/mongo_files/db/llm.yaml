@@ -1,0 +1,26 @@
+llms:
+  - id: 1
+    Name: "phi"
+    version: "1.0"
+    description: "This is the first LLM model."
+    price: 100
+
+  - id: 2
+    Name: "orca-mini"
+    version: "2.0"
+    description: "This is the second LLM model with advanced features."
+    price: 200
+
+  - id: 3
+    Name: "llama2"
+    version: "3.0"
+    description: "This is the third LLM model, specialized in certain tasks."
+    price: 300
+
+  - id: 
+    Name: "mistral"
+    version: "4.0"
+    description: "This is the fourth LLM model, specialized in certain tasks."
+    price: 400
+
+# Add more LLMs as needed

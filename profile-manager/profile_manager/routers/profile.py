@@ -5,7 +5,8 @@ import logging
 import os
 from threading import Thread
 from typing import Dict, List
-
+from pymongo.collection import ReturnDocument
+from pydantic import ValidationError
 import requests
 from fastapi import APIRouter, Request, HTTPException
 from square_auth.auth import Auth
@@ -13,13 +14,92 @@ from bson.objectid import ObjectId
 
 from profile_manager import mongo_client
 from profile_manager.core.session_cache import SessionCache
-from profile_manager.models import LLM, Badge, Review, Certificate, Profile, LeaderboardEntry
+from profile_manager.models import LLM, Rating, Badge, Review, Certificate, Profile, LeaderboardEntry, ReviewMessage
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/profiles")
 auth = Auth()
 session_cache = SessionCache()
+
+
+METRIC_NAMES = [
+    "Factual correctness", 
+    "Language generation", 
+    "Context", 
+    "Coverage", 
+    "Clarity of response", 
+    "Harmfulness"
+]
+
+
+@router.post("/reviews/{email}", response_model=Profile)
+async def submit_review(email: str, request: Request):
+    # Assume db is the MongoDB client instance
+    db = mongo_client.client.daspChatBotRating
+    review_data = await request.json()  # Get raw JSON data from the request
+
+    # Manually construct the Review object from the raw JSON
+    try:
+        # Transform and validate data as per your Review model structure
+        messages = [{
+            "Prompt": msg.get("Prompt"),
+            "Response": msg.get("Response"),
+            "Rating": convert_rating_array(msg.get("Rating"), db) if msg.get("Rating") else None
+        } for msg in review_data.get("Messages", [])]
+
+        llm_name = review_data.get("LLM")
+        llm_document = db.LLM.find_one({"Name": llm_name})
+        #llm_id = llm_document["_id"] if llm_document else None
+        logger.debug(
+           "submit_review: {review}".format(
+                review=", ".join(["{}".format(str(s)) for s in llm_document.items()])
+            ) 
+        )
+        llm_document.pop("id") 
+        review = {
+            # "Messages": [
+            #     ReviewMessage(**message) for message in messages
+            # ],
+            "Messages": messages,
+            "Rating": convert_rating_array(review_data.get("Rating"), db),
+            "AchievedPoints": review_data.get("AchievedPoints"),
+            "Date": review_data.get("Date"),
+            #"LLM": llm_id
+            "LLM": LLM(**llm_document)
+        }
+
+        logger.debug(
+            "submit_review: {review}".format(
+                review=", ".join(["{}".format(str(s)) for s in review.items()])
+            )
+        )
+        review = Review(**review)
+        review_id = db.Review.insert_one(review.dict()).inserted_id
+        if not review_id:
+            raise HTTPException(status_code=400, detail="Review could not be saved")
+
+        updated_profile = db.Profile.find_one_and_update(
+            {"email": email},
+            {"$push": {"Reviews": review_id}},
+            return_document=ReturnDocument.AFTER
+        )
+        if updated_profile:
+            return Profile.from_mongo(updated_profile)
+        else:
+            raise HTTPException(status_code=404, detail="Profile not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error processing review: {str(e)}")
+
+def convert_rating_array(rating_array, db):
+    if not rating_array or not isinstance(rating_array, list):
+        return None
+    rating_dict = {
+        "Metrics": {METRIC_NAMES[i]: int(rating) for i, rating in enumerate(rating_array)}
+    }
+    return Rating(**rating_dict)
+    #inserted_id = db.Rating.insert_one(Rating(**rating_dict).dict()).inserted_id
+    #return inserted_id
 
 @router.get("/submissions/{email}", response_model=List[Review])
 async def get_submissions(request: Request, email: str = None):
@@ -32,21 +112,21 @@ async def get_submissions(request: Request, email: str = None):
                 submissions=", ".join(["{}".format(str(s)) for s in submissions])
             )
         )
-        for submission in submissions:
-            llm_id = submission['LLM']
-            submission['LLM'] = mongo_client.client.daspChatBotRating.LLM.find_one({"_id": llm_id})
-            if 'Rating' in submission and isinstance(submission['Rating'], ObjectId):
-                rating_id = submission['Rating']
-                submission['Rating'] = mongo_client.client.daspChatBotRating.Rating.find_one({"_id": rating_id})
-            for message in submission.get('Messages', []):
-                if 'Rating' in message and message['Rating'] and isinstance(message['Rating'], ObjectId):
-                    rating_id = message['Rating']
-                    message['Rating'] = mongo_client.client.daspChatBotRating.Rating.find_one({"_id": rating_id})
-        logger.debug(
-            "get_submissions: {submissions}".format(
-                submissions=", ".join(["{}".format(str(s)) for s in submissions])
-            )
-        )
+        # for submission in submissions:
+        #     llm_id = submission['LLM']
+        #     submission['LLM'] = mongo_client.client.daspChatBotRating.LLM.find_one({"_id": llm_id})
+        #     if 'Rating' in submission and isinstance(submission['Rating'], ObjectId):
+        #         rating_id = submission['Rating']
+        #         submission['Rating'] = mongo_client.client.daspChatBotRating.Rating.find_one({"_id": rating_id})
+        #     for message in submission.get('Messages', []):
+        #         if 'Rating' in message and message['Rating'] and isinstance(message['Rating'], ObjectId):
+        #             rating_id = message['Rating']
+        #             message['Rating'] = mongo_client.client.daspChatBotRating.Rating.find_one({"_id": rating_id})
+        # logger.debug(
+        #     "get_submissions: {submissions}".format(
+        #         submissions=", ".join(["{}".format(str(s)) for s in submissions])
+        #     )
+        # )
         submissions = [Review.from_mongo(submission) for submission in submissions]
         return submissions
     return []
