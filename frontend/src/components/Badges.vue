@@ -5,7 +5,7 @@
       <!-- Badge Preview -->
       <div class="badge-preview" :style="{ backgroundColor: badge.type }">
         <img :src="badge.icon" alt="Badge Icon" />
-        <p>{{ badge.title }}</p>
+        <!-- <p>{{ badge.title }}</p> -->
       </div>
 
        <!-- Bubble or Enlarged View -->

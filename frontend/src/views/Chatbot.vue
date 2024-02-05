@@ -139,7 +139,7 @@
               @click="openPopup = false"></button>
           </div>
           <div class="modal-body">
-            <h6 class="row m-2 p-1">Collected Points: {{ collectedPoints + 200 }}</h6>
+            <h6 class="row m-2 p-1">Collected Points: {{ collectedPoints }}</h6>
 
             <div id="chart">
               <apexchart type="radar" height="350" :options="chartOptions" :series="results"></apexchart>
@@ -363,7 +363,7 @@ export default Vue.component('run-qa', {
     },
     submitFeedback() {
       // Logik für den "Submit Feedback"-Button
-      this.collectedPoints += 200;
+      //this.collectedPoints += 200;
       console.log('Submit Feedback button clicked');
       this.submitReviewData();
     },

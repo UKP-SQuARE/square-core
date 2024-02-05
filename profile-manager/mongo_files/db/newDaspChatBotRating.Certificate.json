@@ -1,9 +1,9 @@
 [
   {
     "_id": {"$oid": "5f50c31e88a1e7001742c39b"},
-    "title": "Advanced NLP",
+    "title": "Advanced LLM Reviewer",
     "score": "95%",
-    "evaluationType": "Final Exam",
-    "date": "2024-01-10"
+    "evaluationType": "UKP-SQuARE",
+    "date": "2024-02-06"
   }
 ]
