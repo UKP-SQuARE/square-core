@@ -163,7 +163,7 @@ export default Vue.component('chatbot-hub', {
       pageCount: 0,
       waiting: false,
       allModels: [],
-      availableModelNamesForEachLoggedUser: ['Phi'],
+      availableModelNamesForEachLoggedUser: ['phi'],
       availableModels: [],
       points: 0,
       overallPoints: 0,
@@ -385,10 +385,10 @@ export default Vue.component('chatbot-hub', {
 
     isModelAvailable(model) {
       if (this.isUserLoggedIn()) {
-        return model.name === 'Phi' ||
+        return model.name === 'phi' ||
             this.availableModelNamesForEachLoggedUser.includes(model.name);
       } else {
-        return model.name === 'Phi';
+        return model.name === 'phi';
       }
     },
     isUserLoggedIn() {
