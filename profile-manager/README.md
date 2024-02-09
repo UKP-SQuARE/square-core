@@ -116,6 +116,15 @@ This section provides some useful hints and tips for developers looking to exten
 4. **Testing**: When adding new features or making changes to the database schema, ensure thorough testing to avoid data corruption or loss.
 E.g. you could use json files for Mock-Data in your Database as we also used (see section `Importing Predefined Data into MongoDB`)
 
+## Interface Usage Video Demonstration
+
+For users looking to quickly familiarize themselves with the Chatbot Rating Platform's interface, we have a detailed video demonstration available. This video specifically covers navigating the platform's interface, showcasing how to interact with various features effectively. From exploring the frontend's user experience to understanding how to engage with the backend through the provided Postman documentation, the demonstration serves as a practical guide to enhance your user experience.
+
+To get a closer look at how to maximize the platform's capabilities and navigate the interface with ease, please watch our video demonstration at: [Interface Usage Video Demonstration](https://egor-zadorin-files.s3.eu-central-1.amazonaws.com/record.mp4).
+
+This resource is especially useful for users seeking a visual guide to complement the written documentation, offering insights into the platform's functionality and tips for optimal usage.
+
+
 ## Support
 
 If you encounter any issues or require assistance, please open an issue in the repository for support.
