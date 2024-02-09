@@ -93,6 +93,29 @@ To interact with our backend, the following [Postman CRUD calls](https://documen
 - **API Design**: The Backend API does not fully adhere to RESTful principles. This could affect the scalability and maintainability of the API.
 - **Badge Earning Logic**: The logic for earning badges is currently hardcoded, which limits flexibility and dynamic badge assignment based on user actions or achievements.
 
+## Development Hints
+
+This section provides some useful hints and tips for developers looking to extend the application, work with configurations, or manage the database.
+
+### Working with YAML and Environment Variables
+
+1. **YAML Configuration**: YAML files are used for various configurations, including initial data loading. When modifying YAML files, maintain the correct structure and ensure all necessary fields are included. Currently the YAML files are loaded as is into the respective MongoDB collection. This means when you want to include more functionality into the YAML files, you need first adapt the loading into the pydantic objects. The YAML files are located at `mongo_files/db`. 
+
+2. **Environment Variables**: The application uses environment variables for configuration (e.g., database connection settings). These are set in `.env` files or equivalent. Always check these settings before deployment. `.env` files are mostly used in the `/frontend`
+
+3. **Sensitive Data**: Avoid committing sensitive data (like API keys or database credentials) into the repository. Use environment variables for such data.
+
+### MongoDB Management
+
+1. **Schema Changes**: When modifying the MongoDB schema, ensure that changes are compatible with existing data structures. Update the Pydantic models accordingly.
+
+2. **Data Import/Export**: Use `mongoimport` and `mongoexport` for importing and exporting data. This is useful for setting up development environments or backup purposes.
+
+3. **Database Indexing**: For performance optimization, especially with large datasets, consider adding indexes to your MongoDB collections.
+
+4. **Testing**: When adding new features or making changes to the database schema, ensure thorough testing to avoid data corruption or loss.
+E.g. you could use json files for Mock-Data in your Database as we also used (see section `Importing Predefined Data into MongoDB`)
+
 ## Support
 
 If you encounter any issues or require assistance, please open an issue in the repository for support.
