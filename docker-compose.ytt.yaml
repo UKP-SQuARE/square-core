@@ -674,6 +674,23 @@ services:
       - traefik.http.routers.dozzle.rule=PathPrefix(`/admin/logs`)
       - traefik.http.routers.dozzle.middlewares=auth
 
+  portainer:
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    labels:
+      # Frontend
+      - traefik.enable=true
+      - #@ template.replace(traefik_tls("portainer"))
+      - traefik.http.routers.portainer.rule=PathPrefix(`/admin/portainer`)
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - traefik.http.routers.portainer.service=portainer
+      - traefik.http.routers.portainer.middlewares=portainer-stripprefix
+      - traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes=/admin/portainer
+
+
 volumes:
   traefik-public-certificates:
   db-data:
@@ -703,4 +720,6 @@ volumes:
   evaluation-datasets:
     driver: local
   virtuoso-db: 
+    driver: local
+  portainer-data: 
     driver: local
