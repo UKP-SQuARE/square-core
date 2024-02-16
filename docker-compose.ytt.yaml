@@ -697,7 +697,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer-data:/data
     labels:
-      # Frontend
+      #! Frontend
       - traefik.enable=true
       - #@ template.replace(traefik_tls("portainer"))
       - traefik.http.routers.portainer.rule=PathPrefix(`/admin/portainer`)
