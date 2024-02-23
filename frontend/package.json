@@ -33,6 +33,7 @@
     "vue-apexcharts": "^1.6.2",
     "vue-multiselect": "^2.1.6",
     "vue-router": "^3.5.3",
+    "vue-spinner": "^1.0.4",
     "vue-tippy": "^4.16.0",
     "vuex": "^3.6.2"
   },
