@@ -48,6 +48,7 @@ jobs:
           "skill-multiple-choice-metaqa",
           "skill-kgqa-kqapro",
           "evaluator",
+          "profile-manager",
         ]
         include:
           - build-args: ""
@@ -115,6 +116,8 @@ jobs:
             build-args: "skill=kgqa-kqapro"
           - service: evaluator
             context: ./evaluator
+          - service: profile-manager
+            context: ./profile-manager
     steps:
       - name: Checkout
         uses: actions/checkout@v3
