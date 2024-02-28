@@ -238,9 +238,9 @@ services:
       context: ./profile-manager
       target: build
     ports:
-      - 8000:8000
+      - 10000:10000
     expose:
-      - 8000
+      - 10000
     env_file:
       - ./mongodb/.env
       - ./redis/.env
@@ -261,8 +261,8 @@ services:
       - redis
     labels:
       - "traefik.enable=true"
-      - #@ template.replace(traefik_tls("skill-manager"))
-      - #@ template.replace(traefik_prefix("skill-manager"))
+      - #@ template.replace(traefik_tls("profile-manager"))
+      - #@ template.replace(traefik_prefix("profile-manager"))
 
 
 
