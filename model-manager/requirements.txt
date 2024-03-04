@@ -1,14 +1,14 @@
 uvicorn==0.13.4                 # ASGI server
-fastapi>=0.73.0                 # REST API Framework
+fastapi==0.110.0                # REST API Framework
 pydantic==1.8.2                 # models
-requests>=2.26.0                # requests
-docker                          # docker client
+requests==2.31.0                # requests
+docker==7.0.0                   # docker client
 square-auth==0.0.14              # keycloak authentication
 celery==5.1.2                   # queue requests
 redis==4.1.4
-pymongo>=3.12.1
+pymongo==4.6.2
 square-elk-json-formatter==0.0.3    # elk-json logger
-importlib-metadata<5.0 # https://github.com/celery/celery/issues/7783
+importlib-metadata==4.13.0 # https://github.com/celery/celery/issues/7783
 
 # included for onnx export
 adapter-transformers==3.1.0
