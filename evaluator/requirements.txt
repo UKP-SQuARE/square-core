@@ -9,6 +9,6 @@ requests==2.31.0
 requests-cache==1.2.0
 celery==5.1.2
 redis==4.1.4
-scikit-learn==1.4.1
+scikit-learn==1.4.0
 datasets==2.18.0
 evaluate==0.4.1
