@@ -169,16 +169,16 @@ jobs:
           tags: |
             ukpsquare/${{ matrix.service }}:${{ steps.image_tag.outputs.tag }}
             ${{ steps.latest_tag_str.outputs.value }}
-          # cache-from: type=local,src=/tmp/.buildx-cache
-          # cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
       #  Temp fix
       # https://github.com/docker/build-push-action/issues/252
       # https://github.com/moby/buildkit/issues/1896
-      # - name: Move cache
-      #   run: |
-      #     rm -rf /tmp/.buildx-cache
-      #     mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   deploy:
     needs: build
     if: github.event_name == 'workflow_dispatch'
