@@ -142,6 +142,39 @@
 
                     <div class="accordion" id="accordion_funded_by_square">
                         <div class="accordion-item">
+                            <h2 class="accordion-header" id="naacl2024_sheng_header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#naacl2024_sheng" aria-expanded="false"
+                                    aria-controls="naacl2024_sheng">
+                                    [<b>NAACL</b>, 2024] How are Prompts Different in Terms of Sensitivity?
+                                </button>
+                            </h2>
+                            <div id="naacl2024_sheng" class="accordion-collapse collapse"
+                                aria-labelledby="naacl2024_sheng_header" data-bs-parent="#accordion_funded_by_square">
+                                <div class="accordion-body">
+                                    <strong>Link: </strong><a href="https://arxiv.org/abs/2311.07230"
+                                        target="_blank">https://arxiv.org/abs/2311.07230</a> <br />
+                                    <strong>Authors: </strong>Sheng Lu, Hendrik Schuff, Iryna Gurevych<br />
+                                    <strong>Abstract: </strong>In-context learning (ICL) has become one of the most popular 
+                                    learning paradigms. While there is a growing body of literature focusing on prompt 
+                                    engineering, there is a lack of systematic analysis comparing the effects of prompts 
+                                    across different models and tasks. To address this gap, we present a comprehensive 
+                                    prompt analysis based on the sensitivity of a function. Our analysis reveals that 
+                                    sensitivity is an unsupervised proxy for model performance, as it exhibits a strong 
+                                    negative correlation with accuracy. We use gradient-based saliency scores to empirically 
+                                    demonstrate how different prompts affect the relevance of input tokens to the output, 
+                                    resulting in different levels of sensitivity. Furthermore, we introduce 
+                                    sensitivity-aware decoding which incorporates sensitivity estimation as a penalty term 
+                                    in the standard greedy decoding. We show that this approach is particularly helpful when 
+                                    information in the input is scarce. Our work provides a fresh perspective on the 
+                                    analysis of prompts, and contributes to a better understanding of the mechanism of ICL.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion" id="accordion_funded_by_square">
+                        <div class="accordion-item">
                             <h2 class="accordion-header" id="arxiv2024_haritz_header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#arxiv2024_haritz" aria-expanded="false"
@@ -175,39 +208,6 @@
                                     problem is essential for performance improvement. Furthermore, code prompts improve 
                                     sample efficiency of in-context learning and facilitate state tracking of variables or 
                                     entities.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion" id="accordion_funded_by_square">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="naacl2024_sheng_header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#naacl2024_sheng" aria-expanded="false"
-                                    aria-controls="naacl2024_sheng">
-                                    [<b>NAACL</b>, 2024] How are Prompts Different in Terms of Sensitivity?
-                                </button>
-                            </h2>
-                            <div id="naacl2024_sheng" class="accordion-collapse collapse"
-                                aria-labelledby="naacl2024_sheng_header" data-bs-parent="#accordion_funded_by_square">
-                                <div class="accordion-body">
-                                    <strong>Link: </strong><a href="https://arxiv.org/abs/2311.07230"
-                                        target="_blank">https://arxiv.org/abs/2311.07230</a> <br />
-                                    <strong>Authors: </strong>Sheng Lu, Hendrik Schuff, Iryna Gurevych<br />
-                                    <strong>Abstract: </strong>In-context learning (ICL) has become one of the most popular 
-                                    learning paradigms. While there is a growing body of literature focusing on prompt 
-                                    engineering, there is a lack of systematic analysis comparing the effects of prompts 
-                                    across different models and tasks. To address this gap, we present a comprehensive 
-                                    prompt analysis based on the sensitivity of a function. Our analysis reveals that 
-                                    sensitivity is an unsupervised proxy for model performance, as it exhibits a strong 
-                                    negative correlation with accuracy. We use gradient-based saliency scores to empirically 
-                                    demonstrate how different prompts affect the relevance of input tokens to the output, 
-                                    resulting in different levels of sensitivity. Furthermore, we introduce 
-                                    sensitivity-aware decoding which incorporates sensitivity estimation as a penalty term 
-                                    in the standard greedy decoding. We show that this approach is particularly helpful when 
-                                    information in the input is scarce. Our work provides a fresh perspective on the 
-                                    analysis of prompts, and contributes to a better understanding of the mechanism of ICL.
                                 </div>
                             </div>
                         </div>
