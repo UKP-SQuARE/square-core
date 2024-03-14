@@ -10,6 +10,39 @@
 
               <div class="col-sm-6 col-lg-4 mb-4">
                 <div class="card">
+                  <img :src="`${publicPath}arxiv.png`" class="card-img-top" alt="acl 2023 logo">
+                  <div class="card-body">
+                    <h5 class="card-title">ArXiv 2024</h5>
+                    <p class="card-text"> Our paper, <em>Code Prompting Elicits Conditional Reasoning Abilities in Text+Code LLMs</em> was publiched at ArXiv. <a href="https://arxiv.org/abs/2401.10065" target="_blank">Paper.</a> </p>
+                    <p class="card-text"><small class="text-muted">March. 2024</small></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
+                  <img :src="`${publicPath}naacl2024.png`" class="card-img-top" alt="acl 2023 logo">
+                  <div class="card-body">
+                    <h5 class="card-title">NAACL 2024</h5>
+                    <p class="card-text"> Our paper, <em>How are Prompts Different in Terms of Sensitivity?</em> was accepted at NAACL 2024. <a href="https://arxiv.org/abs/2311.07230" target="_blank">Paper.</a> </p>
+                    <p class="card-text"><small class="text-muted">March. 2024</small></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
+                  <img :src="`${publicPath}eacl2024.png`" class="card-img-top" alt="acl 2023 logo">
+                  <div class="card-body">
+                    <h5 class="card-title">EACL 2024</h5>
+                    <p class="card-text"> Our paper, <em>CATfOOD: Counterfactual Augmented Training for Improving Out-of-Domain Performance and Calibration</em> was accepted at EACL 2024. <a href="https://arxiv.org/abs/2309.07822" target="_blank">Paper.</a> </p>
+                    <p class="card-text"><small class="text-muted">March. 2024</small></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
                   <img :src="`${publicPath}acl2023.png`" class="card-img-top" alt="acl 2023 logo">
                   <div class="card-body">
                     <h5 class="card-title">BEA Workshop@ACL2023</h5>
