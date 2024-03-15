@@ -276,7 +276,7 @@ async def update_document(
             status_code = 201
         return Response(
             status_code=status_code,
-            headers={"Location": request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id)},
+            headers={"Location": str(request.url_for("get_document", datastore_name=datastore_name, doc_id=doc_id))},
         )
     else:
         raise HTTPException(status_code=500)

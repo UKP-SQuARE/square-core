@@ -77,6 +77,7 @@ services:
       - #@ "--certificatesresolvers.le.acme.email=" + data.values.email
       #@ if/end data.values.environment == "local":
       - --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --ping
     labels:
       - "traefik.enable=true"
       #! Global redirect to https
@@ -98,6 +99,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-public-certificates:/certificates
+    healthcheck:
+      test: traefik healthcheck --ping
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
   keycloak:
     image: jboss/keycloak:16.1.1
@@ -135,6 +141,11 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
   
   virtuoso:
     image: tenforce/virtuoso:virtuoso7.2.5
@@ -224,6 +235,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SQUARE_URL: #@ data.values.square_url[data.values.environment]
+      SQUARE_API_URL: #@ data.values.square_api_url[data.values.environment]
     depends_on:
       - mongodb
       - redis
@@ -689,6 +701,28 @@ services:
       - #@ template.replace(traefik_tls("dozzle"))
       - traefik.http.routers.dozzle.rule=PathPrefix(`/admin/logs`)
       - traefik.http.routers.dozzle.middlewares=auth
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    labels:
+      #! Frontend
+      - traefik.enable=true
+      - #@ template.replace(traefik_tls("portainer"))
+      - traefik.http.routers.portainer.rule=PathPrefix(`/admin/portainer`)
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - traefik.http.routers.portainer.service=portainer
+      - traefik.http.routers.portainer.middlewares=portainer-stripprefix
+      - traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes=/admin/portainer
+
 
 volumes:
   traefik-public-certificates:
@@ -721,4 +755,5 @@ volumes:
   virtuoso-db: 
     driver: local
   hf_models:
+  portainer-data: 
     driver: local
