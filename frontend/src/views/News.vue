@@ -25,8 +25,8 @@
                   <img :src="`${publicPath}arxiv.png`" class="card-img-top" alt="acl 2023 logo">
                   <div class="card-body">
                     <h5 class="card-title">ArXiv 2024</h5>
-                    <p class="card-text"> Our paper, <em>Code Prompting Elicits Conditional Reasoning Abilities in Text+Code LLMs</em>
-                       was published at ArXiv. <a href="https://arxiv.org/abs/2401.10065" target="_blank">Paper.</a> </p>
+                    <p class="card-text"> New prepping on arXiv! <em>Code Prompting Elicits Conditional Reasoning Abilities in Text+Code LLMs</em>
+                       . <a href="https://arxiv.org/abs/2401.10065" target="_blank">Paper.</a> </p>
                     <p class="card-text"><small class="text-muted">January. 2024</small></p>
                   </div>
                 </div>
