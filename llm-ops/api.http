@@ -35,8 +35,15 @@ POST {{domain}}/api/Llama-2-7b-chat/worker_generate
 Content-Type: application/json
 
 {
-  "prompt": "Hi"
+  "prompt": "Hi. Can you tell me a joke?",
+  "temperature": 0.7,
+  "max_new_tokens": 128
 }
+
+
+###
+# @name llm_conv_template
+GET {{domain}}/api/llm/worker_conv_template
 
 
 ###

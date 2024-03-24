@@ -166,34 +166,34 @@ services:
 #      - rabbit
 #      - redis
 
-  bert_worker:
-    build:
-      context: .
-      dockerfile: ./dockerfiles/transformer/Dockerfile
-    container_name: bert_worker
-    command: celery -A tasks worker -Q bert-base-uncased --loglevel=info --concurrency=2
-    volumes:
-      - ./:/usr/src/app
-      - /var/run/docker.sock:/var/run/docker.sock
-      - model_configs:/model_configs
-    env_file:
-      - model_configurations/.env.bert_adapter
-      - .env
-    environment:
-      - DOCKER_HOST_URL=https://172.17.0.1:8443
-      - VERIFY_SSL=0
-      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
-      - REALM=square
-      - CLIENT_ID=models
-      - QUEUE=bert-base-uncased
-      - CONFIG_PATH=/model_configs
-    links:
-      - rabbit
-      - redis
-    depends_on:
-      - maintaining
-      - rabbit
-      - redis
+#  bert_worker:
+#    build:
+#      context: .
+#      dockerfile: ./dockerfiles/transformer/Dockerfile
+#    container_name: bert_worker
+#    command: celery -A tasks worker -Q bert-base-uncased --loglevel=info --concurrency=2
+#    volumes:
+#      - ./:/usr/src/app
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - model_configs:/model_configs
+#    env_file:
+#      - model_configurations/.env.bert_adapter
+#      - .env
+#    environment:
+#      - DOCKER_HOST_URL=https://172.17.0.1:8443
+#      - VERIFY_SSL=0
+#      - KEYCLOAK_BASE_URL=https://square.ukp-lab.de
+#      - REALM=square
+#      - CLIENT_ID=models
+#      - QUEUE=bert-base-uncased
+#      - CONFIG_PATH=/model_configs
+#    links:
+#      - rabbit
+#      - redis
+#    depends_on:
+#      - maintaining
+#      - rabbit
+#      - redis
 
 #  roberta_worker:
 #    build:
