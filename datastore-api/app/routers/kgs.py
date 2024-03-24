@@ -222,9 +222,10 @@ async def put_node(
             status_code = 200
         else:
             status_code = 201
+
         return Response(
             status_code=status_code,
-            headers={"Location": request.url_for("get_object_by_id", kg_name=kg_name, object_id=node_id)},
+            headers={"Location": str(request.url_for("get_object_by_id", kg_name=kg_name, object_id=node_id))},
         )
     else:
         raise HTTPException(status_code=500)

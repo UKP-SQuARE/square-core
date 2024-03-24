@@ -1,0 +1,11 @@
+
+# system dependencies
+**/__pycache__
+**/.env.json
+**/.env
+
+# logs
+**/.log
+
+# unwanted files
+**/chat*

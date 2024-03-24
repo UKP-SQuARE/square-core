@@ -216,7 +216,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name test_deployed_model
-#POST {{domain_dev}}/api/main/deepset/roberta-base-squad2/question-answering
+#POST {{domain_dev}}/api/main/roberta-base/question-answering
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 #
@@ -328,7 +328,7 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name tweac
-#POST {{domain_dev}}/api/main/tweac/sequence-classification
+#POST {{domain_dev}}/api/main/tweac_16/sequence-classification
 #Authorization: Bearer {{auth_token}}
 #Content-Type: application/json
 #
@@ -411,5 +411,5 @@ grant_type=client_credentials&client_id={{client_id}}&client_secret={{client_sec
 ###
 
 ## @name remove_model
-#DELETE {{domain_dev}}/api/models/remove/UKP-SQuARE/tweac_16
+#DELETE {{domain_dev}}/api/models/remove/roberta-base
 #Authorization: Bearer {{auth_token}}
