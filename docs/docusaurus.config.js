@@ -52,7 +52,7 @@ const config = {
           },
            {
             route: "/api/models-inference/",
-           spec: "https://square.ukp-lab.de/api/models/openapi.json",
+           spec: "https://square.ukp-lab.de/api/main/openapi.json",
           },
            {
             route: "/api/models-management/",
