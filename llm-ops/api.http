@@ -76,6 +76,11 @@ Content-Type: application/json
 
 
 ###
+# @name llm_conv_template
+GET {{domain}}/api/llm/worker_conv_template
+
+
+###
 # @name deploy_transformer
 POST {{domain}}/api/models/deploy
 Content-Type: application/json

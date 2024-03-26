@@ -44,7 +44,7 @@ const config = {
        specs: [
            {
            route: "/api/datastores/",
-           spec: "https://square.ukp-lab.de/api/main/openapi.json",
+           spec: "https://square.ukp-lab.de/api/datastores/openapi.json",
            },
            {
             route: "/api/skills/",
