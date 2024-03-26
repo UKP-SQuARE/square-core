@@ -201,9 +201,6 @@
 
                 <div v-if="messages.length === 0" class="d-flex justify-content-center" style="flex-grow: 1">
                   <div class="text-center opacity-50 unselectable">
-
-                    <!-- add h1 with that is a little transparent -->
-
                     <h1 class="display-4">Start a conversation!</h1>
                     <p class="lead">
                       Start a conversation with the AI by typing in the box
@@ -606,13 +603,13 @@ export default {
       const findDifferences = (originalTokens, perturbedTokens) => {
         let indexOriginal = 0;
 
-        if (originalTokens.length === perturbedTokens.length){ // there is a token changed, highlight the changed token
+        if (originalTokens.length === perturbedTokens.length){ // highlight the changed token
           return perturbedTokens.map(perturbedToken => {
             let tokenToReturn = perturbedToken === originalTokens[indexOriginal] ? perturbedToken : highlight(perturbedToken);
             indexOriginal++;
             return tokenToReturn;
           }).join(" ");
-        } else if (originalTokens.length < perturbedTokens.length){ // there is a token added, highlight the added token
+        } else if (originalTokens.length < perturbedTokens.length){ // highlight the added token
           return perturbedTokens.map(perturbedToken => {
             let tokenToReturn = originalTokens.includes(perturbedToken) ? perturbedToken : highlight(perturbedToken);
             return tokenToReturn;
@@ -907,7 +904,6 @@ export default {
         });
       }
       else if (this.openAIChatModels.includes(this.chatConfig.selectedModel)) {
-        // see https://js.langchain.com/docs/modules/model_io/models/llms/integrations/openai
         this.generativeModel = new OpenAI({
           model: this.chatConfig.selectedModel,
           openAIApiKey: this.openAIApiKey,
@@ -1056,7 +1052,6 @@ export default {
           this.isGenerating = false;
           this.scrollDown();
           this.messages[this.messages.length - 1].done = true;
-        // TODO: make this stream too 
         } else { // agent chat
           const res = await this.chatModel.call({ input: text });
           if (res.intermediateSteps.length > 0) {
@@ -1209,7 +1204,6 @@ export default {
         (model) => 
           model.model_type === "llm"
       ).map((model) => model.identifier);
-      // this.localChatModels.push("Llama-2-7b-chat"); // TODO: remove when models are available in production
     },
 
     initTools() {
@@ -1222,22 +1216,21 @@ export default {
         }
       ];
 
-      // Leave this here for now, we might want to add it back later
-      // const searchLambdaFunction = new AWSLambda({
-      //   name: 'Search',
-      //   description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
-      //   region: 'eu-north-1',
-      //   accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
-      //   secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
-      //   functionName: 'my_random_function',
-      // });
+      const searchLambdaFunction = new AWSLambda({
+        name: 'Search',
+        description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
+        region: 'eu-north-1',
+        accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
+        functionName: 'my_random_function',
+      });
 
-      // this.availableTools.push({
-      //   name: "Search",
-      //   description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
-      //   tool: searchLambdaFunction,
-      //   toolId: 2,
-      // });
+      this.availableTools.push({
+        name: "Search",
+        description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
+        tool: searchLambdaFunction,
+        toolId: 2,
+      });
 
       // add any initial tools before this line
       this.initialToolsNumber = this.availableTools.length;
