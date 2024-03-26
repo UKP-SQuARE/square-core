@@ -70,8 +70,24 @@ Content-Type: application/json
     "system_message": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know. You only need to complete the ai's sentences. \n",
     "temperature": 0.7,
     "top_p": 0.9,
-    "echo": false,
+    "echo": false, // Returns the initial messages in the response
     "generation_mode": "chat"
+}
+
+
+###
+# @name llm_generate
+POST {{domain}}/api/Llama-2-7b-chat/worker_generate
+Content-Type: application/json
+
+{
+    "model_identifier": "Llama-2-7b-chat",
+    "prompt": "Tell me a joke.",
+    "system_message": "",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "echo": false,
+    "generation_mode": "completion"
 }
 
 
