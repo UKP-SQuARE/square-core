@@ -1127,7 +1127,7 @@ export default {
           streaming: true,
         });
       }
-      else if (this.openAIChatModels.includes(this.chatConfig.selectedModel)) {
+      else if (this.openAIChatModels.includes(this.chatConfig.selectedModel) && this.openAIApiKey !== "") {
         chat = new ChatOpenAI({
           openAIApiKey: this.openAIApiKey,
           modelName: this.chatConfig.selectedModel,
@@ -1187,18 +1187,22 @@ export default {
 
     async fetchModels() {
       if (this.openAIApiKey !== "") {
-        let response = await getOpenAIModels(this.openAIApiKey);
-        this.openAIChatModels = response.data.data.filter(
-          (model) =>{
-            if (this.chatConfig.chatMode !== "sensitivity"){
-              return model.id.startsWith("gpt") &&
-              !model.id.includes("curie")
-            } else {
-              return (model.id.startsWith("gpt") || model.id.startsWith("text") || model.id.startsWith("davinci")) && 
-              !model.id.includes("curie")
+        try {
+          let response = await getOpenAIModels(this.openAIApiKey);
+          this.openAIChatModels = response.data.data.filter(
+            (model) =>{
+              if (this.chatConfig.chatMode !== "sensitivity"){
+                return model.id.startsWith("gpt") &&
+                !model.id.includes("curie")
+              } else {
+                return (model.id.startsWith("gpt") || model.id.startsWith("text") || model.id.startsWith("davinci")) && 
+                !model.id.includes("curie")
+              }
             }
-          }
-        ).map((model) => model.id);
+          ).map((model) => model.id);
+        } catch (e){
+          console.error(e)
+        }
       }
 
       let response = await getLocalLLMs();
@@ -1358,11 +1362,10 @@ export default {
       /* eslint-disable no-unused-vars */
       async handler(newKey, oldKey) {
         localStorage.setItem("openAIApiKey", newKey);
-        if (newKey !== "") {
-          await this.fetchModels();
-          await this.initChatModel();
-          this.initGenerativeModel();
-        }
+        await this.fetchModels();
+        await this.initChatModel();
+        this.resetConv();
+        this.initGenerativeModel();
       }
     },
 
