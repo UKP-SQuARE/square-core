@@ -106,7 +106,7 @@ services:
       retries: 10
 
   keycloak:
-    image: jboss/keycloak:16.1.1
+    image: sihebi/keycloak:16.1.1
     environment:
       DB_VENDOR: postgres
       DB_ADDR: db
