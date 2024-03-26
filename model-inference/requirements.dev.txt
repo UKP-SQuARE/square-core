@@ -1,4 +1,4 @@
-pytest
-pytest-cov
-pytest-asyncio
-pytest-env
+pytest==8.0.2
+pytest-cov==4.1.0
+pytest-asyncio==0.23.5
+pytest-env==1.1.3

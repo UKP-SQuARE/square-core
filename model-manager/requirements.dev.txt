@@ -1,25 +1,25 @@
 # Checks style, syntax, and other useful errors.
-flake8
+flake8==7.0.0
 
 # Automatic code formatting
 black==22.3.0
 isort==5.10.1
 pylint==2.13.4
 
-pytest
-pytest-cov
-pytest-asyncio
+pytest==8.0.2
+pytest-cov==4.1.0
+pytest-asyncio==0.23.5
 
 #######################################################
 # lib specific requirements
 #######################################################
-uvicorn==0.17.6                 # ASGI server
-fastapi>=0.75.0                 # REST API Framework
-pydantic==1.9.0                 # models
-requests>=2.26.0                # requests
-docker                          # docker client
-square-auth==0.0.14             # keycloak authentication
-celery==5.2.3                   # queue requests
+uvicorn==0.17.6                # ASGI server
+fastapi==0.110.0               # REST API Framework
+pydantic==1.9.0                # models
+requests==2.31.0               # requests
+docker==7.0.0                  # docker client
+square-auth==0.0.14            # keycloak authentication
+celery==5.2.3                  # queue requests
 redis==4.2.0
-pymongo>=3.12.1
+pymongo==4.6.2
 square-elk-json-formatter==0.0.3
