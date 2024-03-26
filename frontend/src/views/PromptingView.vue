@@ -1216,21 +1216,21 @@ export default {
         }
       ];
 
-      const searchLambdaFunction = new AWSLambda({
-        name: 'Search',
-        description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
-        region: 'eu-north-1',
-        accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
-        functionName: 'my_random_function',
-      });
+      // const searchLambdaFunction = new AWSLambda({
+      //   name: 'Search',
+      //   description: 'A search engine. Useful for when you need to answer questions about current events. Input should be a search query.',
+      //   region: 'eu-north-1',
+      //   accessKeyId: process.env.VUE_APP_AWS_ACCESS_KEY_ID,
+      //   secretAccessKey: process.env.VUE_APP_AWS_SECRET_ACCESS_KEY,
+      //   functionName: 'my_random_function',
+      // });
 
-      this.availableTools.push({
-        name: "Search",
-        description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
-        tool: searchLambdaFunction,
-        toolId: 2,
-      });
+      // this.availableTools.push({
+      //   name: "Search",
+      //   description: "A search engine. Useful for when you need to answer questions about current events. Input should be a search query.",
+      //   tool: searchLambdaFunction,
+      //   toolId: 2,
+      // });
 
       // add any initial tools before this line
       this.initialToolsNumber = this.availableTools.length;
