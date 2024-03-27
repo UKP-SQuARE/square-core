@@ -57,8 +57,8 @@ class DeployRequest(BaseModel):
     disable_gpu: Optional[bool] = Field(
         True, description="whether to use gpu for inference"
     )
-    batch_size: int = Field("", description="input batch size")
-    max_input: int = Field("", description="max input length")
+    batch_size: int = Field(32, description="input batch size")
+    max_input: int = Field(512, description="max input length")
     transformers_cache: Optional[str] = Field(
         "../.cache", description="path to cache models"
     )
