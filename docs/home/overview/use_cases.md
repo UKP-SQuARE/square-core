@@ -45,4 +45,11 @@ Combining Skills can make systems more modular and multi-domain. [Puerto et al.,
 
 
 
+## 9. Analyzing LLMs
+Recent studies have demonstrated that contemporary Large Language Models (LLMs) exhibit significant sensitivity to variations in prompt inputs. To facilitate a comprehensive examination of model behaviors under diverse prompting conditions and with varied generation parameters (e.g., temperature settings or system prompts), we have developed an interactive chat interface. This interface enables users to engage with LLMs in a manner akin to popular chat applications. Furthermore, we have the capability to deploy locally hosted LLMs, offering unrestricted access to these models for users.
+
+Beyond the standard chat functionality, which allows direct interaction between a user and an LLM, we have introduced an innovative mode wherein the model functions as an Agent to address user queries. In this mode, similar to the normal chat mode, users submit their queries, and the model, informed by a predefined set of tools (as specified in the system prompt), identifies and applies the appropriate tools to resolve the queries. These tools are versatile functions that process textual input and generate textual output. For instance, a calculator tool might accept a mathematical expression in textual form, execute the calculation, and return the result. This system is designed to be highly adaptable, not only by leveraging internal tools but also by allowing users to integrate external functionalities via AWS Lambda functions. Additionally, this approach enables the model to perform complex operations by sequentially applying multiple tools based on the intermediate outcomes obtained.
+
+Moreover, following the research conducted by [Lu et al. (2023)](https://arxiv.org/abs/2203.00001), our platform includes a sensitivity testing interface. This feature allows users to input sentences and generate modified versions of them. The altered sentences, along with selected examples, are then evaluated by a language model to determine their acceptability. Through this process, it is feasible to assess the sensitivity of LLMs to prompt variations, providing valuable insights into their operational dynamics.
+
 

@@ -24,8 +24,8 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/UKP-SQuARE/square-core/tree/master/docs',
-            path: 'home',
-            routeBasePath: 'home',
+          path: 'home',
+          routeBasePath: 'home',
         },
         blog: {
           showReadingTime: true,
@@ -38,42 +38,42 @@ const config = {
         },
       }),
     ],
-      [
-     "redocusaurus",
-     {
-       specs: [
-           {
-           route: "/api/datastores/",
-           spec: "https://square.ukp-lab.de/api/datastores/openapi.json",
-           },
-           {
+    [
+      "redocusaurus",
+      {
+        specs: [
+          {
+            route: "/api/datastores/",
+            spec: "https://square.ukp-lab.de/api/datastores/openapi.json",
+          },
+          {
             route: "/api/skills/",
-           spec: "https://square.ukp-lab.de/api/skill-manager/openapi.json",
+            spec: "https://square.ukp-lab.de/api/skill-manager/openapi.json",
           },
-           {
+          {
             route: "/api/models-inference/",
-           spec: "https://square.ukp-lab.de/api/main/openapi.json",
+            spec: "https://square.ukp-lab.de/api/main/openapi.json",
           },
-           {
+          {
             route: "/api/models-management/",
-           spec: "https://square.ukp-lab.de/api/models/openapi.json",
+            spec: "https://square.ukp-lab.de/api/models/openapi.json",
           },
-       ],
-     },
-   ],
+        ],
+      },
+    ],
   ],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       announcementBar: {
-          id: 'beta',
-          content:
-            'The <b>model management</b> service is currently in beta. The stable version will be released soon.',
-          backgroundColor: '#fafbfc',
-          textColor: '#091E42',
-          isCloseable: true,
-     },
+        id: 'beta',
+        content:
+          'The <b>model management</b> service is currently in beta. The stable version will be released soon.',
+        backgroundColor: '#fafbfc',
+        textColor: '#091E42',
+        isCloseable: true,
+      },
       navbar: {
         title: 'UKP-SQuARE',
         logo: {
@@ -87,35 +87,35 @@ const config = {
             position: 'left',
             label: 'Overview',
           },
-            {
+          {
             type: 'doc',
             docId: 'components/datastores',
             position: 'left',
             label: 'Components',
           },
-            {
-           label: 'API',
-           position: 'left',
-           items: [
-             {
-               label: 'Datastores',
-               to: '/api/datastores/',
-             },
-             {
-               label: 'Models-Inference',
-               to: '/api/models-inference/',
-             },
-               {
-               label: 'Models-Management',
-               to: '/api/models-management/',
-             },
-             {
-               label: 'Skills',
-               to: '/api/skills/',
-             },
-           ],
-         },
-            {
+          {
+            label: 'API',
+            position: 'left',
+            items: [
+              {
+                label: 'Datastores',
+                to: '/api/datastores/',
+              },
+              {
+                label: 'Models-Inference',
+                to: '/api/models-inference/',
+              },
+              {
+                label: 'Models-Management',
+                to: '/api/models-management/',
+              },
+              {
+                label: 'Skills',
+                to: '/api/skills/',
+              },
+            ],
+          },
+          {
             type: 'doc',
             docId: 'versioning/changelog',
             position: 'left',
@@ -148,7 +148,7 @@ const config = {
                 label: 'Twitter',
                 href: 'https://twitter.com/UKPLab',
               },
-                {
+              {
                 label: 'Linkedin',
                 href: 'https://www.linkedin.com/company/tu-darmstadt/',
               },

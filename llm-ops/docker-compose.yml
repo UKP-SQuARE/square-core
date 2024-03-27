@@ -42,36 +42,34 @@ services:
       # mount volume to store certificates
       - traefik-public-certificates:/certificates
 
-  # llm_chat:
-  #   build:
-  #     context: .
-  #   container_name: llm_chat
-  #   volumes:
-  #     - /home/rachneet/hf_models:/root/.cache/huggingface
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: 1
-  #             capabilities: [gpu]
-  #   entrypoint:
-  #     - /bin/bash
-  #     - ./start_chat.sh
-  #   command:
-  #     - --model-path
-  #     - ../root/.cache/huggingface/Llama-2-7b-chat  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
-  #     # - --max-gpu-memory
-  #     # - 14Gib
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.llm-chat.rule=PathPrefix(`/api/Llama-2-7b-chat`)"
-  #     - "traefik.http.routers.llm-chat.entrypoints=websecure"
-  #     - "traefik.http.routers.llm-chat.tls=true"
-  #     - "traefik.http.routers.llm-chat.tls.certresolver=le"
-  #     - "traefik.http.routers.llm-chat.middlewares=llm-chat-stripprefix,llm-chat-addprefix"
-  #     - "traefik.http.middlewares.llm-chat-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
-  #     - "traefik.http.middlewares.llm-chat-addprefix.addPrefix.prefix=/api"
+  llm_chat:
+    build:
+      context: .
+    container_name: llm_chat
+    volumes:
+      - /home/rachneet/hf_models:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    entrypoint:
+      - /bin/bash
+      - ./start_chat.sh
+    command:
+      - --model-path
+      - ../root/.cache/huggingface/Llama-2-7b-chat  #falcon-7b-instruct  #Llama-2-7b-chat   #vicuna-7b-v1.3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.llm-chat.rule=PathPrefix(`/api/Llama-2-7b-chat`)"
+      - "traefik.http.routers.llm-chat.entrypoints=websecure"
+      - "traefik.http.routers.llm-chat.tls=true"
+      - "traefik.http.routers.llm-chat.tls.certresolver=le"
+      - "traefik.http.routers.llm-chat.middlewares=llm-chat-stripprefix,llm-chat-addprefix"
+      - "traefik.http.middlewares.llm-chat-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.llm-chat-addprefix.addPrefix.prefix=/api"
 
   # llm_chat2:
   #   build:
