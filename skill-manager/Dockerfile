@@ -13,6 +13,9 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
+# COPY ./square-model-client /square-model-client
+# RUN pip install -e /square-model-client
+
 COPY ./skill_manager skill_manager
 
 COPY logging.conf logging.conf

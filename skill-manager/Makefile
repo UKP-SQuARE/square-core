@@ -43,6 +43,9 @@ build:
 logs:
 	docker compose --env-file .local.env logs -f skill-manager
 
+build-up: 
+	make build
+	make up
 
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
