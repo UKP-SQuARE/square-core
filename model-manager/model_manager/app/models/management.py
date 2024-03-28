@@ -83,7 +83,7 @@ class DeployRequest(BaseModel):
     )
 
     model_class: str = Field(
-        "",
+        "from_config",
         description="See square_model_inference.inference.transformer.CLASS_MAPPING "
         "for valid names and corresponding class",
     )
