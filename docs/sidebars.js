@@ -23,14 +23,14 @@ const sidebars = {
       type: 'category',
       label: 'Overview',
       items: ['overview/introduction',
-              'overview/get_started',
-              'overview/use_cases',
-              'overview/tutorials',
-              'overview/architecture',
-              'overview/local_installation',
-              'overview/faq'],
+        'overview/get_started',
+        'overview/use_cases',
+        'overview/tutorials',
+        'overview/architecture',
+        'overview/local_installation',
+        'overview/faq'],
     },
-      {
+    {
       type: 'category',
       label: 'Components',
       items: [
@@ -42,14 +42,18 @@ const sidebars = {
           type: 'doc',
           id: 'components/models',
         },
-          {
+        {
           type: 'doc',
           id: 'components/skills',
         },
-          {
+        {
           type: 'doc',
           id: 'components/explainability',
         },
+        {
+          type: 'doc',
+          'id': 'components/llms',
+        }
       ],
     },
   ],

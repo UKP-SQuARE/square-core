@@ -26,6 +26,23 @@ Content-Type: application/json
 }
 
 ###
+# @name deploy_llm
+POST {{domain}}/api/models/deploy HTTP/1.1
+Content-Type: application/json
+
+{
+  "identifier": "xlnet-large-cased",
+  "model_name": "xlnet-large-cased",
+  "model_type": "llm",
+  "disable_gpu": true,
+  "batch_size": 32,
+  "max_input": 1024,
+  "model_class": "from_config",
+  "transformer_cache": "\/etc\/huggingface\/.cache\/",
+  "return_plaintext_arrays": false
+}
+
+###
 # @name test_llm
 GET {{domain}}/api/Llama-2-7b-chat/worker_status
 
@@ -35,9 +52,42 @@ POST {{domain}}/api/Llama-2-7b-chat/worker_generate
 Content-Type: application/json
 
 {
-  "prompt": "Hi. Can you tell me a joke?",
-  "temperature": 0.7,
-  "max_new_tokens": 128
+    "model_identifier": "Llama-2-7b-chat",
+    "messages": [
+        {
+            "role": "user",
+            "text": "yo!"
+        }, 
+        {
+            "role": "ai",
+            "text": "Hey! How can I help you today?"
+        },
+        {
+            "role": "user",
+            "text": "I want you to tell me a short funny joke."
+        }
+    ],
+    "system_message": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know. You only need to complete the ai's sentences. \n",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "echo": false,
+    "generation_mode": "chat"
+}
+
+
+###
+# @name llm_generate
+POST {{domain}}/api/Llama-2-7b-chat/worker_generate
+Content-Type: application/json
+
+{
+    "model_identifier": "Llama-2-7b-chat",
+    "prompt": "Tell me a joke.",
+    "system_message": "",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "echo": false,
+    "generation_mode": "completion"
 }
 
 
@@ -83,7 +133,7 @@ Content-Type: application/json
 
 ###
 # @name remove_model
-DELETE {{domain}}/api/models/remove/Llama-2-7b-chat
+DELETE {{domain}}/api/models/remove/xlnet-large-cased
 #Authorization: Bearer {{auth_token}}
 
 
@@ -112,5 +162,5 @@ GET {{domain}}/api/models/deployed-models
 
 ###
 # @name task_output
-GET {{domain}}/api/models/task_result/4f11033f-359e-4b77-ae18-9bdec7c975ed
+GET {{domain}}/api/models/task_result/187f1f29-c7b8-4c93-8235-83394f22c395
 Content-Type: application/json

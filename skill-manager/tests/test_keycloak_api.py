@@ -20,7 +20,7 @@ def monkeypatch_session():
 
 @pytest.fixture(scope="session")
 def keycloak(monkeypatch_session: MonkeyPatch):
-    with TestcontainerKeycloak("jboss/keycloak:16.1.1") as kc:
+    with TestcontainerKeycloak("sihebi/keycloak:16.1.1") as kc:
         monkeypatch_session.setenv("KEYCLOAK_BASE_URL", kc.get_connection_url())
         yield kc
 

@@ -18,6 +18,9 @@
                 <router-link class="nav-link" to="/qa_hub" exact-active-class="active">QA Hub</router-link>
               </li>
               <li class="nav-item">
+                <router-link class="nav-link" to="/prompting" exact-active-class="active">Prompting</router-link>
+              </li>
+              <li class="nav-item">
                 <router-link class="nav-link" to="/behavioral_tests" exact-active-class="active">Behavioral
                   Tests</router-link>
               </li>
