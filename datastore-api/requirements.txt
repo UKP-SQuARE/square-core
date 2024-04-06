@@ -9,7 +9,7 @@ requests==2.31.0
 numpy==1.26.4
 uvicorn[standard]==0.27.1
 square-auth==0.0.14
-pymongo==4.0.2
+pymongo==4.6.3
 scipy==1.12.0
 pyjwt==2.4.0
 aiohttp==3.9.3
