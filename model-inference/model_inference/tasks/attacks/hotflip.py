@@ -227,7 +227,9 @@ class Hotflip(Attacker):
         new_contexts = []
         old_context = [" ".join([word for word in processed_context])]
         tmp_context = processed_context
-        for value in range(self.top_k):
+        num_replacements = min(self.top_k, len(new_imp_token_idx))  # Use the smaller of self.top_k or length of new_imp_token_idx
+
+        for value in range(num_replacements):
             token_to_replace = replacement_tokens[value]
             token_idx = new_imp_token_idx[value]
             tmp_context[token_idx] = token_to_replace
@@ -236,7 +238,7 @@ class Hotflip(Attacker):
         all_contexts = old_context
         all_contexts.extend(new_contexts)
 
-        questions = [" ".join([w for w in processed_question])] * (self.top_k + 1)
+        questions = [" ".join([w for w in processed_question])] * (num_replacements + 1)
         prepared_inputs = [[q, c] for q, c in zip(questions, all_contexts)]
 
         batch_request = self.base_prediction_request
