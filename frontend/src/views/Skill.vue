@@ -577,7 +577,12 @@ export default Vue.component('edit-skill', {
           this.validJSON = false
         }
       }
-
+      if (this.skill.url == 'http://extractive-qa' || this.skill.url == 'http://open-extractive-qa' || this.skill.url == 'http://multiple-choice-qa' || this.skill.url == 'http://information-retrieval') {
+        this.skill.default_skill_args['base_model'] = this.skill.models.reader_model
+      }
+      if (this.skill.url == 'http://generative-qa') {
+        this.skill.default_skill_args['base_model'] = this.skill.models.generator
+      }
     },
     addSkillAgents() {
       this.skill.default_skill_args['list_skills'] = []

@@ -59,8 +59,8 @@ async def get_all_models():  # token: str = Depends(client_credentials)):
                 model_type=model["MODEL_TYPE"],
                 model_name=model["MODEL_NAME"],
                 disable_gpu=model["DISABLE_GPU"],
-                batch_size=model["BATCH_SIZE"],
-                max_input=model["MAX_INPUT_SIZE"],
+                batch_size=model.get("BATCH_SIZE", 32),
+                max_input=model.get("MAX_INPUT_SIZE", 512),
                 model_class=model["MODEL_CLASS"],
                 return_plaintext_arrays=model["RETURN_PLAINTEXT_ARRAYS"],
             )

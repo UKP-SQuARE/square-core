@@ -2,4 +2,4 @@ tqdm
 square-auth==0.0.14
 faiss-instant
 docker
-square-model-client
+git+https://github.com/UKP-SQuARE/square-model-client.git@main#egg=square-model-client

@@ -105,7 +105,6 @@ def remove_model_task(self, identifier):
             container_id = c["CONTAINER"]
             logger.info("Starting to remove docker container %s", container_id)
             result = remove_model_container(container_id)
-        if result:
             asyncio.run(self.client.remove_model_db(identifier))
             return {"success": result, "message": "Model removal successful"}
     except Exception as e:
