@@ -37,7 +37,26 @@
                   <div class="list-group" id="chat-mode">
                     <a href="#" class="list-group-item list-group-item-action" v-on:click.prevent="chatConfig.chatMode = 'normal_chat'" :class="{'active': chatConfig.chatMode == 'normal_chat'}">Normal Chat</a>
                     <a href="#" class="list-group-item list-group-item-action" v-on:click.prevent="chatConfig.chatMode = 'agent_chat'" :class="{'active': chatConfig.chatMode == 'agent_chat'}">Agent Chat</a>
-                    <a href="#" class="list-group-item list-group-item-action" v-on:click.prevent="chatConfig.chatMode = 'sensitivity'" :class="{'active': chatConfig.chatMode == 'sensitivity'}">Sensitivity</a>
+
+
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-10 p-0">
+                          <a href="#" class="list-group-item list-group-item-action rounded-bottom-left-1" v-on:click.prevent="chatConfig.chatMode = 'sensitivity'" :class="{'active': chatConfig.chatMode == 'sensitivity'}">Sensitivity</a>
+                        </div>
+                        <div class="col-2 p-0 m-0">
+                          <a 
+                          tabindex="0" 
+                          class="btn btn-outline-secondary custom-radius m-0 sensitivity-popover"
+                          @click="showPopover"
+                          :title="sensitivity_popover_title"
+                          :data-bs-content="sensitivity_popover_content"
+                          data-bs-placement="right"
+                          >(i)</a>
+                        </div>
+                      </div>
+                    </div>
+                    
                   </div>
                 </div>
                 <hr />
@@ -244,38 +263,62 @@
               <form class="form" @submit.prevent="getSensitivity">
 
                 <!-- System Prompt + Examples -->
-                <div class="me-auto mt-4 mt-md-0">
-                  <div class="bg-light border border-primary rounded h-100 p-3">
-                    <div class="w-100">
-                      <label for="sensitivityPromptTemplate" class="form-label">
-                        1. Prompt Template 
-                        <ToolTip 
-                          content="Your template for the prompt must include the placeholder {sentence} and {answer}. 
-                          These placeholders will be replaced with actual sentences (and answers in case of few show examples) when prompting the model.">
-                        </ToolTip>
-                      </label>
-                      <div class="input-group input-group-sm mb-2">
-                        <input placeholder="PREFIX (Optional)" v-model="senPromptPrefix" type="text" class="form-control form-control-sm" required>
-                      </div>
-                      <textarea v-autosize class="form-control" id="sensitivityPromptTemplate" v-model="chatConfig.sensitivityPromptTemplate" required/>
-                      <div class="form-inline mt-3">
-                        <label for="fewShotExamples" class="form-label">2. Enter your few shot examples</label>
-                        <div class="row g-0" v-for="(choice, index) in listFewShotExamples" :key="index" id="fewShotExamples">
-                          <div class="col col-9">
-                            <div class="input-group input-group-sm mb-3">
-                              <span class="input-group-text" id="basic-addon1">{{ index + 1 }}</span>
-                              <input placeholder="SENTENCE" v-model="listFewShotExamples[index].sentence" type="text" class="form-control form-control-sm" required>
+                <div class="accordion" id="prompt_accordion">
+                  <div class="accordion-item">
+                    <button class="accordion-button accordion-header collapsed fs-5" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapse_prompt_accordion" aria-expanded="true" aria-controls="collapse_prompt_accordion">
+                      Prompt Template 
+                      &nbsp;
+                      <ToolTip 
+                        content="The prompt template used to prompt the model which includes few shot examples.">
+                      </ToolTip>                             
+                    </button>
+                    <div id="collapse_prompt_accordion" class="accordion-collapse collapse bg-light" aria-labelledby="heading_prompt_accordion"
+                      data-bs-parent="#prompt_accordion">
+                      <div class="accordion-body">
+                        <div 
+                          class="border rounded p-3 bg-light mt-4" 
+                          style="overflow-y: auto;" 
+                        >
+                          <div class="me-auto mt-4 mt-md-0 ">
+                            <div class="w-100">
+                              <label for="sensitivityPromptTemplate" class="form-label">
+                                1. Prefix 
+                              
+                              </label>
+                              <div class="input-group input-group-sm mb-2">
+                                <input placeholder="PREFIX (Optional)" v-model="senPromptPrefix" type="text" class="form-control form-control-sm" required>
+                              </div>
+
+                              2. Prompt Body 
+                              <ToolTip 
+                                content="Your template for the prompt must include the placeholder {sentence} and {answer}. 
+                                These placeholders will be replaced with actual sentences (and answers in case of few show examples) when prompting the model.">
+                              </ToolTip>
+
+                              <textarea v-autosize class="form-control" id="sensitivityPromptTemplate" v-model="chatConfig.sensitivityPromptTemplate" required/>
+                              <div class="form-inline mt-3">
+                                <label for="fewShotExamples" class="form-label">3. Enter your few shot examples</label>
+                                <div class="row g-0" v-for="(choice, index) in listFewShotExamples" :key="index" id="fewShotExamples">
+                                  <div class="col col-9">
+                                    <div class="input-group input-group-sm mb-3">
+                                      <span class="input-group-text" id="basic-addon1">{{ index + 1 }}</span>
+                                      <input placeholder="SENTENCE" v-model="listFewShotExamples[index].sentence" type="text" class="form-control form-control-sm" required>
+                                    </div>
+                                  </div>
+                                  <div class="col col-3">
+                                    <div class="input-group input-group-sm mb-3 ps-2">
+                                      <input placeholder="ANSWER" v-model="listFewShotExamples[index].answer" type="text" class="form-control form-control-sm" required>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="form-inline">
+                                  <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addFewShotExample">Add Example</button>
+                                  <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeFewShotExample">Remove Example</button>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div class="col col-3">
-                            <div class="input-group input-group-sm mb-3 ps-2">
-                              <input placeholder="ANSWER" v-model="listFewShotExamples[index].answer" type="text" class="form-control form-control-sm" required>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="form-inline">
-                          <button type="button" class="btn btn-sm btn-outline-success" v-on:click="addFewShotExample">Add Example</button>
-                          <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removeFewShotExample">Remove Example</button>
                         </div>
                       </div>
                     </div>
@@ -286,7 +329,14 @@
                 <div class="me-auto mt-4 pt-3 mt-md-0">
                   <div class="bg-light border border-primary rounded h-100 p-3">
                     <div class="w-100">
-                      <label for="originalInput" class="form-label">3. Enter your original input</label>
+                      <label for="originalInput" class="form-label">
+                        1. Enter your original input
+
+                        <ToolTip 
+                          content="The original input that you want to test the model's sensitivity on.">
+                        </ToolTip>
+                      
+                      </label>
                       <textarea v-model="currentOriginalInput" @keydown.enter.exact.prevent
                         class="form-control form-control mb-2" style="resize: none; height: calc(40px);"
                         id="originalInput" placeholder="original input" required />
@@ -304,7 +354,13 @@
                   <div class="bg-light border border-secondary rounded h-100 p-3">
                     <div class="w-100">
                       <div class="row">
-                        <label for="perturbed_loop" class="form-label">4. Enter your perturbed input</label>
+                        <label for="perturbed_loop" class="form-label">
+                          2. Enter your perturbed sentences
+
+                          <ToolTip 
+                            content="The perturbed inputs, which are similar to the original input but with slight changes.">
+                          </ToolTip>
+                        </label>
                         <div class="row g-0" v-for="(choice, index) in listPerturbedInput" :key="index"
                           id="perturbed_loop">
                           <div class="col-sm">
@@ -455,6 +511,8 @@ import {
 } from '@/api';
 import { CustomChatModel, CustomGenerativeModel } from "../services/custom_llm";
 
+import {Popover} from "bootstrap";
+
 Vue.use(VueTippy);
 
 export default {
@@ -489,6 +547,10 @@ export default {
   },
 
   data: () => ({
+    sensitivity_popover_title: "What is Sensitivity?",
+    sensitivity_popover_content: "Sensitivity is a measure of how much a model's output changes when the input is changed slightly. A model with high sensitivity will give very different outputs for similar inputs, while a model with low sensitivity will give similar outputs for similar inputs. Sensitivity is a useful metric for understanding how a model will behave in the real world, where inputs are never exactly the same.",
+    sensitivity_popover: null,
+
     chatModel: null,
     chatText: "",
     messages: [],
@@ -515,7 +577,7 @@ export default {
     },
 
     chatConfig: {
-      chatMode: "normal_chat",
+      chatMode: "sensitivity",
       selectedModel: "gpt-3.5-turbo-0613",
       temperature: 0.7,
       maxTokens: 256,
@@ -636,6 +698,15 @@ export default {
   },
 
   methods: {
+    showPopover(event) {
+      // this will create a popover once and then it will be reused by Popover automatically
+      if (!this.sensitivity_popover) {
+        this.sensitivity_popover = new Popover(event.target, {
+          trigger: 'focus'
+        });
+        this.sensitivity_popover.show();
+      }
+    },
 
     autoResizeTextarea () {
       const textArea = this.$refs.textAreaRef;
@@ -1402,5 +1473,39 @@ button:disabled {
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none; /* Non-prefixed version, currently supported by Chrome, Opera, and W3C */
+}
+
+.rounded-top-left-1 {
+    border-top-left-radius: 0.3rem;
+}
+.rounded-top-right-1 {
+    border-top-right-radius: 0.3rem;
+}
+.rounded-bottom-left-1 {
+    border-bottom-left-radius: 0.3rem;
+}
+.rounded-bottom-right-1 {
+    border-bottom-right-radius: 0.3rem;
+}
+.custom-radius {
+    border-radius: 0rem;
+}
+
+.btn-outline-secondary:hover{
+    background-color: #dededeff;
+}
+
+.btn-outline-secondary:active{
+    background-color: #dededeff;
+    color: #000;
+}
+
+.sensitivity-popover {
+  border-bottom-right-radius: 0.3rem; 
+  width: 100%; 
+  height: 100%; 
+  border-color: #dededeff; 
+  color: #000; 
+  cursor: help;
 }
 </style>
