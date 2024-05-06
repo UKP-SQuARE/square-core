@@ -15,4 +15,4 @@ pyjwt==2.4.0
 aiohttp==3.9.3
 tqdm==4.66.2
 square-elk-json-formatter==0.0.3
-trafilatura==1.4.0
+trafilatura==1.8.1
