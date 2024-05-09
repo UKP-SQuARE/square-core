@@ -12,7 +12,7 @@ const SKILL_MANAGER_URL = `${process.env.VUE_APP_SKILL_MANAGER_URL}`;
 const EVALUATOR_URL = `${process.env.VUE_APP_EVALUATOR_URL}`;
 const DATASTORES_URL = `${process.env.VUE_APP_DATASTORES_URL}`;
 const MODEL_MANAGER_URL = `${process.env.VUE_APP_MODEL_MANAGER_URL}`
-const LLM_MODELS_URL = MODEL_MANAGER_URL.replace('/models', '');
+const BASE_SQUARE_URL = MODEL_MANAGER_URL.replace('/models', '');
 
 /**
  * Get a list of available skill types.
@@ -263,7 +263,7 @@ export function getLocalLLMs() {
 export function generateText(params, streaming) {
     let url;
     if(!streaming){
-        url = `${LLM_MODELS_URL}/${params.model_identifier}/worker_generate`
+        url = `${BASE_SQUARE_URL}/${params.model_identifier}/worker_generate`
         const response = axios.post(url, params, {
             headers:{
                 'Content-Type': 'application/json'
@@ -271,7 +271,7 @@ export function generateText(params, streaming) {
         });
         return response;
     }else{
-        url = `${LLM_MODELS_URL}/${params.model_identifier}/worker_generate_stream`
+        url = `${BASE_SQUARE_URL}/${params.model_identifier}/worker_generate_stream`
         const response = fetch(url, {
             method: 'POST',
             headers: {
@@ -288,9 +288,36 @@ export function getAlternatives(text){
     const params = {
         text: text
     }
-    const response = axios.post(`${LLM_MODELS_URL}/sensitivity/generate_alternatives`, params, {
+    const response = axios.post(`${BASE_SQUARE_URL}/sensitivity/generate_alternatives`, params, {
         headers:{
             'Content-Type': 'application/json'
+        }
+    });
+    return response;
+}
+
+export function getReplicateModels(){
+    return axios.get(`https://localhost:8443/api/replicate/models`, {});  // TODO: change to actual URL
+}
+
+export function generateChatStreamReplicate(params, token) {
+    let url = `https://localhost:8443/api/replicate/generate_chat_stream`  // TODO: change to actual URL
+    const response = axios.post(url, params, {
+        headers:{
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    });
+    return response;
+}
+
+
+export function generateCompletionStreamReplicate(params, token) {
+    let url = `https://localhost:8443/api/replicate/generate_completion_stream`  // TODO: change to actual URL
+    const response = axios.post(url, params, {
+        headers:{
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         }
     });
     return response;

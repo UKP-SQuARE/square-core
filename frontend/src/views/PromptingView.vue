@@ -10,24 +10,76 @@
                 :style="{height: ['normal_chat', 'agent_chat'].includes(chatConfig.chatMode) ? '77vh': '100%'}">
                 <div class="form-group pb-2">
                   <div class="form-group">
-                    <label for="selectedModel" class="form-label">Chat Model</label>
-                    <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
-                      <option v-for="model in localChatModels.concat(openAIChatModels)" :key="model" :value="model">
-                        {{ model }}
-                      </option>
-                    </select>
-                  </div>
 
-                  <div v-if="openAIChatModels.includes(chatConfig.selectedModel)" class="row mt-3">
-                    <div>
-                      <label for="open-ai-key" class="form-label">
-                        OpenAI key
-                        <ToolTip 
-                          content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer.">
-                        </ToolTip>
-                      </label>
-                      <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key"
-                        v-model="openAIApiKey" />
+                    <label for="pills-tab" class="form-label">Model Srouce</label>
+                    <ul class="nav nav-pills flex-column flex-sm-row" id="pills-tab" role="tablist">
+                      <li class="nav-item flex-sm-fill text-sm-center" role="presentation">
+                        <button class="nav-link active" id="pills-openai-tab" data-bs-toggle="pill" data-bs-target="#pills-openai" type="button" role="tab" aria-controls="pills-openai" aria-selected="true">OpenAI</button>
+                      </li>
+                      <li class="nav-item flex-sm-fill text-sm-center" role="presentation">
+                        <button class="nav-link" id="pills-replicate-tab" data-bs-toggle="pill" data-bs-target="#pills-replicate" type="button" role="tab" aria-controls="pills-replicate" aria-selected="true">Replicate.ai</button>
+                      </li>
+                      <li class="nav-item flex-sm-fill text-sm-center" role="presentation">
+                        <button class="nav-link" id="pills-local-tab" data-bs-toggle="pill" data-bs-target="#pills-local" type="button" role="tab" aria-controls="pills-local" aria-selected="true">Local</button>
+                      </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="pills-tabContent">
+
+                      <!-- OpenAI Models -->
+                      
+                      <div class="tab-pane fade show active" id="pills-openai" role="tabpanel" aria-labelledby="pills-openai-tab">
+                        <label for="selectedModel" class="form-label mt-2">Model</label>
+                        <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
+                          <option v-for="model in openAIChatModels" :key="model" :value="model">
+                            {{ model }}
+                          </option>
+                        </select>
+                        <div class="row mt-3">
+                          <div>
+                            <label for="open-ai-key" class="form-label">
+                              OpenAI key
+                              <ToolTip 
+                                content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer.">
+                              </ToolTip>
+                            </label>
+                            <input type="password" class="form-control" id="open-ai-key" placeholder="OpenAI key"
+                              v-model="openAIApiKey" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Replicate Models -->
+                      <div class="tab-pane fade" id="pills-replicate" role="tabpanel" aria-labelledby="pills-replicate-tab">
+                        <label for="selectedModel" class="form-label mt-2">Model</label>
+                        <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
+                          <option v-for="model in replicateModels" :key="model" :value="model">
+                            {{ model }}
+                          </option>
+                        </select>
+                        <div class="row mt-3">
+                          <div>
+                            <label for="replicate-key" class="form-label">
+                              Replicate key
+                              <ToolTip 
+                                content="Rest assured, your API keys are never stored on our end. They will always remain securely in the local storage of your computer.">
+                              </ToolTip>
+                            </label>
+                            <input type="password" class="form-control" id="replicate-key" placeholder="Replicate key"
+                              v-model="replicateKey" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Local Models -->
+                      <div class="tab-pane fade" id="pills-local" role="tabpanel" aria-labelledby="pills-local-tab">
+                        <label for="selectedModel" class="form-label mt-2">Model</label>
+                        <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
+                          <option v-for="model in localChatModels" :key="model" :value="model">
+                            {{ model }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                   <hr />
@@ -507,9 +559,15 @@ import VueTippy from "vue-tippy";
 import { 
   getOpenAIModels,
   getLocalLLMs, 
-  getAlternatives
+  getAlternatives, 
+  getReplicateModels
 } from '@/api';
-import { CustomChatModel, CustomGenerativeModel } from "../services/custom_llm";
+import { 
+  CustomChatModel, 
+  CustomGenerativeModel, 
+  ReplicateChatModel, 
+  ReplicateGenerativeModel,
+} from "../services/custom_llm";
 
 import {Popover} from "bootstrap";
 
@@ -561,6 +619,8 @@ export default {
       "gpt-3.5-turbo",
       "gpt-3.5-turbo-0301",
     ],
+    replicateModels: [],
+    replicateKey: "",
     localChatModels: [],
     availableTools: [],
     addingNewTool: false,
@@ -577,12 +637,12 @@ export default {
     },
 
     chatConfig: {
-      chatMode: "sensitivity",
-      selectedModel: "gpt-3.5-turbo-0613",
+      chatMode: "normal_chat",
+      selectedModel: "gpt-3.5-turbo-1106",
       temperature: 0.7,
       maxTokens: 256,
       top_p: 0.9,
-      systemPrompt: ``, 
+      systemPrompt: "", 
       tools: [],
       sensitivityPromptTemplate: 'SENTENCE: {sentence}\nQUESTION: Is this (0) unacceptable, or (1) acceptable?\nANSWER: {answer}',
     },
@@ -636,6 +696,7 @@ export default {
   created() {
     this.messages = [];
     this.openAIApiKey = localStorage.getItem("openAIApiKey");
+    this.replicateKey = localStorage.getItem("replicateKey");
     this.fetchModels();
     this.initChatModel();
     this.initGenerativeModel()
@@ -983,6 +1044,16 @@ export default {
           top_p: this.chatConfig.top_p,
         });
       }
+      else if (this.replicateModels.includes(this.chatConfig.selectedModel)) {
+        this.generativeModel = new ReplicateGenerativeModel({
+          model_identifier: this.chatConfig.selectedModel,
+          top_p: this.chatConfig.top_p,
+          temperature: this.chatConfig.temperature,
+          max_new_tokens: 2,
+          streaming: false,
+          replicateKey: this.replicateKey,
+        });
+      }
     },
 
     async addNewTool() {
@@ -1096,6 +1167,11 @@ export default {
           this.isGenerating = false;
           this.messages.splice(this.messages.length - 1, 1);
           return;
+        } else if (this.replicateModels.includes(this.chatConfig.selectedModel) && this.replicateKey === ""){
+          this.showErrorToast("Please enter your Replicate key first.");
+          this.isGenerating = false;
+          this.messages.splice(this.messages.length - 1, 1);
+          return;
         }
 
         this.messages.push({
@@ -1123,7 +1199,9 @@ export default {
           this.isGenerating = false;
           this.scrollDown();
           this.messages[this.messages.length - 1].done = true;
+          
         } else { // agent chat
+
           const res = await this.chatModel.call({ input: text });
           if (res.intermediateSteps.length > 0) {
             response += "```\n";
@@ -1148,13 +1226,14 @@ export default {
         }
         
       } catch (err) {
-        console.error(err);
-        console.log(err.error)
-        if (err.status === 401 && err.code === "invalid_api_key") {
+        console.error(`======== err: ${err}`);
+        if (err?.status === 401 && err?.code === "invalid_api_key") {
           this.showErrorToast("Please enter a valid OpenAI key.");
-        } else if (typeof err === "string" && err.includes("API key")){
+        } else if (err?.response?.status == 401 && err?.response?.data?.detail?.startsWith("You did not pass")) {
+          this.showErrorToast("Please enter a valid Replicate key.");
+        } else if (typeof err === "string" && err?.includes("API key")){
           this.showErrorToast("Please enter a valid OpenAI key.");
-        }else if(err.message === "AbortError"){
+        }else if(err?.message === "AbortError"){
           console.log("Request aborted")
         } else {
           this.showErrorToast("Something went wrong. Please try again.");
@@ -1208,6 +1287,16 @@ export default {
           streaming: true, 
         });
       }
+      else if (this.replicateModels.includes(this.chatConfig.selectedModel) && this.replicateKey !== "") {
+        chat = new ReplicateChatModel({
+          model_identifier: this.chatConfig.selectedModel,
+          temperature: this.chatConfig.temperature,
+          top_p: this.chatConfig.top_p,
+          max_new_tokens: this.chatConfig.maxTokens,
+          streaming: true,
+          replicateKey: this.replicateKey,
+        });
+      }
 
       if (chat !== null) {
         const chatPrompt = ChatPromptTemplate.fromPromptMessages([
@@ -1227,6 +1316,11 @@ export default {
           });
 
         } else if (this.chatConfig.chatMode === "agent_chat") {
+          if (this.replicateModels.includes(this.chatConfig.selectedModel) && this.replicateKey !== "") {
+            chat.streaming = false;
+          }
+
+
           process.env.LANGCHAIN_HANDLER = "langchain";
 
           // filter the tools that are checked
@@ -1257,6 +1351,33 @@ export default {
     },
 
     async fetchModels() {
+      await this.fetchOpenAIModels();
+      await this.fetchLocalModels();
+      await this.fetchReplicateModels();
+    },
+
+    async fetchReplicateModels(){
+      try {
+        const response = await getReplicateModels();
+        this.replicateModels = response.data.models;
+      } catch (e){
+        console.error(e)
+      }
+    },
+
+    async fetchLocalModels(){
+      try{
+        let response = await getLocalLLMs();
+        this.localChatModels = response.data.filter(
+          (model) => 
+            model.model_type === "llm"
+        ).map((model) => model.identifier);
+      } catch (e){
+        console.error(e)
+      }
+    },
+
+    async fetchOpenAIModels(){
       if (this.openAIApiKey !== "") {
         try {
           let response = await getOpenAIModels(this.openAIApiKey);
@@ -1275,12 +1396,6 @@ export default {
           console.error(e)
         }
       }
-
-      let response = await getLocalLLMs();
-      this.localChatModels = response.data.filter(
-        (model) => 
-          model.model_type === "llm"
-      ).map((model) => model.identifier);
     },
 
     initTools() {
@@ -1433,6 +1548,17 @@ export default {
       /* eslint-disable no-unused-vars */
       async handler(newKey, oldKey) {
         localStorage.setItem("openAIApiKey", newKey);
+        await this.fetchModels();
+        await this.initChatModel();
+        this.resetConv();
+        this.initGenerativeModel();
+      }
+    },
+
+    'replicateKey': {
+      /* eslint-disable no-unused-vars */
+      async handler(newKey, oldKey) {
+        localStorage.setItem("replicateKey", newKey);
         await this.fetchModels();
         await this.initChatModel();
         this.resetConv();
