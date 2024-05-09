@@ -55,6 +55,8 @@ def get_conversation_prompt(params) -> str:
             # remove system message
             new_messages = [message for message in messages if message["role"] != "system"]
             formatted_prompt = template.render(messages=new_messages)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Error rendering template: " + str(e))
     elif model in models:  # default formatter in casen of unknown model
         formatted_prompt = default_formatter(messages)
     else:
@@ -80,7 +82,7 @@ async def get_models():
     return JSONResponse({"models": models})
 
 
-@router.post("/generate_stream")
+@router.post("/generate_chat_stream")
 async def generate_stream(request: Request, token: str = Depends(get_token)):
     params = await request.json()
     replicate = Client(api_token=token)
@@ -97,6 +99,34 @@ async def generate_stream(request: Request, token: str = Depends(get_token)):
         "temperature": params.get("temperature", 0.7),
         "prompt_template": "{prompt}",  # I am formatting the prompt
         "system_prompt": ""  # this is included in the prompt
+    }
+
+    prediction = replicate.models.predictions.create(
+        model,
+        input=input,
+        stream=True,
+    )
+
+    return JSONResponse({
+        'url': prediction.urls['stream']
+    })
+
+
+@router.post("/generate_completion_stream")
+async def generate_completion(request: Request, token: str = Depends(get_token)):
+    params = await request.json()
+    replicate = Client(api_token=token)
+    model = params['model_identifier']
+
+    print(f"Prompt: {params['prompt']}")
+
+    input = {
+        "top_p": params.get("top_p", 0.9),
+        "prompt": params['prompt'],
+        "max_new_tokens": params.get("max_new_tokens", 100),
+        "temperature": params.get("temperature", 0.7),
+        # "prompt_template": "{prompt}", # rely on the default behavior of the replicate lib
+        "system_prompt": params['system_prompt']
     }
 
     prediction = replicate.models.predictions.create(

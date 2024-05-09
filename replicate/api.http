@@ -42,7 +42,7 @@ Authorization: Bearer {{token}}
 
 ###
 # @name non_hf_model
-POST {{domain}}/generate_stream HTTP/1.1
+POST {{domain}}/generate_chat_stream HTTP/1.1
 Authorization: Bearer {{token}}
 
 {
@@ -68,4 +68,19 @@ Authorization: Bearer {{token}}
             "text": "Who is Albert Einstein?"
         }
     ]
+}
+
+
+###
+# @name completion
+POST {{domain}}/generate_completion_stream HTTP/1.1
+Authorization: Bearer {{token}}
+
+{
+    "model_identifier": "meta/meta-llama-3-8b",
+    "top_p": 0.9,
+    "temperature": 0.7,
+    "max_new_tokens": 100,
+    "prompt": "What is the theory of relativity?", 
+    "system_prompt": "You are a helpful assistant."
 }
