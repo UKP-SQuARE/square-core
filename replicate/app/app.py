@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from jinja2.exceptions import TemplateError
 from replicate.client import Client
+from replicate.exceptions import ReplicateError
 from jinja2 import Template
 
 
@@ -101,11 +102,15 @@ async def generate_stream(request: Request, token: str = Depends(get_token)):
         "system_prompt": ""  # this is included in the prompt
     }
 
-    prediction = replicate.models.predictions.create(
-        model,
-        input=input,
-        stream=True,
-    )
+    try:
+        prediction = replicate.models.predictions.create(
+            model,
+            input=input,
+            stream=True,
+        )
+    except ReplicateError as e:
+        if e.status == 401:
+            raise HTTPException(status_code=401, detail="You did not pass a valid authentication token")
 
     return JSONResponse({
         'url': prediction.urls['stream']
@@ -125,15 +130,19 @@ async def generate_completion(request: Request, token: str = Depends(get_token))
         "prompt": params['prompt'],
         "max_new_tokens": params.get("max_new_tokens", 100),
         "temperature": params.get("temperature", 0.7),
-        # "prompt_template": "{prompt}", # rely on the default behavior of the replicate lib
-        "system_prompt": params['system_prompt']
+        "prompt_template": "{prompt}",
+        # "system_prompt": params['system_prompt']
     }
 
-    prediction = replicate.models.predictions.create(
-        model,
-        input=input,
-        stream=True,
-    )
+    try:
+        prediction = replicate.models.predictions.create(
+            model,
+            input=input,
+            stream=True,
+        )
+    except ReplicateError as e:
+        if e.status == 401:
+            raise HTTPException(status_code=401, detail="You did not pass a valid authentication token")
 
     return JSONResponse({
         'url': prediction.urls['stream']
