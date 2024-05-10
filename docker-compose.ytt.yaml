@@ -458,6 +458,20 @@ services:
       - "traefik.http.middlewares.sensitivity-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
       - "traefik.http.middlewares.sensitivity-addprefix.addPrefix.prefix=/api"
 
+  replicate:
+    image: #@ "ukpsquare/replicate:" + data.values.tag
+    build: 
+      context: ./replicate
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.replicate.rule=PathPrefix(`/api/replicate`)"
+      - "traefik.http.routers.replicate.entrypoints=websecure"
+      - "traefik.http.routers.replicate.tls=true"
+      - "traefik.http.routers.replicate.tls.certresolver=le"
+      - "traefik.http.routers.replicate.middlewares=replicate-stripprefix,replicate-addprefix"
+      - "traefik.http.middlewares.replicate-stripprefix.stripPrefixRegex.regex=/api/[a-zA-Z0-9_-]+"
+      - "traefik.http.middlewares.sensitivity-addprefix.addPrefix.prefix=/api"
+
   dpr_worker:
     image: #@ "ukpsquare/model-inference-transformer:" + data.values.tag
     build:

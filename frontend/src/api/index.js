@@ -297,11 +297,11 @@ export function getAlternatives(text){
 }
 
 export function getReplicateModels(){
-    return axios.get(`https://localhost:8443/api/replicate/models`, {});  // TODO: change to actual URL
+    return axios.get(`${BASE_SQUARE_URL}/replicate/models`, {});
 }
 
 export function generateChatStreamReplicate(params, token) {
-    let url = `https://localhost:8443/api/replicate/generate_chat_stream`  // TODO: change to actual URL
+    let url = `${BASE_SQUARE_URL}/replicate/generate_chat_stream`
     const response = axios.post(url, params, {
         headers:{
             'Content-Type': 'application/json',
@@ -313,7 +313,7 @@ export function generateChatStreamReplicate(params, token) {
 
 
 export function generateCompletionStreamReplicate(params, token) {
-    let url = `https://localhost:8443/api/replicate/generate_completion_stream`  // TODO: change to actual URL
+    let url = `${BASE_SQUARE_URL}/replicate/generate_completion_stream`
     const response = axios.post(url, params, {
         headers:{
             'Content-Type': 'application/json',

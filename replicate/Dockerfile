@@ -1,4 +1,4 @@
-FROM python:3.12.3-slim
+FROM python:3.12.3-slim AS base
 
 # used to avoid interactive prompts during build
 ARG DEBIAN_FRONTEND=noninteractive
@@ -11,6 +11,8 @@ COPY ./requirements.txt /app/requirements.txt
 
 RUN apt-get update && apt-get install --no-install-recommends -y
 RUN pip3 install --no-cache-dir --upgrade -r requirements.txt
+
+FROM base AS build
 
 COPY /app /app
 

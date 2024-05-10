@@ -49,6 +49,7 @@ jobs:
           "skill-kgqa-kqapro",
           "evaluator",
           "sensitivity",
+          "replicate",
         ]
         include:
           - build-args: ""
@@ -118,6 +119,8 @@ jobs:
             context: ./evaluator
           - service: sensitivity
             context: ./sensitivity
+          - service: replicate
+            context: ./replicate
     steps:
       - name: Checkout
         uses: actions/checkout@v3
