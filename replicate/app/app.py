@@ -9,6 +9,7 @@ from jinja2.exceptions import TemplateError
 from replicate.client import Client
 from replicate.exceptions import ReplicateError
 from jinja2 import Template
+import requests
 
 
 router = APIRouter()
@@ -147,6 +148,28 @@ async def generate_completion(request: Request, token: str = Depends(get_token))
     return JSONResponse({
         'url': prediction.urls['stream']
     })
+
+
+@router.get("/{identifier}/status")
+@router.get("/{username}/{identifier}/status")
+async def status_check(identifier: str, username: str):
+    if username is not None:
+        model_id = f"{username}/{identifier}"
+    else:
+        model_id = identifier
+
+    url = f"https://replicate.com/{model_id}/status"
+
+    print("Checking status of model: ", url)
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return JSONResponse({
+            "status": "Model is available"
+        })
+    else:
+        raise HTTPException(status_code=404, detail="Model not found")
 
 
 def get_app() -> FastAPI:

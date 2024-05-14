@@ -322,3 +322,8 @@ export function generateCompletionStreamReplicate(params, token) {
     });
     return response;
 }
+
+
+export function replicateModelHealthCheck(model_id){
+    return axios.get(`${BASE_SQUARE_URL}/replicate/${model_id}/status`);
+}

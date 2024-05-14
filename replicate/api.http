@@ -83,3 +83,9 @@ Authorization: Bearer {{token}}
     "max_new_tokens": 100,
     "prompt": "What is the theory of relativity?"
 }
+
+
+###
+# @name status
+# @prompt model_id
+GET {{domain}}/{{model_id}}/status HTTP/1.1

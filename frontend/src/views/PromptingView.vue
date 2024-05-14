@@ -53,10 +53,23 @@
                       <div class="tab-pane fade" id="pills-replicate" role="tabpanel" aria-labelledby="pills-replicate-tab">
                         <label for="selectedModel" class="form-label mt-2">Model</label>
                         <select v-model="chatConfig.selectedModel" class="form-select" id="selectedModel">
+                          <option value="add-new">Add new model...</option>
                           <option v-for="model in replicateModels" :key="model" :value="model">
                             {{ model }}
                           </option>
                         </select>
+                        <div v-if="chatConfig.selectedModel == 'add-new'" class="mt-3">
+
+                          <div class="row">
+                            <div class="col-9 pe-0">
+                              <input type="text" class="form-control" placeholder="Model Identifier" v-model="newReplicateModel" />
+                            </div>
+                            <div class="col-3 ps-1">
+                              <button type="button" class="btn btn-primary w-100" @click="addNewReplicateModel" >Add</button>
+                            </div>
+                          </div>
+                        </div>
+
                         <div class="row mt-3">
                           <div>
                             <label for="replicate-key" class="form-label">
@@ -560,7 +573,8 @@ import {
   getOpenAIModels,
   getLocalLLMs, 
   getAlternatives, 
-  getReplicateModels
+  getReplicateModels,
+  replicateModelHealthCheck
 } from '@/api';
 import { 
   CustomChatModel, 
@@ -677,12 +691,11 @@ export default {
       sentence: 'The mechanical doll next itself loose.', 
       answer: '0'
     }], 
-
     alternativesWaiting: false,
-
     sensitivityLog: "",
-
     isGenerating: false,
+
+    newReplicateModel: "",
   }),
 
   mounted() {
@@ -759,6 +772,22 @@ export default {
   },
 
   methods: {
+    async addNewReplicateModel(){
+      if (this.newReplicateModel === "") return;
+      if (!this.replicateModels.includes(this.newReplicateModel)){
+        try {
+          await replicateModelHealthCheck(this.newReplicateModel);
+        } catch (e) {
+          this.showErrorToast("Model not found.");
+          return;
+        }
+        console.log("new model added")
+        this.replicateModels.push(this.newReplicateModel);
+      }
+      this.chatConfig.selectedModel = this.newReplicateModel;
+      this.newReplicateModel = "";
+    },
+
     showPopover(event) {
       // this will create a popover once and then it will be reused by Popover automatically
       if (!this.sensitivity_popover) {
