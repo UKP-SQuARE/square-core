@@ -5,7 +5,7 @@ filelock==3.13.1
 pydantic==1.10.11
 python-dotenv==1.0.1
 python-multipart==0.0.9
-requests==2.31.0
+requests==2.32.0
 numpy==1.26.4
 uvicorn[standard]==0.27.1
 square-auth==0.0.14
