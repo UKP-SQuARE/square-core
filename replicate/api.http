@@ -1,0 +1,91 @@
+@token = 
+@domain = https://localhost:8443/api/replicate
+
+###
+# @name test
+GET {{domain}}/test HTTP/1.1
+
+
+###
+# @name models
+GET {{domain}}/models HTTP/1.1
+
+###
+# @name hf_model
+POST {{domain}}/generate_stream HTTP/1.1
+Authorization: Bearer {{token}}
+
+{
+    "model_identifier": "meta/llama-2-7b-chat",
+    "top_p": 0.9,
+    "temperature": 0.7,
+    "max_new_tokens": 100,
+    "messages": [
+        {
+            "role": "system",
+            "text": "You are my helpful assistant"
+        },
+        {
+            "role": "human",
+            "text": "What is the theory of relativity?"
+        }, 
+        {
+            "role": "ai",
+            "text": "The theory of relativity, or simply relativity, encompasses two interrelated theories of Albert Einstein: special relativity and general relativity. However, the word relativity is sometimes used in reference to Galilean invariance."
+        }, 
+        {
+            "role": "human",
+            "text": "Who is Albert Einstein?"
+        }
+    ]
+}
+
+###
+# @name non_hf_model
+POST {{domain}}/generate_chat_stream HTTP/1.1
+Authorization: Bearer {{token}}
+
+{
+    "model_identifier": "meta/meta-llama-3-8b",
+    "top_p": 0.9,
+    "temperature": 0.7,
+    "max_new_tokens": 100,
+    "messages": [
+        {
+            "role": "system",
+            "text": "You are my helpful assistant"
+        },
+        {
+            "role": "human",
+            "text": "What is the theory of relativity?"
+        }, 
+        {
+            "role": "ai",
+            "text": "The theory of relativity, or simply relativity, encompasses two interrelated theories of Albert Einstein: special relativity and general relativity. However, the word relativity is sometimes used in reference to Galilean invariance."
+        }, 
+        {
+            "role": "human",
+            "text": "Who is Albert Einstein?"
+        }
+    ]
+}
+
+
+###
+# @name completion
+POST {{domain}}/generate_completion_stream HTTP/1.1
+Authorization: Bearer {{token}}
+
+{
+    "model_identifier": "meta/meta-llama-3-8b",
+    "top_p": 0.9,
+    "temperature": 0.7,
+    "max_new_tokens": 100,
+    "prompt": "What is the theory of relativity?"
+}
+
+
+###
+# @name status
+# @prompt model_id
+GET {{domain}}/{{model_id}}/status HTTP/1.1
