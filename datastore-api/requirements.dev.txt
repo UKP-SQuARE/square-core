@@ -7,3 +7,4 @@ docker==7.0.0
 ipdb==0.13.13
 httpx==0.27.0
 setuptools==65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
