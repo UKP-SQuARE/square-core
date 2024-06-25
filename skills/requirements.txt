@@ -3,3 +3,4 @@ square-datastore-client==0.0.3
 git+https://github.com/UKP-SQuARE/square-model-client.git@main#egg=square-model-client
 square-skill-api==0.0.47
 requests==2.28.2
+anyio>=4.4.0 # not directly required, pinned by Snyk to avoid a vulnerability
